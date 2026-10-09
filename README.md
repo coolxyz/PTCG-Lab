@@ -1,54 +1,104 @@
 # PTCG Lab
 
-**开源 PTCG 工具与 AI 对战实验平台。**
+面向 Pokémon Trading Card Game（PTCG）的非官方开源工具，提供简体中文卡牌查询、收藏管理、卡组构筑和本地人机对战，并为规则模拟与 AI 策略研究提供开发基础。
 
-面向 Pokémon TCG 的非官方开源工具，集成卡牌管理、卡组构筑、规则模拟、人机对战与 AI 智能体评测，当前以简体中文版为验证目标。项目重点是可复现的规则实现、对战工具和 AI 开发；当前 AI 能力与后续目标见 A2 开发计划。建议公开仓库名为 `ptcg-lab`。
+应用通过浏览器使用，由本机服务和 SQLite 数据库保存资料。
 
-自有代码采用 [MIT](LICENSE)。原简中资料仓库为 [duanxr/PTCG-CHS-Datasets](https://github.com/duanxr/PTCG-CHS-Datasets)，可在“数据与对战更新”配置兼容的公开 GitHub fork。详见 [第三方与版权声明](THIRD_PARTY_NOTICES.md)。
+## 功能
 
-**GitHub 公开源码不附带完整卡牌数据、图片或运行时资产。** 先阅读 [GitHub 发布与隐私](docs/GitHub发布与隐私.md) 配置合法本地资产；下面的启动说明面向已具备完整本地环境的用户。公开源码包不能代替个人迁移包。
+- **卡牌查询**：搜索卡牌，查看规则文字、扩充包与卡面版本。
+- **收藏管理**：记录持有数量，管理同编号的不同卡面，导入和导出收藏。
+- **卡组构筑**：创建、编辑和校验卡组，管理可用于对战的卡组版本。
+- **人机练习**：使用内置 AI 对战，查看动作与投币动画，恢复对局并观看回放。
+- **资料同步**：从兼容的公开 GitHub 数据仓库更新卡牌资料和图片。
+- **模拟与研究**：使用规则执行、局面分叉、对局回放和评测工具开发 AI 策略。
 
-当前稳定版本：**1.0.1（2026-10-08）**。当前目标卡池自由对战已完成；下一阶段独立开发 A2 AI。
+AI 包含用于练习的 A1 策略和实验性的 A2 搜索原型。
 
-**首次使用请先阅读：[完整安装与使用手册](docs/启动使用与跨系统迁移.md)**。包含安装包校验、Windows/Linux 安装、上游资料与全部卡图下载、查卡、收藏与卡面、导入导出、组牌、人机练习、回放、备份恢复和故障排查。
+## 快速开始
 
-支持查卡、同编号多卡面收藏、导入、自由组牌、A1 人机对战、动作与投币动画、恢复、回放和上游卡库同步。冻结环境 G/H/I/J 加八种基本能量的 **5,346 / 5,346** 个目标版本全部支持。资料库保留 **20,345 条上游卡面记录**，卡面与对战身份分别统计。
+### 环境要求
 
-## 启动
+- Python 3.14 或更新版本
+- Node.js 与 npm
+- Git
+- 现代浏览器
+- 首次安装时用于下载依赖的网络连接
 
-首次安装需要 Python 3.14+、Node.js/npm、Git，以及下载依赖的网络。
+### 准备本地资产
 
-Windows PowerShell：
+**本仓库不包含完整卡牌数据、图片和对战引擎运行时，克隆源码后需要另行配置本地资产。**
+
+如果已有合法、可信且与当前代码兼容的完整本地环境，可在项目根目录导入所需资产：
+
+```bash
+python3 scripts/public/import_local_assets.py /path/to/your/trusted-private-project
+```
+
+Windows 使用 `python` 执行相同脚本，并将路径替换为实际目录。导入工具复制卡牌数据、引擎运行时和完整性清单；目标文件已存在时会拒绝覆盖。资产来源与配置详情见 [本地资产与公开源码说明](docs/GitHub发布与隐私.md#公开源码如何启动)。
+
+### 安装与启动
+
+在项目根目录执行以下命令。
+
+**Windows PowerShell**
 
 ```powershell
 .\start.ps1 -Setup
-# 以后启动
+# 后续启动
 .\start.ps1
 ```
 
-Linux：
+**Linux / Bash**
 
 ```bash
 bash start.sh --setup
-# 以后启动
+# 后续启动
 bash start.sh
 ```
 
-打开 **http://127.0.0.1:8765/**，Ctrl+C 停止。Windows `-Check`、Linux `--check` 仅检查环境；端口用 `-Port 8766` / `--port 8766` 指定。脚本可从任意目录调用，服务仅面向本机。
+启动后访问 **http://127.0.0.1:8765/**，保持终端运行，按 `Ctrl+C` 停止服务。默认服务仅监听本机地址。
+
+| 操作 | Windows PowerShell | Linux / Bash |
+| --- | --- | --- |
+| 检查运行环境 | `.\start.ps1 -Check` | `bash start.sh --check` |
+| 使用其他端口 | `.\start.ps1 -Port 8766` | `bash start.sh --port 8766` |
+
+详细安装步骤、使用方法与故障排查见 [安装与使用手册](docs/启动使用与跨系统迁移.md)。
+
+## 技术栈与目录
+
+前端使用 React、TypeScript 和 Vite，后端使用 Python 和 FastAPI，数据存储使用 SQLite。
+
+```text
+apps/
+  api/            后端接口
+  web/            浏览器界面
+packages/         收藏、卡组、规则、对战、模拟与同步逻辑
+rulesets/         规则配置
+scripts/          安装、数据同步、构建与开发工具
+tests/            自动化测试
+docs/             项目文档
+```
+
+本地运行时使用 `.venv/` 保存 Python 环境、`runtime/engine/` 保存引擎、`var/` 保存用户数据。这些目录由 Git 忽略。备份和恢复方法见 [安装与使用手册](docs/启动使用与跨系统迁移.md#备份恢复与升级)。
 
 ## 文档
 
 - [安装、使用、备份与迁移](docs/启动使用与跨系统迁移.md)
-- [发布说明](docs/发布说明.md)
 - [架构与维护](docs/架构与维护.md)
 - [同编号多卡面收藏](docs/同编号多卡面收藏.md)
-- [上游卡库同步](docs/上游卡库同步使用与验收.md)
-- [A2 AI 独立开发计划](docs/A2-AI开发计划.md)
+- [上游卡库同步](docs/上游卡库同步.md)
+- [公开源码、本地资产与隐私](docs/GitHub发布与隐私.md)
 
-`RELEASE.json` 记录版本与冻结对战发布。`python scripts/release.py build --include-restricted-data` 生成不含个人数据的 release 包和校验清单；解包后运行 `python scripts/release.py verify`。
+## 参与贡献
 
-个人收藏、卡组与比赛位于 `var/app.sqlite`，上传卡图在 `var/app-card-images/`。普通安装包用户用 `scripts/sync/run.py backup --bundle ../ptcg-user-backup.zip` 备份数据与活动运行时；带根 `.git` 的源码工作区还可用 `scripts/portable/pack.py` 做完整迁移。命令需使用项目 `.venv` 内的 Python，恢复及离线卡图携带步骤见手册。release 包不能替代个人数据备份。
+欢迎通过 Issue 报告问题、提出建议，或通过 Pull Request 提交改进。开发环境与测试说明见 [贡献指南](CONTRIBUTING.md)，安全问题的报告方式见 [安全说明](SECURITY.md)。
 
-目录按功能命名：`rules`、`collection`、`battle`、`simulation`、`cardpool`、`sync`。Python 环境在 `.venv`，生成引擎在 `runtime/engine`，用户数据和本机临时文件在 `var`。旧发布与里程碑归档已清理；旧对局仅保留已保存帧的回放，不能继续执行。旧卡组自动按当前规则校验，通过即可用于新对局。第三方引擎和卡牌资料遵循原来源的许可证及使用条件。
+## 许可证与致谢
 
-贡献与开发：[CONTRIBUTING.md](CONTRIBUTING.md)。隐私与安全：[SECURITY.md](SECURITY.md)。
+项目自有代码和文档采用 [MIT 许可证](LICENSE)。第三方代码、卡牌数据、卡图及商标遵循各自的许可与使用条件。
+
+感谢 [ptcg-engine](https://github.com/gemelom/ptcg-engine) 提供规则引擎基础，以及 [PTCG-CHS-Datasets](https://github.com/duanxr/PTCG-CHS-Datasets) 提供简体中文资料来源。完整来源和版权信息见 [第三方声明](THIRD_PARTY_NOTICES.md)。
+
+本项目与 Pokémon 官方无隶属或背书关系。
