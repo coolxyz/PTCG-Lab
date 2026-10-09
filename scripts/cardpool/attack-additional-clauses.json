@@ -1,0 +1,4082 @@
+[
+  {
+    "sourceExample": "热带龙（SVAM）",
+    "english": "Heal 60 damage from 1 of your Benched Pokémon.",
+    "chinese": "回复自己1只备战宝可梦「60」HP。",
+    "rule": {
+      "kind": "heal_field",
+      "zone": "bench",
+      "target": "one",
+      "amount": 60
+    }
+  },
+  {
+    "sourceExample": "三蜜蜂（SV3）",
+    "english": "Heal 20 damage from 1 of your Benched Pokémon.",
+    "chinese": "回复自己1只备战宝可梦「20」HP。",
+    "rule": {
+      "kind": "heal_field",
+      "zone": "bench",
+      "target": "one",
+      "amount": 20
+    }
+  },
+  {
+    "sourceExample": "小球飛魚（SV3a）",
+    "english": "Heal 120 damage from 1 of your Benched Pokémon.",
+    "chinese": "回复自己1只备战宝可梦「120」HP。",
+    "rule": {
+      "kind": "heal_field",
+      "zone": "bench",
+      "target": "one",
+      "amount": 120
+    }
+  },
+  {
+    "sourceExample": "花療環環（MF）",
+    "english": "Heal 80 damage from 1 of your Benched Pokémon.",
+    "chinese": "回复自己1只备战宝可梦「80」HP。",
+    "rule": {
+      "kind": "heal_field",
+      "zone": "bench",
+      "target": "one",
+      "amount": 80
+    }
+  },
+  {
+    "sourceExample": "奥利瓦（SVD）",
+    "english": "Heal all damage from 1 of your Benched Pokémon.",
+    "chinese": "将自己的1只备战宝可梦的HP，全部回复。",
+    "rule": {
+      "kind": "heal_field",
+      "zone": "bench",
+      "target": "one",
+      "full": true
+    }
+  },
+  {
+    "sourceExample": "吼叫尾（SVHK）",
+    "english": "Heal 100 damage from 1 of your Benched {{TCG|Ancient}} Pokémon.",
+    "chinese": "回复自己备战区中的1只「古代」宝可梦「100」HP。",
+    "rule": {
+      "kind": "heal_field",
+      "zone": "bench",
+      "target": "one",
+      "amount": 100,
+      "trait": "ANCIENT"
+    }
+  },
+  {
+    "sourceExample": "阿響的鳳王ex（SV9a）",
+    "english": "Heal 50 damage from each of your Pokémon.",
+    "chinese": "回复自己所有宝可梦的HP各「50」。",
+    "rule": {
+      "kind": "heal_field",
+      "target": "all",
+      "amount": 50
+    }
+  },
+  {
+    "sourceExample": "清洗洛托姆（SV10）",
+    "english": "Heal 10 damage from each of your Pokémon.",
+    "chinese": "回复自己所有宝可梦的HP各「10」。",
+    "rule": {
+      "kind": "heal_field",
+      "target": "all",
+      "amount": 10
+    }
+  },
+  {
+    "sourceExample": "葉伊布ex（SV8a）",
+    "english": "Heal 100 damage from each of your Benched Pokémon.",
+    "chinese": "将自己所有备战宝可梦的HP，各回复「100」。",
+    "rule": {
+      "kind": "heal_field",
+      "zone": "bench",
+      "target": "all",
+      "amount": 100
+    }
+  },
+  {
+    "sourceExample": "呆呆兽（SV1V）",
+    "english": "This Pokémon is now Asleep. Heal 30 damage from it.",
+    "chinese": "令这只宝可梦陷入'''{{TCG|睡眠}}'''状态。回复这只宝可梦「30」HP。",
+    "rule": {
+      "kind": "sequence",
+      "steps": [
+        {
+          "kind": "special_status",
+          "status": "ASLEEP",
+          "target": "self",
+          "coin": false
+        },
+        {
+          "kind": "heal_self",
+          "amount": 30
+        }
+      ]
+    }
+  },
+  {
+    "sourceExample": "走鲸（SV2P 021）",
+    "english": "This Pokémon is now Asleep. Heal 60 damage from it.",
+    "chinese": "令这只宝可梦陷入'''{{TCG|睡眠}}'''状态。回复这只宝可梦「60」HP。",
+    "rule": {
+      "kind": "sequence",
+      "steps": [
+        {
+          "kind": "special_status",
+          "status": "ASLEEP",
+          "target": "self",
+          "coin": false
+        },
+        {
+          "kind": "heal_self",
+          "amount": 60
+        }
+      ]
+    }
+  },
+  {
+    "sourceExample": "爱心鱼（SV2P）",
+    "english": "You opponent's Active Pokémon is now Asleep.",
+    "chinese": "令对手的战斗宝可梦陷入'''{{TCG|睡眠}}'''状态。",
+    "rule": {
+      "kind": "special_status",
+      "status": "ASLEEP",
+      "target": "opponent",
+      "coin": false
+    }
+  },
+  {
+    "sourceExample": "美丽花（SV3）",
+    "english": "Your opponent's Active Pokémon is now Asleep.",
+    "chinese": "令对手的战斗宝可梦陷入{{TCG|睡眠}}状态。",
+    "rule": {
+      "kind": "special_status",
+      "status": "ASLEEP",
+      "target": "opponent",
+      "coin": false
+    }
+  },
+  {
+    "sourceExample": "念力土偶（SV3）",
+    "english": "Your opponent's Active Pokémon is now Confused.",
+    "chinese": "令对手的战斗宝可梦陷'''{{TCG|混乱}}'''状态。",
+    "rule": {
+      "kind": "special_status",
+      "status": "CONFUSED",
+      "target": "opponent",
+      "coin": false
+    }
+  },
+  {
+    "sourceExample": "閃電鳥（SV5a）",
+    "english": "Flip a coin. If heads, your opponent's Active Pokemon is now Paralyzed.",
+    "chinese": "抛掷1次硬币如果为正面，则令对手的战斗宝可梦陷入【麻痹】状态。",
+    "rule": {
+      "kind": "special_status",
+      "status": "PARALYZED",
+      "target": "opponent",
+      "coin": true
+    }
+  },
+  {
+    "sourceExample": "晶光花（SV2P）",
+    "english": "Your opponent's Active Pokémon is now Poisoned. During Pokémon Checkup, put 6 damage counters on that Pokémon instead of 1.",
+    "chinese": "令对手的战斗宝可梦陷入'''{{TCG|中毒}}'''状态。因这个'''{{TCG|中毒}}'''而放置的伤害指示物数量变为6个。",
+    "rule": {
+      "kind": "special_status",
+      "status": "POISONED",
+      "target": "opponent",
+      "coin": false,
+      "poisonDamage": 60
+    }
+  },
+  {
+    "sourceExample": "呆壳兽（SV2a）",
+    "english": "Both Active Pokémon are now Asleep.",
+    "chinese": "令双方的战斗宝可梦，各陷入'''{{TCG|睡眠}}'''状态。",
+    "rule": {
+      "kind": "special_status",
+      "status": "ASLEEP",
+      "target": "both",
+      "coin": false
+    }
+  },
+  {
+    "sourceExample": "摩鲁蛾（SV2a）",
+    "english": "Your opponent's Active Pokémon is now Confused. During your opponent's next turn, they can't play any Item cards from their hand.",
+    "chinese": "令对手的战斗宝可梦陷入'''{{TCG|混乱}}'''状态。在下一个对手的回合，对手无法从手牌使出物品。",
+    "rule": {
+      "kind": "sequence",
+      "steps": [
+        {
+          "kind": "special_status",
+          "status": "CONFUSED",
+          "target": "opponent",
+          "coin": false
+        },
+        {
+          "kind": "item_lock"
+        }
+      ]
+    }
+  },
+  {
+    "sourceExample": "自爆磁怪（SV8）",
+    "english": "Your opponent's Active Pokémon is now Confused. During your opponent's next turn, that Pokémon can't retreat.",
+    "chinese": "令对手的战斗宝可梦陷入'''{{TCG|混乱}}'''状态。在下一个对手的回合，受到这个招式影响的宝可梦，无法撤退。",
+    "rule": {
+      "kind": "sequence",
+      "steps": [
+        {
+          "kind": "special_status",
+          "status": "CONFUSED",
+          "target": "opponent",
+          "coin": false
+        },
+        {
+          "kind": "prevent_retreat"
+        }
+      ]
+    }
+  },
+  {
+    "sourceExample": "火箭隊的臭臭泥（SV10）",
+    "english": "Your opponent's Active Pokémon is now Confused. During your opponent's next turn, that Pokémon can't retreat.",
+    "chinese": "令对手的战斗宝可梦陷入'''{{TCG|混乱}}'''状态。在下一个对手的回合，受到这个招式影响的宝可梦无法撤退。",
+    "rule": {
+      "kind": "sequence",
+      "steps": [
+        {
+          "kind": "special_status",
+          "status": "CONFUSED",
+          "target": "opponent",
+          "coin": false
+        },
+        {
+          "kind": "prevent_retreat"
+        }
+      ]
+    }
+  },
+  {
+    "sourceExample": "钥圈儿（SV1V）",
+    "english": "Before doing damage, discard all Pokémon Tools from your opponent's Active Pokémon.",
+    "chinese": "在造成伤害前，将放于对手战斗宝可梦身上的「宝可梦道具」放于弃牌区。",
+    "rule": {
+      "kind": "discard_tools_before_damage"
+    }
+  },
+  {
+    "sourceExample": "路卡利欧ex（SVAM）",
+    "english": "This attack also does 50 damage to 1 of your opponent's Benched Pokémon. (Don't apply Weakness and Resistance for Benched Pokémon.)",
+    "chinese": "给对手的1只备战宝可梦，也造成50伤害。[备战宝可梦不计算弱点、抗性。]",
+    "rule": {
+      "kind": "bench_damage",
+      "amount": 50
+    }
+  },
+  {
+    "sourceExample": "故勒顿ex（SVD）",
+    "english": "This attack also does 20 damage to 2 of your opponent's Benched Pokémon. ''(Don't apply Weakness and Resistance for Benched Pokémon.)''",
+    "chinese": "给对手的2只备战宝可梦，也各造成20伤害。''[备战宝可梦不计算弱点、抗性。]''",
+    "rule": {
+      "kind": "bench_damage",
+      "amount": 20,
+      "count": 2
+    }
+  },
+  {
+    "sourceExample": "三首惡龍ex（SV8）",
+    "english": "This attack also does 130 damage to 2 of your opponent's Benched Pokémon. ''(Don't apply Weakness and Resistance for Benched Pokémon.)''",
+    "chinese": "给对手的2只备战宝可梦，也各造成130伤害。''[备战宝可梦不计算弱点、抗性。]''",
+    "rule": {
+      "kind": "bench_damage",
+      "amount": 130,
+      "count": 2
+    }
+  },
+  {
+    "sourceExample": "竹兰的美纳斯（SV9a）",
+    "english": "This attack also does 30 damage to 2 of your opponent's Benched Pokémon. ''(Don't apply Weakness and Resistance for Benched Pokémon.)''",
+    "chinese": "给对手的2只备战宝可梦也各造成30伤害。''[备战宝可梦不计算弱点、抗性。]''",
+    "rule": {
+      "kind": "bench_damage",
+      "amount": 30,
+      "count": 2
+    }
+  },
+  {
+    "sourceExample": "流氓鳄（SV1S）",
+    "english": "This attack also does 30 damage to each of your Benched Pokémon. (Don't apply Weakness and Resistance for Benched Pokémon.)",
+    "chinese": "给自己所有的备战宝可梦，也各造成30伤害。[备战宝可梦不计算弱点、抗性。]",
+    "rule": {
+      "kind": "own_bench_damage",
+      "amount": 30
+    }
+  },
+  {
+    "sourceExample": "捷克羅姆（SV3a）",
+    "english": "This attack also does 40 damage to 1 of your Benched Pokémon. ''(Don't apply Weakness and Resistance for Benched Pokémon.)''",
+    "chinese": "给自己的1只备战宝可梦，也造成40伤害。''[备战宝可梦不计算弱点、抗性。]''",
+    "rule": {
+      "kind": "own_bench_damage",
+      "amount": 40,
+      "select": true
+    }
+  },
+  {
+    "sourceExample": "沙基拉斯（SV3）",
+    "english": "This attack also does 20 damage to 1 of your Benched Pokémon. ''(Don't apply Weakness and Resistance for Benched Pokémon.)''",
+    "chinese": "给自己的1只备战宝可梦，也造成20伤害。''[备战宝可梦不计算弱点、抗性。]''",
+    "rule": {
+      "kind": "own_bench_damage",
+      "amount": 20,
+      "select": true
+    }
+  },
+  {
+    "sourceExample": "麒麟奇（SV5a）",
+    "english": "This attack also does 10 damage to 1 of your Benched Pokémon. ''(Don't apply Weakness and Resistance for Benched Pokémon.)''",
+    "chinese": "给自己的1只备战宝可梦，也造成10伤害。''[备战宝可梦不计算弱点、抗性。]''",
+    "rule": {
+      "kind": "own_bench_damage",
+      "amount": 10,
+      "select": true
+    }
+  },
+  {
+    "sourceExample": "雷電獸（SV9a）",
+    "english": "This attack also does 40 damage to 1 of your Benched Pokémon. ''(Don't apply Weakness and Resistance for Benched Pokémon.)''",
+    "chinese": "给自己的1只备战宝可梦也造成40伤害。''[备战宝可梦不计算弱点、抗性。]''",
+    "rule": {
+      "kind": "own_bench_damage",
+      "amount": 40,
+      "select": true
+    }
+  },
+  {
+    "sourceExample": "双弹瓦斯（SV2a）",
+    "english": "This attack also does 10 damage to each of your opponent's Benched Pokémon. ''(Don't apply Weakness and Resistance for Benched Pokémon.)''",
+    "chinese": "给对手所有的备战宝可梦，也各造成10伤害。''[备战宝可梦不计算弱点、抗性。]''",
+    "rule": {
+      "kind": "spread_damage",
+      "zone": "bench",
+      "amount": 10
+    }
+  },
+  {
+    "sourceExample": "浩大鯨（SV-P）",
+    "english": "This attack also does 10 damage to each of your opponent's Benched Pokémon. ''(Don't apply Weakness and Resistance for Benched Pokémon.)''",
+    "chinese": "给对手所有的备战宝可梦，也各造成10伤害。[备战宝可梦不计算弱点、抗性。]",
+    "rule": {
+      "kind": "spread_damage",
+      "zone": "bench",
+      "amount": 10
+    }
+  },
+  {
+    "sourceExample": "冷水猿（SV4M）",
+    "english": "This attack also does 30 damage to each of your opponent's Benched Pokémon. ''(Don't apply Weakness and Resistance for Benched Pokémon.)''",
+    "chinese": "给对手所有的备战宝可梦，也各造成30伤害。''[备战宝可梦不计算弱点、抗性。]''",
+    "rule": {
+      "kind": "spread_damage",
+      "zone": "bench",
+      "amount": 30
+    }
+  },
+  {
+    "sourceExample": "火暴猴（SV1V）",
+    "english": "This Pokémon does 20 damage to itself.",
+    "chinese": "给这只宝可梦也造成20伤害。",
+    "rule": {
+      "kind": "recoil",
+      "amount": 20
+    }
+  },
+  {
+    "sourceExample": "飞腿郎（SV2a）",
+    "english": "This attack does 10 damage to each of your opponent's Pokémon. ''(Don't apply Weakness and Resistance for Benched Pokémon.)'' Switch this Pokémon with 1 of your Benched Pokémon.",
+    "chinese": "给对手所有的宝可梦，各造成10伤害。将这只宝可梦与备战宝可梦互换。''[备战宝可梦不计算弱点、抗性。]''",
+    "rule": {
+      "kind": "sequence",
+      "steps": [
+        {
+          "kind": "spread_damage",
+          "zone": "all",
+          "amount": 10
+        },
+        {
+          "kind": "self_switch",
+          "optional": false
+        }
+      ]
+    }
+  },
+  {
+    "sourceExample": "坚果哑铃（30th）",
+    "english": "This attack does 50 damage to each of your opponent's Pokémon. ''(Don't apply Weakness and Resistance for Benched Pokémon.)'' This Pokémon also does 130 damage to itself.",
+    "chinese": "给对手所有宝可梦各造成50伤害。给这只宝可梦也造成130伤害。''[备战宝可梦不计算弱点、抗性。]''",
+    "rule": {
+      "kind": "sequence",
+      "steps": [
+        {
+          "kind": "spread_damage",
+          "zone": "all",
+          "amount": 50
+        },
+        {
+          "kind": "recoil",
+          "amount": 130
+        }
+      ]
+    }
+  },
+  {
+    "sourceExample": "毒骷蛙ex（SV1S）",
+    "english": "Search your deck for up to 2 cards and put them into your hand. Then, shuffle your deck.",
+    "chinese": "选择自己牌库中任意卡牌最多2张，加入手牌。并重洗牌库。",
+    "rule": {
+      "kind": "search_hand",
+      "filter": "any",
+      "count": 2,
+      "reveal": false
+    }
+  },
+  {
+    "sourceExample": "米立龍（SV4M）",
+    "english": "Search your deck for up to 2 cards and put them into your hand. Then, shuffle your deck. You may switch this Pokémon with 1 of your Benched Pokémon.",
+    "chinese": "选择自己牌库中任意卡牌最多2张，加入手牌。并重洗牌库。若希望，可将这只宝可梦与备战宝可梦互换。",
+    "rule": {
+      "kind": "sequence",
+      "steps": [
+        {
+          "kind": "search_hand",
+          "filter": "any",
+          "count": 2,
+          "reveal": false
+        },
+        {
+          "kind": "self_switch",
+          "optional": true
+        }
+      ]
+    }
+  },
+  {
+    "sourceExample": "醜醜魚（SV4M）",
+    "english": "Search your deck for an Energy card, reveal it, and put it into your hand. Then, shuffle your deck.",
+    "chinese": "选择自己牌库中1张能量，在给对手看过之后，加入手牌。并重洗牌库。",
+    "rule": {
+      "kind": "search_hand",
+      "filter": "energy",
+      "count": 1
+    }
+  },
+  {
+    "sourceExample": "海地鼠（SV5K）",
+    "english": "Search your deck for an Item card, reveal it, and put it into your hand. Then, shuffle your deck.",
+    "chinese": "选择自己牌库中的1张物品，在给对手看过之后，加入手牌。并重洗牌库。",
+    "rule": {
+      "kind": "search_hand",
+      "filter": "item",
+      "count": 1
+    }
+  },
+  {
+    "sourceExample": "美錄坦（SV7）",
+    "english": "Search your deck for a Pokémon Tool card, reveal it, and put it into your hand. Then, shuffle your deck.",
+    "chinese": "选择自己牌库中的1张「{{TCG|宝可梦道具}}」，在给对手看过之后，加入手牌。并重洗牌库。",
+    "rule": {
+      "kind": "search_hand",
+      "filter": "tool",
+      "count": 1
+    }
+  },
+  {
+    "sourceExample": "火箭隊的咩利羊（SV10）",
+    "english": "Search your deck for an Item card, reveal it, and put it into your hand. Then, shuffle your deck.",
+    "chinese": "选择自己牌库中的1张物品，在给对手看过之后加入手牌。并重洗牌库。",
+    "rule": {
+      "kind": "search_hand",
+      "filter": "item",
+      "count": 1
+    }
+  },
+  {
+    "sourceExample": "皮卡丘（30th 031）",
+    "english": "Search your deck for anEnergy card, reveal it, and put it into your hand. Then, shuffle your deck.",
+    "chinese": "选择自己牌库中的1张能量，在给对手看过之后加入手牌。并重洗牌库。",
+    "rule": {
+      "kind": "search_hand",
+      "filter": "energy",
+      "count": 1
+    }
+  },
+  {
+    "sourceExample": "强颚鸡母虫（SV5M）",
+    "english": "Search your deck for up to 2 {{TCG|Grubbin}} and put them onto your Bench. Then, shuffle your deck.",
+    "chinese": "选择自己牌库中最多2张「强颚鸡母虫」，放于备战区。并重洗牌库。",
+    "rule": {
+      "kind": "search_bench",
+      "count": 2,
+      "names": [
+        "Grubbin"
+      ],
+      "anyStage": true
+    }
+  },
+  {
+    "sourceExample": "呱呱泡蛙（SV5a）",
+    "english": "Search your deck for up to 2 Froakie and put them onto your Bench. Then, shuffle your deck.",
+    "chinese": "选择自己牌库中最多2张「呱呱泡蛙」，放于备战区。并重洗牌库。",
+    "rule": {
+      "kind": "search_bench",
+      "count": 2,
+      "names": [
+        "Froakie"
+      ],
+      "anyStage": true
+    }
+  },
+  {
+    "sourceExample": "蟲電寶（SV7）",
+    "english": "Search your deck for up to 3 {{TCG|Charjabug}} and put them onto your Bench. Then, shuffle your deck.",
+    "chinese": "选择自己牌库中最多3张「虫电宝」，放于备战区。并重洗牌库。",
+    "rule": {
+      "kind": "search_bench",
+      "count": 3,
+      "names": [
+        "Charjabug"
+      ],
+      "anyStage": true
+    }
+  },
+  {
+    "sourceExample": "一家鼠（SV8）",
+    "english": "Search your deck for up to 2 in any combination of {{TCG|Maushold}} and {{DL|Maushold (TCG)|Maushold ex}} and put them onto your Bench. Then, shuffle your deck.",
+    "chinese": "选择自己牌库中最多2张「一家鼠（包含『宝可梦{{ex}}』）」，放于备战区。并重洗牌库。",
+    "rule": {
+      "kind": "search_bench",
+      "count": 2,
+      "names": [
+        "Maushold",
+        "Maushold ex"
+      ],
+      "anyStage": true
+    }
+  },
+  {
+    "sourceExample": "大吾的天秤偶（SVOD）",
+    "english": "Search your deck for up to 2 Basic Steven's Pokémon and put them onto your Bench. Then, shuffle your deck.",
+    "chinese": "选择自己牌库中最多2张'''基础'''宝可梦的「大吾的宝可梦」，放于备战区。并重洗牌库。",
+    "rule": {
+      "kind": "search_bench",
+      "count": 2,
+      "prefix": "Steven's "
+    }
+  },
+  {
+    "sourceExample": "哎呀球菇（SV1a）",
+    "english": "Search your deck for a Basic {{e|Grass}} Pokémon and put it onto your Bench. Then, shuffle your deck.",
+    "chinese": "选择自己牌库中的1张{{e|草}}属性的'''基础'''宝可梦，放于备战区。并重洗牌库。",
+    "rule": {
+      "kind": "search_bench",
+      "count": 1,
+      "type": "GRASS"
+    }
+  },
+  {
+    "sourceExample": "皮卡丘ex（30th 047）",
+    "english": "Search your deck for any number of Basic Pokémon and put them onto your Bench. Then, shuffle your deck.",
+    "chinese": "选择自己牌库中任意数量的'''基础'''宝可梦，放于备战区。并重洗牌库。",
+    "rule": {
+      "kind": "search_bench",
+      "count": 99
+    }
+  },
+  {
+    "sourceExample": "三合一磁怪（SV2a）",
+    "english": "Put up to 2 Item cards from your discard pile into your hand.",
+    "chinese": "选择自己弃牌区中最多2张{{TCG|物品卡|物品}}，在给对手看过之后，加入手牌。",
+    "rule": {
+      "kind": "recover_hand",
+      "count": 2,
+      "filter": "item",
+      "optional": true
+    }
+  },
+  {
+    "sourceExample": "怖思壶（SV2P）",
+    "english": "Put up to 2 in any combination of Item cards and Pokémon Tool cards from your discard pile into your hand.",
+    "chinese": "选择自己弃牌区中的「物品」和「宝可梦道具」合计最多2张，在给对手看过之后，加入手牌。",
+    "rule": {
+      "kind": "recover_hand",
+      "count": 2,
+      "filter": "item_or_tool",
+      "optional": true
+    }
+  },
+  {
+    "sourceExample": "卡咪龟（SV2a）",
+    "english": "Put up to 3 Basic {{e|水}} Energy cards from your discard pile into your hand.",
+    "chinese": "选择自己弃牌区中最多3张「基本{{e|水}}能量」，在给对手看过之后，加入手牌。",
+    "rule": {
+      "kind": "recover_hand",
+      "count": 3,
+      "filter": "basic_energy:WATER",
+      "optional": true
+    }
+  },
+  {
+    "sourceExample": "拉普拉斯（SV3a）",
+    "english": "Put up to 3 Basic Energy cards from your discard pile into your hand.",
+    "chinese": "选择自己弃牌区中最多3张基本能量，在给对手看过之后，加入手牌。",
+    "rule": {
+      "kind": "recover_hand",
+      "count": 3,
+      "filter": "basic_energy",
+      "optional": true
+    }
+  },
+  {
+    "sourceExample": "朝北鼻（SV3）",
+    "english": "Put up to 2 Basic {{e|Metal}} Energy cards from your discard pile into your hand.",
+    "chinese": "选择自己弃牌区中最多2张「基本{{e|钢}}能量」，在给对手看过之后，加入手牌。",
+    "rule": {
+      "kind": "recover_hand",
+      "count": 2,
+      "filter": "basic_energy:METAL",
+      "optional": true
+    }
+  },
+  {
+    "sourceExample": "皮卡丘（30th 042）",
+    "english": "Put up to 2 Basic Energy cards from your discard pile into your hand.",
+    "chinese": "选择自己弃牌区中最多2张基本能量，在给对手看过之后加入手牌。",
+    "rule": {
+      "kind": "recover_hand",
+      "count": 2,
+      "filter": "basic_energy",
+      "optional": true
+    }
+  },
+  {
+    "sourceExample": "噗隆隆（SV4a）",
+    "english": "Put up to 2 Basic Energy cards from your discard pile into your hand.",
+    "chinese": "选择自己弃牌区中最多2张基本能量，在给对手看过之后，加入手牌。",
+    "rule": {
+      "kind": "recover_hand",
+      "count": 2,
+      "filter": "basic_energy",
+      "optional": true
+    }
+  },
+  {
+    "sourceExample": "颤弦蝾螈（SV1V）",
+    "english": "Choose 2 random cards from your opponent's hand. Your opponent reveals those cards and shuffles them into their deck.",
+    "chinese": "在不看正面的前提下选择对手2张手牌，查看该卡牌的正面后，放回对手牌库并重洗牌库。",
+    "rule": {
+      "kind": "random_discard_hand",
+      "destination": "deck",
+      "count": 2
+    }
+  },
+  {
+    "sourceExample": "铜镜怪（SV2P）",
+    "english": "Draw cards until you have the same number of cards in your hand as your opponent.",
+    "chinese": "从自己牌库上方抽取卡牌，直到自己的手牌张数与对手的手牌张数相同为止。",
+    "rule": {
+      "kind": "draw_until",
+      "opponentHand": true
+    }
+  },
+  {
+    "sourceExample": "頭巾混混（SV-P）",
+    "english": "Search your deck for a number of cards up to the number of your Benched Pokémon and put them into your hand. Then, shuffle your deck.",
+    "chinese": "选择自己牌库中最多与自己备战宝可梦数量相同张数的任意卡牌，加入手牌。并重洗牌库。",
+    "rule": {
+      "kind": "search_hand",
+      "filter": "any",
+      "countFromBench": true,
+      "count": 0,
+      "reveal": false
+    }
+  },
+  {
+    "sourceExample": "大电海燕（SV1S）",
+    "english": "Discard a {{e|雷}} Energy from this Pokémon.",
+    "chinese": "选择这只宝可梦身上附着的1个{{e|雷}}能量，放于弃牌区。",
+    "rule": {
+      "kind": "discard_self_energy",
+      "count": 1,
+      "type": "LIGHTNING"
+    }
+  },
+  {
+    "sourceExample": "莫魯貝可（SV4K）",
+    "english": "Move 2 {{e|Darkness}} Energy from this Pokémon to 1 of your Benched Pokémon.",
+    "chinese": "选择这只宝可梦身上附着的2个{{e|恶}}能量，转附于1只备战宝可梦身上。",
+    "rule": {
+      "kind": "move_self_energy",
+      "count": 2,
+      "type": "DARK"
+    }
+  },
+  {
+    "sourceExample": "瑪狃拉（SV6a）",
+    "english": "Discard all Energy from this Pokémon. Your opponent's Active Pokémon is now Paralyzed.",
+    "chinese": "将这只宝可梦身上附着的所有能量放于弃牌区，令对手的战斗宝可梦陷入'''{{TCG|麻痹}}'''状态。",
+    "rule": {
+      "kind": "sequence",
+      "steps": [
+        {
+          "kind": "discard_self_energy",
+          "count": "all"
+        },
+        {
+          "kind": "special_status",
+          "status": "PARALYZED",
+          "target": "opponent",
+          "coin": false
+        }
+      ]
+    }
+  },
+  {
+    "sourceExample": "土龙节节（SV2P）",
+    "english": "Your opponent's Active Pokémon is now Paralyzed. Shuffle this Pokémon and all attached cards into your deck.",
+    "chinese": "令对手的战斗宝可梦陷入【麻痹】状态。将这只宝可梦，以及放于其身上的所有卡牌，放回自己的牌库并重洗牌库。",
+    "rule": {
+      "kind": "sequence",
+      "steps": [
+        {
+          "kind": "special_status",
+          "status": "PARALYZED",
+          "target": "opponent",
+          "coin": false
+        },
+        {
+          "kind": "extended_field",
+          "operation": "return_self",
+          "destination": "left"
+        }
+      ]
+    }
+  },
+  {
+    "sourceExample": "鬃岩狼人ex（SV1a）",
+    "english": "During your opponent's next turn, if this Pokémon is damaged by an attack (even if it is Knocked Out), put 10 damage counters on the Attacking Pokémon.",
+    "chinese": "在下一个对手的回合，当这只宝可梦受到招式的伤害时，将10个伤害指示物放置于使用了招式的宝可梦身上。",
+    "rule": {
+      "kind": "extended_field",
+      "operation": "retaliate",
+      "counters": 100
+    }
+  },
+  {
+    "sourceExample": "火焰雞（SV10）",
+    "english": "Discard 2 Energy from this Pokémon. This attack also does 120 damage to 1 of your opponent's Benched Pokémon. ''(Don't apply Weakness and Resistance for Benched Pokémon.)''",
+    "chinese": "将这只宝可梦身上附着的2个能量放于弃牌区，给对手的1只备战宝可梦也造成120伤害。''[备战宝可梦不计算弱点、抗性。]''",
+    "rule": {
+      "kind": "sequence",
+      "steps": [
+        {
+          "kind": "discard_self_energy",
+          "count": 2
+        },
+        {
+          "kind": "bench_damage",
+          "amount": 120
+        }
+      ]
+    }
+  },
+  {
+    "sourceExample": "N的達摩狒狒（SV9）",
+    "english": "Discard all Energy from this Pokémon, and this attack also does 90 damage to 1 of your opponent's Benched Pokémon. ''(Don't apply Weakness and Resistance for Benched Pokémon.)''",
+    "chinese": "将这只宝可梦身上附着的{{TCG|能量卡|能量}}全部放于弃牌区，给对手的1只备战宝可梦也造成90伤害。''[备战宝可梦不计算弱点、抗性。]''",
+    "rule": {
+      "kind": "sequence",
+      "steps": [
+        {
+          "kind": "discard_self_energy",
+          "count": "all"
+        },
+        {
+          "kind": "bench_damage",
+          "amount": 90
+        }
+      ]
+    }
+  },
+  {
+    "sourceExample": "凤王（30th）",
+    "english": "Discard all Energy from this Pokémon. Heal all damage from 1 of your Benched Pokémon.",
+    "chinese": "将这只宝可梦身上附着的能量全部放于弃牌区。回复自己1只备战宝可梦的全部HP。",
+    "rule": {
+      "kind": "sequence",
+      "steps": [
+        {
+          "kind": "discard_self_energy",
+          "count": "all"
+        },
+        {
+          "kind": "heal_field",
+          "zone": "bench",
+          "target": "one",
+          "full": true
+        }
+      ]
+    }
+  },
+  {
+    "sourceExample": "骨纹巨声鳄（SVAL）",
+    "english": "Attach up to 2 Basic Energy cards from your discard pile to your Pokémon in any way you like.",
+    "chinese": "选择自己弃牌区中最多2张基本能量，以任意方式附着于自己的宝可梦身上。",
+    "rule": {
+      "kind": "attach_multiple",
+      "origin": "discard",
+      "count": 2,
+      "basic": true
+    }
+  },
+  {
+    "sourceExample": "莫魯貝可（SV5a）",
+    "english": "Attach up to 2 Basic Energy cards from your discard pile to your Pokémon in any way you like.",
+    "chinese": "选择自己弃牌区中最多2张基本能量，以任意方式附着于自己的宝可梦身上。",
+    "rule": {
+      "kind": "attach_multiple",
+      "origin": "discard",
+      "count": 2,
+      "basic": true
+    }
+  },
+  {
+    "sourceExample": "风速狗（SV2a）",
+    "english": "Attach up to 2 Basic {{e|火}} Energy cards from your discard pile to this Pokémon.",
+    "chinese": "选择自己弃牌区中最多2张「基本{{e|火}}能量」，附着于这只宝可梦身上。",
+    "rule": {
+      "kind": "attach_multiple",
+      "origin": "discard",
+      "count": 2,
+      "basic": true,
+      "type": "FIRE",
+      "target": "self"
+    }
+  },
+  {
+    "sourceExample": "雷吉洛克ex（SV10）",
+    "english": "Attach up to 2 Basic {{e|Fighting}} Energy cards from your discard pile to this Pokémon.",
+    "chinese": "选择自己弃牌区中最多2张「基本{{e|斗}}能量」，附着于这只宝可梦身上。",
+    "rule": {
+      "kind": "attach_multiple",
+      "origin": "discard",
+      "count": 2,
+      "basic": true,
+      "type": "FIGHTING",
+      "target": "self"
+    }
+  },
+  {
+    "sourceExample": "火神蛾（SV1a）",
+    "english": "Attach a Basic {{e|火}} Energy card from your discard pile to this Pokémon.",
+    "chinese": "选择自己弃牌区中的1张「基本{{e|火}}能量」，附着于这只宝可梦身上。",
+    "rule": {
+      "kind": "attach_multiple",
+      "origin": "discard",
+      "count": 1,
+      "basic": true,
+      "type": "FIRE",
+      "target": "self",
+      "mandatory": true
+    }
+  },
+  {
+    "sourceExample": "光蚪仔（SV3 039）",
+    "english": "Attach a Basic {{e|Lightning}} Energy card from your discard pile to this Pokémon.",
+    "chinese": "选择自己弃牌区中的1张「基本{{e|雷}}能量」，附着于这只宝可梦身上。",
+    "rule": {
+      "kind": "attach_multiple",
+      "origin": "discard",
+      "count": 1,
+      "basic": true,
+      "type": "LIGHTNING",
+      "target": "self",
+      "mandatory": true
+    }
+  },
+  {
+    "sourceExample": "噗隆隆（SV6）",
+    "english": "Attach a Basic {{e|Metal}} Energy card from your discard pile to this Pokémon.",
+    "chinese": "选择自己弃牌区中的1张「基本{{e|钢}}能量」，附着于这只宝可梦身上。",
+    "rule": {
+      "kind": "attach_multiple",
+      "origin": "discard",
+      "count": 1,
+      "basic": true,
+      "type": "METAL",
+      "target": "self",
+      "mandatory": true
+    }
+  },
+  {
+    "sourceExample": "飞天螳螂（SV2a）",
+    "english": "Attach a Basic {{e|草}} Energy card from your discard pile to 1 of your Benched Pokémon.",
+    "chinese": "选择自己弃牌区中的1张「基本{{e|草}}能量」，附着于备战宝可梦身上。",
+    "rule": {
+      "kind": "attach_multiple",
+      "origin": "discard",
+      "count": 1,
+      "basic": true,
+      "type": "GRASS",
+      "target": "bench",
+      "mandatory": true
+    }
+  },
+  {
+    "sourceExample": "密勒顿ex（SVD）",
+    "english": "Attach a Basic {{e|雷}} Energy card from your discard pile to 1 of your Benched Pokémon.",
+    "chinese": "选择自己弃牌区中的1张「基本{{e|雷}}能量」，附着于备战宝可梦身上。",
+    "rule": {
+      "kind": "attach_multiple",
+      "origin": "discard",
+      "count": 1,
+      "basic": true,
+      "type": "LIGHTNING",
+      "target": "bench",
+      "mandatory": true
+    }
+  },
+  {
+    "sourceExample": "蒼響（SV3a）",
+    "english": "Attach a Basic {{e|Metal}} Energy card from your discard pile to 1 of your Benched Pokémon.",
+    "chinese": "选择自己弃牌区中的1张「基本{{e|钢}}能量」，附着于备战宝可梦身上。",
+    "rule": {
+      "kind": "attach_multiple",
+      "origin": "discard",
+      "count": 1,
+      "basic": true,
+      "type": "METAL",
+      "target": "bench",
+      "mandatory": true
+    }
+  },
+  {
+    "sourceExample": "古簡蝸（SV4M）",
+    "english": "Attach up to 2 Basic {{e|Grass}} Energy cards from your discard pile to 1 of your Pokémon.",
+    "chinese": "选择自己弃牌区中最多2张「基本{{e|草}}能量」，附着于自己的1只宝可梦身上。",
+    "rule": {
+      "kind": "attach_multiple",
+      "origin": "discard",
+      "count": 2,
+      "basic": true,
+      "type": "GRASS",
+      "singleTarget": true
+    }
+  },
+  {
+    "sourceExample": "古劍豹（SV4M）",
+    "english": "Attach up to 2 Basic {{e|Water}} Energy cards from your discard pile to 1 of your Pokémon.",
+    "chinese": "选择自己弃牌区中最多2张「基本{{e|水}}能量」，附着于自己的1只宝可梦身上。",
+    "rule": {
+      "kind": "attach_multiple",
+      "origin": "discard",
+      "count": 2,
+      "basic": true,
+      "type": "WATER",
+      "singleTarget": true
+    }
+  },
+  {
+    "sourceExample": "古鼎鹿（SV4K）",
+    "english": "Attach up to 2 Basic {{e|Fighting}} Energy cards from your discard pile to 1 of your Pokémon.",
+    "chinese": "选择自己弃牌区中最多2张「基本{{e|斗}}能量」，附着于自己的1只宝可梦身上。",
+    "rule": {
+      "kind": "attach_multiple",
+      "origin": "discard",
+      "count": 2,
+      "basic": true,
+      "type": "FIGHTING",
+      "singleTarget": true
+    }
+  },
+  {
+    "sourceExample": "古玉魚（SV4K）",
+    "english": "Attach up to 2 Basic {{e|Fire}} Energy cards from your discard pile to 1 of your Pokémon.",
+    "chinese": "选择自己弃牌区中最多2张「基本{{e|火}}能量」，附着于自己的1只宝可梦身上。",
+    "rule": {
+      "kind": "attach_multiple",
+      "origin": "discard",
+      "count": 2,
+      "basic": true,
+      "type": "FIRE",
+      "singleTarget": true
+    }
+  },
+  {
+    "sourceExample": "超梦（30th）",
+    "english": "Attach up to 2 Basic Energy cards from your discard pile to 1 of your Pokémon.",
+    "chinese": "选择自己弃牌区中最多2张基本能量，附着于自己的1只宝可梦身上。",
+    "rule": {
+      "kind": "attach_multiple",
+      "origin": "discard",
+      "count": 2,
+      "basic": true,
+      "singleTarget": true
+    }
+  },
+  {
+    "sourceExample": "土地雲（SV7a）",
+    "english": "Attach an Energy card from your discard pile to this Pokémon.",
+    "chinese": "选择自己弃牌区中的1张能量，附着于这只宝可梦身上。",
+    "rule": {
+      "kind": "attach_multiple",
+      "origin": "discard",
+      "count": 1,
+      "target": "self",
+      "mandatory": true
+    }
+  },
+  {
+    "sourceExample": "米立龙（SV1S）",
+    "english": "Search your deck for up to 2 Basic {{e|水}} Energy cards and attach them to 1 of your Basic Pokémon. Then, shuffle your deck.",
+    "chinese": "选择自己牌库中最多2张「基本{{e|水}}能量」，附着于自己的1只'''基础'''宝可梦身上。并重洗牌库。",
+    "rule": {
+      "kind": "attach_multiple",
+      "origin": "left",
+      "count": 2,
+      "basic": true,
+      "type": "WATER",
+      "targetStage": "BASIC",
+      "singleTarget": true
+    }
+  },
+  {
+    "sourceExample": "雷丘（SV2D）",
+    "english": "Search your deck for up to 2 Basic {{e|雷}} Energy cards and attach them to this Pokémon. Then, shuffle your deck.",
+    "chinese": "选择自己牌库中最多2张「基本{{e|雷}}能量」，附着于这只宝可梦身上。并重洗牌库。",
+    "rule": {
+      "kind": "attach_multiple",
+      "origin": "left",
+      "count": 2,
+      "basic": true,
+      "type": "LIGHTNING",
+      "target": "self"
+    }
+  },
+  {
+    "sourceExample": "美录梅塔ex（SVD）",
+    "english": "Search your deck for up to 2 Basic {{e|钢}} Energy cards and attach them to this Pokémon. Then, shuffle your deck.",
+    "chinese": "选择自己牌库中最多2张「基本{{e|钢}}能量」，附着于这只宝可梦身上。并重洗牌库。",
+    "rule": {
+      "kind": "attach_multiple",
+      "origin": "left",
+      "count": 2,
+      "basic": true,
+      "type": "METAL",
+      "target": "self"
+    }
+  },
+  {
+    "sourceExample": "招式学习器 能量涡轮（TCG）",
+    "english": "Search your deck for up to 2 Basic Energy cards and attach them to your Benched Pokémon in any way you like. Then, shuffle your deck.",
+    "chinese": "选择自己牌库中最多2张基本能量，以任意方式附着于备战宝可梦身上。并重洗牌库。",
+    "rule": {
+      "kind": "attach_multiple",
+      "origin": "left",
+      "count": 2,
+      "basic": true,
+      "target": "bench"
+    }
+  },
+  {
+    "sourceExample": "超夢ex（SVEM）",
+    "english": "Attach up to 2 Basic {{e|Psychic}} Energy cards from your discard pile to your Pokémon in any way you like.",
+    "chinese": "选择自己弃牌区中最多2张「基本{{e|超}}能量」，以任意方式附着于自己的宝可梦身上。",
+    "rule": {
+      "kind": "attach_multiple",
+      "origin": "discard",
+      "count": 2,
+      "basic": true,
+      "type": "PSYCHIC"
+    }
+  },
+  {
+    "sourceExample": "伊布（SV3）",
+    "english": "Attach an Energy card from your hand to 1 of your Pokémon.",
+    "chinese": "选择自己手牌中的1张能量，附着于自己的宝可梦身上。",
+    "rule": {
+      "kind": "attach_multiple",
+      "origin": "hand",
+      "count": 1,
+      "mandatory": true
+    }
+  },
+  {
+    "sourceExample": "原野水母（SV4M 006）",
+    "english": "Attach a Basic {{e|Grass}} Energy card from your hand to 1 of your Benched Pokémon.",
+    "chinese": "选择自己手牌中的1张「基本{{e|草}}能量」，附着于备战宝可梦身上。",
+    "rule": {
+      "kind": "attach_multiple",
+      "origin": "hand",
+      "count": 1,
+      "basic": true,
+      "type": "GRASS",
+      "target": "bench",
+      "mandatory": true
+    }
+  },
+  {
+    "sourceExample": "固拉多（SV3a）",
+    "english": "Attach a Basic {{e|Fighting}} Energy card from your hand to 1 of your Pokémon.",
+    "chinese": "选择自己手牌中的1张「基本{{e|斗}}能量」，附着于自己的宝可梦身上。",
+    "rule": {
+      "kind": "attach_multiple",
+      "origin": "hand",
+      "count": 1,
+      "basic": true,
+      "type": "FIGHTING",
+      "mandatory": true
+    }
+  },
+  {
+    "sourceExample": "吉利蛋（SV6）",
+    "english": "Attach a Basic Energy card from your hand to 1 of your Pokémon.",
+    "chinese": "选择自己手牌中的1张基本能量，附着于自己的宝可梦身上。",
+    "rule": {
+      "kind": "attach_multiple",
+      "origin": "hand",
+      "count": 1,
+      "basic": true,
+      "mandatory": true
+    }
+  },
+  {
+    "sourceExample": "艾姆利多（SV8）",
+    "english": "Attach up to 2 Basic {{e|Psychic}} Energy cards from your hand to your Pokémon in any way you like.",
+    "chinese": "选择自己手牌中最多2张「基本{{e|超}}能量」，以任意方式附着于自己的宝可梦身上。",
+    "rule": {
+      "kind": "attach_multiple",
+      "origin": "hand",
+      "count": 2,
+      "basic": true,
+      "type": "PSYCHIC"
+    }
+  },
+  {
+    "sourceExample": "密勒顿（SV5M）",
+    "english": "Search your deck for up to 2 Basic Energy cards and attach them to your Future Pokémon in any way you like. Then, shuffle your deck.",
+    "chinese": "选择自己牌库中最多2张基本能量，以任意方式附着于自己的「未来」宝可梦身上。并重洗牌库。",
+    "rule": {
+      "kind": "attach_multiple",
+      "origin": "left",
+      "count": 2,
+      "basic": true,
+      "targetTrait": "FUTURE"
+    }
+  },
+  {
+    "sourceExample": "迷唇娃（SV7a）",
+    "english": "Search your deck for up to 2 Basic {{e|Psychic}} Energy cards and attach them to 1 of your Benched Pokémon. Then, shuffle your deck.",
+    "chinese": "选择自己牌库中最多2张「基本{{e|超}}能量」，附着于自己的1只备战宝可梦身上。并重洗牌库。",
+    "rule": {
+      "kind": "attach_multiple",
+      "origin": "left",
+      "count": 2,
+      "basic": true,
+      "type": "PSYCHIC",
+      "target": "bench",
+      "singleTarget": true
+    }
+  },
+  {
+    "sourceExample": "夠讚狗ex（SV6a）",
+    "english": "Search your deck for up to 2 Basic {{e|Darkness}} Energy cards and attach them to this Pokémon. Then, shuffle your deck. If you attached Energy to a Pokémon in this way, this Pokémon is now Poisoned.",
+    "chinese": "选择自己牌库中最多2张「基本{{e|恶}}能量」，附着于这只宝可梦身上。并重洗牌库。如果成功附着了的情况下，则令这只宝可梦陷入'''{{TCG|中毒}}'''状态。",
+    "rule": {
+      "kind": "attach_multiple",
+      "origin": "left",
+      "count": 2,
+      "basic": true,
+      "type": "DARK",
+      "target": "self",
+      "poisonActive": true
+    }
+  },
+  {
+    "sourceExample": "火伊布ex（SV8a）",
+    "english": "Search your deck for up to 2 Basic Energy cards and attach them to 1 of your Pokémon. Then, shuffle your deck.",
+    "chinese": "选择自己牌库中最多2张基本能量，附着于自己的1只宝可梦身上。并重洗牌库。",
+    "rule": {
+      "kind": "attach_multiple",
+      "origin": "left",
+      "count": 2,
+      "basic": true,
+      "singleTarget": true
+    }
+  },
+  {
+    "sourceExample": "耿鬼（SV2a）",
+    "english": "Put 3 damage counters on your opponent's Benched Pokémon in any way you like.",
+    "chinese": "将3个伤害指示物，以任意方式放置于对手的备战宝可梦身上。",
+    "rule": {
+      "kind": "field_operation",
+      "operation": "allocate_counters",
+      "count": 3,
+      "zone": "bench"
+    }
+  },
+  {
+    "sourceExample": "魔墙人偶（SV2a）",
+    "english": "Put 3 damage counters on your opponent's Pokémon in any way you like.",
+    "chinese": "将3个伤害指示物，以任意方式放置于对手的宝可梦身上。",
+    "rule": {
+      "kind": "field_operation",
+      "operation": "allocate_counters",
+      "count": 3,
+      "zone": "all"
+    }
+  },
+  {
+    "sourceExample": "随风球（SV1S）",
+    "english": "Put 8 damage counters on your opponent's Pokémon in any way you like.",
+    "chinese": "将8个伤害指示物，以任意方式放置于对手的宝可梦身上。",
+    "rule": {
+      "kind": "field_operation",
+      "operation": "allocate_counters",
+      "count": 8,
+      "zone": "all"
+    }
+  },
+  {
+    "sourceExample": "怖思壶（SV2P）",
+    "english": "Put 5 damage counters on your opponent's Active Pokémon.",
+    "chinese": "给对手的战斗宝可梦身上，放置5个伤害指示物。",
+    "rule": {
+      "kind": "place_counters",
+      "zone": "active",
+      "amount": 50
+    }
+  },
+  {
+    "sourceExample": "謎擬Ｑ（SV2P）",
+    "english": "Put 7 damage counters on your opponent's Active Pokémon.",
+    "chinese": "给对手的战斗宝可梦身上，放置7个伤害指示物。",
+    "rule": {
+      "kind": "place_counters",
+      "zone": "active",
+      "amount": 70
+    }
+  },
+  {
+    "sourceExample": "虫甲圣（SV2P）",
+    "english": "Put a Pokémon from your discard pile onto your Bench.",
+    "chinese": "选择自己弃牌区中的1张宝可梦，放于备战区。",
+    "rule": {
+      "kind": "field_operation",
+      "operation": "recover_bench",
+      "count": 1,
+      "type": null,
+      "name": null,
+      "optional": false
+    }
+  },
+  {
+    "sourceExample": "刺龍王ex（SV6a）",
+    "english": "Put up to 3 {{e|Water}} Pokémon from your discard pile onto your Bench.",
+    "chinese": "选择自己弃牌区中最多3张{{e|水}}宝可梦，放于备战区。",
+    "rule": {
+      "kind": "field_operation",
+      "operation": "recover_bench",
+      "count": 3,
+      "type": "WATER",
+      "name": null,
+      "optional": true
+    }
+  },
+  {
+    "sourceExample": "暴飞龙ex（30th）",
+    "english": "Put up to 3 {{e|Dragon}} Pokémon from your discard pile onto your Bench.",
+    "chinese": "选择自己弃牌区中最多3张{{e|龙}}宝可梦，放于备战区。",
+    "rule": {
+      "kind": "field_operation",
+      "operation": "recover_bench",
+      "count": 3,
+      "type": "DRAGON",
+      "name": null,
+      "optional": true
+    }
+  },
+  {
+    "sourceExample": "夜巡靈（SV6a）",
+    "english": "Put up to 3 Duskull from your discard pile onto your Bench.",
+    "chinese": "选择自己弃牌区中最多3张「夜巡灵」，放于备战区。",
+    "rule": {
+      "kind": "field_operation",
+      "operation": "recover_bench",
+      "count": 3,
+      "type": null,
+      "name": "Duskull",
+      "optional": true
+    }
+  },
+  {
+    "sourceExample": "波克基古（SV3）",
+    "english": "Each player draws 3 cards.",
+    "chinese": "双方玩家，各从牌库上方抽取3张卡牌。",
+    "rule": {
+      "kind": "field_operation",
+      "operation": "both_draw",
+      "count": 3
+    }
+  },
+  {
+    "sourceExample": "催眠貘（SV1V）",
+    "english": "Your opponent chooses 1 of their Benched Pokémon and switches it with their Active Pokémon. The new Active Pokémon is now Asleep.",
+    "chinese": "对手选择对手自己的1只备战宝可梦，将其与战斗宝可梦互换。然后，令新出场的宝可梦陷入'''{{TCG|睡眠}}'''状态。",
+    "rule": {
+      "kind": "field_operation",
+      "operation": "gust_status",
+      "status": "ASLEEP",
+      "opponentChooses": true
+    }
+  },
+  {
+    "sourceExample": "風鈴鈴（SV4M）",
+    "english": "Switch in 1 of your opponent's Benched Pokémon to the Active Spot. The new Active Pokémon is now Asleep.",
+    "chinese": "选择对手的1只备战宝可梦，将其与战斗宝可梦互换。然后，令新出场的宝可梦陷入'''{{TCG|睡眠}}'''状态。",
+    "rule": {
+      "kind": "field_operation",
+      "operation": "gust_status",
+      "status": "ASLEEP"
+    }
+  },
+  {
+    "sourceExample": "魔幻假面喵（SVAM）",
+    "english": "You may put an Energy attached to your opponent's Active Pokémon into their hand.",
+    "chinese": "若希望，可选择对手战斗宝可梦身上附着的1个能量，放回对手的手牌。",
+    "rule": {
+      "kind": "field_operation",
+      "operation": "return_opponent_energy",
+      "optional": true
+    }
+  },
+  {
+    "sourceExample": "菊石兽（SV2a）",
+    "english": "Put an Energy attached to your opponent's Active Pokémon into their hand.",
+    "chinese": "选择对手战斗宝可梦身上附着的1个能量，放回对手的手牌。",
+    "rule": {
+      "kind": "field_operation",
+      "operation": "return_opponent_energy"
+    }
+  },
+  {
+    "sourceExample": "陆地水母（SV1V）",
+    "english": "You may move an Energy from your opponent's Active Pokémon to 1 of their Benched Pokémon.",
+    "chinese": "若希望，可选择对手战斗宝可梦身上附着的1个能量，转附于对手的备战宝可梦身上。",
+    "rule": {
+      "kind": "field_operation",
+      "operation": "move_opponent_energy",
+      "optional": true
+    }
+  },
+  {
+    "sourceExample": "奇麒麟（SV2D）",
+    "english": "Choose a player. That player shuffles their hand into their deck and draws 4 cards.",
+    "chinese": "选择自己或对手，被选择的玩家，将所有手牌放回牌库并重洗牌库。然后，被选择的玩家从牌库上方抽取4张卡牌。",
+    "rule": {
+      "kind": "field_operation",
+      "operation": "player_reset",
+      "count": 4
+    }
+  },
+  {
+    "sourceExample": "幾何雪花（SV3）",
+    "english": "If you go second and it's your first turn, your opponent's Active Pokémon is now Paralyzed.",
+    "chinese": "如果是后攻玩家的最初回合的话，则令对手的战斗宝可梦陷入'''{{TCG|麻痹}}'''状态。",
+    "rule": {
+      "kind": "field_operation",
+      "operation": "conditional",
+      "condition": "second_first",
+      "effects": [
+        {
+          "kind": "special_status",
+          "status": "PARALYZED",
+          "coin": false,
+          "target": "opponent"
+        }
+      ]
+    }
+  },
+  {
+    "sourceExample": "闇黑酋雷姆ex（SV7a）",
+    "english": "If your opponent's Active Pokémon is a {{e|Dragon}} Pokémon, it is now Paralyzed.",
+    "chinese": "如果对手的战斗宝可梦是{{e|龙}}宝可梦的话，则令那只宝可梦陷入'''{{TCG|麻痹}}'''状态。",
+    "rule": {
+      "kind": "field_operation",
+      "operation": "conditional",
+      "condition": "dragon_target",
+      "effects": [
+        {
+          "kind": "special_status",
+          "status": "PARALYZED",
+          "coin": false,
+          "target": "opponent"
+        }
+      ]
+    }
+  },
+  {
+    "sourceExample": "托戈德瑪爾（SV7）",
+    "english": "If you have exactly 1 Prize card remaining, your opponent's Active Pokémon is now Paralyzed.",
+    "chinese": "如果自己的剩余奖赏卡张数为1张的话，则令对手的战斗宝可梦陷入'''{{TCG|麻痹}}'''状态。",
+    "rule": {
+      "kind": "field_operation",
+      "operation": "conditional",
+      "condition": "one_prize",
+      "effects": [
+        {
+          "kind": "special_status",
+          "status": "PARALYZED",
+          "coin": false,
+          "target": "opponent"
+        }
+      ]
+    }
+  },
+  {
+    "sourceExample": "纏紅鶴（SV3）",
+    "english": "If {{TCG|Flamigo}} is on your Bench, this attack also does 60 damage to 1 of your opponent's Benched Pokémon. ''(Don't apply Weakness and Resistance for Benched Pokémon.)''",
+    "chinese": "如果自己的备战区中有「缠红鹤」的话，则给对手的1只备战宝可梦，也造成60伤害。''[备战宝可梦不计算弱点、抗性。]''",
+    "rule": {
+      "kind": "field_operation",
+      "operation": "conditional",
+      "condition": "bench_name",
+      "name": "Flamigo",
+      "effects": [
+        {
+          "kind": "bench_damage",
+          "amount": 60
+        }
+      ]
+    }
+  },
+  {
+    "sourceExample": "古簡蝸（SV8）",
+    "english": "If there are 3 or fewer cards in your deck, this attack also does 120 damage to 2 of your opponent's Benched Pokémon. ''(Don't apply Weakness and Resistance for Benched Pokémon.)''",
+    "chinese": "如果自己牌库的剩余张数在3张及以下的话，则给对手的2只备战宝可梦，也各造成120伤害。''[备战宝可梦不计算弱点、抗性。]''",
+    "rule": {
+      "kind": "field_operation",
+      "operation": "conditional",
+      "condition": "small_deck",
+      "maximum": 3,
+      "effects": [
+        {
+          "kind": "bench_damage",
+          "count": 2,
+          "amount": 120
+        }
+      ]
+    }
+  },
+  {
+    "sourceExample": "古鼎鹿（SV5a）",
+    "english": "If a Stadium is in play, this attack also does 30 damage to each of your opponent's Benched Pokémon, and discard that Stadium. ''(Don't apply Weakness and Resistance for Benched Pokémon.)''",
+    "chinese": "如果场上有竞技场的话，则给对手所有的备战宝可梦，也各造成30伤害，将那张竞技场放于弃牌区。''''[备战宝可梦不计算弱点、抗性。]''''",
+    "rule": {
+      "kind": "field_operation",
+      "operation": "conditional",
+      "condition": "stadium",
+      "effects": [
+        {
+          "kind": "spread_damage",
+          "zone": "bench",
+          "amount": 30
+        },
+        {
+          "kind": "discard_stadium"
+        }
+      ]
+    }
+  },
+  {
+    "sourceExample": "月亮伊布（SV3）",
+    "english": "This attack does 50 damage to 1 of your opponent's Pokémon. This attack's damage isn't affected by Weakness or Resistance, or by any effects on that Pokémon.",
+    "chinese": "给对手的1只宝可梦，造成50伤害。这个招式的伤害，不计算弱点、抗性，以及受到伤害的宝可梦身上所附加的效果。",
+    "rule": {
+      "kind": "target_damage",
+      "amount": 50,
+      "count": 1,
+      "zone": "all",
+      "ignoreEffects": true,
+      "ignoreWeaknessResistance": true
+    }
+  },
+  {
+    "sourceExample": "奥利纽（SV1S）",
+    "english": "During your opponent's next turn, if the Defending Pokémon tries to attack, your opponent flips a coin. If tails, that attack doesn't happen.",
+    "chinese": "在下一个对手的回合，受到这个招式影响的宝可梦在使用招式时，对手将抛掷1次硬币。如果为反面则那个招式失败。",
+    "rule": {
+      "kind": "field_operation",
+      "operation": "attack_coin_check",
+      "count": 1
+    }
+  },
+  {
+    "sourceExample": "海刺龙（SV2a）",
+    "english": "During your opponent's next turn, if the Defending Pokémon tries to use an attack, your opponent flips 2 coins. If either of them is tails, that attack doesn't happen.",
+    "chinese": "在下一个对手的回合，受到这个招式影响的宝可梦在使用招式时，对手将抛掷2次硬币。只要出现1次反面，那么那个招式失败。",
+    "rule": {
+      "kind": "field_operation",
+      "operation": "attack_coin_check",
+      "count": 2
+    }
+  },
+  {
+    "sourceExample": "润水鸭（SV1a 027）",
+    "english": "During your opponent's next turn, if the Defending Pokémon tries to attack, your opponent flips a coin. If tails, that attack doesn't happen.",
+    "chinese": "在下一个对手的回合，受到这个招式影响的宝可梦在使用招式时，对手将抛掷1次硬币。如果为反面则那个招式失败。",
+    "rule": {
+      "kind": "field_operation",
+      "operation": "attack_coin_check",
+      "count": 1
+    }
+  },
+  {
+    "sourceExample": "章魚桶（SV3a）",
+    "english": "During your opponent's next turn, if the Defending Pokémon tries to use an attack, your opponent flips a coin. If tails, that attack doesn't happen.",
+    "chinese": "在下一个对手的回合，受到这个招式影响的宝可梦在使用招式时，对手将抛掷1次硬币。如果为反面则那个招式失败。",
+    "rule": {
+      "kind": "field_operation",
+      "operation": "attack_coin_check",
+      "count": 1
+    }
+  },
+  {
+    "sourceExample": "恰雷姆（SV1S）",
+    "english": "Choose 1 of your opponent's Active Pokémon's attacks. During your opponent's next turn, that Pokémon can't use that attack.",
+    "chinese": "选择对手战斗宝可梦所拥有的1个招式。在下一个对手的回合，受到这个招式影响的宝可梦，将无法使用被选择的招式。",
+    "rule": {
+      "kind": "field_operation",
+      "operation": "named_lock"
+    }
+  },
+  {
+    "sourceExample": "智挥猩（SV1a）",
+    "english": "Choose 1 of your opponent's Active Pokémon's attacks. During your opponent's next turn, that Pokémon can't use that attack.",
+    "chinese": "选择对手战斗宝可梦所拥有的1个招式。在下一个对手的回合，受到这个招式影响的宝可梦，将无法使用被选择的招式。",
+    "rule": {
+      "kind": "field_operation",
+      "operation": "named_lock"
+    }
+  },
+  {
+    "sourceExample": "火箭隊的黑暗鴉（SV10）",
+    "english": "Choose 1 of your opponent's Active Pokémon's attacks. During your opponent's next turn, that Pokémon can't use that attack.",
+    "chinese": "选择对手战斗宝可梦所拥有的1个招式。在下一个对手的回合，受到这个招式影响的宝可梦将无法使用被选择的招式。",
+    "rule": {
+      "kind": "field_operation",
+      "operation": "named_lock"
+    }
+  },
+  {
+    "sourceExample": "臭泥（SV2a）",
+    "english": "During your opponent's next turn, the Defending Pokémon's Retreat Cost is {{e|无}} more.",
+    "chinese": "在下一个对手的回合，受到这个招式影响的宝可梦，'''撤退'''所需能量增加1个。",
+    "rule": {
+      "kind": "field_operation",
+      "operation": "timed_modifier",
+      "key": "Gummy Press",
+      "modifier": {
+        "retreatMore": 1
+      }
+    }
+  },
+  {
+    "sourceExample": "臭臭泥（SV2a）",
+    "english": "During your opponent's next turn, attacks used by the Defending Pokémon cost {{e|无}} more, and its Retreat Cost is {{e|无}} more.",
+    "chinese": "在下一个对手的回合，受到这个招式影响的宝可梦，使用招式所需能量和'''撤退'''所需能量，各增加1个{{e|无}}能量。",
+    "rule": {
+      "kind": "field_operation",
+      "operation": "timed_modifier",
+      "key": "Sticky Jail",
+      "modifier": {
+        "retreatMore": 1,
+        "attackMore": 1
+      }
+    }
+  },
+  {
+    "sourceExample": "怖纳噬草（SV2P）",
+    "english": "During your opponent's next turn, attacks that the Defending Pokémon uses cost {{e|无色}}{{e|无色}} more.",
+    "chinese": "在下一个对手的回合，受到这个招式影响的宝可梦，使用招式所需能量，增加2个{{e|无}}能量。",
+    "rule": {
+      "kind": "field_operation",
+      "operation": "timed_modifier",
+      "key": "Dead Wood Detention",
+      "modifier": {
+        "attackMore": 2
+      }
+    }
+  },
+  {
+    "sourceExample": "轟擂金剛猩（SV6）",
+    "english": "During your opponent's next turn, attacks used by the Defending Pokémon cost {{e|Colorless}} more, and its Retreat Cost is {{e|Colorless}} more.",
+    "chinese": "在下一个对手的回合，受到这个招式影响的宝可梦，使用招式所需能量和'''撤退'''所需能量，各增加1个{{e|无}}能量。",
+    "rule": {
+      "kind": "field_operation",
+      "operation": "timed_modifier",
+      "key": "Drum Beating",
+      "modifier": {
+        "attackMore": 1,
+        "retreatMore": 1
+      }
+    }
+  },
+  {
+    "sourceExample": "快拳郎（SV2a）",
+    "english": "During your next turn, this Pokémon's Excited Punch attack does 60 more damage ''(before applying Weakness and Resistance)''.",
+    "chinese": "在下一个自己的回合，这只宝可梦使用的「振奋拳」的伤害「+60」。",
+    "rule": {
+      "kind": "field_operation",
+      "operation": "timed_modifier",
+      "key": "Excited Punch",
+      "self": true,
+      "nextOwnTurn": true,
+      "modifier": {
+        "damage": 60,
+        "attackName": "Excited Punch"
+      }
+    }
+  },
+  {
+    "sourceExample": "蟾蜍王（SV3）",
+    "english": "During your next turn, this Pokémon's Echoed Voice attack does 100 more damage ''(before applying Weakness and Resistance)''.",
+    "chinese": "在下一个自己的回合，这只宝可梦的「回声」的伤害「+100」。",
+    "rule": {
+      "kind": "field_operation",
+      "operation": "timed_modifier",
+      "key": "Echoed Voice",
+      "self": true,
+      "nextOwnTurn": true,
+      "modifier": {
+        "damage": 100,
+        "attackName": "Echoed Voice"
+      }
+    }
+  },
+  {
+    "sourceExample": "堅果啞鈴（SV3a）",
+    "english": "During your next turn, this Pokémon's Spinning Needles attack does 100 more damage ''(before applying Weakness and Resistance)''.",
+    "chinese": "在下一个自己的回合，这只宝可梦的「旋压尖刺」的伤害「+100」。",
+    "rule": {
+      "kind": "field_operation",
+      "operation": "timed_modifier",
+      "key": "Spinning Needles",
+      "self": true,
+      "nextOwnTurn": true,
+      "modifier": {
+        "damage": 100,
+        "attackName": "Spinning Needles"
+      }
+    }
+  },
+  {
+    "sourceExample": "雙劍鞘（SV4M）",
+    "english": "During your next turn, this Pokémon's Slicing Blade attack does 80 more damage ''(before applying Weakness and Resistance)''.",
+    "chinese": "在下一个自己的回合，这只宝可梦的「薄片利刃」的伤害「+80」。",
+    "rule": {
+      "kind": "field_operation",
+      "operation": "timed_modifier",
+      "key": "Swords Dance",
+      "self": true,
+      "nextOwnTurn": true,
+      "modifier": {
+        "damage": 80,
+        "attackName": "Slicing Blade"
+      }
+    }
+  },
+  {
+    "sourceExample": "巨金怪（SV5M）",
+    "english": "During your next turn, this Pokémon's Meteor Mash attack does 60 more damage ''(before applying Weakness and Resistance)''.",
+    "chinese": "在下一个自己的回合，这只宝可梦使用的「彗星拳」的伤害「+60」。",
+    "rule": {
+      "kind": "field_operation",
+      "operation": "timed_modifier",
+      "key": "Meteor Mash",
+      "self": true,
+      "nextOwnTurn": true,
+      "modifier": {
+        "damage": 60,
+        "attackName": "Meteor Mash"
+      }
+    }
+  },
+  {
+    "sourceExample": "大電海燕（SV6）",
+    "english": "During your next turn, attacks used by this Pokémon do 120 more damage to your opponent's Active Pokémon ''(before applying Weakness and Resistance)''.",
+    "chinese": "在下一个自己的回合，这只宝可梦所使用的招式，给对手战斗宝可梦造成的伤害「+120」。",
+    "rule": {
+      "kind": "field_operation",
+      "operation": "timed_modifier",
+      "key": "Wind Power Charge",
+      "self": true,
+      "nextOwnTurn": true,
+      "modifier": {
+        "damage": 120
+      }
+    }
+  },
+  {
+    "sourceExample": "鋁鋼橋龍ex（SV7a）",
+    "english": "During your opponent's next turn, this Pokémon has no Weakness.",
+    "chinese": "在下一个对手的回合，这只宝可梦的弱点，全部消除。",
+    "rule": {
+      "kind": "field_operation",
+      "operation": "timed_modifier",
+      "key": "Metal Defender",
+      "self": true,
+      "modifier": {
+        "noWeakness": true
+      }
+    }
+  },
+  {
+    "sourceExample": "岩殿居蟹（SV4K）",
+    "english": "During your opponent's next turn, this Pokémon takes 100 less damage from attacks from Evolution Pokémon ''(after applying Weakness and Resistance)''.",
+    "chinese": "在下一个对手的回合，这只宝可梦受到进化宝可梦的招式的伤害「-100」。",
+    "rule": {
+      "kind": "field_operation",
+      "operation": "timed_modifier",
+      "key": "Crag Bash",
+      "self": true,
+      "modifier": {
+        "armor": 100,
+        "sourceEvolved": true
+      }
+    }
+  },
+  {
+    "sourceExample": "超音波幼蟲（SV7a）",
+    "english": "During your next turn, the Defending Pokémon takes 50 more damage from attacks ''(after applying Weakness and Resistance)''.",
+    "chinese": "在下一个自己的回合，受到这个招式影响的宝可梦所受到的招式的伤害「+50」。",
+    "rule": {
+      "kind": "field_operation",
+      "operation": "timed_modifier",
+      "key": "Screech",
+      "nextOwnTurn": true,
+      "modifier": {
+        "armor": -50
+      }
+    }
+  },
+  {
+    "sourceExample": "心鳞宝（30th）",
+    "english": "During your next turn, the Defending Pokémon takes 30 more damage from attacks ''(after applying Weakness and Resistance)''.",
+    "chinese": "在下一个自己的回合，受到这个招式影响的宝可梦所受到的招式的伤害「+30」。",
+    "rule": {
+      "kind": "field_operation",
+      "operation": "timed_modifier",
+      "key": "Screech",
+      "nextOwnTurn": true,
+      "modifier": {
+        "armor": -30
+      }
+    }
+  },
+  {
+    "sourceExample": "甜冷美后（SV2P）",
+    "english": "During your opponent's next turn, Pokémon can't be played from your opponent's hand to evolve the Defending Pokémon.",
+    "chinese": "在下一个对手的回合，受到这个招式影响的宝可梦，无法进化为从手牌使出的宝可梦。",
+    "rule": {
+      "kind": "field_operation",
+      "operation": "evolution_lock"
+    }
+  },
+  {
+    "sourceExample": "青铜钟（SV5K）",
+    "english": "During your opponent's next turn, they can't play any Pokémon from their hand to evolve their Pokémon.",
+    "chinese": "在下一个对手的回合，对手无法从手牌使出宝可梦进行进化。",
+    "rule": {
+      "kind": "field_operation",
+      "operation": "player_lock",
+      "flags": [
+        "evolution_blocked_turn"
+      ]
+    }
+  },
+  {
+    "sourceExample": "音波龙ex（SV2D）",
+    "english": "During your opponent's next turn, they can't play any Special Energy or Stadium cards from their hand.",
+    "chinese": "在下一个对手的回合，对手无法从手牌使出并附着特殊能量，也无法放置竞技场。",
+    "rule": {
+      "kind": "field_operation",
+      "operation": "player_lock",
+      "flags": [
+        "stadium_blocked_turn",
+        "special_energy_blocked_turn"
+      ]
+    }
+  },
+  {
+    "sourceExample": "電擊魔獸（SV7）",
+    "english": "During your next turn, your Pokémon can't attack. ''(This includes new Pokémon that come into play.)''",
+    "chinese": "在下一个自己的回合，自己所有的宝可梦，无法使用招式。（也包括新出场的宝可梦。）",
+    "rule": {
+      "kind": "field_operation",
+      "operation": "player_lock",
+      "self": true,
+      "flags": [
+        "attack_blocked_turn"
+      ]
+    }
+  },
+  {
+    "sourceExample": "叉字蝠（SV4K）",
+    "english": "Choose Item cards or Supporter cards. During your opponent's next turn, they can't play any of the chosen cards from their hand.",
+    "chinese": "自己选择物品或支援者其中一种类型。在下一个对手的回合，对手无法从手牌使出被选择的类型的训练家。",
+    "rule": {
+      "kind": "field_operation",
+      "operation": "choice_trainer_lock"
+    }
+  },
+  {
+    "sourceExample": "七夕青鳥（SV3）",
+    "english": "Your opponent's Active Pokémon is now Asleep. During [[Pokémon Checkup]], your opponent flips 2 coins instead of 1. If either of them is tails, that Pokémon is still Asleep.",
+    "chinese": "令对手的战斗宝可梦陷入'''{{TCG|睡眠}}'''状态。因这个'''睡眠'''而抛掷的硬币次数变为2次，只要不是全为正面就不会恢复。",
+    "rule": {
+      "kind": "special_status",
+      "status": "ASLEEP",
+      "target": "opponent",
+      "coin": false,
+      "sleepCoins": 2
+    }
+  },
+  {
+    "sourceExample": "心蝙蝠（SV4K）",
+    "english": "Your opponent's Active Pokémon is now Confused. Put 6 damage counters instead of 3 on that Pokémon for this Special Condition.",
+    "chinese": "令对手的战斗宝可梦陷入'''{{TCG|混乱}}'''状态。因这个'''混乱'''而放置的伤害指示物数量变为6个。",
+    "rule": {
+      "kind": "special_status",
+      "status": "CONFUSED",
+      "target": "opponent",
+      "coin": false,
+      "confusionDamage": 60
+    }
+  },
+  {
+    "sourceExample": "電燈怪（SV7）",
+    "english": "Your opponent's Active Pokémon is now Confused. Put 8 damage counters instead of 3 on that Pokémon for this Special Condition.",
+    "chinese": "令对手的战斗宝可梦陷入'''{{TCG|混乱}}'''状态。因这个'''{{TCG|混乱}}'''而放置的伤害指示物数量变为8个。",
+    "rule": {
+      "kind": "special_status",
+      "status": "CONFUSED",
+      "target": "opponent",
+      "coin": false,
+      "confusionDamage": 80
+    }
+  },
+  {
+    "sourceExample": "懶人獺（SV8）",
+    "english": "Heal 60 damage from this Pokémon. During your next turn, this Pokémon can't retreat.",
+    "chinese": "回复这只宝可梦「60」HP。在下一个自己的回合，这只宝可梦无法撤退。",
+    "rule": {
+      "kind": "sequence",
+      "steps": [
+        {
+          "kind": "heal_self",
+          "amount": 60
+        },
+        {
+          "kind": "field_operation",
+          "operation": "self_retreat_lock"
+        }
+      ]
+    }
+  },
+  {
+    "sourceExample": "狠辣椒ex（SV-P）",
+    "english": "Your opponent's Active Pokémon is now Burned. During your opponent’s next turn, that Pokémon can't retreat.",
+    "chinese": "令对手的战斗宝可梦陷入【灼伤】状态。在下一个对手的回合，受到这个招式影响的宝可梦，无法撤退。",
+    "rule": {
+      "kind": "sequence",
+      "steps": [
+        {
+          "kind": "special_status",
+          "status": "BURNED",
+          "target": "opponent",
+          "coin": false
+        },
+        {
+          "kind": "prevent_retreat"
+        }
+      ]
+    }
+  },
+  {
+    "sourceExample": "帕底亚 土王（SVD）",
+    "english": "Your opponent's Active Pokémon is now Poisoned. During your opponent's next turn, that Pokémon can't retreat.",
+    "chinese": "令对手的战斗宝可梦陷入'''中毒'''状态。在下一个对手的回合，受到这个招式影响的宝可梦，无法撤退。",
+    "rule": {
+      "kind": "sequence",
+      "steps": [
+        {
+          "kind": "special_status",
+          "status": "POISONED",
+          "target": "opponent",
+          "coin": false
+        },
+        {
+          "kind": "prevent_retreat"
+        }
+      ]
+    }
+  },
+  {
+    "sourceExample": "爆焰龜獸（SV7）",
+    "english": "Your opponent's Active Pokémon is now Burned. During your opponent's next turn, that Pokémon can't retreat.",
+    "chinese": "令对手的战斗宝可梦陷入'''{{TCG|灼伤}}'''状态。在下一个对手的回合，受到这个招式影响的宝可梦，无法撤退。",
+    "rule": {
+      "kind": "sequence",
+      "steps": [
+        {
+          "kind": "special_status",
+          "status": "BURNED",
+          "target": "opponent",
+          "coin": false
+        },
+        {
+          "kind": "prevent_retreat"
+        }
+      ]
+    }
+  },
+  {
+    "sourceExample": "桃歹郎（SV8）",
+    "english": "Your opponent's Active Pokémon is now Poisoned. During your opponent's next turn, that Pokémon can't retreat.",
+    "chinese": "令对手的战斗宝可梦陷入'''中毒'''状态。在下一个对手的回合，受到这个招式影响的宝可梦，无法撤退。",
+    "rule": {
+      "kind": "sequence",
+      "steps": [
+        {
+          "kind": "special_status",
+          "status": "POISONED",
+          "target": "opponent",
+          "coin": false
+        },
+        {
+          "kind": "prevent_retreat"
+        }
+      ]
+    }
+  },
+  {
+    "sourceExample": "電蜘蛛ex（SV7）",
+    "english": "Discard all Energy from this Pokémon. During your opponent's next turn, they can't play any Item cards from their hand.",
+    "chinese": "将这只宝可梦身上附着的能量，全部放于弃牌区。在下一个对手的回合，对手无法从手牌使出物品。",
+    "rule": {
+      "kind": "sequence",
+      "steps": [
+        {
+          "kind": "discard_self_energy",
+          "count": "all"
+        },
+        {
+          "kind": "item_lock"
+        }
+      ]
+    }
+  },
+  {
+    "sourceExample": "阿柏怪（SV5K）",
+    "english": "Your opponent's Active Pokémon is now Burned, Confused, and Poisoned.",
+    "chinese": "令对手的战斗宝可梦陷入'''{{TCG|中毒}}'''和'''{{TCG|灼伤}}'''和'''{{TCG|混乱}}'''状态。",
+    "rule": {
+      "kind": "special_status",
+      "status": "CONFUSED",
+      "target": "opponent",
+      "coin": false,
+      "statuses": [
+        "POISONED",
+        "BURNED",
+        "CONFUSED"
+      ]
+    }
+  },
+  {
+    "sourceExample": "滋汁鼹（SV2D 053）",
+    "english": "Put a Basic Energy card from your discard pile into your hand.",
+    "chinese": "选择自己弃牌区中的1张基本能量，在给对手看过之后，加入手牌。",
+    "rule": {
+      "kind": "recover_hand",
+      "filter": "basic_energy",
+      "count": 1
+    }
+  },
+  {
+    "sourceExample": "臭臭花（SV3）",
+    "english": "Switch in 1 of your opponent's Benched Pokémon to the Active Spot.",
+    "chinese": "选择对手的1只对战宝可梦，将其与战斗宝可梦互换。",
+    "rule": {
+      "kind": "gust",
+      "coin": false
+    }
+  },
+  {
+    "sourceExample": "吃吼霸（SV3a）",
+    "english": "Look at the top 5 cards of your deck. You may attach any number of {{TCG|Basic Energy card}}s you find there to this Pokémon. Shuffle the other cards back into your deck.",
+    "chinese": "查看自己牌库上方5张卡牌，选择其中任意数量的基本能量，附着于这只宝可梦身上。将剩余的卡牌放回牌库并重洗牌库。",
+    "rule": {
+      "kind": "attach_multiple",
+      "origin": "top",
+      "top": 5,
+      "basic": true,
+      "count": "any",
+      "target": "self",
+      "rest": "shuffle"
+    }
+  },
+  {
+    "sourceExample": "波爾凱尼恩（SVEL）",
+    "english": "Choose up to 2 of your Benched Pokémon and attach a Basic {{e|Fire}} Energy card from your discard pile to each of them.",
+    "chinese": "选择自己最多2只备战宝可梦，各附着1张弃牌区中的「基本'''{{e|火}}'''能量」。",
+    "rule": {
+      "kind": "attach_multiple",
+      "origin": "discard",
+      "type": "FIRE",
+      "basic": true,
+      "count": 2,
+      "target": "bench",
+      "distinctTargets": true
+    }
+  },
+  {
+    "sourceExample": "拉普拉斯（SVD）",
+    "english": "This attack does 10 damage to each of your opponent's Pokémon. ''(Don't apply Weakness and Resistance for Benched Pokémon.)''",
+    "chinese": "给对手所有的宝可梦，各造成10伤害。''[备战宝可梦不计算弱点、抗性。]''",
+    "rule": {
+      "kind": "spread_damage",
+      "zone": "all",
+      "amount": 10
+    }
+  },
+  {
+    "sourceExample": "死神棺ex（SV4K）",
+    "english": "Put 5 damage counters on your opponent's Benched Pokémon in any way you like.",
+    "chinese": "将5个伤害指示物，以任意方式放置于对手的备战宝可梦身上。",
+    "rule": {
+      "kind": "field_operation",
+      "operation": "allocate_counters",
+      "count": 5,
+      "zone": "bench"
+    }
+  },
+  {
+    "sourceExample": "吼爆彈（SV4K）",
+    "english": "Flip a coin. If heads, your opponent's Active Pokémon is now Paralyzed.",
+    "chinese": "抛掷1次硬币如果为正面，则令对手的战宝可梦陷入'''{{TCG|麻痹}}'''状态。",
+    "rule": {
+      "kind": "special_status",
+      "status": "PARALYZED",
+      "coin": true,
+      "target": "opponent"
+    }
+  },
+  {
+    "sourceExample": "重泥挽马（SV5K）",
+    "english": "Attach a Basic {{e|Fighting}} Energy card from your discard pile to each of your Benched Pokémon.",
+    "chinese": "给自己所有的备战宝可梦，各附着1张弃牌区中的「基本{{e|斗}}能量」。",
+    "rule": {
+      "kind": "attach_multiple",
+      "origin": "discard",
+      "type": "FIGHTING",
+      "basic": true,
+      "count": 60,
+      "target": "bench",
+      "distinctTargets": true,
+      "eachTarget": true
+    }
+  },
+  {
+    "sourceExample": "大狼犬（SV5K）",
+    "english": "Switch out your opponent's Active Pokémon to the Bench. ''(Your opponent chooses the new Active Pokémon.)''",
+    "chinese": "将对手的战斗宝可梦与备战宝可梦互换。''''[放于战斗场的宝可梦由对手选择。]''''",
+    "rule": {
+      "kind": "opponent_switch"
+    }
+  },
+  {
+    "sourceExample": "高傲雉鸡（SV5M）",
+    "english": "You may put 2 Energy attached to your opponent's Active Pokémon into their hand.",
+    "chinese": "若希望，可选择对手战斗宝可梦身上附着的2个能量，放回对手的手牌。",
+    "rule": {
+      "kind": "field_operation",
+      "operation": "return_opponent_energy",
+      "optional": true,
+      "count": 2
+    }
+  },
+  {
+    "sourceExample": "斯魔茶（SV6）",
+    "english": "Put a Basic {{e|Grass}} Energy card from your discard pile into your hand.",
+    "chinese": "选择自己弃牌区中的1张「基本{{e|草}}能量」，在给对手看过之后，加入手牌。",
+    "rule": {
+      "kind": "recover_hand",
+      "filter": "basic_energy:GRASS",
+      "count": 1
+    }
+  },
+  {
+    "sourceExample": "來悲粗茶（SV6）",
+    "english": "Put 4 damage counters on your opponent's Pokémon in any way you like.",
+    "chinese": "将4个伤害指示物，以任意方式放置于对手的宝可梦身上。",
+    "rule": {
+      "kind": "field_operation",
+      "operation": "allocate_counters",
+      "count": 4
+    }
+  },
+  {
+    "sourceExample": "蒼炎刃鬼（SV8）",
+    "english": "Discard all Special Energy from all of your opponent's Pokémon.",
+    "chinese": "将对手所有宝可梦身上附着的特殊能量，全部放于弃牌区。",
+    "rule": {
+      "kind": "field_operation",
+      "operation": "discard_all_special"
+    }
+  },
+  {
+    "sourceExample": "風鈴鈴（SV6）",
+    "english": "Shuffle 1 of your Benched Pokémon and all attached cards into your deck.",
+    "chinese": "选择自己的1只备战宝可梦，将那只宝可梦，以及放于其身上的所有卡牌，放回牌库并重洗牌库。",
+    "rule": {
+      "kind": "field_operation",
+      "operation": "return_own_bench"
+    }
+  },
+  {
+    "sourceExample": "電電蟲（SV7）",
+    "english": "Search your deck for up to 2 Basic {{e|Grass}} Energy cards and up to 2 Basic {{e|Lightning}} Energy cards and attach them to your Pokémon in any way you like. Then, shuffle your deck.",
+    "chinese": "选择自己牌库中的「基本{{e|草}}能量」和「基本{{e|雷}}能量」各最多2张，以任意方式附着于自己宝可梦身上。并重洗牌库。",
+    "rule": {
+      "kind": "sequence",
+      "steps": [
+        {
+          "kind": "attach_multiple",
+          "origin": "left",
+          "type": "GRASS",
+          "basic": true,
+          "count": 2
+        },
+        {
+          "kind": "attach_multiple",
+          "origin": "left",
+          "type": "LIGHTNING",
+          "basic": true,
+          "count": 2
+        }
+      ]
+    }
+  },
+  {
+    "sourceExample": "卡璞・鳴鳴（SV8）",
+    "english": "Search your deck for up to 2 {{e|Lightning}} Pokémon, reveal them, and put them into your hand. Then, shuffle your deck.",
+    "chinese": "选择自己牌库中最多2张{{e|雷}}宝可梦，在给对手看过之后，加入手牌。并重洗牌库。",
+    "rule": {
+      "kind": "search_hand",
+      "filter": "pokemon:LIGHTNING",
+      "count": 2
+    }
+  },
+  {
+    "sourceExample": "呆呆獸（SV7）",
+    "english": "Put a Pokémon from your discard pile into your hand.",
+    "chinese": "选择自己弃牌区中的1张宝可梦，在给对手看过之后，加入手牌。",
+    "rule": {
+      "kind": "recover_hand",
+      "filter": "pokemon",
+      "count": 1
+    }
+  },
+  {
+    "sourceExample": "咚咚鼠（SV8）",
+    "english": "Put a Trainer card from your discard pile into your hand.",
+    "chinese": "选择自己弃牌区中的1张训练家，在给对手看过之后，加入手牌。",
+    "rule": {
+      "kind": "recover_hand",
+      "filter": "trainer",
+      "count": 1
+    }
+  },
+  {
+    "sourceExample": "招式學習器 螢石（TCG）",
+    "english": "Discard all Energy from this Pokémon, and heal all damage from each of your Tera Pokémon.",
+    "chinese": "将这只宝可梦身上附着的所有能量放于弃牌区，将自己所有「{{TCG|太晶}}」宝可梦的HP，全部回复。",
+    "rule": {
+      "kind": "sequence",
+      "steps": [
+        {
+          "kind": "discard_self_energy",
+          "count": "all"
+        },
+        {
+          "kind": "heal_field",
+          "target": "all",
+          "trait": "TERA",
+          "full": true
+        }
+      ]
+    }
+  },
+  {
+    "sourceExample": "呆呆王（SVM）",
+    "english": "You may put 2 Energy attached to your opponent's Active Pokémon into their hand.",
+    "chinese": "若希望，可选择对手战斗宝可梦身上附着的2个能量，放回对手的手牌。",
+    "rule": {
+      "kind": "field_operation",
+      "operation": "return_opponent_energy",
+      "optional": true,
+      "count": 2
+    }
+  },
+  {
+    "sourceExample": "小霞的拉普拉斯（SV9a）",
+    "english": "Search your deck for up to 3 Misty's Pokémon, reveal them, and put them into your hand. Then, shuffle your deck.",
+    "chinese": "选择自己牌库中最多3张「小霞的宝可梦」，在给对手看过之后加入手牌。并重洗牌库。",
+    "rule": {
+      "kind": "search_hand",
+      "filter": "prefix:Misty's ",
+      "count": 3
+    }
+  },
+  {
+    "sourceExample": "火箭隊的閃電鳥（SV10）",
+    "english": "You may move an Energy from your opponent's Active Pokémon to 1 of their Benched Pokémon.",
+    "chinese": "若希望，可以选择对手战斗宝可梦身上附着的1个能量，转附于对手的备战宝可梦身上。",
+    "rule": {
+      "kind": "field_operation",
+      "operation": "move_opponent_energy",
+      "optional": true
+    }
+  },
+  {
+    "sourceExample": "火箭隊的鈴鐺響（SV10）",
+    "english": "Discard a random card from your opponent's hand.",
+    "chinese": "在不看对手手牌正面的前提下，选择其中1张，放于弃牌区。",
+    "rule": {
+      "kind": "random_discard_hand",
+      "count": 1
+    }
+  },
+  {
+    "sourceExample": "莉莉艾的花療環環（SV9）",
+    "english": "You may search your deck for any number of Basic Lillie's Pokémon and put them onto your Bench. Then, shuffle your deck.",
+    "chinese": "选择自己牌库中任意数量的'''基础'''宝可梦的「莉莉艾的宝可梦」，放于备战区。并重洗牌库。",
+    "rule": {
+      "kind": "search_bench",
+      "count": 60,
+      "prefix": "Lillie's "
+    }
+  },
+  {
+    "sourceExample": "竹蘭的烈咬陸鯊ex（SV9a）",
+    "english": "You may draw cards until you have 6 cards in your hand.",
+    "chinese": "若希望，可以从牌库上方抽取卡牌，直到自己的手牌变为6张为止。",
+    "rule": {
+      "kind": "draw_until",
+      "count": 6,
+      "optional": true
+    }
+  },
+  {
+    "sourceExample": "火箭隊的尼多王ex（SV10）",
+    "english": "Your opponent's Active Pokémon is now Poisoned. During Pokémon Checkup, put 8 damage counters on that Pokémon instead of 1.",
+    "chinese": "令对手的战斗宝可梦陷入'''{{TCG|中毒}}'''状态。因这个'''{{TCG|中毒}}'''而放置的伤害指示物数量变为8个。",
+    "rule": {
+      "kind": "special_status",
+      "status": "POISONED",
+      "coin": false,
+      "target": "opponent",
+      "poisonDamage": 80
+    }
+  },
+  {
+    "sourceExample": "耿鬼ex（30th）",
+    "english": "Place 13 damage counters on 1 of your opponent's Pokémon.",
+    "chinese": "给对手的1只宝可梦身上放置13个伤害指示物。",
+    "rule": {
+      "kind": "place_counters",
+      "zone": "all",
+      "select": true,
+      "amount": 130
+    }
+  },
+  {
+    "sourceExample": "滑滑小子（30th）",
+    "english": "Your opponent shuffles their hand into their deck and draws 4 cards.",
+    "chinese": "对手将其手牌全部放回牌库并重洗牌库。然后，对手从牌库上方抽取4张卡牌。",
+    "rule": {
+      "kind": "field_operation",
+      "operation": "opponent_reset",
+      "count": 4
+    }
+  },
+  {
+    "sourceExample": "帝牙卢卡（30th）",
+    "english": "Shuffle up to 3 in any combination of Pokémon and Basic Energy cards from your discard pile into your deck.",
+    "chinese": "选择自己弃牌区中的宝可梦和基本能量合计最多3张，在给对手看过之后放回牌库并重洗牌库。",
+    "rule": {
+      "kind": "recover_deck",
+      "filter": "pokemon_or_energy",
+      "count": 3,
+      "optional": true
+    }
+  },
+  {
+    "sourceExample": "洗翠 索罗亚克（30th）",
+    "english": "Place damage counters on your opponent's Active Pokémon until its remaining HP is 50.",
+    "chinese": "在对手的战斗宝可梦身上放置伤害指示物，直到其剩余HP变为「50」为止。",
+    "rule": {
+      "kind": "field_operation",
+      "operation": "remaining_hp",
+      "zone": "active",
+      "remaining": 50
+    }
+  },
+  {
+    "sourceExample": "甜冷美后ex（SV4K）",
+    "english": "Put damage counters on 1 of your opponent's Pokémon until its remaining HP is 30.",
+    "chinese": "在对手的1只宝可梦身上放置伤害指示物，直到其剩余HP变为「30」为止。",
+    "rule": {
+      "kind": "field_operation",
+      "operation": "remaining_hp",
+      "zone": "all",
+      "select": true,
+      "remaining": 30
+    }
+  },
+  {
+    "sourceExample": "噬沙堡爺ex（SV8）",
+    "english": "Put damage counters on each of your opponent's Benched Pokémon until its remaining HP is 100.",
+    "chinese": "给对手所有的备战宝可梦身上放置伤害指示物，直到其剩余HP均变为「100」为止。",
+    "rule": {
+      "kind": "field_operation",
+      "operation": "remaining_hp",
+      "zone": "bench",
+      "remaining": 100
+    }
+  },
+  {
+    "sourceExample": "倫琴貓ex（SV6）",
+    "english": "Your opponent reveals their hand. Discard a card you find there.",
+    "chinese": "查看对手的手牌，选择其中1张卡牌，放于弃牌区。",
+    "rule": {
+      "kind": "field_operation",
+      "operation": "hand_interference",
+      "filter": "any",
+      "count": 1,
+      "destination": "discard"
+    }
+  },
+  {
+    "sourceExample": "洛托姆（SV8）",
+    "english": "Your opponent reveals their hand. Discard all Item cards and Pokémon Tool cards you find there.",
+    "chinese": "查看对手的手牌，将其中的「物品」和「{{TCG|宝可梦道具}}」，全部放于弃牌区。",
+    "rule": {
+      "kind": "field_operation",
+      "operation": "hand_interference",
+      "filter": "item_or_tool",
+      "all": true,
+      "destination": "discard"
+    }
+  },
+  {
+    "sourceExample": "N的扒手貓（SV9）",
+    "english": "Your opponent reveals their hand, and you choose a card you find there and put it on the bottom of their deck.",
+    "chinese": "查看对手的手牌，选择其中1张卡牌放回对手的牌库下方。",
+    "rule": {
+      "kind": "field_operation",
+      "operation": "hand_interference",
+      "filter": "any",
+      "count": 1,
+      "destination": "left"
+    }
+  },
+  {
+    "sourceExample": "伊布（30th）",
+    "english": "Your opponent reveals their hand, and you put an Item card you find there on the bottom of your opponent's deck.",
+    "chinese": "查看对手的手牌，选择其中1张物品放回对手的牌库下方。",
+    "rule": {
+      "kind": "field_operation",
+      "operation": "hand_interference",
+      "filter": "item",
+      "count": 1,
+      "destination": "left"
+    }
+  },
+  {
+    "sourceExample": "铁武者（SV5M）",
+    "english": "Look at the top 4 cards of your deck and put them back in any order.",
+    "chinese": "查看自己牌库上方4张卡牌，以任意顺序重新排列，放回牌库上方。",
+    "rule": {
+      "kind": "field_operation",
+      "operation": "order_deck",
+      "count": 4
+    }
+  },
+  {
+    "sourceExample": "火箭隊的天罩蟲（SV10）",
+    "english": "Look at the top 5 cards of your opponent's deck and put them back in any order.",
+    "chinese": "查看对手牌库上方5张卡牌后，以任意顺序重新排列，放回牌库上方。",
+    "rule": {
+      "kind": "field_operation",
+      "operation": "order_deck",
+      "count": 5,
+      "opponent": true
+    }
+  },
+  {
+    "sourceExample": "燈籠魚（SV3a）",
+    "english": "Look at the top card of your deck. You may put that card on the bottom of your deck.",
+    "chinese": "查看自己牌库上方1张卡牌，再放回原处。若希望，可将那张卡牌放回牌库下方。",
+    "rule": {
+      "kind": "field_operation",
+      "operation": "peek_top",
+      "destination": "left"
+    }
+  },
+  {
+    "sourceExample": "岩狗狗（SV9）",
+    "english": "Look at the top card of your deck. You may discard that card.",
+    "chinese": "查看自己牌库上方1张卡牌后，放回原处。若希望，可以将那张卡牌放于弃牌区。",
+    "rule": {
+      "kind": "field_operation",
+      "operation": "peek_top",
+      "destination": "discard"
+    }
+  },
+  {
+    "sourceExample": "招式学习器 暗中奇袭（TCG）",
+    "english": "This attack does 100 damage to 1 of your opponent's Pokémon that has any damage counters on it. ''(Don't apply Weakness and Resistance for Benched Pokémon.)''",
+    "chinese": "给身上放置有伤害指示物的1只对手的宝可梦，造成100伤害。''［备战宝可梦不计算弱点、抗性。]''",
+    "rule": {
+      "kind": "target_damage",
+      "amount": 100,
+      "count": 1,
+      "zone": "all",
+      "damaged": true
+    }
+  },
+  {
+    "sourceExample": "鐵脖頸（SV4M）",
+    "english": "This attack does 50 damage to 3 of your opponent's Pokémon that have any damage counters on them. ''(Don't apply Weakness and Resistance for Benched Pokémon.)''",
+    "chinese": "给身上放置有伤害指示物的对手的3只宝可梦，各造成50伤害。''[备战宝可梦不计算弱点、抗性。]''",
+    "rule": {
+      "kind": "target_damage",
+      "amount": 50,
+      "count": 3,
+      "zone": "all",
+      "damaged": true
+    }
+  },
+  {
+    "sourceExample": "谢米（SV5K）",
+    "english": "This attack does 60 damage to 1 of your opponent's Benched Pokémon ex or Benched Pokémon V. ''(Don't apply Weakness and Resistance for Benched Pokémon.)''",
+    "chinese": "给对手备战区中的1只「宝可梦{{ex}}・{{V}}」，造成60伤害。''[备战宝可梦不计算弱点、抗性。]''",
+    "rule": {
+      "kind": "target_damage",
+      "amount": 60,
+      "count": 1,
+      "zone": "bench",
+      "exV": true
+    }
+  },
+  {
+    "sourceExample": "古月鳥（SV5a）",
+    "english": "Discard all Energy from this Pokémon. This attack does 120 damage to 1 of your opponent's Pokémon. ''(Don't apply Weakness and Resistance for Benched Pokémon.)''",
+    "chinese": "将这只宝可梦身上附着的所有能量放于弃牌区，给对手的1只宝可梦，造成120伤害。''[备战宝可梦不计算弱点、抗性。]''",
+    "rule": {
+      "kind": "target_damage",
+      "amount": 120,
+      "count": 1,
+      "zone": "all",
+      "discardEnergy": "all"
+    }
+  },
+  {
+    "sourceExample": "小隕星（MF）",
+    "english": "Discard all Energy from this Pokémon, and this attack does 120 damage to 1 of your opponent's Pokémon. ''(Don't apply Weakness and Resistance for Benched Pokémon.)''",
+    "chinese": "将这只宝可梦身上附着的能量全部放于弃牌区，给对手的1只宝可梦造成120伤害。''[备战宝可梦不计算弱点、抗性。]''",
+    "rule": {
+      "kind": "target_damage",
+      "amount": 120,
+      "count": 1,
+      "zone": "all",
+      "discardEnergy": "all"
+    }
+  },
+  {
+    "sourceExample": "紅蓮鎧騎（SV8）",
+    "english": "Discard all {{e|Fire}} Energy from this Pokémon, and this attack does 180 damage to 1 of your opponent's Benched Pokémon. ''(Don't apply Weakness and Resistance for Benched Pokémon.)''",
+    "chinese": "将这只宝可梦身上附着的{{e|火}}能量全部放于弃牌区，给对手的1只备战宝可梦，造成180伤害。''[备战宝可梦不计算弱点、抗性。]''",
+    "rule": {
+      "kind": "target_damage",
+      "amount": 180,
+      "count": 1,
+      "zone": "bench",
+      "discardEnergy": "all",
+      "discardType": "FIRE"
+    }
+  },
+  {
+    "sourceExample": "酋雷姆（SV6a）",
+    "english": "Discard all Energy from this Pokémon. This attack does 110 damage to 3 of your opponent's Pokémon. ''(Don't apply Weakness and Resistance for Benched Pokémon.)''",
+    "chinese": "将这只宝可梦身上附着的所有能量放于弃牌区，给对手的3只宝可梦，各造成110伤害。''[备战宝可梦不计算弱点、抗性。]''",
+    "rule": {
+      "kind": "target_damage",
+      "amount": 110,
+      "count": 3,
+      "zone": "all",
+      "discardEnergy": "all"
+    }
+  },
+  {
+    "sourceExample": "捷拉奧拉（SV9a）",
+    "english": "Discard all Energy from this Pokémon, and this attack does 210 damage to 1 of your opponent's Benched Pokémon ex. ''(Don't apply Weakness and Resistance for Benched Pokémon.)''",
+    "chinese": "将这只宝可梦身上附着的能量全部放于弃牌区，给对手备战区中的1只「宝可梦{{ex}}」造成210伤害。''[备战宝可梦不计算弱点、抗性。]''",
+    "rule": {
+      "kind": "target_damage",
+      "amount": 210,
+      "count": 1,
+      "zone": "bench",
+      "ex": true,
+      "discardEnergy": "all"
+    }
+  },
+  {
+    "sourceExample": "皮卡丘（30th 045）",
+    "english": "Discard all {{e|Lightning}} Energy from this Pokémon, and this attack does 90 damage to 1 of your opponent's Pokémon. ''(Don't apply Weakness and Resistance for Benched Pokémon.)''",
+    "chinese": "将这只宝可梦身上附着的{{e|雷}}能量全部放于弃牌区，给对手的1只宝可梦造成90伤害。''[备战宝可梦不计算弱点、抗性。]''",
+    "rule": {
+      "kind": "target_damage",
+      "amount": 90,
+      "count": 1,
+      "zone": "all",
+      "discardEnergy": "all",
+      "discardType": "LIGHTNING"
+    }
+  },
+  {
+    "sourceExample": "火箭隊的狃拉（SV10）",
+    "english": "This attack does 20 damage to 1 of your opponent's Benched Pokémon for each damage counter on that Pokémon. ''(Don't apply Weakness and Resistance for Benched Pokémon.)''",
+    "chinese": "给对手的1只备战宝可梦造成其身上放置的伤害指示物数量×20伤害。''[备战宝可梦不计算弱点、抗性。]''",
+    "rule": {
+      "kind": "target_damage",
+      "amount": 20,
+      "count": 1,
+      "zone": "bench",
+      "targetCounters": true
+    }
+  },
+  {
+    "sourceExample": "甲贺忍蛙ex（30th）",
+    "english": "This attack does 30 damage to 1 of your opponent's Pokémon for each damage counter on that Pokémon. ''(Don't apply Weakness and Resistance for Benched Pokémon.)''",
+    "chinese": "给对手的1只宝可梦造成其身上放置的伤害指示物数量×30伤害。''[备战宝可梦不计算弱点、抗性。]''",
+    "rule": {
+      "kind": "target_damage",
+      "amount": 30,
+      "count": 1,
+      "zone": "all",
+      "targetCounters": true
+    }
+  },
+  {
+    "sourceExample": "大電海燕（SV4a）",
+    "english": "This attack does 10 damage for each Pokémon in your discard pile that has the United Wings attack to 1 of your opponent's Benched Pokémon. ''(Don't apply Weakness and Resistance for Benched Pokémon.)''",
+    "chinese": "给对手的1只备战宝可梦，造成自己弃牌区中，拥有招式「团结之翼」的宝可梦张数×10伤害。''[备战宝可梦不计算弱点、抗性。]''",
+    "rule": {
+      "kind": "target_damage",
+      "amount": 10,
+      "count": 1,
+      "zone": "bench",
+      "term": "united_wings"
+    }
+  },
+  {
+    "sourceExample": "水伊布ex（SV8a）",
+    "english": "This attack does 60 damage to each of your opponent's Pokémon ex. This attack's damage isn't affected by Weakness or Resistance.",
+    "chinese": "给对手所有的「宝可梦{{ex}}」，各造成60伤害。这个招式的伤害不计算弱点、抗性。",
+    "rule": {
+      "kind": "target_damage",
+      "amount": 60,
+      "count": 60,
+      "zone": "all",
+      "ex": true,
+      "ignoreWeaknessResistance": true
+    }
+  },
+  {
+    "sourceExample": "超梦ex（30th）",
+    "english": "This attack does 50 damage to each of your opponent's Pokémon ex. ''(Don't apply Weakness and Resistance for Benched Pokémon.)''",
+    "chinese": "给对手所有「{{TCG|宝可梦ex}}」各造成50伤害。''[备战宝可梦不计算弱点、抗性。]''",
+    "rule": {
+      "kind": "target_damage",
+      "amount": 50,
+      "count": 60,
+      "zone": "all",
+      "ex": true
+    }
+  },
+  {
+    "sourceExample": "沙漠蜻蜓ex（SV7a）",
+    "english": "This attack does 100 damage to each of your opponent's Pokémon ex and Pokémon V. This attack's damage isn't affected by Weakness or Resistance.",
+    "chinese": "给对手所有的「宝可梦{{ex}}・V」，各造成100伤害。这个招式的伤害不计算弱点、抗性。",
+    "rule": {
+      "kind": "target_damage",
+      "amount": 100,
+      "count": 60,
+      "zone": "all",
+      "exV": true,
+      "ignoreWeaknessResistance": true
+    }
+  },
+  {
+    "sourceExample": "獒教父（SV2P）",
+    "english": "During your opponent's next turn, if this Pokémon is damaged by an attack ''(even if it is Knocked Out)'', put damage counters on the Attacking Pokémon equal to the damage done to this Pokémon.",
+    "chinese": "在下一个对手的回合，当这只宝可梦受到招式的伤害时，将与受到的伤害数值相同的伤害指示物，放置于使用了招式的宝可梦身上。",
+    "rule": {
+      "kind": "extended_field",
+      "operation": "retaliate",
+      "equalDamage": true
+    }
+  },
+  {
+    "sourceExample": "藏瑪然特（SV10）",
+    "english": "During your opponent's next turn, if this Pokémon is damaged by an attack ''(even if this Pokémon is Knocked Out)'', put damage counters on the Attacking Pokémon equal to the damage done to this Pokémon.",
+    "chinese": "在下一个对手的回合，当这只宝可梦受到招式的伤害时，将与所受到的伤害数值相同的伤害指示物放置于使用了招式的宝可梦身上。",
+    "rule": {
+      "kind": "extended_field",
+      "operation": "retaliate",
+      "equalDamage": true
+    }
+  },
+  {
+    "sourceExample": "阿勃梭鲁ex（SV3）",
+    "english": "Look at the top 3 cards of either player's deck and put them back in any order.",
+    "chinese": "查看自己或者对手牌库上方3张卡牌，以任意顺序重新排列，放回牌库上方。",
+    "rule": {
+      "kind": "field_operation",
+      "operation": "order_deck",
+      "count": 3,
+      "either": true
+    }
+  },
+  {
+    "sourceExample": "大食花（SV2a）",
+    "english": "At the end of your opponent's next turn, put 12 damage counters on the Defending Pokémon.",
+    "chinese": "在下一个对手的回合结束时，将12个伤害指示物放置于受到这个招式影响的宝可梦身上。",
+    "rule": {
+      "kind": "field_operation",
+      "operation": "delayed",
+      "effect": {
+        "counters": 120
+      }
+    }
+  },
+  {
+    "sourceExample": "鲶鱼王（SV2D）",
+    "english": "For each {{e|斗}} Energy attached to this Pokémon, discard the top card of your opponent's deck.",
+    "chinese": "将对手牌库上方与这只宝可梦身上附着的{{e|斗}}能量数量相同数量的卡牌放于弃牌区。",
+    "rule": {
+      "kind": "field_operation",
+      "operation": "mill_energy",
+      "type": "FIGHTING"
+    }
+  },
+  {
+    "sourceExample": "一家鼠（SV2D）",
+    "english": "Put 1 damage counter on each of your opponent's Pokémon for each of your Maushold in play.",
+    "chinese": "将与自己场上「一家鼠」数量相同数量的伤害指示物，各放置于对手的所有宝可梦身上。",
+    "rule": {
+      "kind": "field_operation",
+      "operation": "counters_filtered",
+      "amount": 10,
+      "perName": "Maushold"
+    }
+  },
+  {
+    "sourceExample": "蜂女王ex（SV3）",
+    "english": "Put 3 damage counters on each of your opponent's Benched Pokémon that has any damage counters on it.",
+    "chinese": "给身上放置有伤害指示物的对手所有的备战宝可梦身上，各放置3个伤害指示物。",
+    "rule": {
+      "kind": "field_operation",
+      "operation": "counters_filtered",
+      "amount": 30,
+      "bench": true,
+      "damaged": true
+    }
+  },
+  {
+    "sourceExample": "阿勃梭魯（SV3a）",
+    "english": "You may discard any number of cards from your hand until you have 4 or fewer. Draw cards until you have 5 cards in your hand.",
+    "chinese": "从牌库上方抽取卡牌，直到自己的手牌变为5张为止。若希望，在抽取卡牌前，可将任意数量的自己的手牌放于弃牌区。",
+    "rule": {
+      "kind": "field_operation",
+      "operation": "discard_down_draw"
+    }
+  },
+  {
+    "sourceExample": "仆斬將軍（SV3）",
+    "english": "If your opponent's Active Pokémon has 4 or more damage counters on it, that Pokémon is Knocked Out.",
+    "chinese": "如果对手的战斗宝可梦身上放置有4个及以上伤害指示物的话，则令那只宝可梦'''{{TCG|昏厥}}'''。",
+    "rule": {
+      "kind": "field_operation",
+      "operation": "knockout",
+      "minimumCounters": 4
+    }
+  },
+  {
+    "sourceExample": "藏饱栗鼠ex（SVD）",
+    "english": "Look at the top 3 cards of your deck. You may put those cards into your hand. If you don't, discard those cards and draw 3 cards.",
+    "chinese": "查看自己牌库上方3张卡牌。将那些卡牌加入手牌。或者，将那些卡牌放于弃牌区，从自己牌库上方抽取3张卡牌。",
+    "rule": {
+      "kind": "field_operation",
+      "operation": "top_choice",
+      "count": 3,
+      "draw": 3
+    }
+  },
+  {
+    "sourceExample": "花舞鳥（SV4M）",
+    "english": "Shuffle your hand into your deck. Then, draw a card for each Benched Pokémon ''(both yours and your opponent's)''.",
+    "chinese": "将自己的手牌全部放回牌库并重洗牌库。然后，从牌库上方抽取与双方备战宝可梦合计数量相同数量的卡牌。",
+    "rule": {
+      "kind": "field_operation",
+      "operation": "shuffle_draw",
+      "benches": true
+    }
+  },
+  {
+    "sourceExample": "小鍛匠（SV4M 034）",
+    "english": "Look at the top card of your deck. You may put that card into your hand. If you don't, discard that card and draw a card.",
+    "chinese": "查看自己牌库上方1张卡牌。将那张卡牌加入手牌。或者，将那张卡牌放于弃牌区，从自己牌库上方抽取1张卡牌。",
+    "rule": {
+      "kind": "field_operation",
+      "operation": "top_choice",
+      "count": 1,
+      "draw": 1
+    }
+  },
+  {
+    "sourceExample": "凱羅斯（SV5a）",
+    "english": "Discard all Energy from this Pokémon. At the end of your opponent's next turn, the Defending Pokémon will be Knocked Out.",
+    "chinese": "将这只宝可梦身上附着的能量，全部放于弃牌区。在下一个对手的回合结束时，受到这个招式影响的宝可梦会'''{{TCG|昏厥}}'''。",
+    "rule": {
+      "kind": "sequence",
+      "steps": [
+        {
+          "kind": "discard_self_energy",
+          "count": "all"
+        },
+        {
+          "kind": "field_operation",
+          "operation": "delayed",
+          "effect": {
+            "knockout": true
+          }
+        }
+      ]
+    }
+  },
+  {
+    "sourceExample": "比克提尼（SV5M）",
+    "english": "Shuffle your hand into your deck. Then, draw 6 cards.",
+    "chinese": "将自己的手牌全部放回牌库并重洗牌库。然后，从牌库上方抽取6张卡牌。",
+    "rule": {
+      "kind": "field_operation",
+      "operation": "shuffle_draw",
+      "count": 6
+    }
+  },
+  {
+    "sourceExample": "冰伊布（SV5a）",
+    "english": "At the end of your opponent's next turn, put 9 damage counters on the Defending Pokémon.",
+    "chinese": "在下一个对手的回合结束时，将9个伤害指示物放置于受到这个招式影响的宝可梦身上。",
+    "rule": {
+      "kind": "field_operation",
+      "operation": "delayed",
+      "effect": {
+        "counters": 90
+      }
+    }
+  },
+  {
+    "sourceExample": "海豚侠（SV5K）",
+    "english": "This Pokémon also does 10 damage to itself for each damage counter on it.",
+    "chinese": "给这只宝可梦，也造成这只宝可梦身上放置的伤害指示物数量×10伤害。",
+    "rule": {
+      "kind": "field_operation",
+      "operation": "recoil_counters",
+      "factor": 10
+    }
+  },
+  {
+    "sourceExample": "鐵毒蛾（SV6a）",
+    "english": "During your opponent's next turn, prevent all damage done to this Pokémon by attacks from Ancient Pokémon.",
+    "chinese": "在下一个对手的回合，这只宝可梦不会受到「古代」宝可梦的招式的伤害。",
+    "rule": {
+      "kind": "attack_protection",
+      "damage": true,
+      "sourceTrait": "ANCIENT"
+    }
+  },
+  {
+    "sourceExample": "普隆隆姆ex（SV6a）",
+    "english": "Discard this Pokémon and all attached cards.",
+    "chinese": "将这只宝可梦，以及放于其身上的所有卡牌，放于弃牌区。",
+    "rule": {
+      "kind": "field_operation",
+      "operation": "discard_self"
+    }
+  },
+  {
+    "sourceExample": "好啦魷（SV6a）",
+    "english": "Look at the top card of your opponent's deck. You may have your opponent shuffle their deck.",
+    "chinese": "查看对手牌库上方1张卡牌，再放回原处。若希望，可重洗对手的牌库。",
+    "rule": {
+      "kind": "field_operation",
+      "operation": "peek_shuffle"
+    }
+  },
+  {
+    "sourceExample": "雙斧戰龍（SV6a）",
+    "english": "If your opponent's Active Pokémon has any Special Energy attached, it is Knocked Out.",
+    "chinese": "如果对手的战斗宝可梦身上附着了特殊能量的话，则令那只宝可梦'''{{TCG|昏厥}}'''。",
+    "rule": {
+      "kind": "field_operation",
+      "operation": "knockout",
+      "specialEnergy": true
+    }
+  },
+  {
+    "sourceExample": "猛雷鼓（SV7）",
+    "english": "This attack does 30 damage to 1 of your opponent's Pokémon for each Energy attached to this Pokémon. ''(Don't apply Weakness and Resistance for Benched Pokémon.)''",
+    "chinese": "给对手的1只宝可梦，造成这只宝可梦身上附着的能量数量×30伤害。''[备战宝可梦不计算弱点、抗性。]''",
+    "rule": {
+      "kind": "target_damage",
+      "zone": "all",
+      "count": 1,
+      "amount": 30,
+      "term": "self_energy"
+    }
+  },
+  {
+    "sourceExample": "死神棺（SV8）",
+    "english": "Put 6 damage counters on each Pokémon that has an Ability ''(both yours and your opponent's)''.",
+    "chinese": "给双方所有拥有特性的宝可梦身上，各放置6个伤害指示物。",
+    "rule": {
+      "kind": "field_operation",
+      "operation": "counters_filtered",
+      "amount": 60,
+      "both": true,
+      "ability": true
+    }
+  },
+  {
+    "sourceExample": "棄世猴（SV8）",
+    "english": "Both Active Pokémon are Knocked Out.",
+    "chinese": "令双方的战斗宝可梦'''{{TCG|昏厥}}'''。",
+    "rule": {
+      "kind": "field_operation",
+      "operation": "knockout",
+      "self": true
+    }
+  },
+  {
+    "sourceExample": "伊裴爾塔爾（SV6a）",
+    "english": "Put 2 damage counters on each of your opponent's Pokémon that has any damage counters on it.",
+    "chinese": "给身上放置有伤害指示物的对手所有的宝可梦身上，各放置2个伤害指示物。",
+    "rule": {
+      "kind": "field_operation",
+      "operation": "counters_filtered",
+      "amount": 20,
+      "damaged": true
+    }
+  },
+  {
+    "sourceExample": "摩托蜥ex（SV7a）",
+    "english": "You may draw 5 cards.",
+    "chinese": "若希望，可从自己牌库上方抽取5张卡牌。",
+    "rule": {
+      "kind": "field_operation",
+      "operation": "optional_draw",
+      "count": 5
+    }
+  },
+  {
+    "sourceExample": "冰伊布ex（SV8a）",
+    "english": "Knock Out 1 of your opponent's Pokémon that has exactly 6 damage counters on it.",
+    "chinese": "选择对手的1只身上放置有6个伤害指示物的宝可梦，令那只宝可梦'''{{TCG|昏厥}}'''。",
+    "rule": {
+      "kind": "field_operation",
+      "operation": "knockout",
+      "zone": "all",
+      "select": true,
+      "counters": 6
+    }
+  },
+  {
+    "sourceExample": "火箭隊的臭泥（SV10）",
+    "english": "At the end of your opponent's next turn, discard the Defending Pokémon and all attached cards.",
+    "chinese": "在下一个对手的回合结束时，将受到这个招式影响的宝可梦以及放于其身上的全部的卡牌放于弃牌区。",
+    "rule": {
+      "kind": "field_operation",
+      "operation": "delayed",
+      "effect": {
+        "discard": true
+      }
+    }
+  },
+  {
+    "sourceExample": "莫鲁贝可（30th）",
+    "english": "Discard the top 3 cards of your deck and put 1 of them into your hand.",
+    "chinese": "将自己牌库上方3张卡牌放于弃牌区，选择其中1张卡牌，在给对手看过之后加入手牌。",
+    "rule": {
+      "kind": "field_operation",
+      "operation": "mill_choose",
+      "count": 3
+    }
+  },
+  {
+    "sourceExample": "未知图腾（30th）",
+    "english": "If your opponent's Pokémon is Knocked Out by damage from this attack, take 1 more Prize card.",
+    "chinese": "如果对手的宝可梦受到这个招式的伤害而'''{{TCG|昏厥}}'''的话，则多拿取1张奖赏卡。",
+    "rule": {
+      "kind": "attack_extra_prize",
+      "count": 1
+    }
+  },
+  {
+    "sourceExample": "基拉祈ex（30th）",
+    "english": "This attack's damage isn't affected by Weakness or Resistance, or by any effects on your opponent's Active Pokémon.",
+    "chinese": "这个招式的伤害不计算弱点、抗性以及对手战斗宝可梦身上所附加的效果。",
+    "rule": {
+      "kind": "ignore_damage_modifiers",
+      "ignore": "all"
+    }
+  },
+  {
+    "sourceExample": "八爪武師（SV4K）",
+    "english": "At the end of your opponent's next turn, the Defending Pokémon will be Knocked Out.",
+    "chinese": "在下一个对手的回合结束时，受到这个招式影响的宝可梦会'''{{TCG|昏厥}}'''。",
+    "rule": {
+      "kind": "field_operation",
+      "operation": "delayed",
+      "effect": {
+        "knockout": true
+      }
+    }
+  },
+  {
+    "sourceExample": "花椰猿（SV4K）",
+    "english": "During your opponent's next turn, prevent all damage done to this Pokémon by attacks from Pokémon that have an Ability, except any Simisage.",
+    "chinese": "在下一个对手的回合，这只宝可梦不会受到拥有特性的宝可梦（除「花椰猿」外）的招式的伤害。",
+    "rule": {
+      "kind": "attack_protection",
+      "damage": true,
+      "source": "ability",
+      "exceptSourceName": "Simisage"
+    }
+  },
+  {
+    "sourceExample": "啪嚓海胆（SV2D）",
+    "english": "You can use this attack only if this Pokémon used Stun Needle during your last turn.",
+    "chinese": "这个招式，只有在上一个自己的回合，这只宝可梦使用了「麻痹针刺」的情况下才可以使用。",
+    "rule": {
+      "kind": "attack_contract",
+      "requiresLastAttack": "Stun Needle"
+    }
+  },
+  {
+    "sourceExample": "大奶罐（SVM）",
+    "english": "You can use this attack only if this Pokémon used Rollout during your last turn.",
+    "chinese": "这个招式，只有在上一个自己的回合，这只宝可梦使用了「滚动」的情况下才可以使用。",
+    "rule": {
+      "kind": "attack_contract",
+      "requiresLastAttack": "Rollout"
+    }
+  },
+  {
+    "sourceExample": "轻身鳕（SV2P）",
+    "english": "If you have no cards in your hand, this attack can be used for {{e|水}}.",
+    "chinese": "这个招式，如果自己没有手牌的话，则仅需1个{{e|水}}能量便可使用。",
+    "rule": {
+      "kind": "attack_contract",
+      "costIf": {
+        "condition": "empty_hand",
+        "cost": [
+          "WATER"
+        ]
+      }
+    }
+  },
+  {
+    "sourceExample": "鐵脖頸（SV4M）",
+    "english": "If this Pokémon has a Future Booster Energy Capsule attached, this attack can be used for {{e}}{{e}}{{e}}.",
+    "chinese": "这个招式，如果这只宝可梦身上放有「{{TCG|驱劲能量 未来}}」的话，则仅需3个{{e|无}}能量便可使用。",
+    "rule": {
+      "kind": "attack_contract",
+      "costIf": {
+        "condition": "tool",
+        "name": "Future Booster Energy Capsule",
+        "cost": [
+          "COLORLESS",
+          "COLORLESS",
+          "COLORLESS"
+        ]
+      }
+    }
+  },
+  {
+    "sourceExample": "八爪武師（SV7a）",
+    "english": "If this Pokémon has any damage counters on it, this attack can be used for {{e|Fighting}}.",
+    "chinese": "这个招式，如果这只宝可梦身上放置有伤害指示物的话，则仅需1个{{e|斗}}能量便可使用。",
+    "rule": {
+      "kind": "attack_contract",
+      "costIf": {
+        "condition": "damaged",
+        "cost": [
+          "FIGHTING"
+        ]
+      }
+    }
+  },
+  {
+    "sourceExample": "下石鳥ex（SV3a）",
+    "english": "If you go first, you can use this attack during your first turn. Search your deck for up to 3 Basic Pokémon and put them onto your Bench. Then, shuffle your deck.",
+    "chinese": "这个招式，即使是先攻玩家的最初回合也可以使用。选择自己牌库中最多3张'''基础'''宝可梦，放于备战区。并重洗牌库。",
+    "rule": {
+      "kind": "search_bench",
+      "count": 3,
+      "allowFirstTurn": true
+    }
+  },
+  {
+    "sourceExample": "電螢蟲（SV6）",
+    "english": "If you go first, you can use this attack during your first turn. Search your deck for up to 2 Basic Pokémon and put them onto your Bench. Then, shuffle your deck.",
+    "chinese": "这个招式，即使是先攻玩家的最初回合也可以使用。选择自己牌库中最多2张'''基础'''宝可梦，放于备战区。并重洗牌库。",
+    "rule": {
+      "kind": "search_bench",
+      "count": 2,
+      "allowFirstTurn": true
+    }
+  },
+  {
+    "sourceExample": "蛋蛋（SV7a）",
+    "english": "If you go first, you can use this attack during your first turn. Search your deck for a card that evolves from this Pokémon and put it onto this Pokémon to evolve it. Then, shuffle your deck.",
+    "chinese": "这个招式，即使是先攻玩家的最初回合也可以使用。选择自己牌库中1张，从这只宝可梦进化而来的卡牌，放于这只宝可梦身上进行进化。并重洗牌库。",
+    "rule": {
+      "kind": "extended_field",
+      "operation": "evolve_self",
+      "allowFirstTurn": true
+    }
+  },
+  {
+    "sourceExample": "吼叫尾ex（SV5a）",
+    "english": "You can use this attack only if you go second, and only during your first turn. Your opponent can't play any Supporter cards from their hand during their next turn.",
+    "chinese": "这个招式，只有在后攻玩家的最初回合才可使用。在下一个对手的回合，对手无法从手牌使出支援者。",
+    "rule": {
+      "kind": "attack_contract",
+      "onlySecondFirst": true,
+      "effects": [
+        {
+          "kind": "field_operation",
+          "operation": "player_lock",
+          "flags": [
+            "supporter_blocked_turn"
+          ]
+        }
+      ]
+    }
+  },
+  {
+    "sourceExample": "招式學習器 火場一爆（TCG）",
+    "english": "You can use this attack only when your opponent has exactly 1 Prize card remaining.",
+    "chinese": "这个招式，只有在对手的剩余奖赏卡张数为1张时才可使用。",
+    "rule": {
+      "kind": "attack_contract",
+      "opponentPrizes": 1
+    }
+  },
+  {
+    "sourceExample": "操陷蛛（SV2D）",
+    "english": "Shuffle each player's Active Pokémon and all attached cards into their deck. ''(You choose a new Active Pokémon first.)''",
+    "chinese": "将双方的战斗宝可梦，以及放于其身上的所有卡牌，各放回牌库并重洗牌库。［由自己先将下一只宝可梦放于战斗场。］",
+    "rule": {
+      "kind": "field_operation",
+      "operation": "return_field",
+      "both": true,
+      "destination": "left"
+    }
+  },
+  {
+    "sourceExample": "狡猾天狗（SV5M）",
+    "english": "Choose 3 of your opponent's Benched Pokémon. If you do, shuffle all of your opponent's Benched Pokémon that you didn't choose, and all cards attached to those Pokémon, into their deck.",
+    "chinese": "选择对手3只备战宝可梦。然后，将未选择的对手所有的备战宝可梦，以及放于其身上的所有卡牌，放回对手牌库并重洗牌库。",
+    "rule": {
+      "kind": "field_operation",
+      "operation": "return_field",
+      "zone": "bench",
+      "keep": 3,
+      "destination": "left"
+    }
+  },
+  {
+    "sourceExample": "浮潜鼬（SV1a）",
+    "english": "Flip a coin. If heads, put your opponent's Active Pokémon and all attached cards into your opponent's hand.",
+    "chinese": "抛掷1次硬币如果为正面，则将对手的战斗宝可梦，以及放于其身上的所有卡牌，放回对手的手牌。",
+    "rule": {
+      "kind": "coin_branch",
+      "flips": 1,
+      "heads": [
+        {
+          "kind": "field_operation",
+          "operation": "return_field",
+          "zone": "active",
+          "count": 1,
+          "destination": "hand"
+        }
+      ]
+    }
+  },
+  {
+    "sourceExample": "仙子伊布（SV6a）",
+    "english": "Flip a coin. If heads, choose 1 of your opponent's Benched Pokémon. Shuffle that Pokémon and all attached cards into their deck.",
+    "chinese": "抛掷1次硬币如果为正面，则选择对手的1只备战宝可梦，将那只宝可梦，以及放于其身上的所有卡牌，放回对手牌库并重洗牌库。",
+    "rule": {
+      "kind": "coin_branch",
+      "flips": 1,
+      "heads": [
+        {
+          "kind": "field_operation",
+          "operation": "return_field",
+          "zone": "bench",
+          "count": 1,
+          "destination": "left"
+        }
+      ]
+    }
+  },
+  {
+    "sourceExample": "甜甜螢（SV6）",
+    "english": "You can use this attack only if you go second, and only during your first turn. Shuffle 1 of your opponent's Benched Pokémon and all attached cards into their deck.",
+    "chinese": "这个招式，只有在后攻玩家的最初回合才可使用。选择对手的1只备战宝可梦，将那只宝可梦，以及放于其身上的所有卡牌，放回对手牌库并重洗牌库。",
+    "rule": {
+      "kind": "attack_contract",
+      "onlySecondFirst": true,
+      "effects": [
+        {
+          "kind": "field_operation",
+          "operation": "return_field",
+          "zone": "bench",
+          "count": 1,
+          "destination": "left"
+        }
+      ]
+    }
+  },
+  {
+    "sourceExample": "仙子伊布ex（SVLN）",
+    "english": "Choose 2 of your opponent's Benched Pokémon. Shuffle those Pokémon and all attached cards into your opponent's deck. If 1 of your Pokémon used Angelite during your last turn, this attack can't be used.",
+    "chinese": "选择对手的2只备战宝可梦，将那2只宝可梦，以及放于其身上的所有卡牌，放回牌库并重洗牌库。在上一个自己的回合，如果自己的宝可梦使用了「天使石」的话，则无法使用这个招式。",
+    "rule": {
+      "kind": "attack_contract",
+      "forbidTeamLastAttack": "Angelite",
+      "effects": [
+        {
+          "kind": "field_operation",
+          "operation": "return_field",
+          "zone": "bench",
+          "count": 2,
+          "destination": "left"
+        }
+      ]
+    }
+  },
+  {
+    "sourceExample": "招式学习器 退化（TCG）",
+    "english": "Devolve each of your opponent's evolved Pokémon by putting the highest Stage Evolution card on it into your opponent's hand.",
+    "chinese": "从对手所有已经进化的宝可梦身上，各移除1张「进化卡」使其退化。将被移除的卡牌，放回对手的手牌。",
+    "rule": {
+      "kind": "field_operation",
+      "operation": "devolve",
+      "destination": "hand",
+      "all": true
+    }
+  },
+  {
+    "sourceExample": "超能豔鴕（SV7a）",
+    "english": "{{DL|Devolution|In the TCG|Devolve}} 1 of your opponent's evolved Pokémon by putting the highest Stage Evolution card on it into your opponent's hand.",
+    "chinese": "选择对手1只已经进化的宝可梦，移除其身上的1张「进化卡」使其退化。将被移除的卡牌，放回对手的手牌。",
+    "rule": {
+      "kind": "field_operation",
+      "operation": "devolve",
+      "destination": "hand",
+      "all": false
+    }
+  },
+  {
+    "sourceExample": "太陽伊布ex（SV8a）",
+    "english": "{{DL|Devolution|In the TCG|Devolve}} each of your opponent's evolved Pokémon by shuffling the highest Stage Evolution card on it into your opponent's deck.",
+    "chinese": "从对手所有已经进化的宝可梦身上，各移除1张「{{TCG|进化卡}}」使其退化。将被移除的卡牌，放回对手牌库并重洗牌库。",
+    "rule": {
+      "kind": "field_operation",
+      "operation": "devolve",
+      "destination": "left",
+      "all": true
+    }
+  },
+  {
+    "sourceExample": "太阳伊布（30th）",
+    "english": "Devolve each of your opponent's evolved Pokémon by putting the highest Stage Evolution card on it into your opponent's hand.",
+    "chinese": "从对手所有已经进化的宝可梦身上各移除1张「进化卡」使其退化。将被移除的卡牌放回对手的手牌。",
+    "rule": {
+      "kind": "field_operation",
+      "operation": "devolve",
+      "destination": "hand",
+      "all": true
+    }
+  },
+  {
+    "sourceExample": "彩粉蝶（SV8）",
+    "english": "For each of your Benched Pokémon, search your deck for a card that evolves from that Pokémon and put it onto that Pokémon to evolve it. Then, shuffle your deck.",
+    "chinese": "选择自己牌库中从自己所有备战宝可梦进化而来的卡牌各1张，分别放于各只宝可梦身上进行进化。并重洗牌库。",
+    "rule": {
+      "kind": "field_operation",
+      "operation": "evolve_field",
+      "zone": "bench",
+      "all": true
+    }
+  },
+  {
+    "sourceExample": "火箭隊的尼多娜（SV10）",
+    "english": "Choose up to 2 of your {{e|Darkness}} Pokémon. For each of those Pokémon, search your deck for a card that evolves from that Pokémon and put it onto that Pokémon to evolve it. Then, shuffle your deck.",
+    "chinese": "选择自己最多2只{{e|恶}}宝可梦，从自己牌库中选择从被选择的宝可梦进化而来的卡牌各1张，各放于其身上进行进化。并重洗牌库。",
+    "rule": {
+      "kind": "field_operation",
+      "operation": "evolve_field",
+      "type": "DARK",
+      "count": 2
+    }
+  },
+  {
+    "sourceExample": "爱管侍（SV1V）",
+    "english": "Search your deck for a card that evolves from 1 of your Pokémon and put it onto that Pokémon to evolve it. Then, shuffle your deck.",
+    "chinese": "选择自己牌库中，1张从自己场上的1只宝可梦进化而来的卡牌，放于那只宝可梦身上进行进化。并重洗牌库。",
+    "rule": {
+      "kind": "field_operation",
+      "operation": "evolve_field",
+      "count": 1
+    }
+  },
+  {
+    "sourceExample": "自爆磁怪（SVD）",
+    "english": "You may switch out your opponent's Active Pokémon to the Bench. ''(Your opponent chooses the new Active Pokémon.)''",
+    "chinese": "若希望，可将对手的战斗宝可梦与备战宝可梦互换。''[放于战斗场的宝可梦由对手选择。]''",
+    "rule": {
+      "kind": "field_operation",
+      "operation": "optional_push"
+    }
+  },
+  {
+    "sourceExample": "蓋歐卡ex（SVM）",
+    "english": "You may switch out your opponent's Active Pokémon to the Bench. ''(Your opponent chooses the new Active Pokémon.)''",
+    "chinese": "若希望，可将对手的战斗宝可梦与备战宝可梦互换。''''[放于战斗场的宝可梦由对手选择。]''''",
+    "rule": {
+      "kind": "field_operation",
+      "operation": "optional_push"
+    }
+  },
+  {
+    "sourceExample": "皮可西ex（SVD）",
+    "english": "You may move any amount of {{e|超}} Energy from your Pokémon to your other Pokémon in any way you like.",
+    "chinese": "选择自己场上宝可梦身上附着的任意数量的{{e|超}}能量，以任意方式转附于自己的宝可梦身上。",
+    "rule": {
+      "kind": "field_operation",
+      "operation": "transfer_energy",
+      "type": "PSYCHIC"
+    }
+  },
+  {
+    "sourceExample": "优雅猫（SV5M）",
+    "english": "You may move any amount of Energy from your Pokémon to your other Pokémon in any way you like.",
+    "chinese": "选择自己场上宝可梦身上附着的任意数量的能量，以任意方式转附于自己的宝可梦身上。",
+    "rule": {
+      "kind": "field_operation",
+      "operation": "transfer_energy"
+    }
+  },
+  {
+    "sourceExample": "遠古巨蜓ex（SV9a）",
+    "english": "Move 3 Energy from this Pokémon to 1 of your Benched Pokémon.",
+    "chinese": "选择这只宝可梦身上附着的3个能量，转附于1只备战宝可梦身上。",
+    "rule": {
+      "kind": "field_operation",
+      "operation": "transfer_energy",
+      "fromSelf": true,
+      "count": 3
+    }
+  },
+  {
+    "sourceExample": "酷豹（SV4K）",
+    "english": "Move all damage counters from 1 of your Benched Pokémon to your opponent's Active Pokémon.",
+    "chinese": "选择自己的1只备战宝可梦，将所有被选择的宝可梦身上放置的伤害指示物，转放于对手的战斗宝可梦身上。",
+    "rule": {
+      "kind": "field_operation",
+      "operation": "transfer_counters",
+      "all": true
+    }
+  },
+  {
+    "sourceExample": "振翼髮（SV8）",
+    "english": "Move all damage counters from 1 of your Benched Ancient Pokémon to your opponent's Active Pokémon.",
+    "chinese": "选择自己备战区中的1只「古代」宝可梦，将被选择的宝可梦身上放置的所有伤害指示物，转放于对手的战斗宝可梦身上。",
+    "rule": {
+      "kind": "field_operation",
+      "operation": "transfer_counters",
+      "all": true,
+      "tag": "ANCIENT"
+    }
+  },
+  {
+    "sourceExample": "火箭隊的果然翁（SV10）",
+    "english": "Move all damage counters from 1 of your Benched Team Rocket's Pokémon to your opponent's Active Pokémon.",
+    "chinese": "选择自己备战区中的1只「[[:Category:火箭队（卡牌类型）（TCG）|火箭队的宝可梦]]」，将被选择的宝可梦身上放置的伤害指示物全部转放于对手的战斗宝可梦身上。",
+    "rule": {
+      "kind": "field_operation",
+      "operation": "transfer_counters",
+      "all": true,
+      "rocket": true
+    }
+  },
+  {
+    "sourceExample": "勾魂眼（SV5K）",
+    "english": "You may move any number of damage counters from your opponent's Benched Pokémon to their Active Pokémon.",
+    "chinese": "选择对手备战宝可梦身上放置的任意数量的伤害指示物，转放于对手的战斗宝可梦身上。",
+    "rule": {
+      "kind": "field_operation",
+      "operation": "transfer_counters",
+      "opponent": true
+    }
+  },
+  {
+    "sourceExample": "胡地（SV6）",
+    "english": "Your opponent's Active Pokémon is now Confused. You may move any number of damage counters from your opponent's Pokémon to their other Pokémon in any way you like.",
+    "chinese": "令对手的战斗宝可梦陷入'''{{TCG|混乱}}'''状态。选择对手场上宝可梦身上放置的任意数量的伤害指示物，以任意方式转放于对手场上的宝可梦身上。",
+    "rule": {
+      "kind": "sequence",
+      "steps": [
+        {
+          "kind": "special_status",
+          "status": "CONFUSED",
+          "target": "opponent",
+          "coin": false
+        },
+        {
+          "kind": "field_operation",
+          "operation": "transfer_counters",
+          "opponent": true,
+          "anywhere": true
+        }
+      ]
+    }
+  },
+  {
+    "sourceExample": "比克提尼（SV5M）",
+    "english": "Discard a {{TCG|Special Energy card|Special Energy}} from your opponent's Active Pokémon.",
+    "chinese": "选择对手战斗宝可梦身上附着的1个特殊能量，放于弃牌区。",
+    "rule": {
+      "kind": "field_operation",
+      "operation": "strip_attached",
+      "special": true
+    }
+  },
+  {
+    "sourceExample": "爆焰龜獸（SV7a）",
+    "english": "Discard an Energy from your opponent's Active Pokémon ex.",
+    "chinese": "选择对手战斗场上的「宝可梦{{ex}}」身上附着的1个能量，放于弃牌区。",
+    "rule": {
+      "kind": "field_operation",
+      "operation": "strip_attached",
+      "ex": true
+    }
+  },
+  {
+    "sourceExample": "泡沫栗鼠（SV5K）",
+    "english": "Discard up to 2 Pokémon Tools from your opponent's Pokémon.",
+    "chinese": "选择放于对手场上宝可梦身上最多2张「{{TCG|宝可梦道具}}」，放于弃牌区。",
+    "rule": {
+      "kind": "field_operation",
+      "operation": "strip_attached",
+      "field": true,
+      "tools": true,
+      "count": 2,
+      "optional": true
+    }
+  },
+  {
+    "sourceExample": "帝牙盧卡（SV7a）",
+    "english": "Search your deck for 2 cards, shuffle your deck, then put those cards on top of it in any order.",
+    "chinese": "选择自己牌库中任意2张卡牌。将剩余的牌库重洗，将选择的卡牌以任意顺序重新排列，放回牌库上方。",
+    "rule": {
+      "kind": "field_operation",
+      "operation": "search_top",
+      "count": 2
+    }
+  },
+  {
+    "sourceExample": "人造细胞卵（SV5K）",
+    "english": "Look at the top 8 cards of your deck. You may put any number of Pokémon you find there onto your Bench. Shuffle the remaining cards back into your deck.",
+    "chinese": "查看自己牌库上方8张卡牌，选择其中任意数量的宝可梦，放于备战区。将剩余的卡牌放回牌库并重洗牌库。",
+    "rule": {
+      "kind": "field_operation",
+      "operation": "window_bench",
+      "count": 8
+    }
+  },
+  {
+    "sourceExample": "米立龍ex（SV8）",
+    "english": "Look at the top 10 cards of your deck. You may put any number of Pokémon you find there onto your Bench. Shuffle the other cards back into your deck.",
+    "chinese": "查看自己牌库上方10张卡牌，选择其中任意数量的宝可梦，放于备战区。将剩余的卡牌放回牌库并重洗牌库。",
+    "rule": {
+      "kind": "field_operation",
+      "operation": "window_bench",
+      "count": 10
+    }
+  },
+  {
+    "sourceExample": "大舌头（SV5M）",
+    "english": "Your opponent reveals their hand. Put up to 2 Basic Pokémon you find there onto your opponent's Bench.",
+    "chinese": "查看对手的手牌，选择其中最多2张'''基础'''宝可梦，放于对手的备战区。",
+    "rule": {
+      "kind": "field_operation",
+      "operation": "opponent_hand_bench",
+      "maximum": 2
+    }
+  },
+  {
+    "sourceExample": "下石鳥ex（SV3a）",
+    "english": "You may put this Pokémon and all attached cards into your hand.",
+    "chinese": "若希望，可将这只宝可梦，以及放于其身上的所有卡牌，放回手牌。",
+    "rule": {
+      "kind": "extended_field",
+      "operation": "return_self",
+      "destination": "hand",
+      "optional": true
+    }
+  },
+  {
+    "sourceExample": "梦幻ex（30th）",
+    "english": "You may switch this Pokémon with 1 of your Benched Pokémon.",
+    "chinese": "若希望，可以将这只宝可梦与备战宝可梦互换。",
+    "rule": {
+      "kind": "self_switch",
+      "optional": true
+    }
+  },
+  {
+    "sourceExample": "四季鹿（SV5M）",
+    "english": "Discard a {{e|Grass}} Energy from this Pokémon.",
+    "chinese": "选择这只宝可梦身上附着的1个{{e|草}}能量，放于弃牌区。",
+    "rule": {
+      "kind": "discard_self_energy",
+      "count": 1,
+      "type": "GRASS"
+    }
+  },
+  {
+    "sourceExample": "恰雷姆ex（SV7）",
+    "english": "Put damage counters on your opponent's Active Pokemon until its remaining HP is 50.",
+    "chinese": "在对手战斗宝可梦身上放置伤害指示物，直到其剩余HP变为「50」为止。",
+    "rule": {
+      "kind": "field_operation",
+      "operation": "remaining_hp",
+      "zone": "active",
+      "remaining": 50
+    }
+  },
+  {
+    "sourceExample": "蜈蚣王（SV6）",
+    "english": "Put damage counters on your opponent's Active Pokémon until its remaining HP is 10.",
+    "chinese": "在对手战斗宝可梦身上放置伤害指示物，直到其剩余HP变为「10」为止。",
+    "rule": {
+      "kind": "field_operation",
+      "operation": "remaining_hp",
+      "zone": "active",
+      "remaining": 10
+    }
+  },
+  {
+    "sourceExample": "叉字蝠（SV6a）",
+    "english": "Your opponent's Active Pokémon is now Poisoned. During Pokémon Checkup, put 2 damage counters on that Pokémon instead of 1.",
+    "chinese": "令对手的战斗宝可梦陷入'''{{TCG|中毒}}'''状态。因这个'''{{TCG|中毒}}'''而放置的伤害指示物数量变为2个。",
+    "rule": {
+      "kind": "special_status",
+      "status": "POISONED",
+      "target": "opponent",
+      "coin": false,
+      "poisonDamage": 20
+    }
+  },
+  {
+    "sourceExample": "恰雷姆ex（SV7）",
+    "english": "This attack's damage isn't affected by Weakness or Resistance.",
+    "chinese": "这个招式的伤害不计算弱点、抗性。",
+    "rule": {
+      "kind": "ignore_damage_modifiers",
+      "ignore": "weakness_resistance"
+    }
+  },
+  {
+    "sourceExample": "钢铠鸦（SV2P）",
+    "english": "If your opponent's Pokémon is Knocked Out by damage from this attack, during your opponent's next turn, prevent all damage from and effects of attacks done to this Pokémon.",
+    "chinese": "如果因这个招式的伤害，对手的宝可梦'''{{TCG|昏厥}}'''的话，则在下一个对手的回合，这只宝可梦不会受到招式的伤害和效果影响。",
+    "rule": {
+      "kind": "field_operation",
+      "operation": "knockout_protection"
+    }
+  },
+  {
+    "sourceExample": "波普海豚（SV3 029）",
+    "english": "Switch this Pokémon with 1 of your Benched Pokémon. If you do, search your deck for a card that evolves from this Pokémon and put it onto this Pokémon to evolve it. Then, shuffle your deck.",
+    "chinese": "将这只宝可梦与备战宝可梦互换。然后，从自己牌库中选择1张从这只宝可梦进化而来的卡牌，放于这只宝可梦身上进行进化。并重洗牌库。",
+    "rule": {
+      "kind": "field_operation",
+      "operation": "switch_then",
+      "effects": [
+        {
+          "kind": "extended_field",
+          "operation": "evolve_self"
+        }
+      ]
+    }
+  },
+  {
+    "sourceExample": "念力土偶（SV3）",
+    "english": "Put damage counters on your opponent's Active Pokémon until its remaining HP is 10. If you placed any damage counters in this way, this attack also does 120 damage to this Pokémon.",
+    "chinese": "在对手战斗宝可梦身上放置伤害指示物，直到其剩余HP变为「10」为止。然后，给这只宝可梦造成120伤害。",
+    "rule": {
+      "kind": "field_operation",
+      "operation": "remaining_recoil",
+      "remaining": 10,
+      "recoil": 120
+    }
+  },
+  {
+    "sourceExample": "古簡蝸（SV4M）",
+    "english": "During your opponent's next turn, attacks used by the Defending Pokémon cost {{e}}{{e}} more.",
+    "chinese": "在下一个对手的回合，受到这个招式影响的宝可梦，使用招式所需能量，增加2个{{e|无}}能量。",
+    "rule": {
+      "kind": "field_operation",
+      "operation": "timed_modifier",
+      "key": "binding_greed",
+      "modifier": {
+        "attackMore": 2
+      }
+    }
+  },
+  {
+    "sourceExample": "麻麻鰻魚王（SV3）",
+    "english": "Switch in 1 of your opponent's Benched Pokémon to the Active Spot. If you do, this attack does 60 damage to the new Active Pokémon, and then flip a coin. If heads, that Pokémon is now Paralyzed.",
+    "chinese": "选择对手的1只备战宝可梦，将其与战斗宝可梦互换。然后，给新出场的宝可梦造成60伤害。抛掷1次硬币如果为正面，则令那只宝可梦陷入'''{{TCG|麻痹}}'''状态。",
+    "rule": {
+      "kind": "gust_damage",
+      "amount": 60,
+      "paralyzeCoin": true
+    }
+  },
+  {
+    "sourceExample": "葉伊布（SV5a）",
+    "english": "Attach a Basic {{e|Grass}} Energy card from your hand to 1 of your Benched Pokémon. If you do, heal all damage from that Pokémon.",
+    "chinese": "选择自己手牌中的1张「基本{{e|草}}能量」，附着于备战宝可梦身上。然后，回复被附着能量的宝可梦的全部HP。",
+    "rule": {
+      "kind": "field_operation",
+      "operation": "attach_heal",
+      "attachment": {
+        "kind": "attach_multiple",
+        "origin": "hand",
+        "target": "bench",
+        "count": 1,
+        "basic": true,
+        "type": "GRASS"
+      }
+    }
+  },
+  {
+    "sourceExample": "雄伟牙（SV5K）",
+    "english": "Discard the top card of your opponent's deck. If you played an Ancient Supporter card from your hand during this turn, discard 3 more cards in this way.",
+    "chinese": "将对手牌库上方1张卡牌放于弃牌区。在这个回合，如果从手牌使出了「古代」支援者的话，则额外将牌库上方3张卡牌放于弃牌区。",
+    "rule": {
+      "kind": "sequence",
+      "steps": [
+        {
+          "kind": "mill_opponent",
+          "count": 1
+        },
+        {
+          "kind": "field_operation",
+          "operation": "conditional_effects",
+          "condition": {
+            "term": "played_supporter",
+            "trait": "ANCIENT"
+          },
+          "effects": [
+            {
+              "kind": "mill_opponent",
+              "count": 3
+            }
+          ]
+        }
+      ]
+    }
+  },
+  {
+    "sourceExample": "卡比獸（SV5a）",
+    "english": "Attach an Energy card from your hand to this Pokémon. If you do, heal 60 damage from this Pokémon.",
+    "chinese": "选择自己手牌中的1张能量，附着于这只宝可梦身上。然后，回复这只宝可梦「60」HP。",
+    "rule": {
+      "kind": "field_operation",
+      "operation": "attach_heal",
+      "attachment": {
+        "kind": "attach_multiple",
+        "origin": "hand",
+        "target": "self",
+        "count": 1
+      },
+      "amount": 60
+    }
+  },
+  {
+    "sourceExample": "修建老匠（SV6）",
+    "english": "If this Pokémon is affected by a Special Condition, ignore all Energy in this attack's cost.",
+    "chinese": "这个招式，如果这只宝可梦处于特殊状态的话，则即使这只宝可梦身上没有附着满足使用这个招式所需能量，依然可以使用。",
+    "rule": {
+      "kind": "attack_contract",
+      "costIf": {
+        "condition": "special_condition",
+        "cost": []
+      }
+    }
+  },
+  {
+    "sourceExample": "白蓬蓬（SV7）",
+    "english": "Put this Pokémon and all attached cards into your deck. If you do, search your deck for up to 3 cards and put them into your hand. Then, shuffle your deck.",
+    "chinese": "将这只宝可梦，以及放于其身上的所有卡牌，放回自己的牌库。然后，选择牌库中任意卡牌最多3张，加入手牌。并重洗牌库。",
+    "rule": {
+      "kind": "field_operation",
+      "operation": "return_search",
+      "count": 3
+    }
+  },
+  {
+    "sourceExample": "焰后蜥（SV7）",
+    "english": "Your opponent discards a card from their hand. If this Pokémon evolved from {{TCG|Salandit}} during this turn, your opponent discards 2 more cards.",
+    "chinese": "对手选择对手自己的1张手牌，放于弃牌区。在这个回合，如果这只宝可梦从「夜盗火蜥」进化而来的话，则额外将2张手牌放于弃牌区。",
+    "rule": {
+      "kind": "field_operation",
+      "operation": "hand_discard",
+      "opponent": true,
+      "evolvedFrom": "Salandit",
+      "bonus": 2
+    }
+  },
+  {
+    "sourceExample": "帝牙海獅（SV8）",
+    "english": "During your opponent's next turn, Pokémon that have 2 or less {{TCG|Energy}} attached can't attack. ''(This includes new Pokémon that come into play.)''",
+    "chinese": "在下一个对手的回合，身上附着的能量在2个及以下的所有宝可梦，无法使用招式。（也包括新出场的宝可梦。）",
+    "rule": {
+      "kind": "field_operation",
+      "operation": "low_energy_lock",
+      "maximum": 2
+    }
+  },
+  {
+    "sourceExample": "鍬農炮蟲（SV7）",
+    "english": "Switch this Pokémon with 1 of your Benched {{e|Lightning}} Pokémon.",
+    "chinese": "将这只宝可梦与备战区中的{{e|雷}}宝可梦互换。",
+    "rule": {
+      "kind": "self_switch",
+      "optional": false,
+      "type": "LIGHTNING"
+    }
+  },
+  {
+    "sourceExample": "長毛巨魔（SV7）",
+    "english": "Switch out your opponent's Active Pokémon to the Bench. ''(Your opponent chooses the new Active Pokémon.)'' If you do, this attack does 160 damage to the new Active Pokémon.",
+    "chinese": "将对手的战斗宝可梦与备战宝可梦互换（放于战斗场的宝可梦由对手选择）。然后，给新出场的宝可梦造成160伤害。",
+    "rule": {
+      "kind": "gust_damage",
+      "amount": 160,
+      "opponentChooses": true
+    }
+  },
+  {
+    "sourceExample": "太樂巴戈斯（SV8）",
+    "english": "Search your deck for up to 3 Basic Energy cards of different {{TCG|type}}s and attach them to your {{DL|Pokémon ex (TCG)|Tera Pokémon ex|Tera Pokémon}} in any way you like. Then, shuffle your deck.",
+    "chinese": "选择自己牌库中，最多3张属性各不同的基本能量，以任意方式附着于自己的「太晶」宝可梦身上。并重洗牌库。",
+    "rule": {
+      "kind": "attach_multiple",
+      "origin": "left",
+      "target": "any",
+      "count": 3,
+      "basic": true,
+      "distinctTypes": true,
+      "targetTrait": "TERA"
+    }
+  },
+  {
+    "sourceExample": "月亮伊布ex（SV8a）",
+    "english": "Discard all Energy from this Pokémon, and take a Prize card.",
+    "chinese": "将这只宝可梦身上附着的所有能量放于弃牌区，自己拿取1张奖赏卡。",
+    "rule": {
+      "kind": "sequence",
+      "steps": [
+        {
+          "kind": "discard_self_energy",
+          "count": "all"
+        },
+        {
+          "kind": "field_operation",
+          "operation": "take_prizes",
+          "count": 1
+        }
+      ]
+    }
+  },
+  {
+    "sourceExample": "N的象徵鳥（SV9）",
+    "english": "If you use this attack when you have only 1 Prize card remaining, you win this game.",
+    "chinese": "使用这个招式时，如果自己的剩余奖赏卡张数为1张的话，则这场对战算作自己的胜利。",
+    "rule": {
+      "kind": "field_operation",
+      "operation": "win_one_prize"
+    }
+  },
+  {
+    "sourceExample": "赛富豪（30th）",
+    "english": "If you have exactly 30 cards in your hand, take 2 Prize cards. If you do, shuffle your hand into your deck.",
+    "chinese": "如果自己的手牌为30张的话，则拿取自己的2张奖赏卡。然后，将自己的手牌全部放回牌库并重洗牌库。",
+    "rule": {
+      "kind": "field_operation",
+      "operation": "take_prizes",
+      "count": 2,
+      "handCount": 30,
+      "shuffleHand": true
+    }
+  },
+  {
+    "sourceExample": "大電海燕ex（SV-P）",
+    "english": "Switch this Pokémon with 1 of your Benched Pokémon. If you do, attach up to 2 Basic {{e|Lightning}} Energy cards from your hand to this Pokémon.",
+    "chinese": "将这只宝可梦与备战宝可梦互换。然后，选择自己手牌中最多2张「基本{{e|雷}}能量」，附着于这只宝可梦身上。",
+    "rule": {
+      "kind": "field_operation",
+      "operation": "switch_then",
+      "effects": [
+        {
+          "kind": "attach_multiple",
+          "origin": "hand",
+          "target": "self",
+          "count": 2,
+          "type": "LIGHTNING",
+          "basic": true
+        }
+      ]
+    }
+  },
+  {
+    "sourceExample": "顫弦蠑螈ex（SV4M）",
+    "english": "Discard 3 {{e|Lightning}} Energy from your Pokémon.",
+    "chinese": "选择自己场上宝可梦身上附着的3个{{e|雷}}能量，放于弃牌区。",
+    "rule": {
+      "kind": "field_operation",
+      "operation": "discard_field_units",
+      "type": "LIGHTNING",
+      "count": 3
+    }
+  },
+  {
+    "sourceExample": "霜奶仙（SV7）",
+    "english": "Search your deck for up to 5 Pokémon that are the same {{TCG|type}} as any Basic Energy attached to this Pokémon, reveal them, and put them into your hand. Then, shuffle your deck.",
+    "chinese": "选择自己牌库中，与这只宝可梦身上附着的基本能量相同属性的宝可梦合计最多5张，在给对手看过之后，加入手牌。并重洗牌库。",
+    "rule": {
+      "kind": "field_operation",
+      "operation": "typed_pokemon_search",
+      "count": 5
+    }
+  },
+  {
+    "sourceExample": "伊布（SV6a）",
+    "english": "Search your deck for up to 3 Basic Energy cards of different types, reveal them, and put them into your hand. Then, shuffle your deck.",
+    "chinese": "选择自己牌库中，属性各不相同的基本能量最多3张，在给对手看过之后，加入手牌。并重洗牌库。",
+    "rule": {
+      "kind": "field_operation",
+      "operation": "distinct_energy_search",
+      "count": 3
+    }
+  },
+  {
+    "sourceExample": "來悲粗茶ex（SV5a）",
+    "english": "Put 2 damage counters on 1 of your opponent's Pokémon for each Basic {{e|Grass}} Energy card in your discard pile. Then, shuffle those Energy cards into your deck.",
+    "chinese": "将自己弃牌区中所有「基本{{e|草}}能量」给对手查看，将其张数×2个伤害指示物，放置于对手的1只宝可梦身上。然后，将给对手查看过的能量放回牌库并重洗牌库。",
+    "rule": {
+      "kind": "field_operation",
+      "operation": "discard_energy_counters",
+      "type": "GRASS",
+      "amount": 20
+    }
+  },
+  {
+    "sourceExample": "塗標客（SV8）",
+    "english": "Attach up to 3 {{TCG|Energy card}}s from your opponent's discard pile to their Pokémon in any way you like.",
+    "chinese": "选择对手弃牌区中最多3张能量，以任意方式附着于对手的宝可梦身上。",
+    "rule": {
+      "kind": "field_operation",
+      "operation": "attach_opponent",
+      "count": 3
+    }
+  },
+  {
+    "sourceExample": "火箭隊的叉字蝠ex（SV10）",
+    "english": "You may put this Pokémon into your hand. ''(Discard all cards attached to this Pokémon.)''",
+    "chinese": "若希望，可以将这只宝可梦放回手牌。（除宝可梦以外的卡牌全部放于弃牌区。）",
+    "rule": {
+      "kind": "field_operation",
+      "operation": "pokemon_only_return"
+    }
+  },
+  {
+    "sourceExample": "一家鼠（30th）",
+    "english": "Flip a coin for each Maushold you have in play. For each heads, discard the top 2 cards of your opponent's deck.",
+    "chinese": "抛掷与自己场上的「一家鼠」数量相同次数的硬币，从对手牌库上方将出现正面次数×2张卡牌放于弃牌区。",
+    "rule": {
+      "kind": "field_operation",
+      "operation": "coin_mill_names",
+      "name": "Maushold",
+      "count": 2
+    }
+  },
+  {
+    "sourceExample": "引梦貘人（SV1V）",
+    "english": "Flip a coin. If heads, choose an attack from 1 of your opponent's Pokémon in play and use it as this attack.",
+    "chinese": "抛掷1次硬币如果为正面，则选择对手场上的宝可梦所拥有的1个招式，作为这个招式使用。",
+    "rule": {
+      "kind": "copy_attack",
+      "coin": true,
+      "zone": "opponent_field"
+    }
+  },
+  {
+    "sourceExample": "魔尼尼（SV4a）",
+    "english": "Your opponent chooses an attack from 1 of their Pokémon in play. Use the chosen attack as this attack.",
+    "chinese": "对手选择对手自己场上的宝可梦所拥有的1个招式。将被选择的招式作为这个招式使用。",
+    "rule": {
+      "kind": "copy_attack",
+      "zone": "opponent_field",
+      "opponentChooses": true
+    }
+  },
+  {
+    "sourceExample": "呆呆王（SV7）",
+    "english": "Discard the top card of your deck, and if that card is a Pokémon that doesn't have a Rule Box, choose 1 of its attacks and use it as this attack. ''(Pokémon ex, {{TCG|Pokémon V}}, etc. have Rule Boxes.)''",
+    "chinese": "将自己牌库上方1张卡牌放于弃牌区，如果那张卡牌是宝可梦（除「拥有规则的宝可梦」外）的话，则选择那只宝可梦所拥有的1个招式，作为这个招式使用。",
+    "rule": {
+      "kind": "copy_attack",
+      "zone": "mill"
+    }
+  },
+  {
+    "sourceExample": "火箭隊的謎擬Ｑ（SV10）",
+    "english": "Choose 1 of your opponent's Active Tera Pokémon's attacks and use it as this attack.",
+    "chinese": "选择对手战斗场上的「太晶」宝可梦所拥有的1个招式，作为这个招式使用。",
+    "rule": {
+      "kind": "copy_attack",
+      "tera": true
+    }
+  },
+  {
+    "sourceExample": "阿響的樹才怪（SV9a）",
+    "english": "Flip a coin. If heads, choose 1 of your opponent's Active Pokémon's attacks and use it as this attack.",
+    "chinese": "抛掷1次硬币，如果为正面，则选择对手战斗宝可梦所拥有的1个招式，作为这个招式使用。",
+    "rule": {
+      "kind": "copy_attack",
+      "coin": true
+    }
+  },
+  {
+    "sourceExample": "N的索羅亞克ex（SV9）",
+    "english": "Choose 1 of your Benched N's Pokémon's attacks and use it as this attack.",
+    "chinese": "选择自己备战区中的「{{TCGPM|N的宝可梦}}」所拥有的1个招式，作为这个招式使用。",
+    "rule": {
+      "kind": "copy_attack",
+      "zone": "own_bench",
+      "prefix": "N's "
+    }
+  },
+  {
+    "sourceExample": "火箭隊的貓老大ex（SV10）",
+    "english": "Reveal the top 10 cards of your opponent's deck. You may choose an attack from a Pokémon you find there and use it as this attack. Shuffle the revealed cards into your opponent's deck.",
+    "chinese": "将对手牌库上方10张卡牌翻到正面。若希望，可以选择其中的宝可梦所拥有的1个招式，作为这个招式使用。将翻到正面的卡牌放回牌库并重洗牌库。",
+    "rule": {
+      "kind": "copy_attack",
+      "zone": "opponent_top",
+      "count": 10,
+      "optional": true
+    }
+  },
+  {
+    "sourceExample": "戴魯比（SV3）",
+    "english": "For each of your Benched Houndour, search your deck for a Basic {{e|Darkness}} Energy card and attach it to that Houndour. Then, shuffle your deck.",
+    "chinese": "给自己备战区中所有的「戴鲁比」，各附着1张牌库中的「基本{{e|恶}}能量」。并重洗牌库。",
+    "rule": {
+      "kind": "attach_multiple",
+      "origin": "left",
+      "target": "bench",
+      "targetName": "Houndour",
+      "type": "DARK",
+      "basic": true,
+      "count": 6,
+      "distinctTargets": true,
+      "eachTarget": true
+    }
+  },
+  {
+    "sourceExample": "雷電斑馬（SV4M）",
+    "english": "Choose Basic {{e|Lightning}} Energy cards from your discard pile up to the number of Prize cards your opponent has taken and attach them to your Pokémon in any way you like.",
+    "chinese": "选择自己弃牌区中最多与对手已经获得的奖赏卡张数相同数量的「基本{{e|雷}}能量」，以任意方式附着于自己的宝可梦身上。",
+    "rule": {
+      "kind": "attach_multiple",
+      "origin": "discard",
+      "target": "any",
+      "type": "LIGHTNING",
+      "basic": true,
+      "count": 6,
+      "countTerm": "opponent_taken_prizes"
+    }
+  },
+  {
+    "sourceExample": "百变怪（30th）",
+    "english": "Flip a coin. If heads, search your deck for a Pokémon and switch it with this Pokémon. Any attached cards, damage counters, Special Conditions, turns in play, and any other effects remain on the new Pokémon. If you switched a Pokémon in this way, put this card into your deck. Then, shuffle your deck.",
+    "chinese": "抛掷1次硬币，如果为正面，则选择自己牌库中的1张宝可梦，与这只宝可梦互换（放于其身上的卡牌、伤害指示物、特殊状态、效果等会全部继承）。如果互换了的话，则将这张卡牌放回牌库。并重洗牌库。",
+    "rule": {
+      "kind": "field_operation",
+      "operation": "replace_pokemon"
+    }
+  },
+  {
+    "sourceExample": "智揮猩（SV8）",
+    "english": "Until the end of your next turn, the Defending Pokémon's Weakness is now {{e|Colorless}}. ''(The amount of Weakness doesn't change.)''",
+    "chinese": "在下一个自己的回合结束前，受到这个招式影响的宝可梦弱点变为{{e|无}}属性。［弱点按「×2」进行伤害计算。］",
+    "rule": {
+      "kind": "field_operation",
+      "operation": "weakness_override",
+      "type": "COLORLESS"
+    }
+  },
+  {
+    "sourceExample": "皮卡丘（30th 034）",
+    "english": "The Defending Pokémon's Weakness is now {{e|Lightning}} until the end of your next turn. ''(Apply Weakness as ×2.)''",
+    "chinese": "在下一个自己的回合结束前，受到这个招式影响的宝可梦的弱点变为{{e|雷}}属性。［弱点按「×2」计算伤害。］",
+    "rule": {
+      "kind": "field_operation",
+      "operation": "weakness_override",
+      "type": "LIGHTNING"
+    }
+  },
+  {
+    "sourceExample": "可达鸭（SV2a）",
+    "english": "During your opponent's next turn, whenever they flip a coin, treat it as tails.",
+    "chinese": "在下一个对手的回合，将对手抛掷的硬币的结果，全部视作反面。",
+    "rule": {
+      "kind": "field_operation",
+      "operation": "player_lock",
+      "flags": [
+        "all_coin_tails_turn"
+      ]
+    }
+  },
+  {
+    "sourceExample": "蝶结萌虻（SV5M）",
+    "english": "During your next turn, if the Defending Pokémon is Knocked Out, take 2 more Prize cards.",
+    "chinese": "在下一个自己的回合，受到这个招式影响的宝可梦'''{{TCG|昏厥}}'''时，多拿取2张奖赏卡。",
+    "rule": {
+      "kind": "field_operation",
+      "operation": "delayed_prizes",
+      "count": 2
+    }
+  },
+  {
+    "sourceExample": "引夢貘人（SV6a）",
+    "english": "During your opponent's next turn, if they attach an Energy card from their hand to the Defending Pokémon, their turn ends.",
+    "chinese": "在下一个对手的回合，如果对手从手牌将能量附着于受到这个招式影响的宝可梦身上的话，对手的回合结束。",
+    "rule": {
+      "kind": "field_operation",
+      "operation": "target_turn_flag",
+      "flag": "attachment_ends_turn"
+    }
+  },
+  {
+    "sourceExample": "密勒頓（SV8）",
+    "english": "During your opponent's next turn, prevent all damage done to each of your Future Pokémon by attacks from Pokémon ex. If this Pokémon is no longer your Active Pokémon, this effect ends.",
+    "chinese": "在下一个对手的回合，自己所有的「未来」宝可梦，不会受到「宝可梦{{ex}}」的招式的伤害。如果这只宝可梦离开战斗场的话，则这个效果消除。",
+    "rule": {
+      "kind": "field_operation",
+      "operation": "future_shield"
+    }
+  },
+  {
+    "sourceExample": "晶光花（SV8）",
+    "english": "Your opponent's Active Pokémon is now Poisoned. During your opponent's next turn, {{TCG|Energy card}}s can't be attached from your opponent's hand to that Pokémon.",
+    "chinese": "令对手的战斗宝可梦陷入'''{{TCG|中毒}}'''状态。在下一个对手的回合，无法从手牌将能量附着于受到这个招式影响的宝可梦身上。",
+    "rule": {
+      "kind": "sequence",
+      "steps": [
+        {
+          "kind": "special_status",
+          "target": "opponent",
+          "status": "POISONED",
+          "coin": false
+        },
+        {
+          "kind": "field_operation",
+          "operation": "target_turn_flag",
+          "flag": "energy_hand_blocked_turn"
+        }
+      ]
+    }
+  },
+  {
+    "sourceExample": "蟾蜍王（30th）",
+    "english": "During your opponent's next turn, whenever they try to use a Trainer card from their hand, they flip a coin. If tails, your opponent discards that Trainer card instead of using it.",
+    "chinese": "在下一个对手的回合，每当对手从手牌使出训练家时，在使用前抛掷1次硬币。如果为反面，则那张卡牌不视作被使用过，将其放于弃牌区。",
+    "rule": {
+      "kind": "field_operation",
+      "operation": "player_lock",
+      "flags": [
+        "trainer_coin_turn"
+      ]
+    }
+  },
+  {
+    "sourceExample": "火箭队的索侦虫（SV10）",
+    "english": "Look at 1 of your opponent's face-down Prize cards.",
+    "chinese": "选择对手反面朝上的1张奖赏卡，查看那张卡牌的正面后放回原处。",
+    "rule": {
+      "kind": "field_operation",
+      "operation": "peek_prize"
+    }
+  }
+]

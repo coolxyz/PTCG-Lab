@@ -1,0 +1,268 @@
+[
+  {
+    "sourceExample": "桌台市（TCG）",
+    "english": "Once during each player's turn, that player may flip a coin. If heads, that player searches their deck for a Pokémon, reveals it, and puts it into their hand. Then, that player shuffles their deck.",
+    "chinese": "双方玩家，每次在自己的回合有1次机会，可抛掷1次硬币。如果为正面，则选择自己牌库中的1张宝可梦，在给对手看过之后，加入手牌。并重洗牌库。",
+    "rule": {
+      "kind": "stadium",
+      "use": "search",
+      "filter": "pokemon",
+      "coin": true
+    }
+  },
+  {
+    "sourceExample": "月光之丘（TCG）",
+    "english": "Once during each player's turn, that player may discard a Basic {{e|超}} Energy card from their hand in order to heal 30 damage from each of their Pokémon.",
+    "chinese": "双方玩家，每次在自己的回合有1次机会，如果将自己手牌中的1张「基本{{e|超}}能量」放于弃牌区的话，则可将自己所有宝可梦的HP，各回复「30」。",
+    "rule": {
+      "kind": "stadium",
+      "use": "heal",
+      "costType": "PSYCHIC",
+      "heal": 30
+    }
+  },
+  {
+    "sourceExample": "災禍荒野（TCG）",
+    "english": "The Retreat Cost of each Basic non-{{e|斗}} Pokémon in play ''(both yours and your opponent's)'' is {{e|无色}} more.",
+    "chinese": "双方所有'''基础'''宝可梦（除{{e|斗}}宝可梦外）'''撤退'''所需能量，各增加1个。",
+    "rule": {
+      "kind": "stadium",
+      "stage": "BASIC",
+      "exceptType": "FIGHTING",
+      "retreatMore": 1
+    }
+  },
+  {
+    "sourceExample": "海滩场地（TCG）",
+    "english": "The Retreat Cost of each Basic Pokémon in play (both yours and your opponent's) is {{e|无}} less.",
+    "chinese": "双方所以'''基础'''宝可梦'''撤退'''所需能量，各减少1个。",
+    "rule": {
+      "kind": "stadium",
+      "stage": "BASIC",
+      "retreatLess": 1
+    }
+  },
+  {
+    "sourceExample": "练习工房（TCG）",
+    "english": "The attacks of Stage 1 Pokémon (both yours and your opponent's) do 10 more damage to the opponent's Active Pokémon ''(before applying Weakness and Resistance).''",
+    "chinese": "双方的'''1阶进化'''宝可梦所使用的招式，给对手战斗宝可梦造成的伤害「+10」。",
+    "rule": {
+      "kind": "stadium",
+      "stage": "STAGE_1",
+      "damage": 10
+    }
+  },
+  {
+    "sourceExample": "城镇百货公司（TCG）",
+    "english": "Once during each player's turn, that player may search their deck for a Pokémon Tool card, reveal it, and put it into their hand. Then, that player shuffles their deck.",
+    "chinese": "双方玩家，每次在自己的回合有1次机会，可选择自己牌库中的1张「{{TCG|宝可梦道具}}」，在给对手看过之后，加入手牌。并重洗牌库。",
+    "rule": {
+      "kind": "stadium",
+      "use": "search",
+      "filter": "tool"
+    }
+  },
+  {
+    "sourceExample": "自行车道（TCG）",
+    "english": "Once during each player's turn, that player may discard a Basic Energy card from their hand in order to draw a card.",
+    "chinese": "双方玩家，每次在自己的回合有1次机会，如果将自己手牌中的1张基本能量放于弃牌区的话，则可从自己牌库上方抽取1张卡牌。",
+    "rule": {
+      "kind": "stadium",
+      "use": "draw",
+      "costType": "any",
+      "draw": 1
+    }
+  },
+  {
+    "sourceExample": "宝可梦联盟总部（TCG）",
+    "english": "Attacks used by each Basic Pokémon in play (both yours and your opponent's) cost {{e|无色}} more.",
+    "chinese": "双方场上'''基础'''宝可梦使用招式所需能量，各增加1个{{e|无色}}能量。",
+    "rule": {
+      "kind": "stadium",
+      "stage": "BASIC",
+      "attackMore": 1
+    }
+  },
+  {
+    "sourceExample": "危險密林（TCG）",
+    "english": "During Pokémon Checkup, put 2 more damage counters on each Poisoned non-{{e|Darkness}} Pokémon ''(both yours and your opponent's)''.",
+    "chinese": "双方所有处于'''{{TCG|中毒}}'''状态的宝可梦（除{{e|恶}}宝可梦外），因'''中毒'''而放置的伤害指示物数量各增加2个。",
+    "rule": {
+      "kind": "stadium",
+      "poisonBonus": 20,
+      "exceptType": "DARK"
+    }
+  },
+  {
+    "sourceExample": "引力山岳（TCG）",
+    "english": "Each Stage 2 Pokémon in play ''(both yours and your opponent's)'' gets −30 HP.",
+    "chinese": "双方场上的所有'''2阶进化'''宝可梦的最大HP，各「-30」。",
+    "rule": {
+      "kind": "stadium",
+      "stage": "STAGE_2",
+      "hp": -30
+    }
+  },
+  {
+    "sourceExample": "全金屬實驗室（TCG）",
+    "english": "{{e|Metal}} Pokémon ''(both yours and your opponent's)'' take 30 less damage from attacks from the opponent's Pokémon ''(after applying Weakness and Resistance)''.",
+    "chinese": "双方的{{e|钢}}宝可梦，受到对手宝可梦的招式的伤害「-30」。",
+    "rule": {
+      "kind": "stadium",
+      "type": "METAL",
+      "armor": 30
+    }
+  },
+  {
+    "sourceExample": "夜間學院（TCG）",
+    "english": "Once during each player's turn, that player may put a card from their hand on top of their deck.",
+    "chinese": "双方玩家，每次在自己的回合有1次机会，可选择自己的1张手牌，放回牌库上方。",
+    "rule": {
+      "kind": "stadium",
+      "use": "topdeck"
+    }
+  },
+  {
+    "sourceExample": "石之洞窟（TCG）",
+    "english": "Steven's Pokémon ''(both yours and your opponent's)'' take 30 less damage from attacks from the opponent's Pokémon ''(after applying Weakness and Resistance).''",
+    "chinese": "双方所有「大吾的宝可梦」所受到的对手宝可梦的招式的伤害「-30」。",
+    "rule": {
+      "kind": "stadium",
+      "prefix": "Steven's ",
+      "armor": 30
+    }
+  },
+  {
+    "sourceExample": "N的城堡（TCG）",
+    "english": "N's Pokémon in play ''(both yours and your opponent's)'' have no Retreat Cost.",
+    "chinese": "将双方场上所有「N的宝可梦」'''撤退'''所需能量全部消除。",
+    "rule": {
+      "kind": "stadium",
+      "prefix": "N's ",
+      "retreatFree": true
+    }
+  },
+  {
+    "sourceExample": "尖釘鎮道館（TCG）",
+    "english": "Once during each player's turn, that player may search their deck for a Marnie's Pokémon, reveal it, and put it into their hand. Then, that player shuffles their deck.",
+    "chinese": "双方玩家每次在自己的回合有1次机会，可以选择自己牌库中的1张「玛俐的宝可梦」，在给对手看过之后加入手牌。并重洗牌库。",
+    "rule": {
+      "kind": "stadium",
+      "use": "search",
+      "filter": "marnie"
+    }
+  },
+  {
+    "sourceExample": "釀光市（TCG）",
+    "english": "Once during each player's turn, that player may put up to 2 Basic {{e|Lightning}} Energy cards from their discard pile into their hand.",
+    "chinese": "双方玩家每次在自己的回合有1次机会，可以选择自己弃牌区中最多2张「基本{{e|雷}}能量」，在给对手看过之后加入手牌。",
+    "rule": {
+      "kind": "stadium",
+      "use": "recover",
+      "filter": "lightning_energy",
+      "count": 2
+    }
+  },
+  {
+    "sourceExample": "化朗鎮（TCG）",
+    "english": "Attacks used by Hop's Pokémon ''(both yours and your opponent's)'' do 30 more damage to the opponent's Active Pokémon ''(before applying Weakness and Resistance)''.",
+    "chinese": "双方「赫普的宝可梦」所使用的招式给对手战斗宝可梦造成的伤害「+30」。",
+    "rule": {
+      "kind": "stadium",
+      "prefix": "Hop's ",
+      "damage": 30
+    }
+  },
+  {
+    "sourceExample": "火箭隊的監視塔（TCG）",
+    "english": "{{e|Colorless}} Pokémon in play ''(both yours and your opponent's)'' have no Abilities.",
+    "chinese": "将双方场上所有{{e|无}}宝可梦的特性全部消除。",
+    "rule": {
+      "kind": "stadium",
+      "suppressType": "COLORLESS"
+    }
+  },
+  {
+    "sourceExample": "祭典會場（TCG）",
+    "english": "Each Pokémon that has any Energy attached ''(both yours and your opponent's)'' recovers from all Special Conditions and can't be affected by any Special Conditions.",
+    "chinese": "双方所有身上附着了能量的宝可梦，不会陷入特殊状态，已经处于的特殊状态，也全部恢复。",
+    "rule": {
+      "kind": "stadium",
+      "statusImmunityWithEnergy": true
+    }
+  },
+  {
+    "sourceExample": "火箭隊的工廠（TCG）",
+    "english": "Once during each player's turn, if they played a Supporter card that has \"Team Rocket\" in its name from their hand this turn, they may draw 2 cards.",
+    "chinese": "在这个回合，从手牌使出了名字中带有「火箭队」的支援者的玩家，在自己的回合有1次机会，可以从自己牌库上方抽取2张卡牌。",
+    "rule": {
+      "kind": "stadium",
+      "use": "draw",
+      "draw": 2,
+      "requiresRocketSupporter": true
+    }
+  },
+  {
+    "sourceExample": "深钵镇（TCG）",
+    "english": "Once during each player's turn, that player may search their deck for a Basic Pokémon that doesn't have a Rule Box and put it onto their Bench. Then, that player shuffles their deck. ''(Pokémon ex, Pokémon V, etc. have Rule Boxes.)''",
+    "chinese": "双方玩家，每次在自己的回合有1次机会，可选择自己牌库中的1张'''基础'''宝可梦（除「{{拥有规则的宝可梦|拥有规则的宝可梦}}」外），放于备战区。并重洗牌库。",
+    "rule": {
+      "kind": "stadium",
+      "use": "search_bench",
+      "filter": "basic_no_rule"
+    }
+  },
+  {
+    "sourceExample": "阻礙之塔（TCG）",
+    "english": "Pokémon Tools attached to each Pokémon ''(both yours and your opponent's)'' have no effect.",
+    "chinese": "双方所有宝可梦身上放有的「{{TCG|宝可梦道具}}」的效果，全部消除。",
+    "rule": {
+      "kind": "stadium",
+      "disableTools": true
+    }
+  },
+  {
+    "sourceExample": "零之大空洞（TCG）",
+    "english": "Each player who has any Tera Pokémon in play can have up to 8 Pokémon on their Bench.<br><br>If a player no longer has any Tera Pokémon in play, that player discards Pokémon from their Bench until they have 5. When this card leaves play, both players discard Pokémon from their Bench until they have 5, and the player who played this card discards first.",
+    "chinese": "自己场上有「{{TCG|太晶}}」宝可梦的玩家，可以放于备战区的宝可梦数量变为8只。<br><br>（当这张卡牌被放于弃牌区，或者自己场上没有「太晶」宝可梦时，将备战宝可梦放于弃牌区，直到备战宝可梦的数量变为5只为止。双方都要将备战宝可梦放于弃牌区的话，则由这张卡牌的持有者开始执行。)",
+    "rule": {
+      "kind": "stadium",
+      "teraBench": 8
+    }
+  },
+  {
+    "sourceExample": "居民會館（TCG）",
+    "english": "Once during each player's turn, if they played a Supporter card from their hand this turn, they may heal 10 damage from each of their Pokémon.",
+    "chinese": "每次在自己的回合有1次机会，在这个回合，从手牌使出了{{TCG|支援者卡|支援者}}的玩家，可将自己所有宝可梦的HP，各回复「10」。",
+    "rule": {
+      "kind": "stadium",
+      "use": "heal",
+      "heal": 10,
+      "requiresSupporter": true
+    }
+  },
+  {
+    "sourceExample": "中立中心（TCG）",
+    "english": "Prevent all damage done to Pokémon that don't have a Rule Box ''(both yours and your opponent's)'' by attacks from the opponent's Pokémon ex and Pokémon '''''V'''''. ''(Pokémon ex, Pokémon V, etc. have Rule Boxes.)''<br><br>This card can't be put into your hand or deck from the discard pile.",
+    "chinese": "双方的所有宝可梦（除「{{拥有规则的宝可梦|拥有规则的宝可梦}}」外），不受到对手「宝可梦{{ex}}・{{V}}」的招式的伤害。<br><br>这张卡牌，只要在弃牌区，就无法加入手牌，也无法放回牌库。",
+    "rule": {
+      "kind": "stadium",
+      "discardLocked": true,
+      "protection": {
+        "damage": true,
+        "noRuleBox": true,
+        "source": "ex_v"
+      }
+    }
+  },
+  {
+    "sourceExample": "災禍雪山（TCG）",
+    "english": "Whenever any player attaches an Energy card from their hand to 1 of their Basic non-{{e|水}} Pokémon, put 2 damage counters on that Pokémon.",
+    "chinese": "每当双方玩家，各从自己的手牌给'''基础'''宝可梦（除{{e|水}}宝可梦外）附着能量时，给该宝可梦身上放置2个伤害指示物。",
+    "rule": {
+      "kind": "stadium",
+      "handEnergyCounters": 20,
+      "exceptType": "WATER"
+    }
+  }
+]

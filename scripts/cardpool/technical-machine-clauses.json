@@ -1,0 +1,332 @@
+[
+  {
+    "sourceExample": "招式学习器 能量涡轮（TCG）",
+    "name": "Technical Machine: Turbo Energize",
+    "templates": [
+      [
+        "训练家卡信息/header",
+        {
+          "type": "宝可梦道具",
+          "name": "招式学习器 能量涡轮",
+          "image": "CSV4C119.png",
+          "TM": "1"
+        }
+      ],
+      [
+        "训练家卡信息/main",
+        {
+          "type": "宝可梦道具",
+          "effectZHT": "附有這張卡的寶可夢，可使用這張卡上寫的招式。''[需要有足夠使用招式的能量。]''<br>將附於寶可夢身上的這張卡，在自己的回合結束時丟棄。",
+          "effectZHS": "身上放有这张卡牌的宝可梦，可以使用这张卡牌上的招式。''[需要满足使用招式所需能量。]''<br>放于宝可梦身上的这张卡牌，将在自己的回合结束时被放于弃牌区。",
+          "jeffect": "このカードをつけているポケモンは、このカードにかかれているワザを使える。''[ワザを使うためのエネルギーは必要。]''<br />ポケモンについているこのカードは、自分の番の終わりにトラッシュする。",
+          "eeffect": "The Pokémon this card is attached to can use the attack on this card. ''(You still need the necessary Energy to use this attack.)'' If this card is attached to 1 of your Pokémon, discard it at the end of your turn."
+        }
+      ],
+      [
+        "卡牌信息/attack",
+        {
+          "type": "宝可梦道具",
+          "ZHTname": "能量渦輪",
+          "ZHSname": "能量涡轮",
+          "jname": "エナジーター",
+          "ename": "Turbo Energize",
+          "cost": "无",
+          "damage": "",
+          "effectZHT": "從自己的牌庫選擇最多2張基本能量卡，以任意方式附於備戰寶可夢身上。並且重洗牌庫。",
+          "effectZHS": "选择自己牌库中最多2张基本能量，以任意方式附着于备战宝可梦身上。并重洗牌库。",
+          "jeffect": "自分の山札から基本エネルギーを2枚まで選び、ベンチポケモンに好きなようにつける。そして山札を切る。",
+          "eeffect": "Search your deck for up to 2 Basic Energy cards and attach them to your Benched Pokémon in any way you like. Then, shuffle your deck."
+        }
+      ],
+      [
+        "训练家卡信息/end",
+        {
+          "type": "宝可梦道具",
+          "ZHAlt": "1"
+        }
+      ]
+    ],
+    "text": "身上放有这张卡牌的宝可梦，可以使用这张卡牌上的招式。''[需要满足使用招式所需能量。]''<br>放于宝可梦身上的这张卡牌，将在自己的回合结束时被放于弃牌区。",
+    "attack": {
+      "name": "Turbo Energize",
+      "cnName": "能量涡轮",
+      "damage": 0,
+      "cost": [
+        "COLORLESS"
+      ],
+      "text": "选择自己牌库中最多2张基本能量，以任意方式附着于备战宝可梦身上。并重洗牌库。",
+      "mechanic": {
+        "kind": "attach_multiple",
+        "origin": "left",
+        "basic": true,
+        "count": 2,
+        "target": "bench"
+      }
+    }
+  },
+  {
+    "sourceExample": "招式学习器 暗中奇袭（TCG）",
+    "name": "Technical Machine: Blindside",
+    "templates": [
+      [
+        "训练家卡信息/header",
+        {
+          "type": "宝可梦道具",
+          "name": "招式学习器 暗中奇袭",
+          "image": "SV3aF057.png",
+          "TM": "1"
+        }
+      ],
+      [
+        "训练家卡信息/main",
+        {
+          "type": "宝可梦道具",
+          "effectZHT": "附有這張卡的寶可萝，可使用這張卡上寫的招式。''[需要有足夠使用招式的能量。]''<br>將寶可夢身上附加的這張卡，在自己的回合結束時丢棄。",
+          "effectZHS": "身上放有这张卡牌的宝可梦，可以使用这张卡牌上的招式。''［需要满足使用招式所需能量。]''<br>放于宝可梦身上的这张卡牌，将在自己的回合结束时被放于弃牌区。",
+          "jeffect": "このカードをつけているポケモンは、このカードにかかれているワザを使える。''[ワザを使うためのエネルギーは必要。]''<br >ポケモンについているこのカードは、自分の番の終わりにトラッシュする。",
+          "eeffect": "The Pokémon this card is attached to can use the attack on this card. ''(You still need the necessary Energy to use this attack.)'' If this card is attached to 1 of your Pokémon, discard it at the end of your turn"
+        }
+      ],
+      [
+        "卡牌信息/attack",
+        {
+          "type": "宝可梦道具",
+          "name": "暗中奇袭",
+          "jname": "やみうち",
+          "ename": "Blindside",
+          "cost": "无",
+          "1": "无",
+          "2": "无",
+          "damage": "",
+          "effectZHT": "對手的身上放置有傷害指示物的1隻寶可夢受到100點傷害。''[在備戰區不計算弱點・抵抗力。]''",
+          "effectZHS": "给身上放置有伤害指示物的1只对手的宝可梦，造成100伤害。''［备战宝可梦不计算弱点、抗性。]''",
+          "jeffect": "ダメカンがのっている相手のポケモン1匹に、100ダメージ。''[ベンチは弱点・抵抗力を計算しない。]''",
+          "eeffect": "This attack does 100 damage to 1 of your opponent's Pokémon that has any damage counters on it. ''(Don't apply Weakness and Resistance for Benched Pokémon.)''"
+        }
+      ],
+      [
+        "训练家卡信息/end",
+        {
+          "type": "宝可梦道具",
+          "ZHAlt": "1"
+        }
+      ]
+    ],
+    "text": "身上放有这张卡牌的宝可梦，可以使用这张卡牌上的招式。''［需要满足使用招式所需能量。]''<br>放于宝可梦身上的这张卡牌，将在自己的回合结束时被放于弃牌区。",
+    "attack": {
+      "name": "Blindside",
+      "cnName": "暗中奇袭",
+      "damage": 0,
+      "cost": [
+        "COLORLESS",
+        "COLORLESS",
+        "COLORLESS"
+      ],
+      "text": "给身上放置有伤害指示物的1只对手的宝可梦，造成100伤害。''［备战宝可梦不计算弱点、抗性。]''",
+      "mechanic": {
+        "kind": "target_damage",
+        "zone": "any",
+        "count": 1,
+        "amount": 100,
+        "damaged": true
+      }
+    }
+  },
+  {
+    "sourceExample": "招式学习器 退化（TCG）",
+    "name": "Technical Machine: Devolution",
+    "templates": [
+      [
+        "训练家卡信息/header",
+        {
+          "type": "宝可梦道具",
+          "name": "-{zh-hans:招式学习器 退化;zh-hant:招式學習器 衰退}-",
+          "image": "CSVM1aC024.png",
+          "TM": "1"
+        }
+      ],
+      [
+        "训练家卡信息/main",
+        {
+          "type": "宝可梦道具",
+          "effectZHT": "附有這張卡的寶可萝，可使用這張卡上寫的招式。''[需要有足夠使用招式的能量。]''<br>將寶可夢身上附加的這張卡，在自己的回合結束時丢棄。",
+          "effectZHS": "身上放有这张卡牌的宝可梦，可以使用这张卡牌上的招式。''［需要满足使用招式所需能量。]''<br>放于宝可梦身上的这张卡牌，将在自己的回合结束时被放于弃牌区。",
+          "jeffect": "このカードをつけているポケモンは、このカードにかかれているワザを使える。''[ワザを使うためのエネルギーは必要。]''<br >ポケモンについているこのカードは、自分の番の終わりにトラッシュする。",
+          "eeffect": "The Pokémon this card is attached to can use the attack on this card. ''(You still need the necessary Energy to use this attack.)'' If this card is attached to 1 of your Pokémon, discard it at the end of your turn."
+        }
+      ],
+      [
+        "卡牌信息/attack",
+        {
+          "type": "宝可梦道具",
+          "ZHSname": "退化",
+          "ZHTname": "衰退",
+          "jname": "デヴォリューション",
+          "ename": "Devolution",
+          "cost": "无",
+          "damage": "",
+          "effectZHT": "從對手的所有進化的寶可夢身上，各移除1張「進化卡」使其退化。將移除的卡放回對手的手牌。",
+          "effectZHS": "从对手所有已经进化的宝可梦身上，各移除1张「进化卡」使其退化。将被移除的卡牌，放回对手的手牌。",
+          "jeffect": "相手の進化しているポケモン全員の上から、それぞれ「進化カード」を1枚ずつはがして退化させる。はがしたカードは、相手の手札にもどす。",
+          "eeffect": "Devolve each of your opponent's evolved Pokémon by putting the highest Stage Evolution card on it into your opponent's hand."
+        }
+      ],
+      [
+        "训练家卡信息/end",
+        {
+          "type": "宝可梦道具",
+          "ZHAlt": "1"
+        }
+      ]
+    ],
+    "text": "身上放有这张卡牌的宝可梦，可以使用这张卡牌上的招式。''［需要满足使用招式所需能量。]''<br>放于宝可梦身上的这张卡牌，将在自己的回合结束时被放于弃牌区。",
+    "attack": {
+      "name": "Devolution",
+      "cnName": "退化",
+      "damage": 0,
+      "cost": [
+        "COLORLESS"
+      ],
+      "text": "从对手所有已经进化的宝可梦身上，各移除1张「进化卡」使其退化。将被移除的卡牌，放回对手的手牌。",
+      "mechanic": {
+        "kind": "field_operation",
+        "operation": "devolve",
+        "all": true,
+        "destination": "hand"
+      }
+    }
+  },
+  {
+    "sourceExample": "招式學習器 火場一爆（TCG）",
+    "name": "Technical Machine: Crisis Punch",
+    "templates": [
+      [
+        "训练家卡信息/header",
+        {
+          "type": "宝可梦道具",
+          "name": "-{zh-hans:招式学习器 临危一击;zh-hant:招式學習器 火場一爆}-",
+          "image": "SV4aF170.png",
+          "TM": "1"
+        }
+      ],
+      [
+        "训练家卡信息/main",
+        {
+          "type": "宝可梦道具",
+          "effectZHS": "身上放有这张卡牌的宝可梦，可以使用这张卡牌上的招式。''[需要满足使用招式所需能量。]''<br>放于宝可梦身上的这张卡牌，将在自己的回合结束时被放于弃牌区。",
+          "effectZHT": "附有這張卡的寶可夢，可使用這張卡上寫的招式。''[需要有足夠使用招式的能量。]''<br>將附於寶可夢身上的這張卡，在自己的回合結束時丟棄。",
+          "jeffect": "このカードをつけているポケモンは、このカードにかかれているワザを使える。''[ワザを使うためのエネルギーは必要。]''<br />ポケモンについているこのカードは、自分の番の終わりにトラッシュする。",
+          "eeffect": "The Pokémon this card is attached to can use the attack on this card.'' (You still need the necessary Energy to use this attack.) ''<br>If this card is attached to 1 of your Pokémon, discard it at the end of your turn."
+        }
+      ],
+      [
+        "卡牌信息/attack",
+        {
+          "type": "宝可梦道具",
+          "ZHSname": "临危一击",
+          "ZHTname": "火場一爆",
+          "jname": "かじばのいっぱつ",
+          "ename": "Crisis Punch",
+          "cost": "无",
+          "1": "无",
+          "2": "无",
+          "damage": "280",
+          "effectZHS": "这个招式，只有在对手的剩余奖赏卡张数为1张时才可使用。",
+          "effectZHT": "這個招式只有在對手剩餘獎賞卡的張數為1張時才可使用。",
+          "jeffect": "このワザは、相手のサイドの残り枚数が1枚のときにしか使えない。",
+          "eeffect": "You can use this attack only when your opponent has exactly 1 Prize card remaining."
+        }
+      ],
+      [
+        "训练家卡信息/end",
+        {
+          "type": "宝可梦道具",
+          "disableEN": "",
+          "ZHAlt": "1"
+        }
+      ]
+    ],
+    "text": "身上放有这张卡牌的宝可梦，可以使用这张卡牌上的招式。''[需要满足使用招式所需能量。]''<br>放于宝可梦身上的这张卡牌，将在自己的回合结束时被放于弃牌区。",
+    "attack": {
+      "name": "Crisis Punch",
+      "cnName": "临危一击",
+      "damage": 280,
+      "cost": [
+        "COLORLESS",
+        "COLORLESS",
+        "COLORLESS"
+      ],
+      "text": "这个招式，只有在对手的剩余奖赏卡张数为1张时才可使用。",
+      "mechanic": {
+        "kind": "attack_contract",
+        "opponentPrizes": 1
+      }
+    }
+  },
+  {
+    "sourceExample": "招式學習器 螢石（TCG）",
+    "name": "Technical Machine: Fluorite",
+    "templates": [
+      [
+        "训练家卡信息/header",
+        {
+          "type": "宝可梦道具",
+          "name": "招式學習器 螢石",
+          "image": "SV8F101.png",
+          "TM": "1"
+        }
+      ],
+      [
+        "训练家卡信息/main",
+        {
+          "type": "宝可梦道具",
+          "effectZHT": "附有這張卡的寶可夢，可使用這張卡上寫的招式。''[需要有足夠使用招式的能量。]''<br>將附於寶可夢身上的這張卡，在自己的回合結束時丟棄。",
+          "effectZHS": "身上放有这张卡牌的宝可梦，可以使用这张卡牌上的招式。''[需要满足使用招式所需能量。]''<br>放于宝可梦身上的这张卡牌，将在自己的回合结束时被放于弃牌区。",
+          "jeffect": "このカードをつけているポケモンは、このカードに書かれているワザを使える。''[ワザを使うためのエネルギーは必要。]''<br>ポケモンについているこのカードは、自分の番の終わりにトラッシュする。",
+          "eeffect": "The Pokémon this card is attached to can use the attack on this card. ''(You still need the necessary Energy to use this attack.)'' If this card is attached to 1 of your Pokémon, discard it at the end of your turn."
+        }
+      ],
+      [
+        "卡牌信息/attack",
+        {
+          "type": "宝可梦道具",
+          "ZHTname": "螢石",
+          "ZHSname": "萤石",
+          "jname": "フローライト",
+          "ename": "Fluorite",
+          "cost": "草",
+          "1": "水",
+          "2": "超",
+          "damage": "",
+          "effectZHT": "將這隻寶可夢身上附加的能量卡全部丟棄，將自己的所有「{{TCG|太晶}}」寶可夢的HP全部恢復。",
+          "effectZHS": "将这只宝可梦身上附着的所有能量放于弃牌区，将自己所有「{{TCG|太晶}}」宝可梦的HP，全部回复。",
+          "jeffect": "このポケモンについているエネルギーをすべてトラッシュし、自分の「テラスタル」のポケモン全員のHPを、すべて回復する。",
+          "eeffect": "Discard all Energy from this Pokémon, and heal all damage from each of your Tera Pokémon."
+        }
+      ],
+      [
+        "训练家卡信息/end",
+        {
+          "type": "宝可梦道具",
+          "ZHAlt": "1"
+        }
+      ]
+    ],
+    "text": "身上放有这张卡牌的宝可梦，可以使用这张卡牌上的招式。''[需要满足使用招式所需能量。]''<br>放于宝可梦身上的这张卡牌，将在自己的回合结束时被放于弃牌区。",
+    "attack": {
+      "name": "Fluorite",
+      "cnName": "萤石",
+      "damage": 0,
+      "cost": [
+        "GRASS",
+        "WATER",
+        "PSYCHIC"
+      ],
+      "text": "将这只宝可梦身上附着的所有能量放于弃牌区，将自己所有「{{TCG|太晶}}」宝可梦的HP，全部回复。",
+      "mechanic": {
+        "kind": "field_operation",
+        "operation": "fluorite"
+      }
+    }
+  }
+]

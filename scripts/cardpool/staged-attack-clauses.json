@@ -1,0 +1,703 @@
+[
+  {
+    "sourceExample": "蜂女王（SV2P）",
+    "english": "Choose 1 of your Benched Combee and shuffle that Pokémon and all attached cards into your deck. If you can't shuffle a Combee into your deck, this attack does nothing.",
+    "chinese": "选择自己备战区中的1只「三蜜蜂」，将那只宝可梦，以及放于其身上的所有卡牌，放回牌库并重洗牌库。如果无法放回牌库的话，则这个招式失败。",
+    "rule": {
+      "kind": "staged_attack",
+      "required": true,
+      "cost": {
+        "kind": "bench_return",
+        "name": "Combee"
+      }
+    }
+  },
+  {
+    "sourceExample": "乌鸦头头（SV2P）",
+    "english": "Discard a card from your hand. If you can't, this attack does nothing.",
+    "chinese": "将自己的1张手牌放于弃牌区。如果无法将卡牌放于弃牌区的话，则这个招式失败。",
+    "rule": {
+      "kind": "staged_attack",
+      "required": true,
+      "cost": {
+        "kind": "hand"
+      }
+    }
+  },
+  {
+    "sourceExample": "狙射樹梟（SV6a）",
+    "english": "Discard a Basic {{e|Grass}} Energy card from your hand. If you can't, this attack does nothing.",
+    "chinese": "将自己手牌中的1张「基本{{e|草}}能量」放于弃牌区。如果无法将卡牌放于弃牌区的话，则这个招式失败。",
+    "rule": {
+      "kind": "staged_attack",
+      "required": true,
+      "cost": {
+        "kind": "hand",
+        "filter": "basic_energy:GRASS"
+      }
+    }
+  },
+  {
+    "sourceExample": "美錄梅塔（SV7）",
+    "english": "Before doing damage, discard all Pokémon Tools from this Pokémon. If you can't discard any, this attack does nothing.",
+    "chinese": "在造成伤害前，将放于这只宝可梦身上的「{{TCG|宝可梦道具}}」放于弃牌区。如果无法将卡牌放于弃牌区的话，则这个招式失败。",
+    "rule": {
+      "kind": "staged_attack",
+      "required": true,
+      "cost": {
+        "kind": "tools"
+      }
+    }
+  },
+  {
+    "sourceExample": "無極汰那（SV8）",
+    "english": "Discard a Stadium in play. If you can't, this attack does nothing.",
+    "chinese": "将场上的竞技场放于弃牌区。如果无法将卡牌放于弃牌区的话，则这个招式失败。",
+    "rule": {
+      "kind": "staged_attack",
+      "required": true,
+      "cost": {
+        "kind": "stadium"
+      }
+    }
+  },
+  {
+    "sourceExample": "轟鳴月ex（SV4K）",
+    "english": "You may discard a Stadium in play. If you do, this attack does 120 more damage.",
+    "chinese": "若希望，可将场上的竞技场放于弃牌区。在这种情况下，追加造成120伤害。",
+    "rule": {
+      "kind": "staged_attack",
+      "optional": true,
+      "cost": {
+        "kind": "stadium"
+      },
+      "bonus": 120
+    }
+  },
+  {
+    "sourceExample": "浩大鯨ex（SV10）",
+    "english": "You may discard a Stadium in play. If you do, this attack does 140 more damage.",
+    "chinese": "若希望，可以将场上的竞技场放于弃牌区。在这种情况下，追加造成140伤害。",
+    "rule": {
+      "kind": "staged_attack",
+      "optional": true,
+      "cost": {
+        "kind": "stadium"
+      },
+      "bonus": 140
+    }
+  },
+  {
+    "sourceExample": "电龙ex（SVAL）",
+    "english": "You may discard 2 Energy from this Pokémon to have this attack do 100 more damage.",
+    "chinese": "若希望，可将这只宝可梦身上附着的2个能量放于弃牌区，追加造成100伤害。",
+    "rule": {
+      "kind": "staged_attack",
+      "optional": true,
+      "cost": {
+        "kind": "energy",
+        "count": 2
+      },
+      "bonus": 100
+    }
+  },
+  {
+    "sourceExample": "噴火駝（SV4K）",
+    "english": "You may discard a {{e|Fighting}} Energy from this Pokémon. If you do, this attack does 120 more damage.",
+    "chinese": "若希望，可选择这只宝可梦身上附着的1个{{e|斗}}能量，放于弃牌区。在这种情况下，追加造成120伤害。",
+    "rule": {
+      "kind": "staged_attack",
+      "optional": true,
+      "cost": {
+        "kind": "energy",
+        "count": 1,
+        "type": "FIGHTING"
+      },
+      "bonus": 120
+    }
+  },
+  {
+    "sourceExample": "电肚蛙ex（SV2D）",
+    "english": "You may discard 2 {{e|雷}} Energy from this Pokémon to make your opponent's Active Pokémon Paralyzed.",
+    "chinese": "若希望，可将这只宝可梦身上附着的2个{{e|雷}}能量放于弃牌区，令对手的战斗宝可梦陷入【麻痹】状态。",
+    "rule": {
+      "kind": "staged_attack",
+      "after": true,
+      "optional": true,
+      "cost": {
+        "kind": "energy",
+        "count": 2,
+        "type": "LIGHTNING"
+      },
+      "effects": [
+        {
+          "kind": "special_status",
+          "status": "PARALYZED",
+          "target": "opponent",
+          "coin": false
+        }
+      ]
+    }
+  },
+  {
+    "sourceExample": "具甲武者ex（SV4K）",
+    "english": "Discard an Energy from this Pokémon. If you do, switch it with 1 of your Benched Pokémon.",
+    "chinese": "选择这只宝可梦身上附着的1个能量，放于弃牌区。然后，将这只宝可梦与备战宝可梦互换。",
+    "rule": {
+      "kind": "staged_attack",
+      "after": true,
+      "cost": {
+        "kind": "energy"
+      },
+      "effects": [
+        {
+          "kind": "self_switch",
+          "optional": false
+        }
+      ]
+    }
+  },
+  {
+    "sourceExample": "鐵轍跡ex（SV4a）",
+    "english": "After doing damage, you may discard all Future Booster Energy Capsules from this Pokémon. If you do, during your opponent's next turn, this Pokémon takes 150 less damage from attacks ''(after applying Weakness and Resistance)''.",
+    "chinese": "若希望，可在造成伤害后，将放于这只宝可梦身上的「驱劲能量 未来」放于弃牌区。在这种情况下，在下一个对手的回合，这只宝可梦所受到的招式的伤害「-150」。",
+    "rule": {
+      "kind": "staged_attack",
+      "after": true,
+      "optional": true,
+      "cost": {
+        "kind": "tools",
+        "name": "Future Booster Energy Capsule"
+      },
+      "effects": [
+        {
+          "kind": "damage_shield",
+          "amount": 150
+        }
+      ]
+    }
+  },
+  {
+    "sourceExample": "厄鬼椪 水井面具ex（SV6）",
+    "english": "You may shuffle 3 Energy attached to this Pokémon into your deck. If you do, this attack also does 120 damage to 1 of your opponent's Benched Pokémon. ''(Don't apply Weakness and Resistance for Benched Pokémon.)''",
+    "chinese": "若希望，可选择这只宝可梦身上附着的3个能量，放回牌库并重洗牌库。在这种情况下，给对手的1只备战宝可梦，也造成120伤害。''[备战宝可梦不计算弱点、抗性。]''",
+    "rule": {
+      "kind": "staged_attack",
+      "after": true,
+      "optional": true,
+      "cost": {
+        "kind": "energy",
+        "count": 3,
+        "destination": "left"
+      },
+      "effects": [
+        {
+          "kind": "bench_damage",
+          "amount": 120
+        }
+      ]
+    }
+  },
+  {
+    "sourceExample": "鐵骨土人（SV6）",
+    "english": "You may do 30 more damage. If you do, this Pokémon also does 30 damage to itself.",
+    "chinese": "若希望，可追加造成30伤害。在这种情况下，给这只宝可梦也造成30伤害。",
+    "rule": {
+      "kind": "staged_attack",
+      "optional": true,
+      "bonus": 30,
+      "effects": [
+        {
+          "kind": "recoil",
+          "amount": 30
+        }
+      ]
+    }
+  },
+  {
+    "sourceExample": "吃吼霸ex（SV9a）",
+    "english": "You may do 120 more damage. If you do, this Pokémon also does 50 damage to itself.",
+    "chinese": "若希望，可以追加造成120伤害。在这种情况下，给这只宝可梦也造成50伤害。",
+    "rule": {
+      "kind": "staged_attack",
+      "optional": true,
+      "bonus": 120,
+      "effects": [
+        {
+          "kind": "recoil",
+          "amount": 50
+        }
+      ]
+    }
+  },
+  {
+    "sourceExample": "蚊香泳士（SV6）",
+    "english": "You may do 120 more damage. If you do, shuffle this Pokémon and all attached cards into your deck.",
+    "chinese": "若希望，可追加造成120伤害。在这种情况下，将这只宝可梦，以及放于其身上的所有卡牌，放回自己的牌库并重洗牌库。",
+    "rule": {
+      "kind": "staged_attack",
+      "optional": true,
+      "bonus": 120,
+      "effects": [
+        {
+          "kind": "extended_field",
+          "operation": "return_self",
+          "destination": "left"
+        }
+      ]
+    }
+  },
+  {
+    "sourceExample": "大王銅象（SV6a）",
+    "english": "You may do 100 more damage. If you do, during your next turn, this Pokémon can't attack.",
+    "chinese": "若希望，可追加造成100伤害。在这种情况下，在下一个自己的回合，这只宝可梦无法使用招式。",
+    "rule": {
+      "kind": "staged_attack",
+      "optional": true,
+      "bonus": 100,
+      "effects": [
+        {
+          "kind": "attack_lock"
+        }
+      ]
+    }
+  },
+  {
+    "sourceExample": "輕身鱈ex（SV-P）",
+    "english": "You may discard your hand. If you discarded any cards in this way, this attack does 120 more damage.",
+    "chinese": "若希望，可以将自己的手牌全部放于弃牌区。如果成功放于弃牌区的话，则追加造成120伤害。",
+    "rule": {
+      "kind": "staged_attack",
+      "optional": true,
+      "cost": {
+        "kind": "all_hand"
+      },
+      "bonus": 120
+    }
+  },
+  {
+    "sourceExample": "鑰圈兒（SV7a）",
+    "english": "Discard a card from your hand. If you do, draw 2 cards.",
+    "chinese": "将自己的1张手牌放于弃牌区。然后，从自己牌库上方抽取2张卡牌。",
+    "rule": {
+      "kind": "staged_attack",
+      "after": true,
+      "cost": {
+        "kind": "hand"
+      },
+      "effects": [
+        {
+          "kind": "draw",
+          "count": 2
+        }
+      ]
+    }
+  },
+  {
+    "sourceExample": "大岩蛇（SV2a）",
+    "english": "Discard the top 5 cards of your deck. This attack does 80 damage for each Pokémon with a Retreat Cost of exactly 4 that you discarded in this way.",
+    "chinese": "将自己牌库上方5张卡牌放于弃牌区，造成其中'''撤退'''所需能量数为4个的宝可梦张数×80伤害。",
+    "rule": {
+      "kind": "staged_attack",
+      "top": 5,
+      "mode": "multiply",
+      "factor": 80,
+      "retreat": 4
+    }
+  },
+  {
+    "sourceExample": "小霞的暴鲤龙（SV9a）",
+    "english": "Discard the top 7 cards of your deck. This attack does 70 damage for each Misty's Pokémon that you discarded in this way.",
+    "chinese": "将自己牌库上方7张卡牌放于弃牌区，造成其中「[[的宝可梦（TCG）#小霞的|小霞的宝可梦]]」张数×70伤害。",
+    "rule": {
+      "kind": "staged_attack",
+      "top": 7,
+      "mode": "multiply",
+      "factor": 70,
+      "prefix": "Misty's "
+    }
+  },
+  {
+    "sourceExample": "喷火驼（SV2D）",
+    "english": "Discard the top card of each player's deck. This attack does 100 more damage for each Energy card discarded in this way.",
+    "chinese": "双方各将牌库上方1张卡牌放于弃牌区，追加造成其中能量张数×100伤害。",
+    "rule": {
+      "kind": "staged_attack",
+      "top": 1,
+      "both": true,
+      "mode": "add",
+      "factor": 100,
+      "filter": "energy"
+    }
+  },
+  {
+    "sourceExample": "熔岩蝸牛ex（SV5a）",
+    "english": "Discard the top card of each player's deck. This attack does 140 more damage for each Energy card discarded in this way.",
+    "chinese": "双方各将牌库上方1张卡牌放于弃牌区，追加造成其中能量张数×140伤害。",
+    "rule": {
+      "kind": "staged_attack",
+      "top": 1,
+      "both": true,
+      "mode": "add",
+      "factor": 140,
+      "filter": "energy"
+    }
+  },
+  {
+    "sourceExample": "弃世猴ex（SV2P）",
+    "english": "Put up to 12 damage counters on this Pokémon. This attack does 20 damage for each damage counter you placed in this way.",
+    "chinese": "给这只宝可梦身上放置最多12个伤害指示物，造成放置的伤害指示物数量×20伤害。",
+    "rule": {
+      "kind": "staged_attack",
+      "mode": "multiply",
+      "factor": 20,
+      "selfCounters": 12
+    }
+  },
+  {
+    "sourceExample": "波盪水（SV5a）",
+    "english": "Put up to 9 damage counters on this Pokémon. This attack does 20 damage for each damage counter you placed in this way.",
+    "chinese": "给这只宝可梦身上放置最多9个伤害指示物，造成放置的伤害指示物数量×20伤害。",
+    "rule": {
+      "kind": "staged_attack",
+      "mode": "multiply",
+      "factor": 20,
+      "selfCounters": 9
+    }
+  },
+  {
+    "sourceExample": "卡璞・鳴鳴ex（SV3a）",
+    "english": "If any of your Pokémon were Knocked Out by damage from an attack during your opponent's last turn, this attack does 90 more damage, and your opponent's Active Pokémon is now Paralyzed.",
+    "chinese": "在上一个对手的回合，如果因为招式的伤害，而导致自己的宝可梦'''昏厥'''的话，则追加造成90伤害，令对手的战斗宝可梦陷入'''{{TCG|麻痹}}'''状态。",
+    "rule": {
+      "kind": "staged_attack",
+      "condition": {
+        "term": "knockout_last_turn"
+      },
+      "bonus": 90,
+      "effects": [
+        {
+          "kind": "special_status",
+          "status": "PARALYZED",
+          "target": "opponent",
+          "coin": false
+        }
+      ]
+    }
+  },
+  {
+    "sourceExample": "爆音怪（SV4K）",
+    "english": "Discard your opponent's Active Pokémon and all attached cards. If this Pokémon didn't evolve from {{TCG|Loudred}} during this turn, this attack does nothing.",
+    "chinese": "将对手的战斗宝可梦，以及放于其身上的所有卡牌，放于弃牌区。在这个回合，如果这只宝可梦没有从「{{TCGPM|吼爆弹}}」进化而来的话，则这个招式失败。",
+    "rule": {
+      "kind": "staged_attack",
+      "condition": {
+        "term": "evolved_this_turn",
+        "fromName": "Loudred"
+      },
+      "requiresCondition": true,
+      "effects": [
+        {
+          "kind": "field_operation",
+          "operation": "discard_defender"
+        }
+      ]
+    }
+  },
+  {
+    "sourceExample": "古玉魚（SV5a）",
+    "english": "If a Stadium is in play, this attack does 60 more damage. Then, discard that Stadium.",
+    "chinese": "如果场上有竞技场的话，则追加造成60伤害。然后，将那张竞技场放于弃牌区。",
+    "rule": {
+      "kind": "staged_attack",
+      "damageExpression": {
+        "kind": "damage_expression",
+        "term": "any_stadium",
+        "factor": 60,
+        "mode": "add"
+      },
+      "effects": [
+        {
+          "kind": "discard_stadium"
+        }
+      ],
+      "mode": "add"
+    }
+  },
+  {
+    "sourceExample": "厄鬼椪 火灶面具ex（SV6）",
+    "english": "If your opponent's Active Pokémon is an Evolution Pokémon, this attack does 140 more damage, and discard all Energy from this Pokémon.",
+    "chinese": "如果对手的战斗宝可梦为进化宝可梦的话，则追加造成140伤害。在这种情况下，将这只宝可梦身上附着的能量，全部放于弃牌区。",
+    "rule": {
+      "kind": "staged_attack",
+      "condition": {
+        "term": "opponent_evolved"
+      },
+      "bonus": 140,
+      "effects": [
+        {
+          "kind": "discard_self_energy",
+          "count": "all"
+        }
+      ]
+    }
+  },
+  {
+    "sourceExample": "阿勃梭魯（SV6a）",
+    "english": "If you have at least 3 {{e|Darkness}} Energy in play, this attack does 50 more damage.",
+    "chinese": "如果自己场上有3个及以上{{e|恶}}能量的话，则追加造成50伤害。",
+    "rule": {
+      "kind": "staged_attack",
+      "condition": {
+        "term": "typed_field_minimum",
+        "type": "DARK",
+        "number": 3
+      },
+      "bonus": 50
+    }
+  },
+  {
+    "sourceExample": "烏賊王（SV6a）",
+    "english": "Switch in 1 of your opponent's Benched Pokémon to the Active Spot. If you do, this attack does 120 damage to the new Active Pokémon. If you didn't play Xerosic's Machinations from your hand during this turn, this attack does nothing.",
+    "chinese": "选择对手的1只备战宝可梦，将其与战斗宝可梦互换。然后，给新出场的宝可梦造成120伤害。在这个回合，如果没有从手牌使出「库瑟洛斯奇的企图」的话，则这个招式失败。",
+    "rule": {
+      "kind": "staged_attack",
+      "condition": {
+        "term": "played_supporter",
+        "name": "Xerosic's Machinations"
+      },
+      "requiresCondition": true,
+      "effects": [
+        {
+          "kind": "gust_damage",
+          "amount": 120
+        }
+      ]
+    }
+  },
+  {
+    "sourceExample": "薩戮德（SV7a）",
+    "english": "You may put all Energy attached to this Pokémon into your hand to have this attack do 80 more damage.",
+    "chinese": "若希望，可将这只宝可梦身上附着的所有能量放回手牌，追加造成80伤害。",
+    "rule": {
+      "kind": "staged_attack",
+      "optional": true,
+      "bonus": 80,
+      "cost": {
+        "kind": "all_energy_hand"
+      }
+    }
+  },
+  {
+    "sourceExample": "蜜集大蛇（SV9a）",
+    "english": "Discard 6 Basic {{e|Grass}} Energy cards from your hand, and Knock Out your opponent's Active Pokémon. If you can't discard 6 cards in this way, this attack does nothing.",
+    "chinese": "将自己手牌中的6张「基本{{e|草}}能量」放于弃牌区，令对手的战斗宝可梦'''{{TCG|昏厥}}'''。如果无法将6张放于弃牌区的话，则这个招式失败。",
+    "rule": {
+      "kind": "staged_attack",
+      "cost": {
+        "kind": "hand",
+        "count": 6,
+        "filter": "basic_energy:GRASS"
+      },
+      "required": true,
+      "effects": [
+        {
+          "kind": "field_operation",
+          "operation": "knockout",
+          "zone": "active"
+        }
+      ]
+    }
+  },
+  {
+    "sourceExample": "櫻花魚（SV10）",
+    "english": "This attack does 30 damage for each {{e|Water}} Energy attached to this Pokémon. Before doing damage, you may attach any number of Basic {{e|Water}} Energy cards from your hand to this Pokémon.",
+    "chinese": "造成这只宝可梦身上附着的{{e|水}}能量数量×30伤害。若希望，可以在造成伤害前，选择自己手牌中任意数量的「基本{{e|水}}能量」，附着于这只宝可梦身上。",
+    "rule": {
+      "kind": "staged_attack",
+      "beforeEffects": [
+        {
+          "kind": "attach_multiple",
+          "origin": "hand",
+          "target": "self",
+          "count": "any",
+          "type": "WATER",
+          "basic": true
+        }
+      ],
+      "damageExpression": {
+        "kind": "damage_expression",
+        "term": "self_typed_energy",
+        "factor": 30,
+        "mode": "multiply",
+        "type": "WATER"
+      },
+      "mode": "multiply",
+      "factor": 30
+    }
+  },
+  {
+    "sourceExample": "電擊魔獸ex（SV9a）",
+    "english": "If this Pokémon has at least 2 extra Energy attached ''(in addition to this attack's cost)'', this attack does 100 more damage.",
+    "chinese": "如果身上附着的能量比使用这个招式所需能量多2个的话，则追加造成100伤害。",
+    "rule": {
+      "kind": "staged_attack",
+      "condition": {
+        "term": "extra_attack_energy",
+        "number": 2
+      },
+      "bonus": 100
+    }
+  },
+  {
+    "sourceExample": "火箭隊的多邊獸（SV10）",
+    "english": "Discard a card from your hand. If you do, your opponent discards a card from their hand.",
+    "chinese": "选择自己的1张手牌，放于弃牌区。然后，对手选择对手自己的1张手牌，放于弃牌区。",
+    "rule": {
+      "kind": "staged_attack",
+      "cost": {
+        "kind": "hand"
+      },
+      "effects": [
+        {
+          "kind": "field_operation",
+          "operation": "hand_discard",
+          "opponent": true
+        }
+      ]
+    }
+  },
+  {
+    "sourceExample": "切割洛托姆（SV7）",
+    "english": "Before doing damage, discard all Pokémon Tools and Special Energy from your opponent's Active Pokémon.",
+    "chinese": "在造成伤害前，将放于对手战斗宝可梦身上的「{{TCG|宝可梦道具}}」和「特殊能量」，全部放于弃牌区。",
+    "rule": {
+      "kind": "staged_attack",
+      "beforeEffects": [
+        {
+          "kind": "field_operation",
+          "operation": "strip_before",
+          "special": true
+        }
+      ]
+    }
+  },
+  {
+    "sourceExample": "N的電電蟲（SV9）",
+    "english": "Before doing damage, discard all Pokémon Tools from your opponent's Active Pokémon. If you discarded a Pokémon Tool in this way, your opponent's Active Pokémon is now Paralyzed.",
+    "chinese": "在造成伤害前，将放于对手战斗宝可梦身上的「{{TCG|宝可梦道具}}」放于弃牌区。如果成功放于弃牌区的话，则令对手的战斗宝可梦陷入'''{{TCG|麻痹}}'''状态。",
+    "rule": {
+      "kind": "staged_attack",
+      "beforeEffects": [
+        {
+          "kind": "field_operation",
+          "operation": "strip_before",
+          "paralyze": true
+        }
+      ]
+    }
+  },
+  {
+    "sourceExample": "沙螺蟒（SV1S）",
+    "english": "Discard 2 Energy from this Pokémon. If you discarded any Energy in this way, your opponent shuffles their Active Pokémon and all attached cards into their deck.",
+    "chinese": "选择这只宝可梦身上附着的2个能量，放于弃牌区。然后，将对手的战斗宝可梦，以及放于其身上的所有卡牌，放回对手牌库并重洗牌库。",
+    "rule": {
+      "kind": "staged_attack",
+      "after": true,
+      "cost": {
+        "kind": "energy",
+        "count": 2,
+        "partial": true
+      },
+      "effects": [
+        {
+          "kind": "field_operation",
+          "operation": "return_field",
+          "destination": "left"
+        }
+      ]
+    }
+  },
+  {
+    "sourceExample": "火箭队的火焰鸟ex（SV10）",
+    "english": "Discard a Team Rocket's Energy from this Pokémon. If you do, discard your opponent's Active Pokémon and all attached cards.",
+    "chinese": "选择这只宝可梦身上附着的1张「火箭队能量」，放于弃牌区。在这种情况下，将对手的战斗宝可梦以及放于其身上的全部的卡牌放于弃牌区。",
+    "rule": {
+      "kind": "staged_attack",
+      "after": true,
+      "cost": {
+        "kind": "energy",
+        "count": 1,
+        "name": "Team Rocket's Energy"
+      },
+      "effects": [
+        {
+          "kind": "field_operation",
+          "operation": "discard_defender"
+        }
+      ]
+    }
+  },
+  {
+    "sourceExample": "奇樹的頑皮雷彈（SV9）",
+    "english": "This Pokémon does 100 damage to itself. Flip a coin. If heads, your opponent's Active Pokémon is Knocked Out.",
+    "chinese": "给这只宝可梦造成100伤害。抛掷1次硬币，如果为正面，则令对手的战斗宝可梦'''{{TCG|昏厥}}'''。",
+    "rule": {
+      "kind": "staged_attack",
+      "beforeEffects": [
+        {
+          "kind": "recoil",
+          "amount": 100
+        }
+      ],
+      "effects": [
+        {
+          "kind": "field_operation",
+          "operation": "coin_knockout"
+        }
+      ]
+    }
+  },
+  {
+    "sourceExample": "隨風球（SV7）",
+    "english": "This attack does 50 damage for each of your {{TCG|Drifloon}} and {{TCG|Drifblim}} in play. This attack also does 30 damage to each of your Drifloon and Drifblim. ''(Don't apply Weakness and Resistance for Benched Pokémon.)''",
+    "chinese": "造成自己场上的「飘飘球」和「随风球」的数量×50伤害。给自己场上的所有「飘飘球」和「随风球」，也各造成30伤害。''[备战宝可梦不计算弱点、抗性。]''",
+    "rule": {
+      "kind": "staged_attack",
+      "mode": "multiply",
+      "factor": 50,
+      "damageExpression": {
+        "term": "own_named_pokemon",
+        "names": [
+          "Drifloon",
+          "Drifblim"
+        ],
+        "factor": 50,
+        "mode": "multiply"
+      },
+      "effects": [
+        {
+          "kind": "field_operation",
+          "operation": "own_named_damage",
+          "names": [
+            "Drifloon",
+            "Drifblim"
+          ],
+          "amount": 30
+        }
+      ]
+    }
+  },
+  {
+    "sourceExample": "克雷色利亞（SV6a）",
+    "english": "You may turn 1 of your face-down Prize cards face up. If you do, this attack does 80 more damage. ''(That Prize card remains face up for the rest of the game.)''",
+    "chinese": "若希望，可选择反面朝上的自己的1张奖赏卡，将其翻到正面。在这种情况下，追加造成80伤害。（在对战结束前，那张奖赏卡一直保持正面朝上状态。）",
+    "rule": {
+      "kind": "staged_attack",
+      "cost": {
+        "kind": "face_up_prize"
+      },
+      "bonus": 80
+    }
+  }
+]

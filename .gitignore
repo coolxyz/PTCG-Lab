@@ -1,0 +1,48 @@
+vendor/
+runtime/
+__pycache__/
+.pytest_cache/
+*.pyc
+var/
+node_modules/
+apps/web/dist/
+test-results/
+playwright-report/
+
+.catalog/
+
+# Local runtime logs and developer/build caches
+battle_log/
+.ruff_cache/
+.DS_Store
+*.tsbuildinfo
+
+# Local secrets and virtual environments
+.env
+.env.*
+!.env.example
+!.env.sample
+.venv/
+venv/
+
+# Generated transfer archives
+exports/
+
+# Per-run test scratch data; keep logs and reports, not fixture databases.
+artifacts/cardpool/checks/*/pytest-temp/
+artifacts/cardpool/checks/*/pytest-cache/
+
+# Private/restricted runtime assets; load separately in public source checkouts.
+data/
+artifacts/
+!artifacts/engine/
+!artifacts/engine/overlay-hashes.json
+outputs/
+MIGRATION.json
+TRANSFER-MANIFEST.json
+PUBLIC-SOURCE.json
+RELEASE-FILES.json
+tests/fixtures/
+tests/sync/real-recovery.json
+*.sqlite-wal
+*.sqlite-shm

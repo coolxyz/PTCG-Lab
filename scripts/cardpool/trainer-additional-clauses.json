@@ -1,0 +1,755 @@
+[
+  {
+    "sourceExample": "精灵球（TCG）",
+    "english": "Flip a coin. If heads, search your deck for a Pokémon, reveal it, and put it into your hand. Then, shuffle your deck.",
+    "chinese": "抛掷1次硬币如果为正面，则选择自己牌库中的1张{{TCG|宝可梦}}，在给对手看过之后，加入手牌。并重洗牌库。",
+    "rule": {
+      "kind": "search_hand",
+      "count": 1,
+      "filter": "pokemon",
+      "coinHeads": true
+    }
+  },
+  {
+    "sourceExample": "超级球（TCG）",
+    "english": "Look at the top 7 cards of your deck. You may reveal a Pokémon you find there and put it into your hand. Shuffle the other cards back into your deck.",
+    "chinese": "查看自己牌库上方7张卡牌。选择其中1张宝可梦，在给对手看过之后，加入手牌。将剩余的卡牌放回牌库并重洗牌库。",
+    "rule": {
+      "kind": "look_hand",
+      "look": 7,
+      "count": 1,
+      "filter": "pokemon",
+      "optional": true,
+      "reveal": true,
+      "rest": "shuffle"
+    }
+  },
+  {
+    "sourceExample": "秋明（TCG）",
+    "english": "You can use this card only if your opponent's Active Pokémon is Poisoned. <br><br>Shuffle your hand into your deck. Then, draw 7 cards.",
+    "chinese": "这张卡牌，只有在对手的战斗宝可梦处于'''{{TCG|中毒}}'''状态时才可使用。<br><br>将自己的手牌全部放回牌库并重洗牌库。然后，从牌库上方抽取7张卡牌。",
+    "rule": {
+      "kind": "shuffle_draw",
+      "count": 7,
+      "requiresOpponentPoison": true
+    }
+  },
+  {
+    "sourceExample": "正辉的输送（TCG）",
+    "english": "Look at the top 8 cards of your deck. You may reveal any number of Pokémon you find there and put them into your hand. Shuffle the other cards back into your deck.",
+    "chinese": "查看自己牌库上方8张卡牌，选择其中任意数量的宝可梦，在给对手看过之后，加入手牌。将剩余的卡牌放回牌库并重洗牌库。",
+    "rule": {
+      "kind": "look_hand",
+      "look": 8,
+      "count": 8,
+      "filter": "pokemon",
+      "optional": true,
+      "reveal": true,
+      "rest": "shuffle"
+    }
+  },
+  {
+    "sourceExample": "能量贴纸（TCG）",
+    "english": "Flip a coin. If heads, attach a Basic Energy card from your discard pile to 1 of your Benched Pokémon.",
+    "chinese": "抛掷1次硬币如果为正面，则选择自己弃牌区中的1张基本能量，附着于备战宝可梦身上。",
+    "rule": {
+      "kind": "attach_multiple",
+      "origin": "discard",
+      "count": 1,
+      "basic": true,
+      "target": "bench",
+      "coinHeads": true
+    }
+  },
+  {
+    "sourceExample": "戰鬥牛奶（TCG）",
+    "english": "You can use this card only if you have more Prize cards remaining than your opponent.<br>Heal 60 damage from 1 of your Pokémon.",
+    "chinese": "这张卡牌，只有在自己的剩余奖赏卡张数，比对手的剩余奖赏卡张数多时才可以使用。 <br>回复自己1只宝可梦「60」HP。",
+    "rule": {
+      "kind": "heal",
+      "count": 60,
+      "requiresMorePrizes": true
+    }
+  },
+  {
+    "sourceExample": "N的ＰＰ提升劑（TCG）",
+    "english": "Attach a Basic Energy card from your discard pile to 1 of your Benched N's Pokémon.",
+    "chinese": "选择自己弃牌区中的1张基本能量，附着于备战区中的「N的宝可梦」身上。",
+    "rule": {
+      "kind": "attach_multiple",
+      "origin": "discard",
+      "count": 1,
+      "basic": true,
+      "target": "bench",
+      "targetPrefix": "N's "
+    }
+  },
+  {
+    "sourceExample": "火箭隊的接收器（TCG）",
+    "english": "Search your deck for a Supporter card that has \"Team Rocket\" in its name, reveal it, and put it into your hand. Then, shuffle your deck.",
+    "chinese": "选择自己牌库中1张名字中带有「火箭队」的支援者，在给对手看过之后加入手牌。并重洗牌库。",
+    "rule": {
+      "kind": "search_hand",
+      "count": 1,
+      "filter": "rocket_supporter"
+    }
+  },
+  {
+    "sourceExample": "艾莉絲的鬥志（TCG）",
+    "english": "You can use this card only if you discard another card from your hand. <br><br>Draw cards until you have 6 cards in your hand.",
+    "chinese": "只有将自己的1张手牌放于弃牌区后才可以使用这张卡牌。<br><br>从牌库上方抽取卡牌，直到自己的手牌变为6张为止。",
+    "rule": {
+      "kind": "draw_until",
+      "count": 6,
+      "discardCost": 1
+    }
+  },
+  {
+    "sourceExample": "火箭隊的雅典娜（TCG）",
+    "english": "Draw cards until you have 5 cards in your hand. If all of your Pokémon in play are Team Rocket's Pokémon, draw cards until you have 8 cards in your hand instead.",
+    "chinese": "从牌库上方抽取卡牌，直到自己的手牌变为5张为止。如果自己场上所有宝可梦都为「火箭队的宝可梦」的话，则直到自己的手牌变为8张为止。",
+    "rule": {
+      "kind": "draw_until",
+      "count": 5,
+      "condition": "all_rocket",
+      "bonus": 3
+    }
+  },
+  {
+    "sourceExample": "火箭隊的拉姆達（TCG）",
+    "english": "Search your deck for a Trainer card, reveal it, and put it into your hand. Then, shuffle your deck.",
+    "chinese": "选择自己牌库中的1张训练家，在给对手看过之后加入手牌。并重洗牌库。",
+    "rule": {
+      "kind": "search_hand",
+      "count": 1,
+      "filter": "trainer"
+    }
+  },
+  {
+    "sourceExample": "女服務生（TCG）",
+    "english": "Look at the top 6 cards of your deck and attach a Basic Energy card you find there to 1 of your Pokémon. Shuffle the other cards back into your deck.",
+    "chinese": "查看自己牌库上方6张卡牌，选择其中1张基本能量附着于自己的宝可梦身上。将剩余的卡牌放回牌库并重洗牌库。",
+    "rule": {
+      "kind": "attach_multiple",
+      "origin": "top",
+      "top": 6,
+      "count": 1,
+      "basic": true,
+      "target": "field"
+    }
+  },
+  {
+    "sourceExample": "洛拍棒（TCG）",
+    "english": "Look at the top 4 cards of your deck. You may reveal any number of Supporter cards you find there and put them into your hand. Shuffle the other cards back into your deck.",
+    "chinese": "查看自己牌库上方4张卡牌，选择其中任意数量的支援者，在给对手看过之后，加入手牌。将剩余的卡牌放回牌库并重洗牌库。",
+    "rule": {
+      "kind": "look_hand",
+      "look": 4,
+      "count": 4,
+      "filter": "supporter",
+      "optional": true,
+      "reveal": true,
+      "rest": "shuffle"
+    }
+  },
+  {
+    "english": "Put an Energy attached to your opponent's Active Pokémon into to their hand. If you do, attach an Energy card from your hand to your Active Pokémon.",
+    "chinese": "选择对手战斗宝可梦身上附着的1个能量，放回对手的手牌。然后，选择自己手牌中的1张能量，附着于战斗宝可梦身上。",
+    "rule": {
+      "kind": "trainer_operation",
+      "op": "charisma"
+    }
+  },
+  {
+    "english": "Your opponent reveals their hand, and you put a Basic Pokémon you find there onto your opponent's Bench. If you put a Pokémon onto their Bench in this way, switch in that Pokémon to the Active Spot.",
+    "chinese": "查看对手的手牌，选择其中1张'''基础'''宝可梦，放于对手的备战区。然后，将那只宝可梦与战斗宝可梦互换。",
+    "rule": {
+      "kind": "trainer_operation",
+      "op": "invitation"
+    }
+  },
+  {
+    "english": "Put a card from your hand on the bottom of your deck. If you do, draw cards until you have 5 cards in your hand. ''(If you have no other cards in your hand, you can't use this card.)''",
+    "chinese": "选择自己的1张手牌，放回牌库下方。然后，从牌库上方抽取卡牌，直到自己的手牌变为5张为止。（如果自己的手牌仅有这1张卡牌的话，则无法使用这张卡牌。）",
+    "rule": {
+      "kind": "trainer_operation",
+      "op": "bottom_draw"
+    }
+  },
+  {
+    "english": "Put an Energy attached to your opponent's Active Pokémon on top of their deck.",
+    "chinese": "选择对手战斗宝可梦身上附着的1个能量，放回对手的牌库上方。",
+    "rule": {
+      "kind": "trainer_operation",
+      "op": "return_energy"
+    }
+  },
+  {
+    "english": "Draw 2 cards. If you have a Stadium in play, draw 2 more cards.",
+    "chinese": "从自己牌库上方抽取2张卡牌。如果场上有自己的{{TCG|竞技场卡|竞技场}}的话，则额外抽取2张卡牌。",
+    "rule": {
+      "kind": "trainer_operation",
+      "op": "falkner"
+    }
+  },
+  {
+    "english": "Draw 3 cards. Switch out your opponent's Active Pokémon to the Bench. ''(Your opponent chooses the new Active Pokémon.)''",
+    "chinese": "从自己牌库上方抽取3张卡牌。将对手的战斗宝可梦与备战宝可梦互换。''[放于战斗场的宝可梦由对手选择。]''",
+    "rule": {
+      "kind": "trainer_operation",
+      "op": "draw_gust"
+    }
+  },
+  {
+    "english": "Your opponent reveals their hand, and you choose a card you find there and put it on the bottom of their deck. If you put a card on the bottom of your opponent's deck in this way, your opponent may draw a card.",
+    "chinese": "查看对手的手牌，选择其中任意1张卡牌，放回对手的牌库下方。然后，对手若希望，可从牌库上方抽取1张卡牌。",
+    "rule": {
+      "kind": "trainer_operation",
+      "op": "ortega"
+    }
+  },
+  {
+    "english": "Look at the top 5 cards of your deck and discard any number of them. Put the other cards back in any order.",
+    "chinese": "查看自己牌库上方5张卡牌，选择其中任意数量的卡牌，放于弃牌区。将剩余的卡牌以任意顺序重新排列，放回牌库上方。",
+    "rule": {
+      "kind": "trainer_operation",
+      "op": "top_order"
+    }
+  },
+  {
+    "english": "Filp a coin. If heads, search your deck for up to 2 Pokémon, reveal them, and put them in your hand. If tails, search your deck for a basic Pokémon, reveal it, and put it into your hand. Then, shuffle your deck.",
+    "chinese": "抛掷1次硬币。 如果为正面则选择自己牌库中最多2张宝可梦，如果为反面则选择自己牌库中的1张'''基础'''宝可梦，在给对手看过之后，加入手牌。并重新牌库。",
+    "rule": {
+      "kind": "trainer_operation",
+      "op": "coin_search"
+    }
+  },
+  {
+    "english": "Filp a coin. If heads, switch in 1 of your opponent's Benched Pokémon to the Active Spot. If tails, switch your Active Pokémon with 1 of your Benched Pokémon.",
+    "chinese": "抛掷1次硬币如果为正面，则选择对手的1只备战宝可梦，将其与战斗宝可梦互换。如果为反面，则将自己的战斗宝可梦与备战宝可梦互换。",
+    "rule": {
+      "kind": "trainer_operation",
+      "op": "coin_switch"
+    }
+  },
+  {
+    "english": "Search your deck for a Pokémon that doesn't have a Rule Box, reveal it, and put it into your hand. For each Paldean Student card (not including this card) in your discard pile, you may search for an additional Pokémon in this way. Then, shuffle your deck. ''(Pokémon ex, Pokémon V, etc. have Rule Boxes.)''",
+    "chinese": "选择自己牌库中的1张宝可梦（除「{{拥有规则的宝可梦|拥有规则的宝可梦}}」外），在给对手看过之后，加入手牌。并重洗牌库。可加入手牌的宝可梦的张数，会增加自己弃牌区中「帕底亚的学生」（除这张卡牌外）张数相同的张数。",
+    "rule": {
+      "kind": "trainer_operation",
+      "op": "student"
+    }
+  },
+  {
+    "english": "Draw 2 cards. Put a Basic Energy card from your discard pile into your hand.",
+    "chinese": "从自己牌库上方抽取2张卡牌。选择自己弃牌区中的1张基本能量，在给对手看过之后，加入手牌。",
+    "rule": {
+      "kind": "trainer_operation",
+      "op": "draw_recover"
+    }
+  },
+  {
+    "english": "Search your deck for a Pokémon with the same name as 1 of your opponent's Pokémon in play, reveal it, and put it into your hand. Then, shuffle your deck.",
+    "chinese": "选择自己牌库中，与对手场上宝可梦名字相同的1张宝可梦，在给对手看过之后，加入手牌。并重洗牌库。",
+    "rule": {
+      "kind": "trainer_operation",
+      "op": "love_ball"
+    }
+  },
+  {
+    "english": "Each player shuffles their hand and puts it on the bottom of their deck. If either player put any cards on the bottom of their deck in this way, each player flips a coin. If heads, that player draws 6 cards. If tails, they draw 3 cards.",
+    "chinese": "双方玩家，各将自己所有的手牌反面朝上重洗，放回牌库下方。然后，双方玩家各抛掷1次硬币，如果为正面则从牌库上方抽取6张卡牌，如果为反面，则抽取3张卡牌。",
+    "rule": {
+      "kind": "trainer_operation",
+      "op": "lucian"
+    }
+  },
+  {
+    "english": "Search your deck for any number of Basic Energy cards of different types, reveal them, and put them into your hand. Then, shuffle your deck.",
+    "chinese": "从自己牌库中，选择任意数量的属性各不相同的基本能量，在给对手看过之后，加入手牌。并重洗牌库。",
+    "rule": {
+      "kind": "trainer_operation",
+      "op": "distinct_energy"
+    }
+  },
+  {
+    "english": "Discard all Pokémon Tools and Special Energy from all of your opponent's Pokémon, and discard a Stadium in play.",
+    "chinese": "将对手所有宝可梦身上的「{{TCG|宝可梦道具}}」和「{{TCG|特殊能量卡|特殊能量}}」，以及场上的「{{TCG|竞技场卡|竞技场}}」，全部放于弃牌区。",
+    "rule": {
+      "kind": "trainer_operation",
+      "op": "strip",
+      "all": true
+    }
+  },
+  {
+    "english": "Search your deck for up to 2 Basic Energy cards of different types, reveal them, and put 1 of them into your hand. Attach the other to 1 of your Pokémon. Then, shuffle your deck.",
+    "chinese": "选择自己牌库中，属性各不相同的基本能量最多2张，在给对手看过之后，将其中1张加入手牌，将剩余的能量附着于自己的宝可梦身上。并重洗牌库。",
+    "rule": {
+      "kind": "trainer_operation",
+      "op": "distinct_energy",
+      "count": 2,
+      "attachOther": true
+    }
+  },
+  {
+    "english": "Look at the top 7 cards of your deck. You may reveal a Pokémon and a Trainer card you find there and put them into your hand. Shuffle the other cards back into your deck.",
+    "chinese": "查看自己牌库上方7张卡牌，选择其中的宝可梦和训练家各1张，在给对手看过之后，加入手牌。将剩余的卡牌放回牌库并重洗牌库。",
+    "rule": {
+      "kind": "trainer_operation",
+      "op": "look_pair"
+    }
+  },
+  {
+    "english": "During your opponent's next turn, all of your Pokémon take 30 less damage from attacks from your opponent's Pokémon ''(after applying Weakness and Resistance)''. ''(This includes new Pokémon that come into play.)''",
+    "chinese": "在下一个对手的回合，自己所有的宝可梦，受到对手宝可梦的招式的伤害「-30」。（也包括新出场的宝可梦。）",
+    "rule": {
+      "kind": "trainer_operation",
+      "op": "armor"
+    }
+  },
+  {
+    "english": "Heal 30 damage from your Active Pokémon. If that Pokémon is an Arven's Pokémon, heal 100 damage from it instead.",
+    "chinese": "回复自己的战斗宝可梦「30」HP。如果那只宝可梦是「派帕的宝可梦」的话，则回复的HP变为「100」。",
+    "rule": {
+      "kind": "trainer_operation",
+      "op": "sandwich"
+    }
+  },
+  {
+    "english": "Flip a coin. If heads, search your deck for an Evolution Team Rocket's Pokémon, reveal it, and put it into your hand. If tails, search your deck for a Basic Team Rocket's Pokémon, reveal it, and put it into your hand. Then, shuffle your deck.",
+    "chinese": "抛掷1次硬币。如果为正面，则选择自己牌库中的1张进化宝可梦的「火箭队的宝可梦」，如果为反面，则选择自己牌库中的1张'''基础'''宝可梦的「火箭队的宝可梦」，在给对手看过之后加入手牌。并重洗牌库。",
+    "rule": {
+      "kind": "trainer_operation",
+      "op": "coin_search",
+      "rocket": true
+    }
+  },
+  {
+    "english": "Flip a coin. If heads, put 2 damage counters on 1 of your opponent's Pokémon. If tails, put 2 damage counters on your Active Pokémon.",
+    "chinese": "抛掷1次硬币，如果为正面，则给对手的1只宝可梦身上放置2个伤害指示物。如果为反面，则给自己的战斗宝可梦身上放置2个伤害指示物。",
+    "rule": {
+      "kind": "trainer_operation",
+      "op": "bomb"
+    }
+  },
+  {
+    "english": "Discard a Pokémon Tool and a Special Energy from 1 of your opponent's Pokémon.",
+    "chinese": "选择对手的1只宝可梦，将放于那只宝可梦身上的「{{TCG|宝可梦道具}}」和「特殊能量」各1张放于弃牌区。",
+    "rule": {
+      "kind": "trainer_operation",
+      "op": "strip"
+    }
+  },
+  {
+    "english": "Search your deck for up to 2 Basic Pokémon or 1 Evolution Pokémon, reveal them, and put them into your hand. Then, shuffle your deck.",
+    "chinese": "选择自己牌库中最多2张'''基础'''宝可梦或1张进化宝可梦，在给对手看过之后加入手牌。并重洗牌库。",
+    "rule": {
+      "kind": "trainer_operation",
+      "op": "brock"
+    }
+  },
+  {
+    "english": "Switch your Active Team Rocket's Pokémon with 1 of your Benched Team Rocket's Pokémon. If you do, switch in 1 of your opponent's Benched Pokémon to the Active Spot.",
+    "chinese": "将自己战斗场上的「火箭队的宝可梦」与备战区中的「火箭队的宝可梦」互换。然后，选择对手的1只备战宝可梦，将其与战斗宝可梦互换。",
+    "rule": {
+      "kind": "trainer_operation",
+      "op": "rocket_switch"
+    }
+  },
+  {
+    "english": "Draw 2 cards. Then, if you have 10 or more cards in your hand, draw 2 more cards.",
+    "chinese": "从自己牌库上方抽取2张卡牌。然后，如果自己的手牌在10张及以上的话，则额外抽取2张卡牌。",
+    "rule": {
+      "kind": "trainer_operation",
+      "op": "draw_threshold"
+    }
+  },
+  {
+    "english": "Move up to 2 Energy from 1 of your Pokémon to another of your Pokémon.",
+    "chinese": "选择自己场上1只宝可梦身上附着的最多2个能量，转附于自己的1只其他宝可梦身上。",
+    "rule": {
+      "kind": "transfer_energy",
+      "units": 2
+    }
+  },
+  {
+    "english": "Attach a Basic Energy card from your discard pile to each of your Future Pokémon.",
+    "chinese": "给自己所有的「未来」宝可梦，各附着1张弃牌区中的基本能量。",
+    "rule": {
+      "kind": "attach_multiple",
+      "origin": "discard",
+      "basic": true,
+      "targetTrait": "FUTURE",
+      "distinctTargets": true,
+      "eachTarget": true,
+      "count": 60
+    }
+  },
+  {
+    "english": "Put up to 3 in any combination of Pokémon that don't have a Rule Box and Basic Energy cards from your discard pile into your hand. ''(Pokémon {{ex}}, Pokémon {{V}}, etc. have Rule Boxes.)''",
+    "chinese": "选择自己弃牌区的宝可梦（「除「{{拥有规则的宝可梦|拥有规则的宝可梦}}」外）和{{TCG|基本能量卡|基本能量}}合计最多3张，在给对手看过之后，加入手牌。",
+    "rule": {
+      "kind": "recover_hand",
+      "filter": "no_rule_or_energy",
+      "count": 3
+    }
+  },
+  {
+    "english": "You can use this card only if you discard another card from your hand.<br><br>Draw a card for each of your opponent's Benched Pokémon.",
+    "chinese": "这张卡牌，只有将自己的1张手牌放于弃牌区后才可使用。<br><br>从自己牌库上方抽取与对手备战宝可梦数量相同的卡牌。",
+    "rule": {
+      "kind": "draw",
+      "count": 0,
+      "countTerm": "opponent_bench",
+      "discardCost": 1
+    }
+  },
+  {
+    "english": "You can use this card only if you have any Tera Pokémon in play.<br><br>Choose up to 2 of your Benched {{e|Colorless}} Pokémon and attach a Basic Energy card from your discard pile to each of them.",
+    "chinese": "这张卡牌，只有在自己场上有「{{TCG|太晶}}」宝可梦时才可使用。<br><br>选择自己备战区中最多2只{{e|无色}}宝可梦，各附着1张弃牌区中的基本能量。",
+    "rule": {
+      "kind": "attach_multiple",
+      "origin": "discard",
+      "basic": true,
+      "target": "bench",
+      "targetType": "COLORLESS",
+      "distinctTargets": true,
+      "count": 2,
+      "requiresTrait": "TERA"
+    }
+  },
+  {
+    "english": "Search your deck for a card that has no Abilities and evolves from 1 of your Pokémon, and put it onto that Pokémon to evolve it. Then, shuffle your deck. You can use this card on a Pokémon you put down when you were setting up to play or on a Pokémon that was put into play this turn.",
+    "chinese": "从自己牌库中选择1张，从自己场上的1只宝可梦进化而来的卡牌（除拥有特性的宝可梦外），放于那只宝可梦身上进行进化。并重洗牌库。（对在对战准备时放出的宝可梦，以及这回合刚被放出的宝可梦也可使用。）",
+    "rule": {
+      "kind": "trainer_operation",
+      "op": "salvatore"
+    }
+  },
+  {
+    "english": "You can use this card only if your opponent has exactly 2 Prize cards remaining. <br><br>During this turn, if your opponent's Active Pokémon is Knocked Out by damage from an attack used by your Tera Pokémon, take 1 more Prize card.",
+    "chinese": "这张卡牌，只有在对手的剩余奖赏卡张数为2张时才可使用。<br><br>在这个回合，如果因为自己「{{TCG|太晶}}」宝可梦所使用的招式的伤害，而导致对手战斗宝可梦'''{{TCG|昏厥}}'''了的话，则多拿取1张奖赏卡。",
+    "rule": {
+      "kind": "trainer_operation",
+      "op": "briar"
+    }
+  },
+  {
+    "sourceExample": "納莉（TCG）",
+    "english": "Draw 4 cards. At the end of this turn, if you have 5 or more cards in your hand, discard your hand.",
+    "chinese": "从自己牌库上方抽取4张卡牌。在使用了这张卡牌的回合结束时，如果自己的手牌数量为5张及以上的话，则将自己的手牌全部放于弃牌区。",
+    "rule": {
+      "kind": "trainer_operation",
+      "op": "amarys"
+    }
+  },
+  {
+    "sourceExample": "厉害钓竿（TCG）",
+    "english": "Shuffle up to 3 in any combination of Pokémon and Basic Energy cards from your discard pile into your deck.",
+    "chinese": "选择自己弃牌区中的{{TCG|宝可梦}}和{{TCG|基本能量卡|基本能量}}合计最多3张，在给对手看过之后，放回牌库并重洗牌库。",
+    "rule": {
+      "kind": "recover_deck",
+      "filter": "pokemon_or_energy",
+      "count": 3
+    }
+  },
+  {
+    "sourceExample": "宝可装置3.0（TCG）",
+    "english": "Look at the top 7 cards of your deck. You may reveal a Supporter card you find there and put it into your hand. Shuffle the other cards back into your deck.",
+    "chinese": "查看自己牌库上方7张卡牌，选择其中1张支援者，在给对手看过之后，加入手牌。将剩余的卡牌放回牌库并重洗牌库。",
+    "rule": {
+      "kind": "look_hand",
+      "look": 7,
+      "count": 1,
+      "filter": "supporter",
+      "reveal": true,
+      "rest": "shuffle",
+      "optional": true
+    }
+  },
+  {
+    "sourceExample": "能量回收（TCG）",
+    "english": "Put up to 2 basic Energy cards from your discard pile into your hand.",
+    "chinese": "选择自己弃牌区中最多2张{{TCG|基本能量卡|基本能量}}，在给对手看过之后，加入手牌。",
+    "rule": {
+      "kind": "recover_hand",
+      "filter": "basic_energy",
+      "count": 2
+    }
+  },
+  {
+    "sourceExample": "宝可梦捕捉器（TCG）",
+    "english": "Flip a coin. If heads, switch 1 of your opponent's Benched Pokémon with their Active Pokémon.",
+    "chinese": "抛掷1次硬币如果为正面，则选择对手的1只备战宝可梦，将其与战斗宝可梦互换。",
+    "rule": {
+      "kind": "gust",
+      "coinHeads": true
+    }
+  },
+  {
+    "sourceExample": "貴重手推車（TCG）",
+    "english": "Search your deck for any number of Basic Pokémon and put them onto your Bench. Then, shuffle your deck.",
+    "chinese": "选择自己牌库中任意数量的'''基础'''宝可梦，放于备战区。并重洗牌库。",
+    "rule": {
+      "kind": "search_bench",
+      "filter": "basic_pokemon",
+      "count": 8
+    }
+  },
+  {
+    "sourceExample": "改造之锤（TCG）",
+    "english": "Discard a Special Energy attached to 1 of your opponent's Pokémon.",
+    "chinese": "选择对手场上宝可梦身上附着的1个特殊能量，放于弃牌区。",
+    "rule": {
+      "kind": "trainer_operation",
+      "op": "strip_special"
+    }
+  },
+  {
+    "sourceExample": "配樂之笛（TCG）",
+    "english": "Reveal the top 5 cards of your opponent's deck. You may choose any number of Basic Pokémon you find there and put those Pokémon onto their Bench. Your opponent shuffles the other cards back into their deck.",
+    "chinese": "将对手牌库上方5张卡牌翻到正面，选择其中任意数量的'''基础'''宝可梦，放于对手的备战区。将剩余的卡牌放回牌库并重洗牌库。",
+    "rule": {
+      "kind": "trainer_operation",
+      "op": "look_bench",
+      "count": 5
+    }
+  },
+  {
+    "sourceExample": "妨害信函（TCG）",
+    "english": "Your opponent counts the cards in their hand, shuffles those cards, and puts them on the bottom of their deck. If they do, they draw that many cards.",
+    "chinese": "对手在数过对手自己的手牌后，将所有手牌反面朝上重洗，放回牌库下方。然后，对手从牌库上方抽取与放回牌库的卡牌张数相同数量的卡牌。",
+    "rule": {
+      "kind": "trainer_operation",
+      "op": "bottom_redraw"
+    }
+  },
+  {
+    "sourceExample": "寶可夢旋風回收機（TCG）",
+    "english": "Put 1 of your Pokémon and all cards attached to it into your hand.",
+    "chinese": "选择自己场上的1只宝可梦，将那只宝可梦，以及放于其身上的所有卡牌，放回手牌。",
+    "rule": {
+      "kind": "trainer_operation",
+      "op": "return_pokemon"
+    }
+  },
+  {
+    "sourceExample": "管理員（TCG）",
+    "english": "Draw 2 cards. If you drew any cards in this way and if Community Center is in play, shuffle this Caretaker into your deck instead of discarding it.",
+    "chinese": "从自己牌库上方抽取2张卡牌。然后，如果场上有「{{TCG|公民馆}}」的话，则不将这张「管理员」放于弃牌区，而是放回牌库并重洗牌库。",
+    "rule": {
+      "kind": "trainer_operation",
+      "op": "caretaker"
+    }
+  },
+  {
+    "sourceExample": "沙儷（TCG）",
+    "english": "Reveal up to 2 Pokémon in your hand and put them into your deck. If you do, search your deck for up to that many Pokémon, reveal them, and put them into your hand. Then, shuffle your deck.",
+    "chinese": "选择自己手牌中最多2张宝可梦，在给对手看过之后，放回牌库。然后，选择自己牌库中最多与放回牌库的宝可梦张数相同数量的宝可梦，在给对手看过之后，加入手牌。并重洗牌库。",
+    "rule": {
+      "kind": "trainer_operation",
+      "op": "pokemon_exchange"
+    }
+  },
+  {
+    "sourceExample": "烏栗（TCG）",
+    "english": "Choose 1:<br><br>●Switch your Active Pokémon with 1 of your Benched Pokémon.<br><br>●During this turn, attacks used by your Pokémon do 30 more damage to your opponent's Active Pokémon ex and Active Pokémon V ''(before applying Weakness and Resistance).''",
+    "chinese": "这张卡牌，从2个效果中选择1个使用。<br><br>◆将自己的战斗宝可梦与备战宝可梦互换。<br><br>◆在这个回合，自己宝可梦所使用的招式，给对手战斗场上的「宝可梦{{ex}}・{{V}}」造成的伤害「+30」。",
+    "rule": {
+      "kind": "trainer_operation",
+      "op": "kieran"
+    }
+  },
+  {
+    "sourceExample": "海岱（TCG）",
+    "english": "Put 2 cards from your hand on the bottom of your deck in any order. If you put 2 cards on the bottom of your deck in this way, draw 4 cards. ''(If you can't put 2 cards from your hand on the bottom of your deck, you can't use this card.)''",
+    "chinese": "选择自己的2张手牌，以任意顺序重新排列，放回牌库下方。然后，从牌库上方抽取4张卡牌。（如果无法将自己的2张手牌放回牌库的话，则无法使用这张卡牌。）",
+    "rule": {
+      "kind": "trainer_operation",
+      "op": "kofu"
+    }
+  },
+  {
+    "sourceExample": "泰姆（TCG）",
+    "english": "Tell your opponent the name of a Pokémon in your hand and put that Pokémon face down in front of you. Your opponent guesses that Pokémon's HP, and then you reveal it. If your opponent guessed right, they draw 4 cards. If they guessed wrong, you draw 4 cards. Then, return the Pokémon to your hand.",
+    "chinese": "选择自己手牌中的1张宝可梦，将该宝可梦的名字告诉对手后，反面朝上放置。由对手回答该宝可梦的HP。将反面朝上的宝可梦翻到正面，如果正确的话，则对手从牌库上方抽取4张卡牌。如果不正确的话，则自己从牌库上方抽取4张卡牌。然后，将放置的卡牌放回自己手牌中。",
+    "rule": {
+      "kind": "trainer_operation",
+      "op": "hp_guess"
+    }
+  },
+  {
+    "sourceExample": "完全體攪拌器（TCG）",
+    "english": "Search your deck for up to 5 cards and discard them. Then, shuffle your deck.",
+    "chinese": "选择自己牌库中任意卡牌最多5张，放于弃牌区。并重洗牌库。",
+    "rule": {
+      "kind": "trainer_operation",
+      "op": "search_discard",
+      "count": 5
+    }
+  },
+  {
+    "sourceExample": "琉琪亞的展示（TCG）",
+    "english": "Switch in 1 of your opponent's Benched Basic Pokémon to the Active Spot. If you do, the new Active Pokémon is now Confused.",
+    "chinese": "选择对手备战区中的1只'''基础'''宝可梦，将其与战斗宝可梦互换。然后，令新出场的宝可梦陷入'''{{TCG|混乱}}'''状态。",
+    "rule": {
+      "kind": "trainer_operation",
+      "op": "gust_status"
+    }
+  },
+  {
+    "sourceExample": "莉莉艾的決意（TCG）",
+    "english": "Shuffle your hand into your deck. Then, draw 6 cards. If you have exactly 6 Prize cards remaining, draw 8 cards instead.",
+    "chinese": "将自己的手牌全部放回牌库并重洗牌库。然后，从牌库上方抽取6张卡牌。如果自己的剩余奖赏卡张数为6张的话，则抽取的张数变为8张。",
+    "rule": {
+      "kind": "shuffle_draw",
+      "count": 6,
+      "condition": "six_prizes",
+      "bonus": 2
+    }
+  },
+  {
+    "sourceExample": "寶可生機劑A（TCG）",
+    "english": "Heal 150 damage from 1 of your Pokémon.<br><br>This card can't be put into your hand or deck from the discard pile.",
+    "chinese": "回复自己1只宝可梦「150」HP。<br><br>这张卡牌，只要在弃牌区，就无法加入手牌，也无法放回牌库。",
+    "rule": {
+      "kind": "heal",
+      "count": 150,
+      "discardLocked": true
+    }
+  },
+  {
+    "sourceExample": "戰鬥牛奶（TCG）",
+    "english": "You can use this card only if you have more Prize cards remaining than your opponent.<br>Heal 60 damage from 1 of your Pokémon.",
+    "chinese": "这张卡牌，只有在自己的剩余奖赏卡张数，比对手的剩余奖赏卡张数多时才可以使用。 <br>回复自己1只宝可梦「60」HP。",
+    "rule": {
+      "kind": "heal",
+      "count": 60,
+      "requiresMorePrizes": true
+    }
+  },
+  {
+    "sourceExample": "宝可梦交替（TCG）",
+    "english": "Switch your Active Pokémon with 1 of your Benched Pokémon.",
+    "chinese": "將自己的戰鬥寶可夢與備戰寶可夢互換。",
+    "rule": {
+      "kind": "switch"
+    }
+  },
+  {
+    "sourceExample": "大师球（TCG）",
+    "english": "Search your deck for a Pokémon, reveal it, and put it into your hand. Then, shuffle your deck.",
+    "chinese": "选择自己牌库中的1张宝可梦，在给对手看过之后，加入手牌。并重洗牌库。",
+    "rule": {
+      "kind": "search_hand",
+      "filter": "pokemon",
+      "count": 1
+    }
+  },
+  {
+    "sourceExample": "能量输送（TCG）",
+    "english": "Search your deck for a basic Energy card, reveal it, and put it into your hand. Then, shuffle your deck.",
+    "chinese": "從自己的牌庫選擇1張{{TCG|基本能量卡}}，在給對手看過後加入手牌。並且重洗牌庫。",
+    "rule": {
+      "kind": "search_hand",
+      "filter": "basic_energy",
+      "count": 1
+    }
+  },
+  {
+    "sourceExample": "神奇糖果（TCG）",
+    "english": "Choose 1 of your Basic Pokémon in play. If you have a Stage 2 card in your hand that evolves from that Pokémon, put that card onto the Basic Pokémon to evolve it, skipping the Stage 1. You can't use this card during your first turn or on a Basic Pokémon that was put into play this turn.",
+    "chinese": "选择自己手牌中的1张'''{{TCG|2阶进化宝可梦|2阶进化}}'''宝可梦，放于自己场上能够进化成该宝可梦的'''{{TCG|基础宝可梦|基础}}'''宝可梦身上，跳过'''{{TCG|1阶进化宝可梦|1阶进化}}'''进行进化。（在自己最初的回合，以及对这个回合刚出场的宝可梦无法使用。）",
+    "rule": {
+      "kind": "trainer_operation",
+      "op": "rare_candy"
+    }
+  },
+  {
+    "sourceExample": "火箭隊的蘭斯（TCG）",
+    "english": "If you go first, you may use this card during your first turn.",
+    "chinese": "即使是先攻玩家的最初回合也可以使用这张卡牌。\n选择自己牌库中最多3张'''基础'''宝可梦的「火箭队的宝可梦」，在给对手看过之后加入手牌。并重洗牌库。",
+    "rule": {
+      "kind": "search_hand",
+      "filter": "rocket_basic",
+      "count": 3,
+      "allowFirstTurn": true
+    }
+  },
+  {
+    "sourceExample": "火箭隊的阿波羅（TCG）",
+    "english": "You can use this card only if any of your Team Rocket's Pokémon were Knocked Out during your opponent's last turn.",
+    "chinese": "只有在上一个对手的回合，自己的「火箭队的宝可梦」'''{{TCG|昏厥}}'''时才可以使用这张卡牌。\n双方玩家各将手牌全部放回牌库并重洗牌库。然后，自己从牌库上方抽取5张卡牌，对手从牌库上方抽取3张卡牌。",
+    "rule": {
+      "kind": "both_shuffle_draw",
+      "count": 5,
+      "opponentCount": 3,
+      "afterRocketKnockout": true
+    }
+  },
+  {
+    "sourceExample": "鬼之假面（TCG）",
+    "english": "Choose a Pokémon ex in your discard pile that has \"Ogerpon\" in its name, and switch it with 1 of your Pokémon ex in play that has \"Ogerpon\" in its name. Any attached cards, damage counters, Special Conditions, turns in play, and any other effects remain on the new Pokémon.",
+    "chinese": "选择自己弃牌区中，1张名字中带有「{{TCGPM|厄诡椪}}」的「宝可梦{{ex}}」，与自己场上的，1只名字中带有「厄诡椪」的「宝可梦{{ex}}」互换（继承所有放于其身上的卡牌、伤害指示物、特殊状态、效果等等）。将被互换的宝可梦放于弃牌区。",
+    "rule": {
+      "kind": "trainer_operation",
+      "op": "ogre_mask"
+    }
+  },
+  {
+    "sourceExample": "黑暗球（TCG）",
+    "english": "Look at the bottom 7 cards of your deck. You may reveal a Pokémon you find there and put it into your hand. Shuffle the other cards back into your deck.",
+    "chinese": "查看自己牌库下方7张卡牌，选择其中1张宝可梦，在给对手看过之后，加入手牌。将剩余的卡牌放回牌库并重洗牌库。",
+    "rule": {
+      "kind": "trainer_operation",
+      "op": "dusk_ball"
+    }
+  },
+  {
+    "sourceExample": "好伤药（TCG）",
+    "english": "",
+    "chinese": "回复自己1只宝可梦「60」HP。然后，选择回复了HP的宝可梦身上附着的1个能量，放于弃牌区。",
+    "rule": {
+      "kind": "trainer_operation",
+      "op": "super_potion"
+    }
+  },
+  {
+    "sourceExample": "調換票（TCG）",
+    "english": "Count your Prize cards, shuffle them, and put them on the bottom of your deck. Then, take that many cards from the top of your deck and put them face down as your Prize cards.",
+    "chinese": "数过自己的奖赏卡张数后，将奖赏卡全部反面朝上重洗，放回牌库下方。然后，从牌库上方抽取与被放回牌库的奖赏卡张数相同数量的卡牌，作为奖赏卡放置。",
+    "rule": {
+      "kind": "trainer_operation",
+      "op": "prize_ticket"
+    }
+  },
+  {
+    "sourceExample": "火箭隊的妨礙機器人（TCG）",
+    "english": "Turn 1 of your opponent's face-down Prize cards face up and choose a random card from your opponent's hand. Your opponent reveals that card. You may have your opponent switch those cards. ''(That Prize card remains face up for the rest of the game.)''",
+    "chinese": "选择对手反面朝上的1张奖赏卡，以及在不看正面的前提下选择对手1张手牌，各查看其正面。若希望，可以令对手将被选择的卡牌互换。（在对战结束前，那张奖赏卡一直保持正面朝上状态。）",
+    "rule": {
+      "kind": "trainer_operation",
+      "op": "rocket_robot"
+    }
+  },
+  {
+    "sourceExample": "超级能量回收（TCG）",
+    "english": "You can use this card only if you discard 2 other cards from your hand.<br><br>Put up to 4 Basic Energy cards from your discard pile into your hand. ''(You can't choose a card you discarded with the effect of this card.)''",
+    "chinese": "这张卡牌，只有将自己的2张手牌放于弃牌区后才可使用。<br><br>选择自己弃牌区中最多4张基本能量，在给对手看过之后，加入手牌。（无法选择因为这张卡牌的效果而被放于弃牌区的能量。）",
+    "rule": {
+      "kind": "recover_hand",
+      "filter": "basic_energy",
+      "count": 4,
+      "discardCost": 2,
+      "excludePayment": true
+    }
+  },
+  {
+    "sourceExample": "卡比兽娃娃（TCG）",
+    "english": "If this card is in your hand when you are setting up to play, you may put it face down in the Active Spot or on your Bench as if it were a 120-HP Basic {{e|无}} Pokémon. (You can do this only when you are setting up to play.) At any time during your turn, you may discard this card from play. <br>This card can't be affected by any Special Conditions and can't retreat. If this card is Knocked Out, your opponent can't take any Prize cards for it.",
+    "chinese": "在对战准备中要将宝可梦放于场上时，如果这张卡牌在手牌中的话，则可将这张卡牌作为'''HP'''为'''120'''属性为{{e|无}}的'''基础'''宝可梦，反面朝上放于场上。（这张卡牌，在对战准备以外无法放于场上。）如果在自己的回合的话，则可将处于场上的这张卡牌放于弃牌区。<br>这张卡牌，不会陷入特殊状态，也无法撤退。即使这张卡牌'''昏厥'''，对手也无法拿取奖赏卡。",
+    "rule": {
+      "kind": "setup_doll"
+    }
+  }
+]

@@ -1,0 +1,681 @@
+[
+  {
+    "sourceExample": "三海地鼠（SV1S）",
+    "english": "Flip 3 coins. For each heads, discard the top 3 cards of your opponent's deck.",
+    "chinese": "抛掷3次硬币，从对手牌库上方将出现正面次数×3张卡牌放于弃牌区。",
+    "rule": {
+      "kind": "coin_branch",
+      "flips": 3,
+      "perHeadEffect": {
+        "kind": "mill_opponent",
+        "count": 3
+      }
+    }
+  },
+  {
+    "sourceExample": "怨影娃娃（SV1V）",
+    "english": "Flip a coin. If heads, during your opponent's next turn, they can't play any Item cards from their hand.",
+    "chinese": "抛掷1次硬币如果为正面，则在下一个对手的回合，对手无法从手牌使出物品。",
+    "rule": {
+      "kind": "coin_branch",
+      "flips": 1,
+      "heads": [
+        {
+          "kind": "item_lock"
+        }
+      ]
+    }
+  },
+  {
+    "sourceExample": "花叶蒂（SV1V）",
+    "english": "Flip a coin. If heads, this attack does 30 more damage and heal 30 damage from this Pokémon.",
+    "chinese": "抛掷1次硬币如果为正面，则追加造成30伤害，回复这只宝可梦「30」HP。",
+    "rule": {
+      "kind": "coin_branch",
+      "flips": 1,
+      "bonus": [
+        0,
+        30
+      ],
+      "heads": [
+        {
+          "kind": "heal_self",
+          "amount": 30
+        }
+      ]
+    }
+  },
+  {
+    "sourceExample": "流氓鳄（SV1S）",
+    "english": "Flip a coin until you get tails. For each heads, discard an Energy from your opponent's Active Pokémon.",
+    "chinese": "抛掷硬币直到出现反面，选择对手战斗宝可梦身上附着的与出现正面次数相同数量的能量，放于弃牌区。",
+    "rule": {
+      "kind": "coin_branch",
+      "flips": "until_tails",
+      "perHeadEffect": {
+        "kind": "discard_opponent_energy",
+        "count": 1
+      }
+    }
+  },
+  {
+    "sourceExample": "怒鹦哥（SV1V）",
+    "english": "Flip a coin. If tails, this attack does nothing. If heads, during your opponent's next turn, prevent all damage from and effects of attacks done to this Pokémon.",
+    "chinese": "抛掷1次硬币如果为反面，则这个招式失败。如果为正面，则在下一个对手的回合，这只宝可梦不受到招式的伤害和效果影响。",
+    "rule": {
+      "kind": "coin_branch",
+      "flips": 1,
+      "failZero": true,
+      "heads": [
+        {
+          "kind": "attack_protection",
+          "damage": true,
+          "effects": true
+        }
+      ]
+    }
+  },
+  {
+    "sourceExample": "猴怪（SV2a）",
+    "english": "Flip a coin. If tails, this Pokémon also does 20 damage to itself. If heads, this attack does 20 more damage.",
+    "chinese": "抛掷1次硬币如果为正面，则追加造成20伤害。如果为反面，则给这只宝可梦也造成20伤害。",
+    "rule": {
+      "kind": "coin_branch",
+      "flips": 1,
+      "bonus": [
+        0,
+        20
+      ],
+      "tails": [
+        {
+          "kind": "recoil",
+          "amount": 20
+        }
+      ]
+    }
+  },
+  {
+    "sourceExample": "毒刺水母（SV2a）",
+    "english": "Flip a coin until you get tails. This attack does 90 damage for each heads. If the first flip is tails, your opponent's Active Pokémon is now Confused.",
+    "chinese": "抛掷硬币直到出现反面，造成正面次数×90伤害。如果最初抛掷的硬币为反面的话，则令对手的战斗宝可梦陷入'''{{TCG|混乱}}'''状态。",
+    "rule": {
+      "kind": "coin_branch",
+      "flips": "until_tails",
+      "perHead": 90,
+      "tails": [
+        {
+          "kind": "special_status",
+          "target": "opponent",
+          "status": "CONFUSED",
+          "statuses": [
+            "CONFUSED"
+          ],
+          "coin": false
+        }
+      ]
+    }
+  },
+  {
+    "sourceExample": "大钳蟹（SV2a）",
+    "english": "Flip a coin. If heads, search your deck for up to 2 Basic {{e|水}} Energy cards and attach them to this Pokémon. Then, shuffle your deck.",
+    "chinese": "抛掷1次硬币如果为正面，则选择自己牌库中最多2张「基本{{e|水}}能量」，附着于这只宝可梦身上。并重洗牌库。",
+    "rule": {
+      "kind": "coin_branch",
+      "flips": 1,
+      "heads": [
+        {
+          "kind": "search_attach",
+          "type": "WATER",
+          "count": 2,
+          "target": "self"
+        }
+      ]
+    }
+  },
+  {
+    "sourceExample": "败露球菇（SV1a）",
+    "english": "Flip a coin. If heads, your opponent's Active Pokémon is now Paralyzed and Poisoned.",
+    "chinese": "抛掷1次硬币如果为正面，则令对手的战斗宝可梦陷入'''{{TCG|中毒}}'''和'''{{TCG|麻痹}}'''状态。",
+    "rule": {
+      "kind": "coin_branch",
+      "flips": 1,
+      "heads": [
+        {
+          "kind": "special_status",
+          "target": "opponent",
+          "status": "POISONED",
+          "statuses": [
+            "POISONED",
+            "PARALYZED"
+          ],
+          "coin": false
+        }
+      ]
+    }
+  },
+  {
+    "sourceExample": "呆火鳄（SV1a 018）",
+    "english": "Flip a coin. If heads, heal 30 damage from this Pokémon.",
+    "chinese": "抛掷1次硬币如果为正面，则回复这只宝可梦「30」HP。",
+    "rule": {
+      "kind": "coin_branch",
+      "flips": 1,
+      "heads": [
+        {
+          "kind": "heal_self",
+          "amount": 30
+        }
+      ]
+    }
+  },
+  {
+    "sourceExample": "鲤鱼王（SV1a）",
+    "english": "Flip 2 coins. If both are heads, this attack does 20 more damage.",
+    "chinese": "抛掷2次硬币，如果全为正面的话，则追加造成20伤害。",
+    "rule": {
+      "kind": "coin_branch",
+      "flips": 2,
+      "bonus": [
+        0,
+        0,
+        20
+      ]
+    }
+  },
+  {
+    "sourceExample": "花岩怪（SV1V）",
+    "english": "Flip 2 coins. If both of them are heads, your opponent's Active Pokémon is Knocked Out.",
+    "chinese": "抛掷2次硬币，如果全为正面的话，则令对手战斗宝可梦'''昏厥'''。",
+    "rule": {
+      "kind": "coin_branch",
+      "flips": 2,
+      "allHeads": true,
+      "heads": [
+        {
+          "kind": "extended_field",
+          "recoil": 0,
+          "operation": "instant_ko"
+        }
+      ]
+    }
+  },
+  {
+    "sourceExample": "雨翅蛾（SV2P）",
+    "english": "Flip a coin until you get tails. For each heads, discard a random card from your opponent's hand.",
+    "chinese": "抛掷硬币直到出现反面，在不看正面的前提下，选择与出现正面次数相同数量的对手的手牌，放于弃牌区。",
+    "rule": {
+      "kind": "coin_branch",
+      "flips": "until_tails",
+      "repeatPerHead": {
+        "kind": "random_discard_hand"
+      }
+    }
+  },
+  {
+    "sourceExample": "摩托蜥（SV-P）",
+    "english": "Flip a coin until you get tails. For each heads, draw a card.",
+    "chinese": "抛掷硬币直到出现反面，从自己牌库上方抽取与出现正面次数相同数量的卡牌。",
+    "rule": {
+      "kind": "coin_branch",
+      "flips": "until_tails",
+      "perHeadEffect": {
+        "kind": "draw",
+        "count": 1
+      }
+    }
+  },
+  {
+    "sourceExample": "凍原熊（SV3）",
+    "english": "Flip a coin. If tails, discard all Energy from this Pokémon.",
+    "chinese": "抛掷1次硬币如果为反面，则将这只宝可梦身上附着的能量，全部放于弃牌区。",
+    "rule": {
+      "kind": "coin_branch",
+      "flips": 1,
+      "tails": [
+        {
+          "kind": "discard_self_energy",
+          "count": "all"
+        }
+      ]
+    }
+  },
+  {
+    "sourceExample": "膽小蟲（SV4K）",
+    "english": "Flip a coin. If heads, discard a random card from your opponent’s hand.",
+    "chinese": "抛掷1次硬币如果为正面，则在不看对手手牌正面的前提下，选择其中1张放于弃牌区。",
+    "rule": {
+      "kind": "coin_branch",
+      "flips": 1,
+      "heads": [
+        {
+          "kind": "random_discard_hand"
+        }
+      ]
+    }
+  },
+  {
+    "sourceExample": "快龙ex（SVD）",
+    "english": "Flip a coin. If heads, this attack does 140 more damage. If tails, during your next turn, this Pokémon can't attack.",
+    "chinese": "抛掷1次硬币如果为正面，则追加造成140伤害。如果为反面，则在下一个自己的回合，这只宝可梦无法使用招式。",
+    "rule": {
+      "kind": "coin_branch",
+      "flips": 1,
+      "bonus": [
+        0,
+        140
+      ],
+      "tails": [
+        {
+          "kind": "attack_lock"
+        }
+      ]
+    }
+  },
+  {
+    "sourceExample": "飘香豚（SVD）",
+    "english": "Flip a coin. If tails, this Pokémon also does 60 damage to itself.",
+    "chinese": "抛掷1次硬币如果为反面，则给这只宝可梦也造成60伤害。",
+    "rule": {
+      "kind": "coin_branch",
+      "flips": 1,
+      "tails": [
+        {
+          "kind": "recoil",
+          "amount": 60
+        }
+      ]
+    }
+  },
+  {
+    "sourceExample": "劈斬司令（SV3）",
+    "english": "Flip 3 coins. If 1 of them is heads, this attack does 20 more damage. If 2 of them are heads, this attack does 60 more damage. If all of them are heads, this attack does 120 more damage.",
+    "chinese": "抛掷3次硬币。如果出现1次正面，则追加造成20伤害。如果出现2次，则追加造成60伤害。如果全为正面的话，则追加造成120伤害。",
+    "rule": {
+      "kind": "coin_branch",
+      "flips": 3,
+      "bonus": [
+        0,
+        20,
+        60,
+        120
+      ]
+    }
+  },
+  {
+    "sourceExample": "飄香豚（SV3）",
+    "english": "Flip 3 coins. Put a number of cards up to the number of heads from your discard pile into your hand.",
+    "chinese": "抛掷3次硬币，选择自己弃牌区中最多与出现正面次数相同数量的任意卡牌，在给对手看过之后，加入手牌。",
+    "rule": {
+      "kind": "coin_branch",
+      "flips": 3,
+      "perHeadEffect": {
+        "kind": "recover_hand",
+        "filter": "any",
+        "count": 1,
+        "optional": true
+      }
+    }
+  },
+  {
+    "sourceExample": "熔蚁兽（SV5K）",
+    "english": "Flip 3 coins. For each tails, discard an Energy from this Pokémon.",
+    "chinese": "抛掷3次硬币，选择与出现反面次数相同数量的这只宝可梦身上附着的能量，放于弃牌区。",
+    "rule": {
+      "kind": "coin_branch",
+      "flips": 3,
+      "perTailEffect": {
+        "kind": "discard_self_energy",
+        "count": 1
+      }
+    }
+  },
+  {
+    "sourceExample": "巨牙鲨（SV5K）",
+    "english": "Flip 3 coins. For each heads, discard a random card from your opponent's hand.",
+    "chinese": "抛掷3次硬币，在不看正面的前提下，选择与出现正面次数相同数量的对手的手牌，放于弃牌区。",
+    "rule": {
+      "kind": "coin_branch",
+      "flips": 3,
+      "repeatPerHead": {
+        "kind": "random_discard_hand"
+      }
+    }
+  },
+  {
+    "sourceExample": "阿柏蛇（SV5K）",
+    "english": "Flip a coin. If heads, your opponent's Active Pokémon is now Confused and Poisoned.",
+    "chinese": "抛掷1次硬币如果为正面，则令对手的战斗宝可梦陷入'''{{TCG|中毒}}'''和'''{{TCG|混乱}}'''状态。",
+    "rule": {
+      "kind": "coin_branch",
+      "flips": 1,
+      "heads": [
+        {
+          "kind": "special_status",
+          "target": "opponent",
+          "status": "POISONED",
+          "statuses": [
+            "POISONED",
+            "CONFUSED"
+          ],
+          "coin": false
+        }
+      ]
+    }
+  },
+  {
+    "sourceExample": "洛奇亞ex（SVM）",
+    "english": "Flip a coin until you get tails. For each heads, discard an Energy from your opponent's Active Pokémon.",
+    "chinese": "抛掷硬币直到出现反面，选择对手战斗宝可梦身上附着的与出现正面次数相同数量的能量，放于弃牌区。",
+    "rule": {
+      "kind": "coin_branch",
+      "flips": "until_tails",
+      "perHeadEffect": {
+        "kind": "discard_opponent_energy",
+        "count": 1
+      }
+    }
+  },
+  {
+    "sourceExample": "鐵螯龍蝦（SV5a）",
+    "english": "Flip 2 coins. For each heads, discard the top card of your opponent's deck.",
+    "chinese": "抛掷2次硬币，从对手牌库上方将与出现正面次数相同数量的卡牌放于弃牌区。",
+    "rule": {
+      "kind": "coin_branch",
+      "flips": 2,
+      "perHeadEffect": {
+        "kind": "mill_opponent",
+        "count": 1
+      }
+    }
+  },
+  {
+    "sourceExample": "胖甜妮（SV6）",
+    "english": "Flip 2 coins. This attack does 90 damage for each heads. If both of them are tails, your opponent's Active Pokémon is now Confused.",
+    "chinese": "抛掷2次硬币，造成正面次数×90伤害。如果全部为反面，则令对手的战斗宝可梦陷入'''{{TCG|混乱}}'''状态。",
+    "rule": {
+      "kind": "coin_branch",
+      "flips": 2,
+      "perHead": 90,
+      "tails": [
+        {
+          "kind": "special_status",
+          "target": "opponent",
+          "status": "CONFUSED",
+          "statuses": [
+            "CONFUSED"
+          ],
+          "coin": false
+        }
+      ]
+    }
+  },
+  {
+    "sourceExample": "晶光花（SV6）",
+    "english": "Flip a coin. If heads, your opponent's Active Pokémon is now Paralyzed and Poisoned.",
+    "chinese": "抛掷1次硬币如果为正面，则令对手的战斗宝可梦陷入'''{{TCG|中毒}}'''和'''{{TCG|麻痹}}'''状态。",
+    "rule": {
+      "kind": "coin_branch",
+      "flips": 1,
+      "heads": [
+        {
+          "kind": "special_status",
+          "target": "opponent",
+          "status": "POISONED",
+          "statuses": [
+            "POISONED",
+            "PARALYZED"
+          ],
+          "coin": false
+        }
+      ]
+    }
+  },
+  {
+    "sourceExample": "泥巴魚（SV8）",
+    "english": "Flip a coin. If heads, your opponent's Active Pokémon is now Paralyzed, and discard an Energy from that Pokémon.",
+    "chinese": "抛掷1次硬币如果为正面，则令对手的战斗宝可梦陷入'''{{TCG|麻痹}}'''状态。另外，选择那只宝可梦身上附着的1个能量，放于弃牌区。",
+    "rule": {
+      "kind": "coin_branch",
+      "flips": 1,
+      "heads": [
+        {
+          "kind": "special_status",
+          "target": "opponent",
+          "status": "PARALYZED",
+          "statuses": [
+            "PARALYZED"
+          ],
+          "coin": false
+        },
+        {
+          "kind": "discard_opponent_energy",
+          "count": 1
+        }
+      ]
+    }
+  },
+  {
+    "sourceExample": "貓鼬斬（SV8）",
+    "english": "Flip 3 coins. If 1 of them is heads, this attack does 20 more damage. If 2 of them are heads, this attack does 50 more damage. If all of them are heads, this attack does 80 more damage.",
+    "chinese": "抛掷3次硬币。如果出现1次正面，则追加造成20伤害。如果出现2次正面，则追加造成50伤害。如果全为正面的话，则追加造成80伤害。",
+    "rule": {
+      "kind": "coin_branch",
+      "flips": 3,
+      "bonus": [
+        0,
+        20,
+        50,
+        80
+      ]
+    }
+  },
+  {
+    "sourceExample": "蒂蕾喵（SV9）",
+    "english": "Flip a coin. If heads, this attack does 30 more damage, and heal 30 damage from this Pokémon.",
+    "chinese": "抛掷1次硬币，如果为正面，则追加造成30伤害，回复这只宝可梦「30」HP。",
+    "rule": {
+      "kind": "coin_branch",
+      "flips": 1,
+      "bonus": [
+        0,
+        30
+      ],
+      "heads": [
+        {
+          "kind": "heal_self",
+          "amount": 30
+        }
+      ]
+    }
+  },
+  {
+    "sourceExample": "火箭隊的拉達（SV10）",
+    "english": "Flip 2 coins. If both of them are tails, this Pokémon also does 90 damage to itself.",
+    "chinese": "抛掷2次硬币，如果全部为反面，则给这只宝可梦也造成90伤害。",
+    "rule": {
+      "kind": "coin_branch",
+      "flips": 2,
+      "tails": [
+        {
+          "kind": "recoil",
+          "amount": 90
+        }
+      ]
+    }
+  },
+  {
+    "sourceExample": "皮卡丘（30th 036）",
+    "english": "Flip a coin until you get tails. Search your deck for an amount of Basic {{e|Lightning}} Energy up to the number of heads and attach it to this Pokémon. Then, shuffle your deck.",
+    "chinese": "抛掷硬币直到出现反面，选择自己牌库中最多与出现正面次数相同数量的「基本{{e|雷}}能量」，附着于这只宝可梦身上。并重洗牌库。",
+    "rule": {
+      "kind": "coin_branch",
+      "flips": "until_tails",
+      "perHeadEffect": {
+        "kind": "search_attach",
+        "type": "LIGHTNING",
+        "count": 1,
+        "target": "self"
+      }
+    }
+  },
+  {
+    "sourceExample": "索财灵（30th）",
+    "english": "Flip a coin. If heads, search your deck for a card and put it into your hand. Then, shuffle your deck.",
+    "chinese": "抛掷1次硬币，如果为正面，则选择自己牌库中任意1张卡牌，加入手牌。并重洗牌库。",
+    "rule": {
+      "kind": "coin_branch",
+      "flips": 1,
+      "heads": [
+        {
+          "kind": "search_hand",
+          "filter": "any",
+          "count": 1,
+          "reveal": false
+        }
+      ]
+    }
+  },
+  {
+    "sourceExample": "三首惡龍（MF）",
+    "english": "Flip 3 coins. For each heads, discard an Energy from your opponent's Active Pokémon.",
+    "chinese": "抛掷3次硬币，选择对手战斗宝可梦身上附着的与出现正面次数相同数量的能量，放于弃牌区。",
+    "rule": {
+      "kind": "coin_branch",
+      "flips": 3,
+      "perHeadEffect": {
+        "kind": "discard_opponent_energy",
+        "count": 1
+      }
+    }
+  },
+  {
+    "sourceExample": "彩粉蝶（SV1V）",
+    "english": "Flip a coin. If heads, choose a Special Condition. Your opponent's Active Pokémon is now affected by that Special Condition.",
+    "chinese": "抛掷1次硬币如果为正面，则选择1种特殊状态，令对手的战斗宝可梦陷入该特殊状态中。",
+    "rule": {
+      "kind": "coin_branch",
+      "flips": 1,
+      "heads": [
+        {
+          "kind": "field_operation",
+          "operation": "chosen_status",
+          "statuses": [
+            "POISONED",
+            "BURNED",
+            "ASLEEP",
+            "PARALYZED",
+            "CONFUSED"
+          ]
+        }
+      ]
+    }
+  },
+  {
+    "sourceExample": "派拉斯特（SV2a）",
+    "english": "Flip 2 coins. Search your deck for a number of {{e|草}} Pokémon up to the number of heads and put them onto your Bench. Then, shuffle your deck.",
+    "chinese": "抛掷2次硬币，选择自己牌库中最多与出现正面次数相同数量的{{e|草}}宝可梦，放于备战区。并重洗牌库。",
+    "rule": {
+      "kind": "coin_branch",
+      "flips": 2,
+      "perHeadEffect": {
+        "kind": "search_bench",
+        "type": "GRASS",
+        "anyStage": true,
+        "count": 1
+      }
+    }
+  },
+  {
+    "sourceExample": "多邊獸（SV4M）",
+    "english": "Flip a coin. If heads, move an Energy from your opponent's Active Pokémon to 1 of their Benched Pokémon.",
+    "chinese": "抛掷1次硬币如果为正面，则选择对手战斗宝可梦身上附着的1个能量，转附于对手的备战宝可梦身上。",
+    "rule": {
+      "kind": "coin_branch",
+      "flips": 1,
+      "heads": [
+        {
+          "kind": "field_operation",
+          "operation": "move_opponent_energy",
+          "count": 1
+        }
+      ]
+    }
+  },
+  {
+    "sourceExample": "呆呆兽（SV2P）",
+    "english": "Flip a coin. If heads, search your deck for a card and put it into your hand. Then, shuffle your deck. If tails, discard a card from your hand.",
+    "chinese": "抛掷1次硬币如果为正面，则选择自己牌库中任意1张卡牌，加入手牌。并重洗牌库。如果为反面，则选择自己的1张手牌，放于弃牌区。",
+    "rule": {
+      "kind": "coin_branch",
+      "flips": 1,
+      "heads": [
+        {
+          "kind": "search_hand",
+          "filter": "any",
+          "count": 1,
+          "reveal": false
+        }
+      ],
+      "tails": [
+        {
+          "kind": "field_operation",
+          "operation": "hand_discard"
+        }
+      ]
+    }
+  },
+  {
+    "sourceExample": "阿羅拉 椰蛋樹ex（SV7a）",
+    "english": "Flip a coin. If heads, Knock Out your opponent's Active Basic Pokémon. If tails, Knock Out 1 of your opponent's Benched Basic Pokémon.",
+    "chinese": "抛掷1次硬币如果为正面，则令对手战斗场上的'''基础'''宝可梦'''昏厥'''。如果为反面，则选择对手备战区中的1只'''基础'''宝可梦，令那只宝可梦'''昏厥'''。",
+    "rule": {
+      "kind": "coin_branch",
+      "flips": 1,
+      "heads": [
+        {
+          "kind": "field_operation",
+          "operation": "knockout",
+          "zone": "active",
+          "basic": true
+        }
+      ],
+      "tails": [
+        {
+          "kind": "field_operation",
+          "operation": "knockout",
+          "zone": "bench",
+          "basic": true,
+          "select": true
+        }
+      ]
+    }
+  },
+  {
+    "sourceExample": "雨翅蛾（SV4M）",
+    "english": "Flip a coin until you get tails. For each heads, shuffle an Energy attached to your opponent's Active Pokémon into their deck.",
+    "chinese": "抛掷硬币直到出现反面，选择对手战斗宝可梦身上附着的与出现正面次数相同数量的能量，放回对手牌库并重洗牌库。",
+    "rule": {
+      "kind": "coin_branch",
+      "flips": "until_tails",
+      "perHeadEffect": {
+        "kind": "field_operation",
+        "operation": "return_enemy_energy",
+        "count": 1
+      }
+    }
+  },
+  {
+    "sourceExample": "黑暗鴉（MF）",
+    "english": "Flip a coin. If heads, during your opponent's next turn, the Defending Pokémon can't retreat.",
+    "chinese": "抛掷1次硬币，如果为正面，则在下一个对手的回合，受到这个招式影响的宝可梦无法撤退。",
+    "rule": {
+      "kind": "coin_branch",
+      "flips": 1,
+      "heads": [
+        {
+          "kind": "prevent_retreat"
+        }
+      ]
+    }
+  }
+]

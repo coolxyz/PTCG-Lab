@@ -1,0 +1,26 @@
+[
+  {
+    "sourceExample": "花岩怪（SV2D）",
+    "english": "Basic Pokémon '''''V''''' in play (both yours and your opponent's) have no Abilities.",
+    "chinese": "只要这只宝可梦在场上，双方场上'''基础'''宝可梦的「宝可梦{{V}}」的特性，全部消除。",
+    "rule": {
+      "kind": "suppress_abilities",
+      "trigger": "passive",
+      "usageLimit": "unlimited",
+      "targets": "basic_v",
+      "activeOnly": false
+    }
+  },
+  {
+    "sourceExample": "鐵荊棘ex（SV5a）",
+    "english": "As long as this Pokémon is in the Active Spot, Pokémon with a Rule Box in play ''(both yours and your opponent's)'' have no Abilities, except for Future Pokémon. ''(Pokémon'' '''''ex''''', ''Pokémon'' '''''V''''', ''etc. have Rule Boxes.)''",
+    "chinese": "只要这只宝可梦在战斗场上，双方场上的「{{拥有规则的宝可梦|拥有规则的宝可梦}}」（除「{{TCG|未来}}」宝可梦外）的特性，全部消除。",
+    "rule": {
+      "kind": "suppress_abilities",
+      "trigger": "passive",
+      "usageLimit": "unlimited",
+      "targets": "rule_box_except_future",
+      "activeOnly": true
+    }
+  }
+]

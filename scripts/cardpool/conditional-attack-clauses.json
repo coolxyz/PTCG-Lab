@@ -1,0 +1,142 @@
+[
+  {
+    "sourceExample": "火暴猴（SV2a）",
+    "english": "If this Pokémon isn't Confused, this attack does nothing.",
+    "chinese": "如果这只宝可梦未处于'''混乱'''状态的话，则这个招式失败。",
+    "rule": {
+      "kind": "conditional_attack",
+      "condition": {
+        "term": "has_status",
+        "owner": "self",
+        "status": "CONFUSED"
+      }
+    }
+  },
+  {
+    "sourceExample": "鬃岩狼人（SV3）",
+    "english": "If your opponent's Active Pokémon has no damage counters on it before this attack does damage, this attack does nothing.",
+    "chinese": "如果对手的战斗宝可梦身上没有放置伤害指示物的话，则这个招式失败。",
+    "rule": {
+      "kind": "conditional_attack",
+      "condition": {
+        "term": "opponent_damaged"
+      }
+    }
+  },
+  {
+    "sourceExample": "古鼎鹿（SV4K）",
+    "english": "If this Pokémon has 4 or more damage counters on it, this attack does nothing.",
+    "chinese": "如果这只宝可梦身上放置有4个及以上伤害指示物的话，则这个招式失败。",
+    "rule": {
+      "kind": "conditional_attack",
+      "condition": {
+        "term": "self_counters",
+        "lessThan": 4
+      }
+    }
+  },
+  {
+    "sourceExample": "焚焰蚣（SV5K）",
+    "english": "If your opponent's Active Pokémon isn't Burned, this attack does nothing.",
+    "chinese": "如果对手的战斗宝可梦未处于'''{{TCG|灼伤}}'''状态的话，则这个招式失败。",
+    "rule": {
+      "kind": "conditional_attack",
+      "condition": {
+        "term": "has_status",
+        "owner": "opponent",
+        "status": "BURNED"
+      }
+    }
+  },
+  {
+    "sourceExample": "鐵磐岩（SV7）",
+    "english": "If you don't have the same number of cards in your hand as your opponent, this attack does nothing.",
+    "chinese": "如果自己的手牌与对手的手牌张数不同的话，则这个招式失败。",
+    "rule": {
+      "kind": "conditional_attack",
+      "condition": {
+        "term": "equal_hands"
+      }
+    }
+  },
+  {
+    "sourceExample": "旋轉洛托姆（SV7）",
+    "english": "If there is no Stadium in play, this attack does nothing.",
+    "chinese": "如果场上没有竞技场的话，则这个招式失败。",
+    "rule": {
+      "kind": "conditional_attack",
+      "condition": {
+        "term": "any_stadium"
+      }
+    }
+  },
+  {
+    "sourceExample": "赫普的古月鳥（SV9）",
+    "english": "If your opponent doesn't have exactly 3 or 4 Prize cards remaining, this attack does nothing.",
+    "chinese": "如果对手的剩余奖赏卡张数不为4张、3张的话，则这个招式失败。",
+    "rule": {
+      "kind": "conditional_attack",
+      "condition": {
+        "term": "opponent_prizes",
+        "in": [
+          3,
+          4
+        ]
+      }
+    }
+  },
+  {
+    "sourceExample": "呆壳兽（SV2a）",
+    "english": "If this Pokémon evolved during this turn, this attack does nothing.",
+    "chinese": "在这个回合，如果这只宝可梦刚完成进化的话，则这个招式失败。",
+    "rule": {
+      "kind": "conditional_attack",
+      "condition": {
+        "term": "evolved_this_turn",
+        "in": [
+          0
+        ]
+      }
+    }
+  },
+  {
+    "sourceExample": "海豚俠（SV3）",
+    "english": "If this Pokémon didn't move from the Bench to the Active Spot this turn, this attack does nothing.",
+    "chinese": "在这个回合，如果这只宝可梦没有从备战区被放于战斗场上的话，则这个招式失败。",
+    "rule": {
+      "kind": "conditional_attack",
+      "condition": {
+        "term": "moved_this_turn"
+      }
+    }
+  },
+  {
+    "sourceExample": "阿羅拉 三地鼠（SV8）",
+    "english": "If you don't have exactly 3 cards in your hand, this attack does nothing.",
+    "chinese": "如果自己的手牌数量不为3张的话，则这个招式失败。",
+    "rule": {
+      "kind": "conditional_attack",
+      "condition": {
+        "term": "own_hand",
+        "in": [
+          3
+        ]
+      }
+    }
+  },
+  {
+    "sourceExample": "艾姆利多（SV8）",
+    "english": "If you don't have {{TCG|Uxie}} and {{TCG|Azelf}} on your Bench, this attack does nothing.",
+    "chinese": "如果自己的备战区中没有「由克希」「亚克诺姆」的话，则这个招式失败。",
+    "rule": {
+      "kind": "conditional_attack",
+      "condition": {
+        "term": "bench_names",
+        "names": [
+          "Uxie",
+          "Azelf"
+        ]
+      }
+    }
+  }
+]

@@ -1,0 +1,92 @@
+[
+  {
+    "sourceExample": "罗丝雷朵（SV5K）",
+    "english": "If this Pokémon is in the Active Spot and is damaged by an attack from your opponent's Pokémon ''(even if this Pokémon is Knocked Out)'', the Attacking Pokémon is now Poisoned.",
+    "chinese": "当这只宝可梦，在战斗场上受到对手宝可梦的招式的伤害时，会令使用了招式的宝可梦陷入'''{{TCG|中毒}}'''状态。",
+    "rule": {
+      "kind": "retaliate",
+      "status": "POISONED"
+    }
+  },
+  {
+    "sourceExample": "一家鼠ex（SV4M）",
+    "english": "If this Pokémon is in the Active Spot and is damaged by an attack from your opponent's Pokémon ''(even if this Pokémon is Knocked Out)'', put 3 damage counters on the Attacking Pokémon for each of your Tandemaus, Maushold, and Maushold ex in play.",
+    "chinese": "当这只宝可梦，在战斗场上受到对手宝可梦的招式的伤害时，将自己场上「{{TCGPM|一对鼠}}」和「一家鼠（包含『宝可梦{{ex}}』）」的数量×3个伤害指示物，放置于使用了招式的宝可梦身上。",
+    "rule": {
+      "kind": "retaliate",
+      "counterPerFamily": 30,
+      "names": [
+        "Tandemaus",
+        "Maushold",
+        "Maushold ex"
+      ]
+    }
+  },
+  {
+    "sourceExample": "皮卡丘ex（SV8）",
+    "english": "If this Pokémon has full HP and would be Knocked Out by damage from an attack, it is not Knocked Out, and its remaining HP becomes 10.",
+    "chinese": "当这只宝可梦的HP为全满的状态下，这只宝可梦受到招式的伤害而'''{{TCG|昏厥}}'''时，这只宝可梦不会'''{{TCG|昏厥}}'''，而是以剩余HP为「10」的状态留在场上。",
+    "rule": {
+      "kind": "survive_damage",
+      "remainingHP": 10,
+      "fullHP": true
+    }
+  },
+  {
+    "sourceExample": "變隱龍（SV8）",
+    "english": "If any damage is done to this Pokémon by attacks, flip a coin. If heads, prevent that damage.",
+    "chinese": "当这只宝可梦受到招式的伤害时，自己抛掷1次硬币。如果为正面，则这只宝可梦不受到该伤害。",
+    "rule": {
+      "kind": "coin_armor"
+    }
+  },
+  {
+    "sourceExample": "願增猿ex（SV6a）",
+    "english": "If this Pokémon is Knocked Out by damage from an attack from your opponent's Pokémon, and if you have any {{DL|Pecharunt (TCG)|Pecharunt ex}} in play, your opponent takes 1 fewer Prize card.",
+    "chinese": "当这只宝可梦，受到对手宝可梦的招式的伤害而'''{{TCG|昏厥}}'''时，如果自己场上有「桃歹郎{{ex}}」的话，则对手拿取的奖赏卡将减少1张。",
+    "rule": {
+      "kind": "prize_reduction",
+      "count": 1,
+      "requiresName": "Pecharunt ex"
+    }
+  },
+  {
+    "sourceExample": "刺球仙人掌（SV1S）",
+    "english": "If this Pokémon is in the Active Spot and is damaged by an attack from your opponent's Pokémon (even if this Pokémon is Knocked Out), put 3 damage counters on the Attacking Pokémon.",
+    "chinese": "当这只宝可梦，在战斗场上受到对手宝可梦的招式的伤害时，将3个伤害指示物放置于使用了招式的宝可梦身上。",
+    "rule": {
+      "kind": "retaliate",
+      "counters": 30
+    }
+  },
+  {
+    "sourceExample": "快拳郎（SV2a）",
+    "english": "If this Pokémon is in the Active Spot and is damaged by an attack from your opponent's Pokémon ''(even if this Pokémon is Knocked Out)'', put 3 damage counters on the Attacking Pokémon.",
+    "chinese": "当这只宝可梦，在战斗场上受到对手宝可梦的招式的伤害时，将3个伤害指示物放置于使用了招式的宝可梦身上。",
+    "rule": {
+      "kind": "retaliate",
+      "counters": 30
+    }
+  },
+  {
+    "sourceExample": "泥巴魚（SV3）",
+    "english": "If this Pokémon is in the Active Spot, has a Pokémon Tool attached, and is damaged by an attack from your opponent's Pokémon ''(even if this Pokémon is Knocked Out)'', put 5 damage counters on the Attacking Pokémon.",
+    "chinese": "当这只宝可梦，在战斗场上受到对手宝可梦的招式的伤害时，如果这只宝可梦身上放有「{{TCG|宝可梦道具}}」的话，则将5个伤害指示物放置于使用了招式的宝可梦身上。",
+    "rule": {
+      "kind": "retaliate",
+      "counters": 50,
+      "requiresTool": true
+    }
+  },
+  {
+    "sourceExample": "拖拖蚓ex（SV7）",
+    "english": "If this Pokémon is damaged by an attack from your opponent's Pokémon ''(even if this Pokémon is Knocked Out)'', put 2 damage counters on the Attacking Pokémon for each {{e|Metal}} Energy attached to this Pokémon.",
+    "chinese": "当这只宝可梦，受到对手宝可梦的招式的伤害时，将这只宝可梦身上附着的{{e|钢}}能量数量×2个伤害指示物，放置于使用了招式的宝可梦的身上。",
+    "rule": {
+      "kind": "retaliate",
+      "counterPerEnergy": 20,
+      "type": "METAL",
+      "anyZone": true
+    }
+  }
+]

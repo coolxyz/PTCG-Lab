@@ -1,0 +1,104 @@
+[
+  {
+    "sourceExample": "反轉能量（TCG）",
+    "english": "As long as this card is attached to a Pokémon, it provides {{e|无色}} Energy.<br><br>If you have more Prize cards remaining than your opponent, and if this card is attached to an Evolution Pokémon that doesn't have a Rule Box ''(Pokémon ex, Pokémon V, etc. have Rule Boxes)'', this card provides every type of Energy but provides only 3 Energy at a time.",
+    "chinese": "只要这张卡牌，被附着于宝可梦身上，就被视作1个{{e|无色}}能量。<br><br>如果自己的剩余奖赏卡张数，比对手的剩余奖赏卡张数多的话，则这张卡牌，只要被附着于进化宝可梦身上（除「{{拥有规则的宝可梦|拥有规则的宝可梦}}」外），就被视作3个{{TCG|极光能量|所有属性的能量}}。",
+    "rule": {
+      "kind": "special_energy",
+      "provides": "COLORLESS",
+      "reversal": true
+    }
+  },
+  {
+    "sourceExample": "治療能量（TCG）",
+    "english": "As long as this card is attached to a Pokémon, it provides {{e|无色}} Energy.<br><br>The Pokémon this card is attached to recovers from being Asleep, Confused, or Paralyzed and can't be affected by those Special Conditions.",
+    "chinese": "只要这张卡牌，被附着于宝可梦身上，就被视作1个{{e|无色}}能量。<br><br>身上附着了这张卡牌的宝可梦不会陷入'''睡眠'''、'''麻痹'''、'''混乱'''状态，已经处于的'''睡眠'''、'''麻痹'''、'''混乱'''状态，也全部恢复。",
+    "rule": {
+      "kind": "special_energy",
+      "provides": "COLORLESS",
+      "statusImmunity": [
+        "ASLEEP",
+        "CONFUSED",
+        "PARALYZED"
+      ]
+    }
+  },
+  {
+    "sourceExample": "喷射能量（TCG）",
+    "english": "As long as this card is attached to a Pokémon, it provides {{e|无色}} Energy.<br><br>When you attach this card from your hand to 1 of your Benched Pokémon, switch that Pokémon with your Active Pokémon.",
+    "chinese": "只要这张卡牌，被附着于宝可梦身上，就被视作1个{{e|无色}}能量。<br><br>当将这张卡牌从手牌附着于备战宝可梦身上时，将该宝可梦与战斗宝可梦互换。",
+    "rule": {
+      "kind": "special_energy",
+      "provides": "COLORLESS",
+      "switchFromHand": true
+    }
+  },
+  {
+    "sourceExample": "医疗能量（TCG）",
+    "english": "As long as this card is attached to a Pokémon, it provides {{e|无}} Energy.<br><br>When you attach this card from your hand to 1 of your Pokémon, heal 30 damage from that Pokémon.",
+    "chinese": "只要这张卡牌，被附着于宝可梦身上，就被视作1个{{e|无}}能量。<br><br>当将这张卡牌从手牌附着于宝可梦身上时，回复那只宝可梦「30」HP。",
+    "rule": {
+      "kind": "special_energy",
+      "provides": "COLORLESS",
+      "healFromHand": 30
+    }
+  },
+  {
+    "sourceExample": "薄霧能量（TCG）",
+    "english": "As long as this card is attached to a Pokémon, it provides {{e|Colorless}} Energy.<br><br>Prevent all effects of attacks used by your opponent's Pokémon done to the Pokémon this card is attached to. ''(Existing effects are not removed. Damage is not an effect.)''",
+    "chinese": "只要这张卡牌，被附着于宝可梦身上，就被视作1个{{e|无}}能量。<br><br>身上附着了这张卡牌的宝可梦，不受到对手宝可梦所使用的招式的效果影响。（已经受到的效果，不会消失。）",
+    "rule": {
+      "kind": "special_energy",
+      "provides": "COLORLESS",
+      "protectEffects": true
+    }
+  },
+  {
+    "sourceExample": "古舊能量（TCG）",
+    "english": "As long as this card is attached to a Pokémon, it provides every type of Energy but provides only 1 Energy at a time.<br><br>If the Pokémon this card is attached to is Knocked Out by damage from an attack from your opponent's Pokémon, that player takes 1 fewer Prize card. This effect of your Legacy Energy can't be applied more than once per game.",
+    "chinese": "只要这张卡牌，被附着于宝可梦身上，就被视作1个所有属性的能量。<br><br>身上附着了这张卡牌的宝可梦，受到对手宝可梦的招式的伤害而'''{{TCG|昏厥}}'''时，对手拿取的奖赏卡将减少1张。对战中，自己的「遗赠能量」的这个效果，只会生效1次。",
+    "rule": {
+      "kind": "special_energy",
+      "provides": "ANY",
+      "legacy": true
+    }
+  },
+  {
+    "sourceExample": "富裕能量（TCG）",
+    "english": "As long as this card is attached to a Pokémon, it provides {{e|Colorless}} Energy.<br><br>When you attach this card from your hand to a Pokémon, draw 4 cards.",
+    "chinese": "只要这张卡牌，被附着于宝可梦身上，就被视作1个{{e|无}}能量。<br><br>当将这张卡牌从手牌附着于宝可梦身上时，从自己牌库上方抽取4张卡牌。",
+    "rule": {
+      "kind": "special_energy",
+      "provides": "COLORLESS",
+      "drawFromHand": 4
+    }
+  },
+  {
+    "sourceExample": "夜光能量（TCG）",
+    "english": "As long as this card is attached to a Pokémon, it provides every type of Energy but provides only 1 Energy at a time.<br><br>If the Pokémon this card is attached to has any other Special Energy attached, this card provides {{e|无色}} Energy instead.",
+    "chinese": "只要这张卡牌，被附着于宝可梦身上，就被视作1个所有属性的能量。<br><br>如果身上附着了这张卡牌的宝可梦，身上附着了除这张卡牌以外的特殊能量的话，则这张卡牌被视作1个{{e|无色}}能量。",
+    "rule": {
+      "kind": "special_energy",
+      "provides": "ANY",
+      "luminous": true
+    }
+  },
+  {
+    "sourceExample": "回力鏢能量（TCG）",
+    "english": "As long as this card is attached to a Pokémon, it provides {{e|Colorless}} Energy.<br>If this card is discarded by an effect of an attack used by the Pokémon this card is attached to, attach this card from your discard pile to that Pokémon after attacking.",
+    "chinese": "只要这张卡牌，被附着于宝可梦身上，就被视作1个{{e|无色}}能量。<br>如果因为身上附着了这张卡牌的宝可梦所使用的招式的效果，而导致这张卡牌被放于弃牌区的话，则在处理完招式的伤害和效果后，将这张卡牌附着回原来的宝可梦身上。",
+    "rule": {
+      "provides": "COLORLESS",
+      "boomerang": true
+    }
+  },
+  {
+    "sourceExample": "火箭隊能量（TCG）",
+    "english": "This card can only be attached to a Team Rocket's Pokémon. If this card is attached to anything other than a Team Rocket's Pokémon, discard this card.",
+    "chinese": "这张卡牌只能附着于「火箭队的宝可梦」身上，如果这张卡牌附着于「火箭队的宝可梦」之外的宝可梦身上的话，则将其放于弃牌区。\n只要这张卡牌被附着于宝可梦身上，就被视作2个{{e|超}}{{e|恶}}2种属性的能量。",
+    "rule": {
+      "provides": "COLORLESS",
+      "rocket": true
+    }
+  }
+]

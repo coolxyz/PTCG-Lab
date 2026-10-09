@@ -1,0 +1,112 @@
+[
+  {
+    "sourceExample": "电气发生器（TCG）",
+    "english": "Look at the top 5 cards of your deck and attach up to 2 Basic {{e|雷}} Energy cards you find there to your Benched {{e|雷}} Pokémon in any way you like. Shuffle the other cards back into your deck.",
+    "chinese": "查看自己牌库上方5张卡牌，选择其中最多2张「基本{{e|雷}}能量」，以任意方式附着于备战区的{{e|雷}}宝可梦身上。将剩余的卡牌放回牌库并重洗牌库。",
+    "rule": {
+      "kind": "attach_multiple",
+      "origin": "top",
+      "top": 5,
+      "count": 2,
+      "basic": true,
+      "type": "LIGHTNING",
+      "target": "bench",
+      "targetType": "LIGHTNING"
+    }
+  },
+  {
+    "sourceExample": "粉碎之锤（TCG）",
+    "english": "Flip a coin. If heads, discard an Energy attached to 1 of your opponent's Pokémon.",
+    "chinese": "抛掷1次硬币如果为正面，则选择对手场上宝可梦身上附着的1个能量，放于弃牌区。",
+    "rule": {
+      "kind": "discard_field_energy",
+      "coin": true
+    }
+  },
+  {
+    "sourceExample": "牡丹（TCG）",
+    "english": "Put 1 of your Basic Pokémon and all attached cards into your hand.",
+    "chinese": "选择自己场上的1只'''基础'''宝可梦，将该宝可梦，以及放于其身上的所有卡牌，放回手牌。",
+    "rule": {
+      "kind": "return_pokemon",
+      "filter": "basic_pokemon",
+      "destination": "hand"
+    }
+  },
+  {
+    "sourceExample": "皮拿（TCG）",
+    "english": "Discard a Special Energy from each of your opponent's Pokémon.",
+    "chinese": "选择对手所有宝可梦身上附着的{{TCG|特殊能量卡|特殊能量}}各1个，放于弃牌区。",
+    "rule": {
+      "kind": "discard_field_energy",
+      "special": true,
+      "each": true
+    }
+  },
+  {
+    "sourceExample": "梅洛可（TCG）",
+    "english": "You can use this card only if any of your Pokémon were Knocked Out during your opponent's last turn.<br><br>Attach a Basic {{e|火}} Energy card from your discard pile to 1 of your Pokémon. If you do, draw cards until you have 6 cards in your hand.",
+    "chinese": "这张卡牌，只有在上一个对手的回合，自己的宝可梦'''{{TCG|昏厥}}'''时才可使用。<br><br>选择自己弃牌区中的1张「基本{{e|火}}能量」，附着于自己的宝可梦身上。然后，从牌库上方抽取卡牌，直到自己的手牌变为6张为止。",
+    "rule": {
+      "kind": "attach_multiple",
+      "origin": "discard",
+      "count": 1,
+      "basic": true,
+      "type": "FIRE",
+      "mandatory": true,
+      "afterKnockout": true,
+      "thenDrawUntil": 6
+    }
+  },
+  {
+    "sourceExample": "奥琳博士的气魄（TCG）",
+    "english": "Choose up to 2 of your Ancient Pokémon and attach a Basic Energy card from your discard pile to each of them. If you attached any Energy in this way, draw 3 cards.",
+    "chinese": "选择自己最多2只「{{TCG|古代}}」宝可梦，各附着1张弃牌区中的基本能量。然后，从自己牌库上方抽取3张卡牌。",
+    "rule": {
+      "kind": "attach_multiple",
+      "origin": "discard",
+      "count": 2,
+      "basic": true,
+      "targetTrait": "ANCIENT",
+      "distinctTargets": true,
+      "thenDraw": 3
+    }
+  },
+  {
+    "sourceExample": "也慈（TCG）",
+    "english": "Search your deck for up to 2 Basic Energy cards and attach them to 1 of your Pokémon. Then, shuffle your deck. During this turn, your Pokémon can't attack. ''(This includes Pokémon that come into play this turn.)''",
+    "chinese": "在使用这张卡牌的回合结束前，自己所有的宝可梦，无法使用招式。（也包括新出场的宝可梦。）<br><br>选择自己牌库中最多2张基本能量，附着于自己的1只宝可梦身上。并重洗牌库。",
+    "rule": {
+      "kind": "attach_multiple",
+      "origin": "left",
+      "count": 2,
+      "basic": true,
+      "singleTarget": true,
+      "blockAttack": true
+    }
+  },
+  {
+    "sourceExample": "阿杏的秘招（TCG）",
+    "english": "Choose up to 2 of your {{e|Darkness}} Pokémon. For each of those Pokémon, search your deck for a Basic {{e|Darkness}} Energy card and attach it to that Pokémon. Then, shuffle your deck. If you attached Energy to your Active Pokémon in this way, it is now Poisoned.",
+    "chinese": "选择自己最多2只{{e|恶}}宝可梦，各附着1张自己牌库中的「基本{{e|恶}}能量」。并重洗牌库。附着于战斗宝可梦身上的情况下，令那只宝可梦陷入'''{{TCG|中毒}}'''状态。",
+    "rule": {
+      "kind": "attach_multiple",
+      "origin": "left",
+      "count": 2,
+      "basic": true,
+      "type": "DARK",
+      "targetType": "DARK",
+      "distinctTargets": true,
+      "poisonActive": true
+    }
+  },
+  {
+    "sourceExample": "能量转移（TCG）",
+    "english": "Move a basic Energy from 1 of your Pokémon to another of your Pokémon.",
+    "chinese": "选择自己场上宝可梦身上附着的1个基本能量，转附于自己其他宝可梦身上。",
+    "rule": {
+      "kind": "transfer_energy",
+      "basic": true
+    }
+  }
+]

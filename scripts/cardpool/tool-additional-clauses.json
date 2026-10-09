@@ -1,0 +1,345 @@
+[
+  {
+    "sourceExample": "岩石胸甲（TCG）",
+    "english": "The {{e|斗}} Pokémon this card is attached to takes 30 less damage from attacks from your opponent's Pokémon ''(after applying Weakness and Resistance)''.",
+    "chinese": "身上放有这张卡牌的{{e|斗}}宝可梦，受到对手宝可梦的招式的伤害「-30」。",
+    "rule": {
+      "kind": "tool_modifier",
+      "condition": "fighting",
+      "armor": 30
+    }
+  },
+  {
+    "sourceExample": "硬硬束帶（TCG）",
+    "english": "The Stage 1 Pokémon this card is attached to takes 30 less damage from attacks from your opponent's Pokémon ''(after applying Weakness and Resistance).''",
+    "chinese": "身上放有这张卡牌的'''1阶进化'''宝可梦，受到对手宝可梦的招式的伤害「-30」。",
+    "rule": {
+      "kind": "tool_modifier",
+      "condition": "stage1",
+      "armor": 30
+    }
+  },
+  {
+    "sourceExample": "凸凸头盔（TCG）",
+    "english": "If the Pokémon this card is attached to is your Active Pokémon and is damaged by an opponent's attack ''(even if that Pokémon is Knocked Out)'', put 2 damage counters on the Attacking Pokémon.",
+    "chinese": "身上放有这张卡牌的宝可梦，在战斗场上受到对手宝可梦的招式的伤害时，给使用了招式的宝可梦身上放置2个伤害指示物。",
+    "rule": {
+      "kind": "tool_modifier",
+      "reaction": {
+        "kind": "retaliate",
+        "counters": 20
+      }
+    }
+  },
+  {
+    "sourceExample": "吃剩的东西（TCG）",
+    "english": "At the end of your turn, if the Pokémon this card is attached to is in the Active Spot, heal 20 damage from it.",
+    "chinese": "在自己的回合结束时，如果身上放有这张卡牌的宝可梦在战斗场上的话，则回复该宝可梦「20」HP。",
+    "rule": {
+      "kind": "tool_modifier",
+      "healEndTurn": 20
+    }
+  },
+  {
+    "sourceExample": "安全护目镜（TCG）",
+    "english": "The Basic Pokémon this card is attached to has no Weakness.",
+    "chinese": "身上放有这张卡牌的'''基础'''宝可梦的弱点，全部消除。",
+    "rule": {
+      "kind": "tool_modifier",
+      "condition": "basic",
+      "noWeakness": true
+    }
+  },
+  {
+    "sourceExample": "复仇拳箱（TCG）",
+    "english": "If the Pokémon this card is attached to is Knocked Out by damage from an attack from your opponent's Pokémon, put 4 damage counters on the Attacking Pokémon.",
+    "chinese": "身上放有这张卡牌的宝可梦，受到对手宝可梦的招式的伤害而'''昏厥'''时，给使用了招式的宝可梦身上放置4个伤害指示物。",
+    "rule": {
+      "kind": "tool_modifier",
+      "reaction": {
+        "kind": "knockout_retaliate",
+        "counters": 40
+      }
+    }
+  },
+  {
+    "sourceExample": "豪华斗篷（TCG）",
+    "english": "If the Pokémon this card is attached to doesn't have a Rule Box, it gets +100 HP, and if it is Knocked Out by damage from an attack from your opponent's Pokémon, that player takes 1 more Prize card. (''Pokémon '''ex''', Pokémon '''V''',etc. have the Rule Boxes.'')",
+    "chinese": "身上放有这张卡牌的宝可梦（除「{{拥有规则的宝可梦|拥有规则的宝可梦}}」外）的最大HP「+100」，当该宝可梦，收到对手宝可梦的招式的伤害而'''昏厥'''时，对手拿取的奖赏卡将增加1张。",
+    "rule": {
+      "kind": "tool_modifier",
+      "condition": "no_rule_box",
+      "hp": 100,
+      "reaction": {
+        "kind": "prize_reduction",
+        "count": -1
+      }
+    }
+  },
+  {
+    "sourceExample": "莉莉艾的珍珠（TCG）",
+    "english": "If the Lillie's Pokémon this card is attached to is Knocked Out by damage from an attack from your opponent's Pokémon, that player takes 1 fewer Prize card.",
+    "chinese": "身上放有这张卡牌的「莉莉艾的宝可梦」受到对手宝可梦的招式的伤害而'''{{TCG|昏厥}}'''时，对手拿取的奖赏卡将减少1张。",
+    "rule": {
+      "kind": "tool_modifier",
+      "condition": "lillie",
+      "reaction": {
+        "kind": "prize_reduction",
+        "count": 1
+      }
+    }
+  },
+  {
+    "sourceExample": "驅勁能量 古代（TCG）",
+    "english": "The Ancient Pokémon this card is attached to gets +60 HP, recovers from all Special Conditions, and can't be affected by any Special Conditions.",
+    "chinese": "身上放有这张卡牌的「古代」宝可梦，最大HP「+60」，那只宝可梦，不会陷入特殊状态，已经处于的特殊状态，也全部恢复。",
+    "rule": {
+      "kind": "tool_modifier",
+      "condition": "ancient",
+      "hp": 60,
+      "statuses": [
+        "all"
+      ]
+    }
+  },
+  {
+    "sourceExample": "反击增幅器（TCG）",
+    "english": "If you have more Prize cards remaining than your opponent, the attacks of the Pokémon this card is attached to cost {{e|Colorless}} less.",
+    "chinese": "如果自己的剩余奖赏卡张数，比对手的剩余奖赏卡张数多的话，则身上放有这张卡牌的宝可梦使用招式所需能量，减少1个{{e|无}}能量。",
+    "rule": {
+      "kind": "tool_modifier",
+      "condition": "more_prizes",
+      "attackLess": 1
+    }
+  },
+  {
+    "sourceExample": "反击增幅器（TCG）",
+    "english": "If you have more Prize cards remaining than your opponent, the attacks of the Pokémon this card is attached to cost {{e|Colorless}} less.",
+    "chinese": "如果自己剩余奖赏卡张数，比对手多的话，则放有这张卡牌的宝可梦使用招式所需能量，减少1个{{e|无}}能量。",
+    "rule": {
+      "kind": "tool_modifier",
+      "condition": "more_prizes",
+      "attackLess": 1
+    }
+  },
+  {
+    "sourceExample": "咒术掸子（TCG）",
+    "english": "If the Pokémon this card is attached to is Knocked Out by damage from an attack from your opponent's Pokémon, discard a random card from your opponent's hand.",
+    "chinese": "身上放有这张卡牌的宝可梦，受到对手的宝可梦的招式的伤害而'''昏厥'''时，在不看正面的前提下，选择对手的1张手牌，放于弃牌区。",
+    "rule": {
+      "kind": "tool_modifier",
+      "reaction": {
+        "kind": "damage_choice",
+        "knockout": true,
+        "operation": "random_hand",
+        "count": 1
+      }
+    }
+  },
+  {
+    "sourceExample": "倖存鍛鍊器（TCG）",
+    "english": "If the Pokémon this card is attached to has full HP and would be Knocked Out by damage from an attack from your opponent's Pokémon, it is not Knocked Out, and its remaining HP becomes 10. Then, discard this card.",
+    "chinese": "当身上放有这张卡牌的宝可梦在HP为全满状态下，受到对手宝可梦的招式的伤害而'''昏厥'''时，那只宝可梦不会'''昏厥'''，而是以剩余HP为「10」的状态留在场上。然后，将这张卡牌放于弃牌区。",
+    "rule": {
+      "kind": "tool_modifier",
+      "reaction": {
+        "kind": "survive_damage",
+        "fullHP": true,
+        "remainingHP": 10,
+        "opponentOnly": true,
+        "consume": true
+      }
+    }
+  },
+  {
+    "sourceExample": "沉重接力棒（TCG）",
+    "english": "If the Pokémon this card is attached to has a Retreat Cost of exactly 4, is in the Active Spot, and is Knocked Out by damage from an attack from your opponent's Pokémon, move up to 3 Basic Energy cards from that Pokémon to your Benched Pokémon in any way you like.",
+    "chinese": "身上放有这张卡牌的'''撤退'''所需能量为4个的宝可梦，在战斗场上受到对手宝可梦招式的伤害而'''昏厥'''时，选择那只宝可梦身上附着的最多3张基本能量，以任意方式转附于自己的备战宝可梦身上。",
+    "rule": {
+      "kind": "tool_modifier",
+      "reaction": {
+        "kind": "damage_choice",
+        "knockout": true,
+        "activeOnly": true,
+        "retreat": 4,
+        "operation": "transfer_energy",
+        "basic": true,
+        "count": 3,
+        "spread": true
+      }
+    }
+  },
+  {
+    "sourceExample": "璀璨結晶（TCG）",
+    "english": "When the Tera Pokémon this card is attached to uses an attack, that attack costs 1 Energy less. ''(The Energy can be of any type.)''",
+    "chinese": "身上放有这张卡牌的「{{TCG|太晶}}」宝可梦使用招式时，使用那个招式所需能量，减少1个。（减少的可以是任意属性的能量。）",
+    "rule": {
+      "kind": "tool_modifier",
+      "condition": "tera",
+      "attackLessAny": 1
+    }
+  },
+  {
+    "sourceExample": "鎖鏈糬（TCG）",
+    "english": "Attacks used by the Poisoned Pokémon this card is attached to do 40 more damage to your opponent's Active Pokémon ''(before applying Weakness and Resistance)''.",
+    "chinese": "身上放有这张卡牌的处于'''{{TCG|中毒}}'''状态的宝可梦所使用的招式，给对手的战斗宝可梦造成的伤害「+40」。",
+    "rule": {
+      "kind": "tool_modifier",
+      "condition": "poisoned",
+      "damage": 40
+    }
+  },
+  {
+    "sourceExample": "力之沙漏（TCG）",
+    "english": "At the end of your turn ''(after your attack)'', if the Pokémon this card is attached to is in the Active Spot, you may attach a Basic Energy card from your discard pile to it.",
+    "chinese": "在自己的回合结束时，如果身上放有这张卡牌的宝可梦在战斗场上的话，则可选择自己弃牌区中的1张基本能量，附着于那只宝可梦身上。",
+    "rule": {
+      "kind": "tool_modifier",
+      "endAttach": {
+        "kind": "attach",
+        "origin": "discard",
+        "basic": true,
+        "count": 1,
+        "target": "self"
+      }
+    }
+  },
+  {
+    "sourceExample": "奢華炸彈（TCG）",
+    "english": "If the Pokémon this card is attached to is in the Active Spot and is damaged by an attack from your opponent's Pokémon ''(even if this Pokémon is Knocked Out)'', put 12 damage counters on the Attacking Pokémon. If you placed any damage counters in this way, discard this card.",
+    "chinese": "身上放有这张卡牌的宝可梦，在战斗场上受到对手宝可梦的招式的伤害时，给使用了招式的宝可梦身上放置12个伤害指示物。然后，将这张卡牌放于弃牌区。",
+    "rule": {
+      "kind": "tool_modifier",
+      "reaction": {
+        "kind": "retaliate",
+        "counters": 120,
+        "consume": true
+      }
+    }
+  },
+  {
+    "sourceExample": "手持循環扇（TCG）",
+    "english": "If the Pokémon this card is attached to is in the Active Spot and is damaged by an attack from your opponent's Pokémon ''(even if this Pokémon is Knocked Out)'', move an Energy from the Attacking Pokémon to 1 of your opponent's Benched Pokémon.",
+    "chinese": "身上放有这张卡牌的宝可梦，在战斗场上受到对手宝可梦的招式的伤害时，选择使用了招式的宝可梦身上附着的1个能量，转附于对手的备战宝可梦身上。",
+    "rule": {
+      "kind": "tool_modifier",
+      "reaction": {
+        "kind": "damage_choice",
+        "activeOnly": true,
+        "operation": "move_attacker_energy"
+      }
+    }
+  },
+  {
+    "sourceExample": "希望護身符（TCG）",
+    "english": "If the Pokémon this card is attached to is Knocked Out by damage from an attack from your opponent's Pokémon, search your deck for up to 3 cards and put them into your hand. Then, shuffle your deck.",
+    "chinese": "身上放有这张卡牌的宝可梦，受到对手宝可梦的招式的伤害而'''{{TCG|昏厥}}'''时，选择自己牌库中任意卡牌最多3张，加入手牌。并重洗牌库。",
+    "rule": {
+      "kind": "tool_modifier",
+      "reaction": {
+        "kind": "damage_choice",
+        "knockout": true,
+        "operation": "search_hand",
+        "count": 3,
+        "upTo": true
+      }
+    }
+  },
+  {
+    "sourceExample": "重力之玉（TCG）",
+    "english": "As long as the Pokémon this card is attached to is in the Active Spot, the Retreat Cost of both Active Pokémon is {{e|Colorless}} more.",
+    "chinese": "只要身上放有这张卡牌的宝可梦在战斗场上，双方战斗宝可梦'''撤退'''所需能量，各增加1个。",
+    "rule": {
+      "kind": "tool_modifier",
+      "activeAura": {
+        "retreatMore": 1
+      }
+    }
+  },
+  {
+    "sourceExample": "学习装置（TCG）",
+    "english": "When your Active Pokémon is Knocked Out by damage from an attack from your opponent's Pokémon, you may move a Basic Energy from that Pokémon to the Pokémon this card is attached to.",
+    "chinese": "每当自己的战斗宝可梦，受到对手宝可梦的招式的伤害'''{{TCG|昏厥}}'''时，可选择该战斗宝可梦身上附着的1张基本能量，转附于身上放有这张卡牌的宝可梦身上。",
+    "rule": {
+      "kind": "tool_modifier",
+      "expShare": true
+    }
+  },
+  {
+    "sourceExample": "幸運頭盔（TCG）",
+    "english": "Whenever the Pokémon this card is attached to is your Active Pokémon and is damaged by an opponent's attack ''(even if that Pokémon is Knocked Out)'', draw 2 cards.",
+    "chinese": "身上放有这张卡牌的宝可梦，在战斗场上受到对手宝可梦招式的伤害时，从自己牌库上方抽取2张卡牌。",
+    "rule": {
+      "kind": "tool_modifier",
+      "reaction": {
+        "kind": "damage_choice",
+        "activeOnly": true,
+        "operation": "draw",
+        "count": 2
+      }
+    }
+  },
+  {
+    "sourceExample": "巡逻帽子（TCG）",
+    "english": "As long as the Pokémon this card is attached to is in the Active Spot, cards in your deck can't be discarded by effects of your opponent's attacks, Abilities, Item cards, Pokémon Tool cards, or Supporter cards.",
+    "chinese": "只要身上放有这张卡牌的宝可梦在战斗场上，自己的牌库，就不会受到因对手的招式、特性、物品、宝可梦道具、支援者而导致的将牌库的卡牌放于弃牌区的效果影响。",
+    "rule": {
+      "kind": "tool_modifier",
+      "protectDeck": true
+    }
+  },
+  {
+    "sourceExample": "千香果（TCG）",
+    "english": "If the Pokémon this card is attached to is damaged by an attack from your opponent's {{e|Water}} Pokémon, it takes 60 less damage ''(after applying Weakness and Resistance)'', and discard this card.",
+    "chinese": "身上放有这张卡牌的宝可梦，受到对手{{e|水}}宝可梦的招式的伤害时，那个伤害「-60」，将这张卡牌放于弃牌区。",
+    "rule": {
+      "kind": "tool_modifier",
+      "berryType": "WATER"
+    }
+  },
+  {
+    "sourceExample": "福祿果（TCG）",
+    "english": "If the Pokémon this card is attached to is damaged by an attack from your opponent's {{e|Psychic}} Pokémon, it takes 60 less damage ''(after applying Weakness and Resistance)'', and discard this card.",
+    "chinese": "身上放有这张卡牌的宝可梦，受到对手{{e|超}}宝可梦的招式的伤害时，那个伤害「-60」，将这张卡牌放于弃牌区。",
+    "rule": {
+      "kind": "tool_modifier",
+      "berryType": "PSYCHIC"
+    }
+  },
+  {
+    "sourceExample": "巧可果（TCG）",
+    "english": "If the Pokémon this card is attached to is damaged by an attack from your opponent's {{e|Fire}} Pokémon, it takes 60 less damage ''(after applying Weakness and Resistance)'', and discard this card.",
+    "chinese": "身上放有这张卡牌的宝可梦，受到对手{{e|火}}宝可梦的招式的伤害时，那个伤害「-60」，将这张卡牌放于弃牌区。",
+    "rule": {
+      "kind": "tool_modifier",
+      "berryType": "FIRE"
+    }
+  },
+  {
+    "sourceExample": "刺耳果（TCG）",
+    "english": "If the Pokémon this card is attached to is damaged by an attack from your opponent's {{e|Darkness}} Pokémon, it takes 60 less damage ''(after applying Weakness and Resistance)'', and discard this card.",
+    "chinese": "身上放有这张卡牌的宝可梦，受到对手{{e|恶}}宝可梦的招式的伤害时，那个伤害「-60」，将这张卡牌放于弃牌区。",
+    "rule": {
+      "kind": "tool_modifier",
+      "berryType": "DARK"
+    }
+  },
+  {
+    "sourceExample": "霹霹果（TCG）",
+    "english": "If the Pokémon this card is attached to is damaged by an attack from your opponent's {{e|Metal}} Pokémon, it takes 60 less damage ''(after applying Weakness and Resistance)'', and discard this card.",
+    "chinese": "身上放有这张卡牌的宝可梦，受到对手{{e|钢}}宝可梦的招式的伤害时，那个伤害「-60」，将这张卡牌放于弃牌区。",
+    "rule": {
+      "kind": "tool_modifier",
+      "berryType": "METAL"
+    }
+  },
+  {
+    "sourceExample": "莓榴果（TCG）",
+    "english": "If the Pokémon this card is attached to is damaged by an attack from your opponent's {{e|Dragon}} Pokémon, it takes 60 less damage ''(after applying Weakness and Resistance)'', and discard this card.",
+    "chinese": "身上放有这张卡牌的宝可梦，受到对手{{e|龙}}宝可梦的招式的伤害时，那个伤害「-60」，将这张卡牌放于弃牌区。",
+    "rule": {
+      "kind": "tool_modifier",
+      "berryType": "DRAGON"
+    }
+  }
+]

@@ -1,0 +1,1002 @@
+[
+  {
+    "sourceExample": "混混鳄（SV1S）",
+    "english": "If your opponent has exactly 1 Prize card remaining, this attack does 90 more damage.",
+    "chinese": "如果对手的剩余奖赏卡张数为1张的话，则追加造成90伤害。",
+    "rule": {
+      "kind": "damage_expression",
+      "mode": "add",
+      "factor": 90,
+      "term": "opponent_exact_prizes",
+      "number": 1
+    }
+  },
+  {
+    "sourceExample": "藏饱栗鼠（SV1V）",
+    "english": "If this Pokémon has a Pokémon Tool attached, this attack does 80 more damage.",
+    "chinese": "如果这只宝可梦身上放有「宝可梦道具」的话，则追加造成80伤害。",
+    "rule": {
+      "kind": "damage_expression",
+      "mode": "add",
+      "factor": 80,
+      "term": "self_tool"
+    }
+  },
+  {
+    "sourceExample": "獒教父ex（SV-P）",
+    "english": "If your Benched Pokémon have any damage counters on them, this attack does 120 more damage.",
+    "chinese": "如果自己的备战宝可梦身上放置有伤害指示物的话，则追加造成120伤害。",
+    "rule": {
+      "kind": "damage_expression",
+      "mode": "add",
+      "factor": 120,
+      "term": "bench_damaged"
+    }
+  },
+  {
+    "sourceExample": "绿毛虫（SV2a）",
+    "english": "If your opponent's Active Pokémon is a {{e|草}} Pokémon, this attack does 30 more damage.",
+    "chinese": "如果对手的战斗宝可梦为{{e|草}}宝可梦的话，则追加造成30伤害。",
+    "rule": {
+      "kind": "damage_expression",
+      "mode": "add",
+      "factor": 30,
+      "term": "target_type",
+      "type": "GRASS"
+    }
+  },
+  {
+    "sourceExample": "顫弦蠑螈（SV3）",
+    "english": "This attack does 30 more damage for each different type of Pokémon on your Bench.",
+    "chinese": "追加造成自己备战宝可梦的属性种类数量×30伤害。",
+    "rule": {
+      "kind": "damage_expression",
+      "mode": "add",
+      "factor": 30,
+      "term": "bench_types"
+    }
+  },
+  {
+    "sourceExample": "黑魯加（SV3）",
+    "english": "If your opponent's Active Pokémon is an Evolution Pokémon, this attack does 70 more damage.",
+    "chinese": "如果对手的战斗宝可梦为{{TCG|进化宝可梦}}的话，则追加造成70伤害。",
+    "rule": {
+      "kind": "damage_expression",
+      "mode": "add",
+      "factor": 70,
+      "term": "opponent_evolved"
+    }
+  },
+  {
+    "sourceExample": "阿勃梭魯（SV3a）",
+    "english": "If this Pokémon has a {{TCG|Pokémon Tool card|Pokémon Tool}} attached, this attack does 60 more damage.",
+    "chinese": "如果这只宝可梦身上放有「宝可梦道具」的话，则追加造成60伤害。",
+    "rule": {
+      "kind": "damage_expression",
+      "mode": "add",
+      "factor": 60,
+      "term": "self_tool"
+    }
+  },
+  {
+    "sourceExample": "雪童子（SV3a）",
+    "english": "If your opponent's Active Pokémon is a {{e|Fighting}} Pokémon, this attack does 30 more damage.",
+    "chinese": "如果对手的战斗宝可梦为{{e|斗}}宝可梦的话，则追加造成30伤害。",
+    "rule": {
+      "kind": "damage_expression",
+      "mode": "add",
+      "factor": 30,
+      "term": "target_type",
+      "type": "FIGHTING"
+    }
+  },
+  {
+    "sourceExample": "班基拉斯ex（SV3）",
+    "english": "If your Benched Pokémon have any damage counters on them, this attack does 100 more damage.",
+    "chinese": "如果自己的备战宝可梦身上放置有伤害指示物的话，则追加造成100伤害。",
+    "rule": {
+      "kind": "damage_expression",
+      "mode": "add",
+      "factor": 100,
+      "term": "bench_damaged"
+    }
+  },
+  {
+    "sourceExample": "超能豔鴕（SV4M）",
+    "english": "If Tulip is in your discard pile, this attack does 70 more damage.",
+    "chinese": "如果自己的弃牌区中有「{{TCG|莉普}}」的话，则追加造成70伤害。",
+    "rule": {
+      "kind": "damage_expression",
+      "mode": "add",
+      "factor": 70,
+      "term": "discard_named",
+      "name": "Tulip",
+      "boolean": true
+    }
+  },
+  {
+    "sourceExample": "毛崖蟹（SV3a）",
+    "english": "If this Pokémon is affected by a Special Condition, this attack does 160 more damage.",
+    "chinese": "如果这只宝可梦处于{{TCG|特殊状态}}的话，则追加造成160伤害。",
+    "rule": {
+      "kind": "damage_expression",
+      "mode": "add",
+      "factor": 160,
+      "term": "self_status"
+    }
+  },
+  {
+    "sourceExample": "鐵蟻（SV4M）",
+    "english": "This attack does 20 damage for each damage counter on all of your Durant.",
+    "chinese": "造成自己场上所有的「铁蚁」身上放置的伤害指示物数量×20伤害。",
+    "rule": {
+      "kind": "damage_expression",
+      "mode": "multiply",
+      "factor": 20,
+      "term": "named_counters",
+      "name": "Durant"
+    }
+  },
+  {
+    "sourceExample": "破破舵轮（SV5M）",
+    "english": "If you have any {{e|Metal}} Pokémon on your Bench, this attack does 80 more damage.",
+    "chinese": "如果自己的备战区中有{{e|钢}}宝可梦的话，则追加造成80伤害。",
+    "rule": {
+      "kind": "damage_expression",
+      "mode": "add",
+      "factor": 80,
+      "term": "field_matching",
+      "zone": "bench",
+      "type": "METAL",
+      "boolean": true
+    }
+  },
+  {
+    "sourceExample": "电击魔兽（SV5M）",
+    "english": "If your opponent has any {{e|Water}} Pokémon in play, this attack does 120 more damage.",
+    "chinese": "如果对手场上有{{e|水}}宝可梦的话，则追加造成120伤害。",
+    "rule": {
+      "kind": "damage_expression",
+      "mode": "add",
+      "factor": 120,
+      "term": "field_matching",
+      "owner": "opponent",
+      "type": "WATER",
+      "boolean": true
+    }
+  },
+  {
+    "sourceExample": "锹农炮虫（SV5M）",
+    "english": "This attack does 80 more damage for each of your Benched Charjabug.",
+    "chinese": "追加造成自己备战区中「虫电宝」数量×80伤害。",
+    "rule": {
+      "kind": "damage_expression",
+      "mode": "add",
+      "factor": 80,
+      "term": "field_matching",
+      "zone": "bench",
+      "name": "Charjabug"
+    }
+  },
+  {
+    "sourceExample": "鐵臂膀（SVHM）",
+    "english": "If your oppponent's Active Pokémon is a Pokémon ex or Pokémon V, this attack does 80 more damage.",
+    "chinese": "如果对手的战斗宝可梦是「宝可梦{{ex}}・V」的话，则追加造成80伤害。",
+    "rule": {
+      "kind": "damage_expression",
+      "mode": "add",
+      "factor": 80,
+      "term": "opponent_ex_or_v"
+    }
+  },
+  {
+    "sourceExample": "铜镜怪（SV5K）",
+    "english": "If your opponent's Active Pokémon is a {{e|Psychic}} Pokémon, this attack does 30 more damage.",
+    "chinese": "如果对手的战斗宝可梦是{{e|超}}宝可梦的话，则追加造成30伤害。",
+    "rule": {
+      "kind": "damage_expression",
+      "mode": "add",
+      "factor": 30,
+      "term": "target_type",
+      "type": "PSYCHIC"
+    }
+  },
+  {
+    "sourceExample": "眷戀雲（SV5a）",
+    "english": "If any of your Pokémon in play are the same type as any of your opponent's Pokémon in play, this attack does 120 more damage.",
+    "chinese": "如果自己场上，有与对手场上宝可梦相同属性的宝可梦的话，则追加造成120伤害。",
+    "rule": {
+      "kind": "damage_expression",
+      "mode": "add",
+      "factor": 120,
+      "term": "shared_type"
+    }
+  },
+  {
+    "sourceExample": "泥偶巨人（SV5K）",
+    "english": "If your opponent's Active Pokémon is a Pokémon ex or Pokémon V, this attack does 120 more damage.",
+    "chinese": "如果对手的战斗宝可梦是「宝可梦{{ex}}・V」的话，则追加造成120伤害。",
+    "rule": {
+      "kind": "damage_expression",
+      "mode": "add",
+      "factor": 120,
+      "term": "opponent_ex_or_v"
+    }
+  },
+  {
+    "sourceExample": "雄偉牙（SVHK）",
+    "english": "If your Benched Pokémon have any damage counters on them, this attack does 80 more damage.",
+    "chinese": "如果自己的备战宝可梦身上放置有伤害指示物的话，则追加造成80伤害。",
+    "rule": {
+      "kind": "damage_expression",
+      "mode": "add",
+      "factor": 80,
+      "term": "bench_damaged"
+    }
+  },
+  {
+    "sourceExample": "轰鸣月（SV5K）",
+    "english": "This attack does 10 more damage for each Ancient card in your discard pile.",
+    "chinese": "追加造成自己弃牌区中「古代」卡牌张数×10伤害。",
+    "rule": {
+      "kind": "damage_expression",
+      "mode": "add",
+      "factor": 10,
+      "term": "discard_trait",
+      "trait": "ANCIENT"
+    }
+  },
+  {
+    "sourceExample": "故勒顿（SV5K）",
+    "english": "This attack does 30 damage for each of your Ancient Pokémon in play.",
+    "chinese": "造成自己场上「古代」宝可梦数量×30伤害。",
+    "rule": {
+      "kind": "damage_expression",
+      "mode": "multiply",
+      "factor": 30,
+      "term": "field_matching",
+      "trait": "ANCIENT"
+    }
+  },
+  {
+    "sourceExample": "老翁龙（SV5M）",
+    "english": "If all of your Benched Pokémon have at least 1 damage counter on them, this attack does 120 more damage.",
+    "chinese": "如果自己所有的备战宝可梦身上都放置有伤害指示物的话，则追加造成120伤害。",
+    "rule": {
+      "kind": "damage_expression",
+      "mode": "add",
+      "factor": 120,
+      "term": "bench_damaged",
+      "all": true
+    }
+  },
+  {
+    "sourceExample": "電螢蟲（SV6）",
+    "english": "If Illumise is on your Bench, this attack does 60 more damage.",
+    "chinese": "如果自己的备战区中有「{{TCGPM|甜甜萤}}」的话，则追加造成60伤害。",
+    "rule": {
+      "kind": "damage_expression",
+      "mode": "add",
+      "factor": 60,
+      "term": "own_bench_named",
+      "name": "Illumise"
+    }
+  },
+  {
+    "sourceExample": "洗翠 風速狗（SV5a）",
+    "english": "If your Benched Pokémon have any damage counters on them, this attack does 90 more damage.",
+    "chinese": "如果自己的备战宝可梦身上放置有伤害指示物的话，则追加造成90伤害。",
+    "rule": {
+      "kind": "damage_expression",
+      "mode": "add",
+      "factor": 90,
+      "term": "bench_damaged"
+    }
+  },
+  {
+    "sourceExample": "嘎啦嘎啦（SV7）",
+    "english": "If any of your Benched {{TCG|Cubone}} have any damage counters on them, this attack does 120 more damage.",
+    "chinese": "如果自己备战区的「卡拉卡拉」身上放置有伤害指示物的话，则追加造成120伤害。",
+    "rule": {
+      "kind": "damage_expression",
+      "mode": "add",
+      "factor": 120,
+      "term": "bench_damaged",
+      "name": "Cubone"
+    }
+  },
+  {
+    "sourceExample": "爬地翅（SV6a）",
+    "english": "If your opponent has any Future Pokémon in play, this attack does 120 more damage.",
+    "chinese": "如果对手场上有「未来」宝可梦的话，则追加造成120伤害。",
+    "rule": {
+      "kind": "damage_expression",
+      "mode": "add",
+      "factor": 120,
+      "term": "field_matching",
+      "owner": "opponent",
+      "trait": "FUTURE",
+      "boolean": true
+    }
+  },
+  {
+    "sourceExample": "波士可多拉（SV6）",
+    "english": "This attack does 50 damage for each of your Pokémon that has any damage counters on it.",
+    "chinese": "造成自己场上身上放置有伤害指示物的宝可梦数量×50伤害。",
+    "rule": {
+      "kind": "damage_expression",
+      "mode": "multiply",
+      "factor": 50,
+      "term": "field_matching",
+      "damaged": true
+    }
+  },
+  {
+    "sourceExample": "舞天鵝（SV6）",
+    "english": "If your opponent's Active Pokémon is a Pokémon '''''ex''''' or Pokémon '''''V''''', this attack does 90 more damage.",
+    "chinese": "如果对手的战斗宝可梦是「宝可梦{{ex}}・V」的话，则追加造成90伤害。",
+    "rule": {
+      "kind": "damage_expression",
+      "mode": "add",
+      "factor": 90,
+      "term": "opponent_ex_or_v"
+    }
+  },
+  {
+    "sourceExample": "鳳王（SVLS）",
+    "english": "If you have any Tera Pokémon on your Bench, this attack does 100 more damage.",
+    "chinese": "如果自己的备战区中有「太晶」宝可梦的话，则追加造成100伤害。",
+    "rule": {
+      "kind": "damage_expression",
+      "mode": "add",
+      "factor": 100,
+      "term": "field_matching",
+      "zone": "bench",
+      "trait": "TERA",
+      "boolean": true
+    }
+  },
+  {
+    "sourceExample": "蒼炎刃鬼ex（SVLS）",
+    "english": "This attack does 20 more damage for each {{TCG|Energy card}} in your discard pile.",
+    "chinese": "追加造成自己弃牌区中能量张数×20伤害。",
+    "rule": {
+      "kind": "damage_expression",
+      "mode": "add",
+      "factor": 20,
+      "term": "own_discard_energy"
+    }
+  },
+  {
+    "sourceExample": "破空焰（SV7a）",
+    "english": "If your opponent has 4 or fewer Prize cards remaining, this attack does 70 more damage.",
+    "chinese": "如果对手的剩余奖赏卡张数在4张及以下的话，则追加造成70伤害。",
+    "rule": {
+      "kind": "damage_expression",
+      "mode": "add",
+      "factor": 70,
+      "term": "opponent_max_prizes",
+      "number": 4
+    }
+  },
+  {
+    "sourceExample": "電蜘蛛ex（SV7）",
+    "english": "If your opponent's Active Pokémon is a Pokémon ex or {{TCG|Pokémon V}}, this attack does 110 more damage.",
+    "chinese": "如果对手的战斗宝可梦是「宝可梦{{ex}}・V」的话，则追加造成110伤害。",
+    "rule": {
+      "kind": "damage_expression",
+      "mode": "add",
+      "factor": 110,
+      "term": "opponent_ex_or_v"
+    }
+  },
+  {
+    "sourceExample": "鐵頭殼（SV7a）",
+    "english": "If your opponent has 3 or more Benched Pokémon, this attack does 80 more damage.",
+    "chinese": "如果对手的备战宝可梦的数量在3只及以上的话，则追加造成80伤害。",
+    "rule": {
+      "kind": "damage_expression",
+      "mode": "add",
+      "factor": 80,
+      "term": "opponent_min_bench",
+      "number": 3
+    }
+  },
+  {
+    "sourceExample": "烈箭鷹（SV7）",
+    "english": "If the Retreat Cost of your opponent's Active Pokémon is {{e|Colorless}}{{e|Colorless}} or more, this attack does 110 more damage.",
+    "chinese": "如果对手战斗宝可梦'''撤退'''所需能量在2个及以上的话，则追加造成110伤害。",
+    "rule": {
+      "kind": "damage_expression",
+      "mode": "add",
+      "factor": 110,
+      "term": "target_min_retreat",
+      "number": 2
+    }
+  },
+  {
+    "sourceExample": "雷吉奇卡斯（SV8a）",
+    "english": "If your opponent's Active Pokémon is a {{DL|Pokémon ex (TCG)|Tera Pokémon ex|Tera Pokémon}}, this attack does 230 more damage.",
+    "chinese": "如果对手的战斗宝可梦是「太晶」宝可梦的话，则追加造成230伤害。",
+    "rule": {
+      "kind": "damage_expression",
+      "mode": "add",
+      "factor": 230,
+      "term": "target_trait",
+      "trait": "TERA"
+    }
+  },
+  {
+    "sourceExample": "火箭隊的操陷蛛（SV10）",
+    "english": "This attack does 30 damage for each of your Team Rocket's Pokémon in play.",
+    "chinese": "造成自己场上的「火箭队的宝可梦」数量×30伤害。",
+    "rule": {
+      "kind": "damage_expression",
+      "mode": "multiply",
+      "factor": 30,
+      "term": "field_matching",
+      "prefix": "Team Rocket's "
+    }
+  },
+  {
+    "sourceExample": "阿響的火爆獸（SV9a）",
+    "english": "This attack does 60 more damage for each Ethan's Adventure card in your discard pile.",
+    "chinese": "追加造成自己弃牌区中的「阿响的冒险」张数×60伤害。",
+    "rule": {
+      "kind": "damage_expression",
+      "mode": "add",
+      "factor": 60,
+      "term": "discard_named",
+      "name": "Ethan's Adventure"
+    }
+  },
+  {
+    "sourceExample": "火箭隊的急凍鳥（SV10）",
+    "english": "If this Pokémon has any Team Rocket's Energy attached, this attack does 60 more damage.",
+    "chinese": "如果这只宝可梦身上附着了「火箭队能量」的话，则追加造成60伤害。",
+    "rule": {
+      "kind": "damage_expression",
+      "mode": "add",
+      "factor": 60,
+      "term": "attached_named",
+      "name": "Team Rocket's Energy"
+    }
+  },
+  {
+    "sourceExample": "火箭隊的閃電鳥（SV10）",
+    "english": "If this Pokémon has any Team Rocket's Energy attached, this attack does 60 more damage.",
+    "chinese": "如果这只宝可梦身上附着了「火箭队能量」的话，则追加造成60伤害。",
+    "rule": {
+      "kind": "damage_expression",
+      "mode": "add",
+      "factor": 60,
+      "term": "attached_named",
+      "name": "Team Rocket's Energy"
+    }
+  },
+  {
+    "sourceExample": "象牙豬ex（SV9）",
+    "english": "This attack does 40 more damage for each Stage 2 Pokémon on your Bench.",
+    "chinese": "追加造成自己备战区中的'''2阶进化'''宝可梦数量×40伤害。",
+    "rule": {
+      "kind": "damage_expression",
+      "mode": "add",
+      "factor": 40,
+      "term": "field_matching",
+      "zone": "bench",
+      "stage": "STAGE_2"
+    }
+  },
+  {
+    "sourceExample": "雷吉洛克ex（SV10）",
+    "english": "If your opponent's Active Pokémon is a Stage 2 Pokémon, this attack does 140 more damage.",
+    "chinese": "如果对手的战斗宝可梦为'''2阶进化'''宝可梦的话，则追加造成140伤害。",
+    "rule": {
+      "kind": "damage_expression",
+      "mode": "add",
+      "factor": 140,
+      "term": "target_stage",
+      "stage": "STAGE_2"
+    }
+  },
+  {
+    "sourceExample": "火箭隊的尼多后（SV10）",
+    "english": "If a Pokémon that has \"Nidoking\" in its name is on your Bench, this attack does 120 more damage.",
+    "chinese": "如果自己的备战区中有名字中带有「尼多王」的宝可梦的话，则追加造成120伤害。",
+    "rule": {
+      "kind": "damage_expression",
+      "mode": "add",
+      "factor": 120,
+      "term": "field_matching",
+      "zone": "bench",
+      "contains": [
+        "Nidoking"
+      ],
+      "boolean": true
+    }
+  },
+  {
+    "sourceExample": "火箭隊的雙彈瓦斯（SV10）",
+    "english": "This attack does 40 damage for each Pokémon in play that has \"Koffing\" or \"Weezing\" in its name ''(both yours and your opponent's)''.",
+    "chinese": "造成双方场上的名字中带有「瓦斯弹」或「双弹瓦斯」的宝可梦数量×40伤害。",
+    "rule": {
+      "kind": "damage_expression",
+      "mode": "multiply",
+      "factor": 40,
+      "term": "field_matching",
+      "owner": "both",
+      "contains": [
+        "Koffing",
+        "Weezing"
+      ]
+    }
+  },
+  {
+    "sourceExample": "派帕的獒教父ex（SV9a）",
+    "english": "If this Pokémon has no damage counters on it, this attack does 120 more damage.",
+    "chinese": "如果这只宝可梦身上没有放置伤害指示物的话，则追加造成120伤害。",
+    "rule": {
+      "kind": "damage_expression",
+      "mode": "add",
+      "factor": 120,
+      "term": "self_undamaged"
+    }
+  },
+  {
+    "sourceExample": "火箭隊的多邊獸Ⅱ（SV10）",
+    "english": "This attack does 20 damage for each Supporter card that has \"Team Rocket\" in its name in your discard pile.",
+    "chinese": "造成自己弃牌区中名字中带有「火箭队」的支援者张数×20伤害。",
+    "rule": {
+      "kind": "damage_expression",
+      "mode": "multiply",
+      "factor": 20,
+      "term": "rocket_supporters"
+    }
+  },
+  {
+    "sourceExample": "火箭队的多边兽Ｚ（SV10）",
+    "english": "This attack does 20 damage for each Supporter card that has \"Team Rocket\" in its name in your discard pile.",
+    "chinese": "造成自己弃牌区中名字中带有「{{TCG|火箭隊（卡牌类型）|火箭队}}」的{{TCG|支援者卡|支援者}}张数×20伤害。",
+    "rule": {
+      "kind": "damage_expression",
+      "mode": "multiply",
+      "factor": 20,
+      "term": "rocket_supporters"
+    }
+  },
+  {
+    "sourceExample": "皮卡丘（30th 028）",
+    "english": "This attack does 40 damage for each of your Pikachu and Pikachu '''''ex''''' in play.",
+    "chinese": "造成自己场上的「皮卡丘（包含『宝可梦'''''ex'''''』）」数量×40伤害。",
+    "rule": {
+      "kind": "damage_expression",
+      "mode": "multiply",
+      "factor": 40,
+      "term": "field_matching",
+      "names": [
+        "Pikachu",
+        "Pikachu ex"
+      ]
+    }
+  },
+  {
+    "sourceExample": "皮卡丘（30th 043）",
+    "english": "If your opponent's Active Pokémon is a Pokémon '''''ex''''', this attack does 80 more damage.",
+    "chinese": "如果对手的战斗宝可梦是「宝可梦'''''ex'''''」的话，则追加造成80伤害。",
+    "rule": {
+      "kind": "damage_expression",
+      "mode": "add",
+      "factor": 80,
+      "term": "opponent_ex"
+    }
+  },
+  {
+    "sourceExample": "露奈雅拉（30th）",
+    "english": "This attack does 20 more damage for eachEnergy card in your discard pile.",
+    "chinese": "追加造成自己弃牌区中能量张数×20伤害。",
+    "rule": {
+      "kind": "damage_expression",
+      "mode": "add",
+      "factor": 20,
+      "term": "own_discard_energy"
+    }
+  },
+  {
+    "sourceExample": "苍响（30th）",
+    "english": "If this Pokémon has a Pokémon Tool attached, this attack does 40 more damage.",
+    "chinese": "如果这只宝可梦身上放有「{{TCG|宝可梦道具}}」的话，则追加造成40伤害。",
+    "rule": {
+      "kind": "damage_expression",
+      "mode": "add",
+      "factor": 40,
+      "term": "self_tool"
+    }
+  },
+  {
+    "sourceExample": "宝宝丁（30th）",
+    "english": "This attack does 30 damage for each of your Benched [[:Category:Pokémon cards with 30 HP|Pokémon that has a maximum HP of 30]].",
+    "chinese": "造成自己最大HP为「30」的备战宝可梦数量×30伤害。",
+    "rule": {
+      "kind": "damage_expression",
+      "mode": "multiply",
+      "factor": 30,
+      "term": "field_matching",
+      "zone": "bench",
+      "maximumHP": 30
+    }
+  },
+  {
+    "sourceExample": "纏紅鶴ex（SV-P）",
+    "english": "If this Pokémon and your opponent's Active Pokémon have the same amount of Energy attached, this attack does 100 more damage.",
+    "chinese": "如果这只宝可梦身上附着的能量数量与对手战斗宝可梦身上附着的能量数量相同的话，则追加造成100伤害。",
+    "rule": {
+      "kind": "damage_expression",
+      "mode": "add",
+      "factor": 100,
+      "term": "equal_energy"
+    }
+  },
+  {
+    "sourceExample": "帕奇利兹（SV1V）",
+    "english": "This attack does 20 more damage for each of your Benched {{e|Lightning}} Pokémon. This attack's damage isn't affected by Weakness.",
+    "chinese": "追加造成自己备战区中{{e|雷}}宝可梦数量x20伤害。这个招式的伤害不计算弱点。",
+    "rule": {
+      "kind": "damage_expression",
+      "mode": "add",
+      "factor": 20,
+      "term": "typed_pokemon",
+      "type": "LIGHTNING",
+      "zone": "bench",
+      "ignoreWeakness": true
+    }
+  },
+  {
+    "sourceExample": "诅咒娃娃ex（SV1V）",
+    "english": "Your opponent reveals their hand. This attack does 60 damage for each Trainer card you find there.",
+    "chinese": "查看对手的手牌，造成其中训练家张数×60伤害。",
+    "rule": {
+      "kind": "damage_expression",
+      "mode": "multiply",
+      "factor": 60,
+      "term": "opponent_hand_trainers",
+      "revealHand": true
+    }
+  },
+  {
+    "sourceExample": "耿鬼（SV2a）",
+    "english": "Your opponent reveals their hand. This attack does 50 damage for each Trainer card you find there.",
+    "chinese": "查看对手的手牌，造成其中训练家张数×50伤害。",
+    "rule": {
+      "kind": "damage_expression",
+      "mode": "multiply",
+      "factor": 50,
+      "term": "opponent_hand_trainers",
+      "revealHand": true
+    }
+  },
+  {
+    "sourceExample": "摩托蜥（SV3a）",
+    "english": "If you played a {{TCG|Supporter card}} from your hand during this turn, this attack does 70 more damage.",
+    "chinese": "在这个回合，如果从手牌使出了支援者的话，则追加造成70伤害。",
+    "rule": {
+      "kind": "damage_expression",
+      "mode": "add",
+      "factor": 70,
+      "term": "played_supporter"
+    }
+  },
+  {
+    "sourceExample": "钻角犀兽（SV2a）",
+    "english": "If you played Giovanni's Charisma from your hand during this turn, this attack does 140 more damage.",
+    "chinese": "在这个回合，如果从手牌使出了「{{TCG|坂木的领导力}}」的话，则追加造成140伤害。",
+    "rule": {
+      "kind": "damage_expression",
+      "mode": "add",
+      "factor": 140,
+      "term": "played_supporter",
+      "name": "Giovanni's Charisma"
+    }
+  },
+  {
+    "sourceExample": "蔓藤怪（SV2a）",
+    "english": "If you played Erika's Invitation from your hand during this turn, this attack does 60 more damage.",
+    "chinese": "在这个回合，如果从手牌使出了「{{TCG|莉佳的邀请}}」的话，则追加造成60伤害。",
+    "rule": {
+      "kind": "damage_expression",
+      "mode": "add",
+      "factor": 60,
+      "term": "played_supporter",
+      "name": "Erika's Invitation"
+    }
+  },
+  {
+    "sourceExample": "铁武者（SV5M）",
+    "english": "If you played a Future Supporter card from your hand during this turn, this attack does 100 more damage.",
+    "chinese": "在这个回合，如果从手牌使出了「未来」支援者的话，则追加造成100伤害。",
+    "rule": {
+      "kind": "damage_expression",
+      "mode": "add",
+      "factor": 100,
+      "term": "played_supporter",
+      "trait": "FUTURE"
+    }
+  },
+  {
+    "sourceExample": "沙鐵皮（SVHK）",
+    "english": "If you have 3 or more Energy in play, this attack does 70 more damage. This attack's damage isn't affected by Weakness.",
+    "chinese": "如果自己场上有3个及以上能量的话，则追加造成70伤害。这个招式的伤害不计算弱点。",
+    "rule": {
+      "kind": "damage_expression",
+      "mode": "add",
+      "factor": 70,
+      "term": "field_energy_minimum",
+      "number": 3,
+      "ignoreWeakness": true
+    }
+  },
+  {
+    "sourceExample": "鐵包袱（SV8）",
+    "english": "This attack does 50 less damage for each {{e|Colorless}} in your opponent's Active Pokémon's Retreat Cost.",
+    "chinese": "这个招式的伤害，会被减少相当于对手战斗宝可梦'''撤退'''所需能量数量×50的数值。",
+    "rule": {
+      "kind": "damage_expression",
+      "mode": "subtract",
+      "factor": 50,
+      "term": "opponent_retreat"
+    }
+  },
+  {
+    "sourceExample": "蒂安希（SV7）",
+    "english": "This attack does 40 damage for each Special Energy card attached to all of your opponent's Pokémon.",
+    "chinese": "造成对手所有宝可梦身上附着的特殊能量张数×40伤害。",
+    "rule": {
+      "kind": "damage_expression",
+      "mode": "multiply",
+      "factor": 40,
+      "term": "opponent_special_energy_cards"
+    }
+  },
+  {
+    "sourceExample": "索羅亞克（SV6a）",
+    "english": "This attack does 60 damage for each of your opponent's Pokémon ex and Pokémon V in play.",
+    "chinese": "造成对手场上「宝可梦{{ex}}・V」的数量×60伤害。",
+    "rule": {
+      "kind": "damage_expression",
+      "mode": "multiply",
+      "factor": 60,
+      "term": "opponent_ex_v_count"
+    }
+  },
+  {
+    "sourceExample": "奇樹的霹靂電球（SV9）",
+    "english": "This attack does 20 more damage for each {{e|Lightning}} Energy attached to all of your Iono's Pokémon.",
+    "chinese": "追加造成自己所有「{{DL|的宝可梦（TCG）#奇树的|奇树的宝可梦}}」身上附着的{{e|雷}}能量数量×20伤害。",
+    "rule": {
+      "kind": "damage_expression",
+      "mode": "add",
+      "factor": 20,
+      "term": "own_typed_energy",
+      "type": "LIGHTNING",
+      "prefix": "Iono's "
+    }
+  },
+  {
+    "sourceExample": "竹蘭的花岩怪（SV9a）",
+    "english": "This attack does 10 damage for each damage counter on all of your Benched Cynthia's Pokémon. This attack's damage isn't affected by Weakness.",
+    "chinese": "造成自己备战区中所有「竹兰的宝可梦」身上放置的伤害指示物数量×10伤害。这个招式的伤害不计算弱点。",
+    "rule": {
+      "kind": "damage_expression",
+      "mode": "multiply",
+      "factor": 10,
+      "term": "bench_prefix_counters",
+      "prefix": "Cynthia's ",
+      "ignoreWeakness": true
+    }
+  },
+  {
+    "sourceExample": "瑪俐的莫魯貝可（SVOM）",
+    "english": "This attack does 40 more damage for each {{e|Darkness}} Energy attached to this Pokémon.",
+    "chinese": "追加造成这只宝可梦身上附着的{{e|恶}}能能量数量×40伤害。",
+    "rule": {
+      "kind": "damage_expression",
+      "mode": "add",
+      "factor": 40,
+      "term": "self_typed_energy",
+      "type": "DARK"
+    }
+  },
+  {
+    "sourceExample": "烈腿蝗（SV1a）",
+    "english": "If this Pokémon evolved from Nymble during this turn, this attack does 100 more damage.",
+    "chinese": "在这个回合，如果这只宝可梦从「豆蟋蟀」进化而来的话，则追加造成100伤害。",
+    "rule": {
+      "kind": "damage_expression",
+      "mode": "add",
+      "term": "evolved_this_turn",
+      "factor": 100,
+      "fromName": "Nymble"
+    }
+  },
+  {
+    "sourceExample": "路卡利欧（SV1S）",
+    "english": "If any of your {{e|斗}} Pokémon were Knocked Out by damage from an attack during your opponent's last turn, this attack does 120 more damage.",
+    "chinese": "在上一个对手的回合，如果因为招式的伤害，而导致自己的{{e|斗}}宝可梦'''昏厥'''的话，则追加造成120伤害。",
+    "rule": {
+      "kind": "damage_expression",
+      "mode": "add",
+      "term": "knockout_last_turn",
+      "factor": 120,
+      "type": "FIGHTING"
+    }
+  },
+  {
+    "sourceExample": "師父鼬（SV4K）",
+    "english": "If you attached a Pokémon Tool card from your hand to this Pokémon during this turn, this attack does 70 more damage.",
+    "chinese": "在这个回合，如果从手牌将「宝可梦道具」放于这只宝可梦身上的话，则追加造成70伤害。",
+    "rule": {
+      "kind": "damage_expression",
+      "mode": "add",
+      "term": "tool_this_turn",
+      "factor": 70
+    }
+  },
+  {
+    "sourceExample": "大奶罐（SV4M）",
+    "english": "If this Pokémon was healed during this turn, this attack does 90 more damage.",
+    "chinese": "在这个回合，如果回复了这只宝可梦的HP的话，则追加造成90伤害。",
+    "rule": {
+      "kind": "damage_expression",
+      "mode": "add",
+      "term": "healed_this_turn",
+      "factor": 90
+    }
+  },
+  {
+    "sourceExample": "鐵斑葉（SV5a）",
+    "english": "If any of your Pokémon were Knocked Out by damage from an attack during your opponent's last turn, this attack does 60 more damage.",
+    "chinese": "在上一个对手的回合，如果因为招式的伤害，而导致自己的宝可梦'''{{TCG|昏厥}}'''的话，则追加造成60伤害。",
+    "rule": {
+      "kind": "damage_expression",
+      "mode": "add",
+      "term": "knockout_last_turn",
+      "factor": 60
+    }
+  },
+  {
+    "sourceExample": "普隆隆姆ex（SV6a）",
+    "english": "If this Pokémon moved from your Bench to the Active Spot this turn, this attack does 120 more damage.",
+    "chinese": "在这个回合，如果这只宝可梦从备战区被放于战斗场上的话，则追加造成120伤害。",
+    "rule": {
+      "kind": "damage_expression",
+      "mode": "add",
+      "term": "moved_this_turn",
+      "factor": 120
+    }
+  },
+  {
+    "sourceExample": "列陣兵（SV7）",
+    "english": "If this Pokémon used Form Ranks during your last turn, this attack does 90 more damage.",
+    "chinese": "在上一个自己的回合，如果这只宝可梦使用了「布阵」的话，则追加造成90伤害。",
+    "rule": {
+      "kind": "damage_expression",
+      "mode": "add",
+      "term": "attack_last_turn",
+      "factor": 90,
+      "name": "Form Ranks"
+    }
+  },
+  {
+    "sourceExample": "故勒頓（SV8）",
+    "english": "If 1 of your other Ancient Pokémon used an attack during your last turn, this attack does 150 more damage.",
+    "chinese": "在上一个自己的回合，如果这只宝可梦以外的「古代」宝可梦使用了招式的话，则追加造成150伤害。",
+    "rule": {
+      "kind": "damage_expression",
+      "mode": "add",
+      "term": "other_trait_attack_last_turn",
+      "factor": 150,
+      "trait": "ANCIENT"
+    }
+  },
+  {
+    "sourceExample": "普隆隆姆（SV6）",
+    "english": "If any of your Pokémon were Knocked Out by damage from an attack during your opponent's last turn, this attack does 90 more damage.",
+    "chinese": "在上一个对手的回合，如果因为招式的伤害，而导致自己的宝可梦'''{{TCG|昏厥}}'''的话，则追加造成90伤害。",
+    "rule": {
+      "kind": "damage_expression",
+      "mode": "add",
+      "term": "knockout_last_turn",
+      "factor": 90
+    }
+  },
+  {
+    "sourceExample": "賽富豪（SV7a）",
+    "english": "If this Pokémon evolved from {{TCG|Gimmighoul}} during this turn, this attack does 90 more damage.",
+    "chinese": "在这个回合，如果这只宝可梦从「索财灵」进化而来的话，则追加造成90伤害。",
+    "rule": {
+      "kind": "damage_expression",
+      "mode": "add",
+      "term": "evolved_this_turn",
+      "factor": 90,
+      "fromName": "Gimmighoul"
+    }
+  },
+  {
+    "sourceExample": "古玉魚（SV4K）",
+    "english": "If any of your Pokémon were Knocked Out by damage from an attack during your opponent's last turn, this attack does 90 more damage.",
+    "chinese": "在上一个对手的回合，如果因为招式的伤害，而导致自己的宝可多'''{{TCG|昏厥}}'''的话，则追加造成90伤害。",
+    "rule": {
+      "kind": "damage_expression",
+      "mode": "add",
+      "term": "knockout_last_turn",
+      "factor": 90
+    }
+  },
+  {
+    "sourceExample": "阿響的凱羅斯（SV9a）",
+    "english": "If any of your Ethan's Pokémon were Knocked Out by damage from an attack during your opponent's last turn, this attack does 100 more damage.",
+    "chinese": "在上一个对手的回合，如果自己的「阿响的宝可梦」受到招式的伤害而'''{{TCG|昏厥}}'''的话，则追加造成100伤害。",
+    "rule": {
+      "kind": "damage_expression",
+      "mode": "add",
+      "term": "knockout_last_turn",
+      "factor": 100,
+      "prefix": "Ethan's "
+    }
+  },
+  {
+    "sourceExample": "小霞的寶石海星（SV9a）",
+    "english": "If this Pokémon evolved from Misty's Staryu during this turn, this attack does 80 more damage.",
+    "chinese": "在这个回合，如果这只宝可梦从「小霞的海星星」进化而来的话，则追加造成80伤害。",
+    "rule": {
+      "kind": "damage_expression",
+      "mode": "add",
+      "term": "evolved_this_turn",
+      "factor": 80,
+      "fromName": "Misty's Staryu"
+    }
+  },
+  {
+    "sourceExample": "鬃岩狼人（30th）",
+    "english": "If this Pokémon was damaged by an attack during your opponent's last turn, this attack does that much more damage.",
+    "chinese": "追加造成与这只宝可梦在上一个对手的回合所受到的招式的伤害相同数值的伤害。",
+    "rule": {
+      "kind": "damage_expression",
+      "mode": "add",
+      "term": "damage_last_turn",
+      "factor": 1
+    }
+  },
+  {
+    "sourceExample": "月亮伊布（30th）",
+    "english": "If any of your Pokémon were Knocked Out by damage from an attack during your opponent's last turn, this attack does 100 more damage.",
+    "chinese": "在上一个对手的回合，如果自己的宝可梦受到招式的伤害而'''{{TCG|昏厥}}'''的话，则追加造成100伤害。",
+    "rule": {
+      "kind": "damage_expression",
+      "mode": "add",
+      "term": "knockout_last_turn",
+      "factor": 100
+    }
+  },
+  {
+    "sourceExample": "熱帶龍（MF）",
+    "english": "If any of your Pokémon were Knocked Out by damage from an attack during your opponent's last turn, this attack does 90 more damage.",
+    "chinese": "在上一个对手的回合，如果自己的宝可梦受到招式的伤害而'''{{TCG|昏厥}}'''的话，则追加造成90伤害。",
+    "rule": {
+      "kind": "damage_expression",
+      "mode": "add",
+      "term": "knockout_last_turn",
+      "factor": 90
+    }
+  },
+  {
+    "sourceExample": "尖牙籠（SV7）",
+    "english": "This attack does 10 less damage for each damage counter on this Pokémon.",
+    "chinese": "这个招式的伤害，会被减少相当于这只宝可梦身上放置的伤害指示物数量×10的数值。",
+    "rule": {
+      "kind": "damage_expression",
+      "mode": "subtract",
+      "term": "self_counters",
+      "factor": 10
+    }
+  }
+]

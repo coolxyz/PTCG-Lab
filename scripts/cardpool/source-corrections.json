@@ -1,0 +1,664 @@
+[
+  {
+    "page": "天罩蟲（SV4M）",
+    "revision": 2599966,
+    "sourceSha256": "b8f08a95fbe41fd5859d6dfe2835331b50f17773329ed2565161bcfbea603c82",
+    "template": "header",
+    "expected": {
+      "evo": "",
+      "evonumber": ""
+    },
+    "set": {
+      "evonumber": "824"
+    },
+    "evidence": "https://www.pokemon.com/el/jcc-pokemon/cartas-pokemon/series/sv04/11/",
+    "reason": "Printed evolution missing from wiki header; exact expansion, HP and attacks matched to official card and evolution listing."
+  },
+  {
+    "page": "幸福蛋ex（SV6）",
+    "revision": 2612691,
+    "sourceSha256": "73bb0e5fae98751f3d0dd4808747e7f488f51bdb3fac921b424f30446238a765",
+    "template": "header",
+    "expected": {
+      "evo": "",
+      "evonumber": ""
+    },
+    "set": {
+      "evonumber": "113"
+    },
+    "evidence": "https://www.pokemon-card.com/card-search/details.php/card/45776/regu/XY",
+    "reason": "Printed evolution missing from wiki header; exact expansion, HP and attacks matched to official card and evolution listing."
+  },
+  {
+    "page": "堅盾劍怪ex（SV4M）",
+    "revision": 2498449,
+    "sourceSha256": "4419b3b2947dce1280f9df95170478aa0655bad077d466813001d09f8fd65bc2",
+    "template": "header",
+    "expected": {
+      "evo": "",
+      "evonumber": ""
+    },
+    "set": {
+      "evonumber": "680"
+    },
+    "evidence": "https://www.pokemon-card.com/card-search/details.php/card/44357/regu/all",
+    "reason": "Printed evolution missing from wiki header; exact expansion, HP and attacks matched to official card and evolution listing."
+  },
+  {
+    "page": "大朝北鼻（SV5a）",
+    "revision": 2535286,
+    "sourceSha256": "75eb39de7ca32d0f1414e996878abdfe8fc3b2ed725d794acae23902c6c5308a",
+    "template": "header",
+    "expected": {
+      "evo": "",
+      "evonumber": ""
+    },
+    "set": {
+      "evonumber": "299"
+    },
+    "evidence": "https://www.pokemon-card.com/card-search/details.php/card/45620/regu/all",
+    "reason": "Printed evolution missing from wiki header; exact expansion, HP and attacks matched to official card and evolution listing."
+  },
+  {
+    "page": "蒼炎刃鬼（SV8）",
+    "revision": 2555346,
+    "sourceSha256": "778fe66f576e9b81e8c419bcc9d218e51ee4c843be8031f39be161284a23716e",
+    "template": "header",
+    "expected": {
+      "evo": "",
+      "evonumber": ""
+    },
+    "set": {
+      "evonumber": "935"
+    },
+    "evidence": "https://www.pokemon-card.com/card-search/details.php/card/46632/regu/all",
+    "reason": "Printed evolution missing from wiki header; exact expansion, HP and attacks matched to official card and evolution listing."
+  },
+  {
+    "page": "狠辣椒ex（SV8）",
+    "revision": 2577984,
+    "sourceSha256": "d1e7b6b5578ee4ffaeb485cd2715018bcc360e321aa6645c72f6c3add2f7bb52",
+    "template": "header",
+    "expected": {
+      "evo": "",
+      "evonumber": ""
+    },
+    "set": {
+      "evonumber": "951"
+    },
+    "evidence": "https://www.pokemon-card.com/card-search/details.php/card/46363",
+    "reason": "Printed evolution missing from wiki header; exact expansion, HP and attacks matched to official card and evolution listing."
+  },
+  {
+    "page": "鋁鋼橋龍ex（SV7a）",
+    "revision": 2578057,
+    "sourceSha256": "1cb2c6d92b7ea233e602ec4f441ad8a4e2e0b5292b09d19caf7c3516cc700ef7",
+    "template": "header",
+    "expected": {
+      "evo": "",
+      "evonumber": ""
+    },
+    "set": {
+      "evonumber": "884"
+    },
+    "evidence": "https://www.pokemon-card.com/card-search/details.php/card/46326",
+    "reason": "Printed evolution missing from wiki header; exact expansion, HP and attacks matched to official card and evolution listing."
+  },
+  {
+    "page": "熔岩蝸牛ex（SV5a）",
+    "revision": 2532199,
+    "sourceSha256": "6b572e3cb29236c987b05a41dfbc784d80072ec5482a6e10073449011c2a6608",
+    "template": "header",
+    "expected": {
+      "evo": "",
+      "evonumber": ""
+    },
+    "set": {
+      "evonumber": "218"
+    },
+    "evidence": "https://www.pokemon-card.com/card-search/details.php/card/45589/regu/all",
+    "reason": "Printed evolution missing from wiki header; exact expansion, HP and attacks matched to official card and evolution listing."
+  },
+  {
+    "page": "甲賀忍蛙ex（SV5a）",
+    "revision": 2596203,
+    "sourceSha256": "180c45b3b472d85108367457ef04bf0f427c9153e4057deaf293d05acb9a41aa",
+    "template": "header",
+    "expected": {
+      "evo": "",
+      "evonumber": ""
+    },
+    "set": {
+      "evonumber": "657"
+    },
+    "evidence": "https://www.pokemon-card.com/card-search/details.php/card/45621/regu/all",
+    "reason": "Printed evolution missing from wiki header; exact expansion, HP and attacks matched to official card and evolution listing."
+  },
+  {
+    "page": "瑪俐的長毛巨魔ex（SVOM）",
+    "revision": 2617428,
+    "sourceSha256": "e2d8dbaee95c60bc53cdaab49533f9ffa91ffb14c7afee589010605c912efd3f",
+    "template": "header",
+    "expected": {
+      "evo": "",
+      "evonumber": ""
+    },
+    "set": {
+      "evonumber": "860"
+    },
+    "evidence": "https://www.pokemon-card.com/card-search/details.php/card/47259/regu/all",
+    "reason": "Printed evolution missing from wiki header; exact expansion, HP and attacks matched to official card and evolution listing."
+  },
+  {
+    "page": "大吾的巨金怪ex（SVOD）",
+    "revision": 2609559,
+    "sourceSha256": "9e3484d1069ffeb33d710bc027f883c08c0151c62012546cc8c2aee770e7495e",
+    "template": "header",
+    "expected": {
+      "evonumber": ""
+    },
+    "set": {
+      "evonumber": "375"
+    },
+    "evidence": "https://www.pokemon-card.com/card-search/details.php/card/47278/regu/all",
+    "reason": "Exact official expansion, HP, attacks and printed evolution identify the missing or erroneous evolution field."
+  },
+  {
+    "page": "烈腿蝗（SVI）",
+    "revision": 2567576,
+    "sourceSha256": "b26ca6875c2b0fd378343f1cad2bc3056f51764175831dcff1e1f1e9efdb32b0",
+    "template": "header",
+    "expected": {
+      "evonumber": ""
+    },
+    "set": {
+      "evonumber": "919"
+    },
+    "evidence": "https://www.pokemon-card.com/card-search/details.php/card/45420/regu/XY",
+    "reason": "Exact official expansion, HP, attacks and printed evolution identify the missing or erroneous evolution field."
+  },
+  {
+    "page": "火箭隊的操陷蛛（SV10）",
+    "revision": 2605147,
+    "sourceSha256": "f0d2ffb5f1ee07ab5db4cd723a3273789752954dbeb50f2eafa7cf510b0ddb58",
+    "template": "header",
+    "expected": {
+      "evo": "團珠蛛",
+      "evonumber": "0917",
+      "evostage": "2阶进化"
+    },
+    "set": {
+      "evo": "",
+      "evonumber": "917",
+      "evostage": "1階進化"
+    },
+    "evidence": "https://www.pokemon-card.com/card-search/details.php/card/47503/regu/all",
+    "reason": "Exact official expansion, HP, attacks and printed evolution identify the missing or erroneous evolution field."
+  },
+  {
+    "page": "N的齒輪組（SV9）",
+    "revision": 2615732,
+    "sourceSha256": "9fc680c188453948dad102b6e182458b1a45a281597d6202951f6b4bd02c9a2a",
+    "template": "header",
+    "expected": {
+      "evo": "齿轮组",
+      "evonumber": "599"
+    },
+    "set": {
+      "evo": "",
+      "evonumber": "599"
+    },
+    "evidence": "https://www.pokemon-card.com/card-search/details.php/card/47073",
+    "reason": "Exact official expansion, HP, attacks and printed evolution identify the missing or erroneous evolution field."
+  },
+  {
+    "page": "N的齒輪怪（SV9）",
+    "revision": 2615733,
+    "sourceSha256": "437e6439e10f44ceea0bc502707916b313bbb53405cf1f38324edb4cd0464baf",
+    "template": "header",
+    "expected": {
+      "evo": "齿轮怪",
+      "evonumber": "600"
+    },
+    "set": {
+      "evo": "",
+      "evonumber": "600"
+    },
+    "evidence": "https://www.pokemon-card.com/card-search/details.php/card/47074/regu/all",
+    "reason": "Exact official expansion, HP, attacks and printed evolution identify the missing or erroneous evolution field."
+  },
+  {
+    "page": "凉脊龙（SV2P 024）",
+    "revision": 2619547,
+    "sourceSha256": "4e28869e823d84069fb56beec68bf78f4969acc101d6b326f36a71b88b5311a3",
+    "template": "attack:Tackle",
+    "expected": {
+      "damage": ""
+    },
+    "set": {
+      "damage": "30"
+    },
+    "evidence": "https://www.pokemon-card.com/card-search/details.php/card/43231",
+    "reason": "Missing printed damage confirmed from exact Japanese expansion card and matching named attack."
+  },
+  {
+    "page": "坐骑小羊（SV1S）",
+    "revision": 2551097,
+    "sourceSha256": "5797a4d40c648c4dfa2322863a2b7d522a154f645f36e296b980c38e6e199aee",
+    "template": "attack:Vine Whip",
+    "expected": {
+      "damage": ""
+    },
+    "set": {
+      "damage": "10"
+    },
+    "evidence": "https://www.pokemon-card.com/card-search/details.php/card/42549",
+    "reason": "Missing printed damage confirmed from exact Japanese expansion card and matching named attack."
+  },
+  {
+    "page": "坐骑山羊（SV1S）",
+    "revision": 2551098,
+    "sourceSha256": "60b5e07c7f5030fda663bd19362e762a525ab20d7bb1a66e5aee3de9d1fbd136",
+    "template": "attack:Solar Beam",
+    "expected": {
+      "damage": ""
+    },
+    "set": {
+      "damage": "110"
+    },
+    "evidence": "https://www.pokemon-card.com/card-search/details.php/card/42550",
+    "reason": "Missing printed damage confirmed from exact Japanese expansion card and matching named attack."
+  },
+  {
+    "page": "火暴猴（SV2P）",
+    "revision": 2551180,
+    "sourceSha256": "04994cec6e2df80db8364ade6820ded13ae7c2269b0c153556102b93cd4dba70",
+    "template": "attack:Low Kick",
+    "expected": {
+      "damage": ""
+    },
+    "set": {
+      "damage": "30"
+    },
+    "evidence": "https://www.pokemon-card.com/card-search/details.php/card/43246",
+    "reason": "Missing printed damage confirmed from exact Japanese expansion card and matching named attack."
+  },
+  {
+    "page": "火暴猴（SV2P）",
+    "revision": 2551180,
+    "sourceSha256": "04994cec6e2df80db8364ade6820ded13ae7c2269b0c153556102b93cd4dba70",
+    "template": "attack:Pummel",
+    "expected": {
+      "damage": ""
+    },
+    "set": {
+      "damage": "60+"
+    },
+    "evidence": "https://www.pokemon-card.com/card-search/details.php/card/43246",
+    "reason": "Missing printed damage confirmed from exact Japanese expansion card and matching named attack."
+  },
+  {
+    "page": "水箭龟ex（SV2a）",
+    "revision": 2550916,
+    "sourceSha256": "8777582c7beb423de96c6353f12e40224ce841cd90d085ffb6c6ff43dca9dce4",
+    "template": "attack:Twin Cannons",
+    "expected": {
+      "damage": "140+"
+    },
+    "set": {
+      "damage": "140×"
+    },
+    "evidence": "https://www.pokemon-card.com/card-search/details.php/card/43330",
+    "reason": "Official printed multiplication sign; wiki English/Chinese both explicitly multiply."
+  },
+  {
+    "page": "尼多后（SV2a）",
+    "revision": 2480338,
+    "sourceSha256": "4db955e275d1f3e9fab120b0c83e009fe20ee22c5c817ea9302756ddb981d9c1",
+    "template": "attack:Queen Press",
+    "expected": {
+      "damage": null,
+      "eeffect": "Search your deck for up to 3 Pokémon, reveal them, and put them into your hand. Then, shuffle your deck."
+    },
+    "set": {
+      "damage": "90",
+      "eeffect": "During your opponent's next turn, prevent all damage done to this Pokémon by attacks from Basic Pokémon."
+    },
+    "evidence": "https://www.pokemon-card.com/card-search/details.php/card/43352",
+    "reason": "Official Queen Press is 90 and prevents Basic attack damage. English field replaced with a faithful translation of official Japanese and existing Chinese; not quoted source English."
+  },
+  {
+    "page": "大鋼蛇（SV4M）",
+    "revision": 2498446,
+    "sourceSha256": "0bb23a6555b12f40e59aa056a78358abf96a42afc574f69e4aac917d5bf74747",
+    "template": "header",
+    "expected": {
+      "evonumber": ""
+    },
+    "set": {
+      "evonumber": "95"
+    },
+    "evidence": "https://www.pokemon-card.com/card-search/details.php/card/44453",
+    "reason": "Official Stage 1 Onix evolution and same HP/attacks."
+  },
+  {
+    "page": "阿響的火爆獸（SV9a）",
+    "revision": 2605157,
+    "sourceSha256": "1b352e9f9787ac1fda216a0d7f55f38dd6875f164d234c7000b3a82a39ab410d",
+    "template": "identity",
+    "expected": {
+      "4": ""
+    },
+    "set": {
+      "4": "Ethan's Typhlosion"
+    },
+    "evidence": "https://wiki.52poke.com/wiki/阿響的火爆獸（SV9a）",
+    "reason": "Explicit same-article English interwiki name repairs missing/inconsistent identity."
+  },
+  {
+    "page": "轟鳴月ex（SV4K）",
+    "revision": 2596791,
+    "sourceSha256": "7e32fe43e073caf7e2bcbbe72b0fe73d1ba392b1394a93f068691cad04c9a9be",
+    "template": "identity",
+    "expected": {
+      "4": "Roaring Moon"
+    },
+    "set": {
+      "4": "Roaring Moon ex"
+    },
+    "evidence": "https://wiki.52poke.com/wiki/轟鳴月ex（SV4K）",
+    "reason": "Explicit same-article English interwiki name repairs missing/inconsistent identity."
+  },
+  {
+    "page": "雷電斑馬（SV4M）",
+    "revision": 2498394,
+    "sourceSha256": "d8d2a08d869686f38bb093fcf2562380c23e90bb05e70a4ab90993d10618c637",
+    "template": "identity",
+    "expected": {
+      "4": ""
+    },
+    "set": {
+      "4": "Zebstrika"
+    },
+    "evidence": "https://wiki.52poke.com/wiki/雷電斑馬（SV4M）",
+    "reason": "Explicit same-article English interwiki name repairs missing/inconsistent identity."
+  },
+  {
+    "page": "陸地水母（SV4M）",
+    "revision": 2616029,
+    "sourceSha256": "dbd9cb4ee8cb0c36ed89d66171cbe190ef7d766c73ec16785d42f9622309970f",
+    "template": "header",
+    "expected": {
+      "evonumber": ""
+    },
+    "set": {
+      "evonumber": "948"
+    },
+    "evidence": "https://www.pokemon-card.com/card-search/details.php/card/44447/regu/all",
+    "reason": "Official evolution chain explicitly lists Toedscool."
+  },
+  {
+    "page": "太陽伊布ex（MF）",
+    "revision": 2623989,
+    "sourceSha256": "25f724500ad10dc8b41d63d96979f7cb6fa556a8d351fd2a65bebde18a58e03e",
+    "template": "header",
+    "expected": {
+      "evonumber": ""
+    },
+    "set": {
+      "evonumber": "133"
+    },
+    "evidence": "https://www.pokemon-card.com/card-search/details.php/card/50577/regu/all",
+    "reason": "Official evolution chain explicitly lists Eevee."
+  },
+  {
+    "page": "甲贺忍蛙ex（SVD）",
+    "revision": 2551290,
+    "sourceSha256": "ff28f14fa0d562ec0c7e2b4e8047a376483c27ba188d8f9d7b5353290eeedb75",
+    "template": "header",
+    "expected": {
+      "evostage": "基础",
+      "evonumber": ""
+    },
+    "set": {
+      "evostage": "2阶进化",
+      "evonumber": "657"
+    },
+    "evidence": "https://www.pokemon-card.com/card-search/details.php/card/43731/regu/all",
+    "reason": "Official SVD029 is Stage 2 evolving from Frogadier."
+  },
+  {
+    "page": "海刺龍（SV4K）",
+    "revision": 2497899,
+    "sourceSha256": "01b96933e4c0256f21e978430cd1df8ba1d95f1b8448c19bfd332f4cc1be002f",
+    "template": "attack:Bubble Beam",
+    "expected": {
+      "damageP": "m"
+    },
+    "set": {
+      "damageP": ""
+    },
+    "evidence": "https://www.pokemon-card.com/card-search/details.php/card/44264",
+    "reason": "Official SV4K018 prints 50 damage without modifier; m is misplaced move-link metadata."
+  },
+  {
+    "page": "普隆隆姆ex（SV3）",
+    "revision": 2551136,
+    "sourceSha256": "ca4d30dd5729e4ca1f1b0cd8d959c3584394de1a76c7caa39a2bab0c9ae3dfba",
+    "template": "end",
+    "expected": {
+      "1": "火",
+      "weakness": "火"
+    },
+    "set": {
+      "1": ""
+    },
+    "evidence": "https://wiki.52poke.com/wiki/普隆隆姆ex（SV3）",
+    "reason": "Remove duplicate anonymous weakness token, preserving explicitly named weakness and all printed fields."
+  },
+  {
+    "page": "月月熊 赫月ex（SV5a）",
+    "revision": 2596826,
+    "sourceSha256": "27407083c7ea6c618a1d09f12aa35ff2c3d87bc92160c66e602df44ba4146ee7",
+    "template": "end",
+    "expected": {
+      "class": ""
+    },
+    "set": {
+      "class": "ex"
+    },
+    "evidence": "https://wiki.52poke.com/wiki/月月熊_赫月ex（SV5a）",
+    "reason": "Explicit same-article ex header and English identity restore missing footer class."
+  },
+  {
+    "page": "船长皮卡丘（CBB1）",
+    "revision": 2577309,
+    "sourceSha256": "6477dc9beac7a60871a62067eb22b0cbd66d6959809e00c6d9547e3741692b23",
+    "template": "identity",
+    "expected": {
+      "4": null
+    },
+    "set": {
+      "4": "Captain Pikachu"
+    },
+    "evidence": "https://wiki.52poke.com/wiki/船长皮卡丘（CBB1）",
+    "reason": "Explicit English interwiki identity; Chinese-only attack retains its printed Chinese name."
+  },
+  {
+    "page": "由克希（SV8）",
+    "template": "end",
+    "revision": 2602141,
+    "sourceSha256": "034ddf7b36644fece078003b608fc2cd48c1d1c8c4856f8cc35e3d3ba8d72cb8",
+    "expected": {
+      "retreat": null
+    },
+    "set": {
+      "retreat": "1"
+    },
+    "evidence": "https://www.pokemon-card.com/card-search/details.php/card/46388/regu/all",
+    "reason": "Official HTML escape cell contains exactly one Colorless icon."
+  },
+  {
+    "page": "梦幻ex（30th）",
+    "template": "end",
+    "revision": 2624177,
+    "sourceSha256": "2a316c5d2e0ed315e4f82f1665d762c3043118bf3b2dce2924502b8692414cc4",
+    "expected": {
+      "retreat": null
+    },
+    "set": {
+      "retreat": "0"
+    },
+    "evidence": "https://www.30th.pokemon-card.com/images/m6a/cards/m6a_057_96knft7k.png",
+    "reason": "Official 30th M6a057 image visually verified: empty retreat cost, Darkness weakness and Fighting resistance."
+  },
+  {
+    "page": "齒輪兒（SV7）",
+    "template": "attack:Beam",
+    "revision": 2549179,
+    "sourceSha256": "d8150c47ee9e16ba22f1b20515598ba62a2079b1f64b4b49269e9de773f50c98",
+    "expected": {
+      "jeffect": "20"
+    },
+    "set": {
+      "jeffect": ""
+    },
+    "evidence": "https://www.pokemon-card.com/card-search/details.php/card/46006/regu/all",
+    "reason": "Official Beam is vanilla 20 damage with no effect. Remove duplicated damage mistakenly stored in effect field."
+  },
+  {
+    "page": "花岩怪（SV2D）",
+    "template": "reviewed-printing-row",
+    "revision": 2550926,
+    "sourceSha256": "24f173c4c1018990a7b4b9936c47a27e021e12166e55d18f65e04e5f181621f2",
+    "expected": {
+      "cnicon": "CSVL1C",
+      "cnno": "069/049",
+      "zhicon": "SV4aF",
+      "zhno": "263/190",
+      "reg": "G"
+    },
+    "set": {
+      "cnno": "068/049"
+    },
+    "basis": {
+      "id": "number-CSVL1C-068",
+      "productCode": "CSVL1C",
+      "cardPage": "花岩怪（SV2D）",
+      "cnName": "花岩怪",
+      "sourceRevision": 2605888,
+      "sourceRow": 69,
+      "oldNumber": "069",
+      "newNumber": "068",
+      "oldPrintedNumber": "069/049",
+      "newPrintedNumber": "068/049",
+      "reviewStatus": "manual-cross-source",
+      "reviewedAt": "2026-09-30",
+      "evidenceUrls": [
+        "https://www.pokeari.com/post/departure-special-booster-pack-csvl1c-card-list",
+        "https://www.cardmarket.com/it/Pokemon/Products/Singles/Adventure-Special-Pack/Spiritomb-V2-CSVL1C068"
+      ],
+      "reason": "独立卡表及卡牌记录一致支持修正编号；编号顺序仅作辅助检查。仅校订编号，不认证效果、赛制、稀有度或素材授权。"
+    },
+    "evidenceUrls": [
+      "https://www.pokeari.com/post/departure-special-booster-pack-csvl1c-card-list",
+      "https://www.cardmarket.com/it/Pokemon/Products/Singles/Adventure-Special-Pack/Spiritomb-V2-CSVL1C068"
+    ]
+  },
+  {
+    "page": "轻身鳕（SV2P）",
+    "template": "reviewed-printing-row",
+    "revision": 2619391,
+    "sourceSha256": "9a94a1eed2340e3c94847e27c819e39be073dad4ed48846afd60926c2acd0bc2",
+    "expected": {
+      "cnicon": "CSVL2C",
+      "cnno": "069/052",
+      "zhicon": "SV4aF",
+      "zhno": "230/190",
+      "reg": "G"
+    },
+    "set": {
+      "cnno": "068/052"
+    },
+    "basis": {
+      "id": "number-CSVL2C-068",
+      "productCode": "CSVL2C",
+      "cardPage": "轻身鳕（SV2P）",
+      "cnName": "轻身鳕",
+      "sourceRevision": 2605887,
+      "sourceRow": 69,
+      "oldNumber": "069",
+      "newNumber": "068",
+      "oldPrintedNumber": "069/052",
+      "newPrintedNumber": "068/052",
+      "reviewStatus": "manual-cross-source",
+      "reviewedAt": "2026-09-30",
+      "evidenceUrls": [
+        "https://www.pokeari.com/post/travel-special-booster-pack-csvl2c-card-list",
+        "https://www.cardmarket.com/de/Pokemon/Products/Singles/Travel-Special-Pack/Veluza-V2-CSVL2C068",
+        "https://rarecandycr.com/candydex/travel-theme-pack"
+      ],
+      "reason": "独立卡表及卡牌记录一致支持修正编号；编号顺序仅作辅助检查。仅校订编号，不认证效果、赛制、稀有度或素材授权。"
+    },
+    "evidenceUrls": [
+      "https://www.pokeari.com/post/travel-special-booster-pack-csvl2c-card-list",
+      "https://www.cardmarket.com/de/Pokemon/Products/Singles/Travel-Special-Pack/Veluza-V2-CSVL2C068",
+      "https://rarecandycr.com/candydex/travel-theme-pack"
+    ]
+  },
+  {
+    "page": "鋁鋼橋龍（SV7）",
+    "template": "reviewed-printing-row",
+    "revision": 2596801,
+    "sourceSha256": "fb3034980f8561dccaf671d2bdcd71a1eb84051b0f05e8ecb0766874b6e2fb5a",
+    "expected": {
+      "cnicon": "CSV9C",
+      "cnno": "136/208",
+      "zhicon": "SV7F",
+      "zhno": "073/102",
+      "reg": "H"
+    },
+    "set": {
+      "cnno": "137/208"
+    },
+    "basis": {
+      "id": "number-CSV9C-137",
+      "productCode": "CSV9C",
+      "cardPage": "鋁鋼橋龍（SV7）",
+      "cnName": "铝钢桥龙",
+      "sourceRevision": 2611534,
+      "sourceRow": 138,
+      "oldNumber": "136",
+      "newNumber": "137",
+      "oldPrintedNumber": "136/208",
+      "newPrintedNumber": "137/208",
+      "reviewStatus": "manual-cross-source",
+      "reviewedAt": "2026-09-30",
+      "evidenceUrls": [
+        "https://www.pokeari.com/post/pokemon-tcg-stellar-crystal-csv9c-card-list",
+        "https://www.hktcg.com/products/csv9c-137-208-%E9%93%9D%E9%92%A2%E6%A1%A5%E9%BE%99-r",
+        "https://www.cardtan.tw/cards/82213"
+      ],
+      "reason": "独立卡表及卡牌记录一致支持修正编号；编号顺序仅作辅助检查。仅校订编号，不认证效果、赛制、稀有度或素材授权。"
+    },
+    "evidenceUrls": [
+      "https://www.pokeari.com/post/pokemon-tcg-stellar-crystal-csv9c-card-list",
+      "https://www.hktcg.com/products/csv9c-137-208-%E9%93%9D%E9%92%A2%E6%A1%A5%E9%BE%99-r",
+      "https://www.cardtan.tw/cards/82213"
+    ]
+  },
+  {
+    "page": "瑪俐的詐唬魔（SVOM）",
+    "revision": 2617427,
+    "sourceSha256": "5b173a8553bacdf41e81f2ca94b0f93a9fd0526a821cc9136b0055f95a7b3e40",
+    "template": "header",
+    "expected": {
+      "hp": "70"
+    },
+    "set": {
+      "hp": "100"
+    },
+    "evidence": "https://asia.pokemon-card.com/tw/card-search/detail/12609/",
+    "reason": "Official SVOM 006/021 confirms 100 HP; name, evolution, attack, type and retreat match the imported card."
+  }
+]

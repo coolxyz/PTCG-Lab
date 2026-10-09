@@ -1,0 +1,21 @@
+{
+  "id": "cn-standard-2026-09-16",
+  "region": "CN",
+  "language": "zh-Hans",
+  "effectiveAt": "2026-09-16",
+  "checkedAt": "2026-09-30",
+  "status": "policy-verified-printing-catalog-incomplete",
+  "allowedMarks": ["G", "H", "I", "J"],
+  "deckSize": 60,
+  "sameNameLimit": 4,
+  "aceSpecLimit": 1,
+  "basicEnergyTypes": ["grass", "fire", "water", "lightning", "psychic", "fighting", "darkness", "metal"],
+  "legacyReprintNames": ["宝可梦捕捉器", "宝可梦交替", "宝可装置3.0", "宝可梦中心的姐姐", "博士的研究", "裁判", "超级球", "巢穴球", "反击捕捉器", "反击增幅器", "粉碎之锤", "改造之锤", "高级球", "活力头带", "讲究腰带", "精灵球", "老大的指令", "能量回收", "能量输送", "能量再利用", "能量转移", "朋友手册", "伤药", "神奇糖果", "西餐厨师", "学习装置"],
+  "sources": {
+    "regulation": "https://www.pokemon.cn/tcg-rules-regulation",
+    "construction": "https://www.pokemon.cn/tcg-deck-first-deck",
+    "aceSpec": "https://www.pokemon.cn/tcg/product/19812.html",
+    "setup": "https://www.pokemon.cn/tcg-rules-howtoplay?pageName=basic_rules04/"
+  },
+  "notes": ["同名重印必须逐印刷版本审核映射及最新规则文字；不能只按名称放行", "J 标自 9 月 16 日加入，7 月 16 日 GHI 公告不是本次快照", "本文件不是完整简中卡牌数据库"]
+}

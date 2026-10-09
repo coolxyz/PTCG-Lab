@@ -1,0 +1,229 @@
+[
+  {
+    "sourceExample": "米立龙（SV1S）",
+    "english": "Put this Pokémon and all attached cards into your hand.",
+    "chinese": "将这只宝可梦，以及放于其身上的所有卡牌，放回手牌。",
+    "rule": {
+      "kind": "extended_field",
+      "operation": "return_self",
+      "destination": "hand"
+    }
+  },
+  {
+    "sourceExample": "花洁夫人（SV1V）",
+    "english": "During your opponent's next turn, the Defending Pokémon's attacks do 30 less damage (before applying Weakness and Resistance).",
+    "chinese": "在下一个对手的回合，受到这个招式影响的宝可梦所使用招式的伤害「-30」。",
+    "rule": {
+      "kind": "extended_field",
+      "operation": "reduce_damage",
+      "amount": 30
+    }
+  },
+  {
+    "sourceExample": "皮卡丘（SV2D）",
+    "english": "During your opponent's next turn, the Defending Pokémon's attacks do 20 less damage (before applying Weakness and Resistance).",
+    "chinese": "在下一个对手的回合，受到这个招式影响的宝可梦所使用的招式的伤害「-20」。",
+    "rule": {
+      "kind": "extended_field",
+      "operation": "reduce_damage",
+      "amount": 20
+    }
+  },
+  {
+    "sourceExample": "狂欢浪舞鸭ex（SV1a）",
+    "english": "Switch this Pokémon with 1 of your Benched Pokémon. If you do, switch out your opponent's Active Pokémon to the Bench. (Your Opponent chooses the new Active Pokémon.)",
+    "chinese": "将这只宝可梦与备战宝可梦互换。然后，对手将其战斗宝可梦与备战宝可梦互换。",
+    "rule": {
+      "kind": "extended_field",
+      "operation": "double_switch"
+    }
+  },
+  {
+    "sourceExample": "电海燕（SV1a 032）",
+    "english": "Your opponent shuffles their hand into their deck and draws 4 cards.",
+    "chinese": "对手将其所有的手牌放回牌库并重洗牌库。然后，对手从牌库上方抽取4张卡牌。",
+    "rule": {
+      "kind": "extended_field",
+      "operation": "opponent_reset",
+      "count": 4
+    }
+  },
+  {
+    "sourceExample": "獒教父ex（SV-P）",
+    "english": "During your opponent's next turn, attacks used by the Defending Pokémon do 50 less damage ''(before applying Weakness and Resistance)''.",
+    "chinese": "在下一个对手的回合，受到这个招式影响的宝可梦所使用招式的伤害「-50」。",
+    "rule": {
+      "kind": "extended_field",
+      "operation": "reduce_damage",
+      "amount": 50
+    }
+  },
+  {
+    "sourceExample": "黑鲁加ex（SVD）",
+    "english": "If the Defending Pokémon is a Basic Pokémon, it can't attack during your opponent's next turn.",
+    "chinese": "在下一个对手的回合，受到这个招式影响的'''基础'''宝可梦，无法使用招式。",
+    "rule": {
+      "kind": "extended_field",
+      "operation": "conditional_lock",
+      "stage": "basic"
+    }
+  },
+  {
+    "sourceExample": "天秤偶（SV3）",
+    "english": "Switch this Pokémon with 1 of your Benched Pokémon. If you do, switch out your opponent's Active Pokémon to the Bench. ''(Your opponent chooses the new Active Pokémon.)''",
+    "chinese": "将这只宝可梦与备战宝可梦互换。然后，对手将对手自己的战斗宝可梦与备战宝可梦互换。",
+    "rule": {
+      "kind": "extended_field",
+      "operation": "double_switch"
+    }
+  },
+  {
+    "sourceExample": "鴨嘴寶寶（SV4K）",
+    "english": "During your opponent's next turn, if this Pokémon is damaged by an attack ''(even if it is Knocked Out)'', put 6 damage counters on the Attacking Pokémon.",
+    "chinese": "在下一个对手的回合，当这只宝可梦受到招式的伤害时，将6个伤害指示物放置于使用了招式的宝可梦身上。",
+    "rule": {
+      "kind": "extended_field",
+      "operation": "retaliate",
+      "counters": 60
+    }
+  },
+  {
+    "sourceExample": "鐵包袱（SV4M）",
+    "english": "If the Defending Pokémon is an Evolution Pokémon, it can't attack during your opponent's next turn.",
+    "chinese": "在下一个对手的回合，受到这个招式影响的进化宝可梦，无法使用招式。",
+    "rule": {
+      "kind": "extended_field",
+      "operation": "conditional_lock",
+      "stage": "evolved"
+    }
+  },
+  {
+    "sourceExample": "轟鳴月ex（SV4K）",
+    "english": "Knock Out your opponent's Active Pokémon. If your opponent's Active Pokémon is Knocked Out in this way, this Pokémon does 200 damage to itself.",
+    "chinese": "令对手的战斗宝可梦'''{{TCG|昏厥}}'''。然后，给这只宝可梦造成200伤害。",
+    "rule": {
+      "kind": "extended_field",
+      "operation": "instant_ko",
+      "recoil": 200
+    }
+  },
+  {
+    "sourceExample": "晶光芽（SV2P 042）",
+    "english": "Search your deck for a card that evolves from this Pokémon and put it onto this Pokémon to evolve it. Then, shuffle your deck.",
+    "chinese": "从自己牌库中选择1张从这只宝可梦进化而来的卡牌，放于这只宝可梦身上进行进化。并重洗牌库。",
+    "rule": {
+      "kind": "extended_field",
+      "operation": "evolve_self"
+    }
+  },
+  {
+    "sourceExample": "鐵包袱（SV6）",
+    "english": "Switch this Pokémon with 1 of your Benched Pokémon. If you do, switch out your opponent's Active Pokémon to the Bench. ''(Your opponent chooses the new Active Pokémon.)''",
+    "chinese": "将这只宝可梦与备战宝可梦互换。然后，对手将其战斗宝可梦与备战宝可梦互换。",
+    "rule": {
+      "kind": "extended_field",
+      "operation": "double_switch"
+    }
+  },
+  {
+    "sourceExample": "铁磐岩ex（SV5M）",
+    "english": "During your opponent's next turn, if this Pokémon is damaged by an attack ''(even if it is Knocked Out)'', put 8 damage counters on the Attacking Pokémon.",
+    "chinese": "在下一个对手的回合，当这只宝可梦受到招式的伤害时，将8个伤害指示物放置于使用了招式的宝可梦身上。",
+    "rule": {
+      "kind": "extended_field",
+      "operation": "retaliate",
+      "counters": 80
+    }
+  },
+  {
+    "sourceExample": "黑魯加（SV6a）",
+    "english": "During your opponent's next turn, attacks used by the Defending Pokémon do 100 less damage ''(before applying Weakness and Resistance)''.",
+    "chinese": "在下一个对手的回合，受到这个招式影响的宝可梦所使用招式的伤害「-100」。",
+    "rule": {
+      "kind": "extended_field",
+      "operation": "reduce_damage",
+      "amount": 100
+    }
+  },
+  {
+    "sourceExample": "嘎啦嘎啦（SV7）",
+    "english": "During your opponent's next turn, the Defending Pokémon's attacks do 40 less damage ''(before applying Weakness and Resistance)''.",
+    "chinese": "在下一个对手的回合，受到这个招式影响的宝可梦所使用的招式的伤害「-40」。",
+    "rule": {
+      "kind": "extended_field",
+      "operation": "reduce_damage",
+      "amount": 40
+    }
+  },
+  {
+    "sourceExample": "仙子伊布ex（SVLN）",
+    "english": "During your opponent's next turn, attacks used by the Defending Pokémon do 100 less damage ''(before applying Weakness and Resistance)''.",
+    "chinese": "在下一个对手的回合，受到这个招式影响的宝可梦所使用的招式的伤害「-100」。",
+    "rule": {
+      "kind": "extended_field",
+      "operation": "reduce_damage",
+      "amount": 100
+    }
+  },
+  {
+    "sourceExample": "振翼髮（SV8）",
+    "english": "During your opponent's next turn, attacks used by the Defending Pokémon do 30 less damage ''(before applying Weakness and Resistance)''.",
+    "chinese": "在下一个对手的回合，受到这个招式影响的宝可梦所使用的招式的伤害「-30」。",
+    "rule": {
+      "kind": "extended_field",
+      "operation": "reduce_damage",
+      "amount": 30
+    }
+  },
+  {
+    "sourceExample": "賽富豪（SV7a）",
+    "english": "You may shuffle this Pokémon and all attached cards into your deck.",
+    "chinese": "若希望，可将这只宝可梦，以及放于其身上的所有卡牌，放回自己的牌库并重洗牌库。",
+    "rule": {
+      "kind": "extended_field",
+      "operation": "return_self",
+      "destination": "left",
+      "optional": true
+    }
+  },
+  {
+    "sourceExample": "石居蟹（SV9a）",
+    "english": "Search your deck for a card that evolves from this Pokémon and put it onto this Pokémon to evolve it. Then, shuffle your deck.",
+    "chinese": "选择自己牌库中1张从这只宝可梦进化而来的卡牌，放于这只宝可梦身上进行进化。并重洗牌库。",
+    "rule": {
+      "kind": "extended_field",
+      "operation": "evolve_self"
+    }
+  },
+  {
+    "sourceExample": "莉莉艾的花療環環（SV9）",
+    "english": "Put this Pokémon and all attached cards into your hand.",
+    "chinese": "将这只宝可梦以及放于其身上的全部的卡牌放回手牌。",
+    "rule": {
+      "kind": "extended_field",
+      "operation": "return_self",
+      "destination": "hand"
+    }
+  },
+  {
+    "sourceExample": "赫普的稚山雀（SV9）",
+    "english": "During your opponent's next turn, attacks used by the Defending Pokémon do 20 less damage ''(before applying Weakness and Resistance)''.",
+    "chinese": "在下一个对手的回合，受到这个招式影响的宝可梦所使用的招式的伤害「-20」。",
+    "rule": {
+      "kind": "extended_field",
+      "operation": "reduce_damage",
+      "amount": 20
+    }
+  },
+  {
+    "sourceExample": "飘飘球（30th）",
+    "english": "You may shuffle this Pokémon and all attached cards into your deck.",
+    "chinese": "若希望，可以将这只宝可梦以及放于其身上的全部的卡牌放回牌库并重洗牌库。",
+    "rule": {
+      "kind": "extended_field",
+      "operation": "return_self",
+      "destination": "left",
+      "optional": true
+    }
+  }
+]

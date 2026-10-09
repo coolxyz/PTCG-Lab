@@ -1,0 +1,25 @@
+[
+  {
+    "english": "You may discard as many Basic Energy cards as you like from your hand. This attack does 40 damage for each type of Basic Energy you discarded in this way.",
+    "chinese": "将自己手牌中任意数量的基本能量放于弃牌区，造成放于弃牌区的基本能量的属性种类数量×40伤害。",
+    "rule": {
+      "kind": "discard_damage",
+      "mode": "multiply",
+      "zone": "hand",
+      "basic": true,
+      "factor": 40,
+      "distinctTypes": true
+    }
+  },
+  {
+    "english": "You may discard up to 2 Energy from your Benched Pokémon. This attack does 60 more damage for each card you discarded in this way.",
+    "chinese": "若希望，可以将最多2张自己备战宝可梦身上附着的能量放于弃牌区，追加造成其张数×60伤害。",
+    "rule": {
+      "kind": "discard_damage",
+      "mode": "add",
+      "zone": "bench",
+      "maxCards": 2,
+      "factor": 60
+    }
+  }
+]

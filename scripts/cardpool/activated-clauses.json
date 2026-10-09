@@ -1,0 +1,776 @@
+[
+  {
+    "sourceExample": "故勒顿ex（SV1S）",
+    "english": "Once during your turn, you may attach up to 2 Basic {{e|Fight}} Energy cards from your discard pile to your Basic {{e|Fight}} Pokémon in any way you like. If you use this Ability, your turn ends.",
+    "chinese": "在自己的回合可以使用1次。如果使用了，则自己的物合结束。选择自己弃牌区中最多2张「基本{{e|斗}}能量」。以任意方式附着于自己的{{e|斗}}属性的'''基础'''宝可梦身上。",
+    "rule": {
+      "effect": {
+        "kind": "attach",
+        "origin": "discard",
+        "count": 2,
+        "basic": true,
+        "type": "FIGHTING",
+        "targetType": "FIGHTING",
+        "targetStage": "BASIC"
+      },
+      "endTurn": true
+    }
+  },
+  {
+    "sourceExample": "桃歹郎ex（SV6a）",
+    "english": "Once during your turn, you may switch 1 of your Benched {{e|Darkness}} Pokémon, except any Pecharunt '''''ex''''', with your Active Pokémon. If you do, the new Active Pokémon is now Poisoned. You can't use more than 1 Subjugating Chains Ability each turn.",
+    "chinese": "在自己的回合可以使用1次。选择自己备战区中的1只{{e|恶}}宝可梦（除「桃歹郎{{ex}}」外），将其与战斗宝可梦互换。然后，令新的战斗宝可梦陷入'''{{TCG|中毒}}'''状态。在这个回合，如果已经使用了其他的「支配锁链」的话，则无法使用这个特性。",
+    "rule": {
+      "effect": {
+        "kind": "switch_poison",
+        "type": "DARK",
+        "exceptName": "Pecharunt ex"
+      },
+      "sharedName": "Subjugating Chains"
+    }
+  },
+  {
+    "sourceExample": "魔幻假面喵ex（SV1a）",
+    "english": "You must discard a Basic {{e|草}} Energy card from your hand in order to use this Ability. Once during your turn, you may put 3 damage counters on 1 of your opponent's Benched Pokémon.",
+    "chinese": "在自己的回合，如果将自己手牌中的1张「基本{{e|草}}能量」放于弃牌区的话，则可使用1次。给对手的1只备战宝可梦身上，放置3个伤害指示物。",
+    "rule": {
+      "effect": {
+        "kind": "counters",
+        "zone": "bench",
+        "count": 1,
+        "amount": 30
+      },
+      "discardBasicType": "GRASS"
+    }
+  },
+  {
+    "sourceExample": "怒鹦哥ex（SV2P）",
+    "english": "Once during your first turn, you may discard your hand and draw 6 cards. You can't use more than 1 Squawk and Seize Ability during your turn.",
+    "chinese": "只有在最初的自己的回合可以使用1次。将自己的手牌全部放于弃牌区，从牌库上方抽取6张卡牌。在这个回合，如果已经使用了其他的「英武重抽」的话，则无法使用这个特性。",
+    "rule": {
+      "effect": {
+        "kind": "discard_hand_draw",
+        "count": 6
+      },
+      "firstTurnOnly": true,
+      "sharedName": "Squawk and Seize"
+    }
+  },
+  {
+    "sourceExample": "鐵包袱（SV4M）",
+    "english": "Once during your turn, if this Pokémon is on your Bench, you may switch out your opponent's Active Pokémon to the Bench. ''(Your opponent chooses the new Active Pokémon.)'' If you do, discard this Pokémon and all attached cards.",
+    "chinese": "如果这只宝可梦在备战区的话，则在自己的回合可以使用1次。将对手的战斗宝可梦与备战宝可梦互换（放于战斗场的宝可梦由对手选择）。然后，将这只宝可梦，以及放于其身上的所有卡牌，放于弃牌区。",
+    "rule": {
+      "effect": {
+        "kind": "opponent_switch_discard_self"
+      },
+      "benchOnly": true
+    }
+  },
+  {
+    "sourceExample": "沙鐵皮ex（SV4K）",
+    "english": "Once during your turn, if your opponent has 4 or fewer Prize cards remaining, you may attach a Basic {{e|Fighting}} Energy card from your discard pile to this Pokémon.",
+    "chinese": "如果对手的剩余奖赏卡张数在4张及以下的话，则在自己的回合可以使用1次。选择自己弃牌区中的1张「基本{{e|斗}}能量」，附着于这只宝可梦身上。",
+    "rule": {
+      "effect": {
+        "kind": "attach",
+        "origin": "discard",
+        "count": 1,
+        "basic": true,
+        "type": "FIGHTING",
+        "target": "self"
+      },
+      "maxOpponentPrizes": 4
+    }
+  },
+  {
+    "sourceExample": "宝石海星（SV2a）",
+    "english": "Once during your turn, you may put 2 damage counters on 1 of your opponent's Pokémon. If you placed any damage counters in this way, discard this Pokémon and all attached cards.",
+    "chinese": "在自己的回合可以使用1次。给对手的1只宝可梦身上，放置2个伤害指示物。然后，将这只宝可梦，以及放于其身上的所有卡牌，放于弃牌区。",
+    "rule": {
+      "effect": {
+        "kind": "counters",
+        "zone": "field",
+        "count": 1,
+        "amount": 20
+      },
+      "discardSelf": true
+    }
+  },
+  {
+    "sourceExample": "大力鳄（SV5K）",
+    "english": "Once during your turn, you may put 5 damage counters on this Pokémon. If you do, during this turn, attacks used by this Pokémon do 120 more damage to your opponent's Active Pokémon ''(before applying Weakness and Resistance)''.",
+    "chinese": "在自己的回合可以使用1次。给这只宝可梦身上放置5个伤害指示物。在这种情况下，在这个回合，这只宝可梦所使用的招式，给对手战斗宝可梦造成的伤害「+120」。",
+    "rule": {
+      "effect": {
+        "kind": "counter_buff",
+        "selfCounters": 50,
+        "damageBonus": 120
+      }
+    }
+  },
+  {
+    "sourceExample": "彷徨夜靈（SV6a）",
+    "english": "Once during your turn, you may put 5 damage counters on 1 of your opponent's Pokémon. If you use this Ability, this Pokémon is Knocked Out.",
+    "chinese": "在自己的回合可以使用1次，如果使用了，则令这只宝可梦'''{{TCG|昏厥}}'''。给对手的1只宝可梦身上，放置5个伤害指示物。",
+    "rule": {
+      "effect": {
+        "kind": "counters",
+        "zone": "field",
+        "count": 1,
+        "amount": 50
+      },
+      "selfKnockout": true
+    }
+  },
+  {
+    "sourceExample": "黑夜魔靈（SV6a）",
+    "english": "Once during your turn, you may put 13 damage counters on 1 of your opponent's Pokémon. If you use this Ability, this Pokémon is Knocked Out.",
+    "chinese": "在自己的回合可以使用1次，如果使用了，则令这只宝可梦'''{{TCG|昏厥}}'''。给对手的1只宝可梦身上，放置13个伤害指示物。",
+    "rule": {
+      "effect": {
+        "kind": "counters",
+        "zone": "field",
+        "count": 1,
+        "amount": 130
+      },
+      "selfKnockout": true
+    }
+  },
+  {
+    "sourceExample": "狂欢浪舞鸭（SVAW）",
+    "english": "Once during your turn, you may attach a Basic Energy card from your hand to 1 of your Pokémon.",
+    "chinese": "在自己的回合可以使用1次。选择自己手牌中的1张基本能量，附着于自己的宝可梦身上。",
+    "rule": {
+      "effect": {
+        "kind": "attach",
+        "origin": "hand",
+        "basic": true,
+        "count": 1
+      }
+    }
+  },
+  {
+    "sourceExample": "猫老大（SV2a）",
+    "english": "Once during your turn, you may search your deck for a Giovanni's Charisma card, reveal it, and put it into your hand. Then, shuffle your deck.",
+    "chinese": "在自己的回合可以使用1次。选择自己牌库中的1张「{{TCG|坂木的领导力}}」，在给对手看过之后，加入手牌。并重洗牌库。",
+    "rule": {
+      "effect": {
+        "kind": "search",
+        "filter": "name:Giovanni's Charisma",
+        "count": 1
+      }
+    }
+  },
+  {
+    "sourceExample": "花舞鸟（SV1a）",
+    "english": "Once during your turn, you may heal 20 damage from your Active Evolution Pokémon.",
+    "chinese": "在自己的回合可以使用1次。回复自己战斗场上的进化宝可梦「20」HP。",
+    "rule": {
+      "effect": {
+        "kind": "heal",
+        "target": "active",
+        "stage": "evolved",
+        "amount": 20
+      }
+    }
+  },
+  {
+    "sourceExample": "三首恶龙（SV1a）",
+    "english": "Once during your turn, you may look at the top 3 cards of your deck and attach any number of Energy cards you find there to your Pokémon in any way you like. Discard the other cards.",
+    "chinese": "在自己的回合可以使用1次。查看自己牌库上方3张卡牌，选择其中任意数量的能量，以任意方式附着于自己的宝可梦身上。将剩余的卡牌放于弃牌区。",
+    "rule": {
+      "effect": {
+        "kind": "attach",
+        "origin": "top",
+        "top": 3,
+        "count": 3,
+        "rest": "discard"
+      }
+    }
+  },
+  {
+    "sourceExample": "胖可丁（SV2D）",
+    "english": "Once during your turn, you may attach a Therapeutic Energy card from your hand to 1 of your Pokémon.",
+    "chinese": "在自己的回合可以使用1次。选择自己手牌中的1张「治疗能量」，附着于自己的宝可梦身上。",
+    "rule": {
+      "effect": {
+        "kind": "attach",
+        "origin": "hand",
+        "name": "Therapeutic Energy",
+        "count": 1
+      }
+    }
+  },
+  {
+    "sourceExample": "卡比兽（SV2a）",
+    "english": "Once during your turn, you may put up to 2 Leftovers cards from your discard pile into your hand.",
+    "chinese": "在自己的回合可以使用1次。选择自己弃牌区中最多2张「吃剩的东西」，在给对手看过之后，加入手牌。",
+    "rule": {
+      "effect": {
+        "kind": "recover",
+        "filter": "name:Leftovers",
+        "count": 2
+      }
+    }
+  },
+  {
+    "sourceExample": "火焰雞ex（SVM）",
+    "english": "Once during your turn, you may attach a Basic Energy card from your discard pile to 1 of your Pokémon.",
+    "chinese": "在自己的回合可以使用1次。选择自己弃牌区中的1张基本能量，附着于自己的宝可梦身上。",
+    "rule": {
+      "effect": {
+        "kind": "attach",
+        "origin": "discard",
+        "basic": true,
+        "count": 1
+      }
+    }
+  },
+  {
+    "sourceExample": "金属怪（SV5M）",
+    "english": "Once during your turn, you may look at the top 4 cards of your deck and attach any number of Basic {{e|Metal}} Energy cards you find there to your Pokémon in any way you like. Shuffle the other cards and put them on the bottom of your deck.",
+    "chinese": "在自己的回合可以使用1次。查看自己牌库上方4张卡牌，选择其中任意数量的「基本{{e|钢}}能量」，以任意方式附着于自己的宝可梦身上。将剩余的卡牌全部翻到反面重洗，放回牌库下方。",
+    "rule": {
+      "effect": {
+        "kind": "attach",
+        "origin": "top",
+        "top": 4,
+        "count": 4,
+        "basic": true,
+        "type": "METAL",
+        "rest": "bottom"
+      }
+    }
+  },
+  {
+    "sourceExample": "狙射树枭ex（SVD）",
+    "english": "Once during your turn, you may use this Ability. If this Pokémon is on the Bench, switch it with your Active Pokémon. Or, if this Pokémon is in the Active Spot, switch it with 1 of your Benched Pokémon.",
+    "chinese": "在自己的回合可以使用1次。将处于备战区的这只宝可梦，与战斗宝可梦互换。或者，将处于战斗场上的这只宝可梦，与备战宝可梦互换。",
+    "rule": {
+      "effect": {
+        "kind": "switch_self"
+      }
+    }
+  },
+  {
+    "sourceExample": "红莲铠骑（SV1S）",
+    "english": "As often as you like during your turn, you may move a {{e|火}} Energy from 1 of your Benched Pokémon to your Active Pokémon.",
+    "chinese": "在自己的回合可以使用任意次。选择自己备战宝可梦身上附着的1个{{e|火}}能量，转附于战斗宝可梦身上。",
+    "rule": {
+      "effect": {
+        "kind": "move_energy",
+        "type": "FIRE"
+      },
+      "usageLimit": "unlimited"
+    }
+  },
+  {
+    "sourceExample": "呆壳兽（SV1V）",
+    "english": "As often as you like during your turn, you may move 1 damage counter from 1 of your other Pokémon to this Pokémon.",
+    "chinese": "在自己的回合可以使用任意次。选择自己场上宝可梦身上放置的1个伤害指示物，转放于这只宝可梦身上。",
+    "rule": {
+      "effect": {
+        "kind": "move_counter",
+        "target": "self"
+      },
+      "usageLimit": "unlimited"
+    }
+  },
+  {
+    "sourceExample": "普隆隆姆（SV1S）",
+    "english": "You must discard an Energy card from your hand in order to use this Ability. Once during your turn, you may draw cards until you have 6 cards in your hand.",
+    "chinese": "在自己的回合，如果将自己手牌中的1张能量放于弃牌区的话，则可使用1次。从自己牌库上方抽取卡牌，直到自己的手牌变为6张为止。",
+    "rule": {
+      "effect": {
+        "kind": "draw_until",
+        "count": 6
+      },
+      "cost": {
+        "energy": true
+      }
+    }
+  },
+  {
+    "sourceExample": "哥德小姐（SV2P）",
+    "english": "Once during your turn, you may look at the top 2 cards of your opponent's deck and put 1 of them back. Put the other card on the bottom of their deck.",
+    "chinese": "在自己的回合可以使用1次。查看对手牌库上方2张卡牌，选择其中1张卡牌，放回牌库上方。将剩余的卡牌，放回牌库下方。",
+    "rule": {
+      "effect": {
+        "kind": "order_opponent_top"
+      }
+    }
+  },
+  {
+    "sourceExample": "獒教父（SV1V）",
+    "english": "Once during your turn, you may switch out your opponent's Active Pokémon to the Bench. (Your opponent chooses the new Active Pokémon.)",
+    "chinese": "在自己的回合可以使用1次。将对手的战斗宝可梦与备战宝可梦互换。[放于战斗场的宝可梦由对手选择。]",
+    "rule": {
+      "effect": {
+        "kind": "opponent_switch"
+      }
+    }
+  },
+  {
+    "sourceExample": "烏賊王（SV3）",
+    "english": "Once during your turn, you may look at the top card of your opponent's deck. If you do, look at the top card of your deck.",
+    "chinese": "在自己的回合可以使用1次。查看对手牌库上方1张卡牌，再放回原处。然后，查看自己牌库上方1张卡牌，再放回原处。",
+    "rule": {
+      "effect": {
+        "kind": "peek",
+        "both": true,
+        "opponent": true
+      }
+    }
+  },
+  {
+    "sourceExample": "骨紋巨聲鱷ex（SVEL）",
+    "english": "Once during your turn, you may discard a Basic {{e|Fire}} Energy card from your hand in order to use this Ability. During this turn, attacks used by your Pokémon do 60 more damage to your opponent's Active Pokémon ''(before applying Weakness and Resistance).''",
+    "chinese": "在自己的回合，如果将自己手牌中的1张「基本{{e|火}}能量」放于弃牌区的话，则可使用1次。在这个回合，自己的宝可梦所使用的招式，给对手的战斗宝可梦造成的伤害「+60」。",
+    "rule": {
+      "effect": {
+        "kind": "team_damage",
+        "amount": 60
+      },
+      "discardBasicType": "FIRE"
+    }
+  },
+  {
+    "sourceExample": "多边兽Ｚ（SV4M）",
+    "english": "Once during your turn, you may flip a coin. If heads, attach up to 4 Basic Energy cards from your discard pile to this Pokémon. If tails, discard an Energy from this Pokémon.",
+    "chinese": "在自己的回合可以使用1次。抛掷1次硬币如果为正面，则选择自己弃牌区中最多4张基本能量，附着于这只宝可梦身上。如果为反面，则选择这只宝可梦身上附着的1个能量，放于弃牌区。",
+    "rule": {
+      "effect": {
+        "kind": "coin_effect",
+        "heads": {
+          "kind": "attach",
+          "origin": "discard",
+          "count": 4,
+          "basic": true,
+          "target": "self"
+        },
+        "tails": {
+          "kind": "discard_self_energy"
+        }
+      }
+    }
+  },
+  {
+    "sourceExample": "猛惡菇（SV4K）",
+    "english": "Once during your turn, if this Pokémon has an Ancient Booster Energy Capsule attached, you may make both Active Pokémon Poisoned.",
+    "chinese": "如果这只宝可梦身上放有「{{TCG|驱劲能量 古代}}」的话，则在自己的商合可以使用 1次。令双方的战斗宝可梦，各陷入'''中毒'''状态。",
+    "rule": {
+      "effect": {
+        "kind": "both_poison"
+      },
+      "requiresTool": "Ancient Booster Energy Capsule"
+    }
+  },
+  {
+    "sourceExample": "烈焰猴（SV5a）",
+    "english": "Once during your turn, you may attach a Basic {{e|Fire}} Energy card, a Basic {{e|Fighting}} Energy card, or 1 of each from your hand to your Pokémon in any way you like.",
+    "chinese": "在自己的回合可以使用1次。选择自己手牌中的「基本{{e|火}}能量」和「基本{{e|鬥}}能量」各最多1张，以任意方式附着于自己宝可梦身上。",
+    "rule": {
+      "effect": {
+        "kind": "sequence",
+        "effects": [
+          {
+            "kind": "attach",
+            "origin": "hand",
+            "count": 1,
+            "basic": true,
+            "type": "FIRE"
+          },
+          {
+            "kind": "attach",
+            "origin": "hand",
+            "count": 1,
+            "basic": true,
+            "type": "FIGHTING"
+          }
+        ]
+      }
+    }
+  },
+  {
+    "sourceExample": "莫魯貝可（SV5a）",
+    "english": "Once during your turn, you may look at the top card of your deck. You may discard that card.",
+    "chinese": "在自己的回合可以使用1次。查看自己牌库上方1张卡牌，再放回原处。若希望，可将该卡牌放于弃牌区。",
+    "rule": {
+      "effect": {
+        "kind": "peek",
+        "discard": true
+      }
+    }
+  },
+  {
+    "sourceExample": "花潔夫人（SV5a）",
+    "english": "Once during your turn, you may flip a coin. If heads, switch in 1 of your opponent's Benched Pokémon to the Active Spot, and the new Active Pokémon is now Confused.",
+    "chinese": "在自己的回合可以使用1次。抛掷1次硬币如果为正面，则选择对手的1只备战宝可梦，将其与战斗宝可梦互换。然后，令新出场的宝可梦陷入'''{{TCG|混乱}}'''状态。",
+    "rule": {
+      "effect": {
+        "kind": "coin_effect",
+        "heads": {
+          "kind": "gust",
+          "status": "CONFUSED"
+        }
+      }
+    }
+  },
+  {
+    "sourceExample": "超能妙喵（SV8）",
+    "english": "You must discard a {{TCG|Chill Teaser Toy}} card from your hand in order to use this Ability. Once during your turn, you may switch in 1 of your opponent's Benched Pokémon to the Active Spot.",
+    "chinese": "在自己的回合，如果将自己手牌中的1张「悠闲尾草」放于弃牌区的话，则可使用1次。选择对手的1只备战宝可梦，将其与战斗宝可梦互换。",
+    "rule": {
+      "effect": {
+        "kind": "gust"
+      },
+      "cost": {
+        "name": "Chill Teaser Toy"
+      }
+    }
+  },
+  {
+    "sourceExample": "魔幻假面喵（SV9）",
+    "english": "Once during your turn, if this Pokemon is on your Bench, you may switch it with your Active Pokémon.",
+    "chinese": "如果这只宝可梦在备战区的话，则在自己的回合可以使用1次。将这只宝可梦与战斗宝可梦互换。",
+    "rule": {
+      "effect": {
+        "kind": "switch_self",
+        "benchOnly": true
+      },
+      "benchOnly": true
+    }
+  },
+  {
+    "sourceExample": "火箭隊的操陷蛛（SV10）",
+    "english": "Once during your turn, you may attach a Basic Energy card from your discard pile to this Pokémon.",
+    "chinese": "在自己的回合可以使用1次。选择自己弃牌区中的1张基本能量，附着于这只宝可梦身上。",
+    "rule": {
+      "effect": {
+        "kind": "attach",
+        "origin": "discard",
+        "count": 1,
+        "basic": true,
+        "target": "self"
+      }
+    }
+  },
+  {
+    "sourceExample": "阿響的鳳王ex（SV9a）",
+    "english": "Once during your turn, you may attach up to 2 Basic {{e|Fire}} Energy cards from your hand to 1 of your Benched Ethan's Pokémon.",
+    "chinese": "在自己的回合可以使用1次。选择自己手牌中最多2张「基本{{e|火}}能量」，附着于备战区中的1只「阿响的宝可梦」身上。",
+    "rule": {
+      "effect": {
+        "kind": "attach",
+        "origin": "hand",
+        "count": 2,
+        "basic": true,
+        "type": "FIRE",
+        "target": "bench",
+        "targetPrefix": "Ethan's ",
+        "singleTarget": true
+      }
+    }
+  },
+  {
+    "sourceExample": "波爾凱尼恩ex（SV9）",
+    "english": "Once during your turn, if this Pokémon is in the Active Spot, you may make your opponent's Active Pokémon Burned.",
+    "chinese": "如果这只宝可梦在战斗场上的话，则在自己的回合可以使用1次。令对手的战斗宝可梦陷入'''{{TCG|灼伤}}'''状态。",
+    "rule": {
+      "effect": {
+        "kind": "burn"
+      },
+      "activeOnly": true
+    }
+  },
+  {
+    "sourceExample": "奇樹的大電海燕（SV9）",
+    "english": "You must discard a Basic {{e|Lightning}} Energy card from this Pokémon in order to use this Ability. Once during your turn, you may draw cards until you have 6 cards in your hand.",
+    "chinese": "在自己的回合，如果将这只宝可梦身上附着的1个「基本{{e|雷}}能量」放于弃牌区的话，则可以使用1次。从牌库上方抽取卡牌，直到自己的手牌变为6张为止。",
+    "rule": {
+      "effect": {
+        "kind": "draw_until",
+        "count": 6
+      },
+      "cost": {
+        "origin": "attached",
+        "energy": true,
+        "basic": true,
+        "type": "LIGHTNING"
+      }
+    }
+  },
+  {
+    "sourceExample": "火箭隊的以歐路普（SV10）",
+    "english": "As often as you like during your turn, you may move 1 damage counter from 1 of your Team Rocket's Pokémon to another of your Pokémon.",
+    "chinese": "在自己的回合可以使用任意次。选择自己场上的「火箭队的宝可梦」身上放置的1个伤害指示物，转放于自己的其他宝可梦身上。",
+    "rule": {
+      "effect": {
+        "kind": "move_counter",
+        "prefix": "Team Rocket's "
+      },
+      "usageLimit": "unlimited"
+    }
+  },
+  {
+    "sourceExample": "彩粉蝶（30th）",
+    "english": "Once during your turn, you may use this Ability. Flip a coin. If heads, search your deck for a Pokémon, reveal it, and put it into your hand. Then, shuffle your deck.",
+    "chinese": "在自己的回合可以使用1次。抛掷1次硬币，如果为正面，则选择自己牌库中的1张宝可梦，在给对手看过之后加入手牌。并重洗牌库。",
+    "rule": {
+      "effect": {
+        "kind": "coin_effect",
+        "heads": {
+          "kind": "search",
+          "filter": "pokemon",
+          "count": 1
+        }
+      }
+    }
+  },
+  {
+    "sourceExample": "火焰鸟（30th）",
+    "english": "Once during your turn, if you have Articuno and Zapdos in play, you may use this Ability. Attach a Basic {{e|Fire}} Energy card from your hand to this Pokémon.",
+    "chinese": "如果自己场上有「{{TCGPM|急冻鸟}}」「{{TCGPM|闪电鸟}}」的话，则在自己的回合可以使用1次。选择自己手牌中的1张「基本{{e|火}}能量」，附着于这只宝可梦身上。",
+    "rule": {
+      "effect": {
+        "kind": "attach",
+        "origin": "hand",
+        "count": 1,
+        "basic": true,
+        "type": "FIRE",
+        "target": "self"
+      },
+      "requiresNames": [
+        "Articuno",
+        "Zapdos"
+      ]
+    }
+  },
+  {
+    "sourceExample": "急冻鸟（30th）",
+    "english": "Once during your turn, if you have Moltres and Zapdos in play, you may use this Ability. Attach a Basic {{e|Water}} Energy card from your hand to this Pokémon.",
+    "chinese": "如果自己场上有「{{TCGPM|火焰鸟}}」「{{TCGPM|闪电鸟}}」的话，则在自己的回合可以使用1次。选择自己手牌中的1张「基本{{e|水}}能量」，附着于这只宝可梦身上。",
+    "rule": {
+      "effect": {
+        "kind": "attach",
+        "origin": "hand",
+        "count": 1,
+        "basic": true,
+        "type": "WATER",
+        "target": "self"
+      },
+      "requiresNames": [
+        "Moltres",
+        "Zapdos"
+      ]
+    }
+  },
+  {
+    "sourceExample": "闪电鸟（30th）",
+    "english": "Once during your turn, if you have Moltres and Articuno in play, you may use this Ability. Attach a Basic {{e|Lightning}} Energy card from your hand to this Pokémon.",
+    "chinese": "如果自己场上有「{{TCGPM|火焰鸟}}」「{{TCGPM|急冻鸟}}」的话，则在自己的回合可以使用1次。选择自己手牌中的1张「基本{{e|雷}}能量」，附着于这只宝可梦身上。",
+    "rule": {
+      "effect": {
+        "kind": "attach",
+        "origin": "hand",
+        "count": 1,
+        "basic": true,
+        "type": "LIGHTNING",
+        "target": "self"
+      },
+      "requiresNames": [
+        "Moltres",
+        "Articuno"
+      ]
+    }
+  },
+  {
+    "sourceExample": "索尔迦雷欧（30th）",
+    "english": "Once during your turn, if this Pokémon is on your Bench, you may use this Ability. Search your deck for up to 2 Basic {{e|Metal}} Energy cards and attach them to this Pokémon. Then, shuffle your deck.",
+    "chinese": "如果这只宝可梦在备战区的话，则在自己的回合可以使用1次。选择自己牌库中最多2张「基本{{e|钢}}能量」，附着于这只宝可梦身上。并重洗牌库。",
+    "rule": {
+      "effect": {
+        "kind": "attach",
+        "origin": "left",
+        "count": 2,
+        "basic": true,
+        "type": "METAL",
+        "target": "self"
+      },
+      "benchOnly": true
+    }
+  },
+  {
+    "sourceExample": "燈罩夜菇（SV7a）",
+    "english": "Once during your turn, if this Pokémon is in the Active Spot, you may make your opponent's Active Pokémon Asleep.",
+    "chinese": "如果这只宝可梦在战斗场上的话，则在自己的回合可以使用1次。令对手的战斗宝可梦陷入'''{{TCG|睡眠}}'''状态。",
+    "rule": {
+      "activeOnly": true,
+      "effect": {
+        "kind": "status",
+        "status": "ASLEEP"
+      }
+    }
+  },
+  {
+    "sourceExample": "狂歡浪舞鴨（SV7a）",
+    "english": "You must put a card from your hand on the bottom of your deck in order to use this Ability. Once during your turn, you may draw cards until you have 5 cards in your hand.",
+    "chinese": "在自己的回合，如果将自己的1张手牌放回牌库下方的话，则可使用1次。从牌库上方抽取卡牌，直到自己的手牌变为5张为止。",
+    "rule": {
+      "cost": {
+        "bottom": true
+      },
+      "effect": {
+        "kind": "draw_until",
+        "count": 5
+      }
+    }
+  },
+  {
+    "sourceExample": "佛烈托斯ex（SV2D）",
+    "english": "Once during your turn, you may search your deck for up to 5 Basic {{e|草}} Energy cards and attach them to your Pokémon in any way you like. Then, shuffle your deck. If you searched your deck in this way, this Pokémon is Knocked Out.",
+    "chinese": "在自己的回合可以使用1次，如果使用了，则令这只宝可梦'''昏厥'''。选择自己牌库中最多5张「基本{{e|草}}能量」，以任意方式附着于自己的宝可梦身上。并重洗牌库。",
+    "rule": {
+      "effect": {
+        "kind": "attach",
+        "origin": "left",
+        "count": 5,
+        "type": "GRASS",
+        "basic": true
+      },
+      "selfKnockout": true
+    }
+  },
+  {
+    "sourceExample": "三合一磁怪（SV8）",
+    "english": "Once during your turn, you may attach up to 3 Basic Energy cards from your discard pile to your {{e|Lightning}} Pokémon in any way you like. If you use this Ability, this Pokémon is Knocked Out.",
+    "chinese": "在自己的回合可以使用1次，如果使用了，则令这只宝可梦'''{{TCG|昏厥}}'''。选择自己弃牌区中最多3张基本能量，以任意方式附着于自己的{{e|雷}}宝可梦身上。",
+    "rule": {
+      "effect": {
+        "kind": "attach",
+        "origin": "discard",
+        "count": 3,
+        "basic": true,
+        "targetType": "LIGHTNING"
+      },
+      "selfKnockout": true
+    }
+  },
+  {
+    "sourceExample": "幸福蛋ex（SV6）",
+    "english": "Once during your turn, you may move a Basic Energy from 1 of your Pokémon to another of your Pokémon.",
+    "chinese": "在自己的回合可以使用1次。选择自己场上宝可梦身上附着的1个基本能量，转附于自己其他宝可梦身上。",
+    "rule": {
+      "effect": {
+        "kind": "move_basic"
+      }
+    }
+  },
+  {
+    "sourceExample": "搖籃百合（SV7）",
+    "english": "Once during your turn, you may flip a coin. If heads, choose Burned, Confused, or Poisoned. Your opponent's Active Pokémon is now affected by that Special Condition.",
+    "chinese": "在自己的回合可以使用1次。抛掷1次硬币如果为正面，则从'''{{TCG|中毒}}'''、'''{{TCG|灼伤}}'''、'''{{TCG|混乱}}'''中选择1个，令对手的战斗宝可梦陷入该特殊状态。",
+    "rule": {
+      "effect": {
+        "kind": "coin_effect",
+        "heads": {
+          "kind": "choose_status",
+          "statuses": [
+            "BURNED",
+            "CONFUSED",
+            "POISONED"
+          ]
+        }
+      }
+    }
+  },
+  {
+    "sourceExample": "凱西（SV6）",
+    "english": "Once during your turn, if this Pokémon is in the Active Spot, you may shuffle it and all attached cards into your deck.",
+    "chinese": "如果这只宝可梦在战斗场上的话，则在自己的回合可以使用1次。将这只宝可梦，以及放于其身上的所有卡牌，放回自己的牌库并重洗牌库。",
+    "rule": {
+      "effect": {
+        "kind": "return_self_deck"
+      },
+      "activeOnly": true
+    }
+  },
+  {
+    "sourceExample": "豆豆鸽（SV5M）",
+    "english": "Once during your turn, if this Pokémon's remaining HP is 30 or less, you may search your deck for an Unfezant or Unfezant ex and put it onto this Pidove to evolve it. Then, shuffle your deck.",
+    "chinese": "如果这只宝可梦的剩余HP在「30」及以下的话，则在自己的回合可以使用1次。选择自己牌库中的1张「高傲雉鸡（包含『宝可梦{{ex}}』）」，放于这只「豆豆鸽」身上进行进化。并重洗牌库。",
+    "rule": {
+      "effect": {
+        "kind": "evolve_named",
+        "names": [
+          "Unfezant",
+          "Unfezant ex"
+        ]
+      },
+      "maxHP": 30
+    }
+  },
+  {
+    "sourceExample": "啪咚猴（SV6）",
+    "english": "Once during your turn, if your Active Pokémon has the Festival Lead Ability, you may search your deck for a card and put it into your hand. Then, shuffle your deck.",
+    "chinese": "如果自己的战斗宝可梦是拥有特性「祭典乐舞」的宝可梦的话，则在自己的回合可以使用1次。选择自己牌库中任意1张卡牌，加入手牌。并重洗牌库。",
+    "rule": {
+      "effect": {
+        "kind": "search",
+        "filter": "any",
+        "count": 1
+      },
+      "requiresActiveAbility": "Festival Lead"
+    }
+  },
+  {
+    "sourceExample": "叉字蝠（SV6a）",
+    "english": "Once during your turn, if you played Janine's Secret Art from your hand this turn, you may draw cards until you have 8 cards in your hand.",
+    "chinese": "在这个回合，如果从手牌使出了「阿杏的秘招」的话，则在自己的回合可以使用1次。从牌库上方抽取卡牌，直到自己的手牌变为8张为止。",
+    "rule": {
+      "effect": {
+        "kind": "draw_until",
+        "count": 8
+      },
+      "requiresSupporter": "Janine's Secret Art"
+    }
+  },
+  {
+    "sourceExample": "旋轉洛托姆（SV7）",
+    "english": "Once during your first turn, you may search your deck for up to 3 {{e|Colorless}} Pokémon with 100 HP or less, reveal them, and put them into your hand. Then, shuffle your deck. You can't use more than 1 Fan Call Ability during your turn.",
+    "chinese": "只有在最初的自己的回合可以使用1次。选择自己牌库中，最多3张HP在「100」及以下的{{e|无}}宝可梦，在给对手看过之后，加入手牌。并重洗牌库。在这个回合，如果已经使用了其他的「风扇呼唤」的话，则无法使用这个特性。",
+    "rule": {
+      "effect": {
+        "kind": "search",
+        "filter": "colorless_100",
+        "count": 3
+      },
+      "firstTurnOnly": true,
+      "sharedName": "Fan Call"
+    }
+  },
+  {
+    "sourceExample": "竹蘭的尖牙陸鯊（SV9a）",
+    "english": "Once during your turn, you may search your deck for a Cynthia's Pokémon, reveal it, and put it into your hand. Then, shuffle your deck.",
+    "chinese": "在自己的回合可以使用1次。选择自己牌库中的1张「竹兰的宝可梦」，在给对手看过之后加入手牌。并重洗牌库。",
+    "rule": {
+      "effect": {
+        "kind": "search",
+        "filter": "prefix:Cynthia's ",
+        "count": 1
+      }
+    }
+  },
+  {
+    "sourceExample": "小猫怪（SVC）",
+    "english": "Once during your turn, if this Pokémon is in the Active Spot, you may switch out your opponent's Active Pokémon to the Bench. (Your opponent chooses the new Active Pokémon.)",
+    "chinese": "如果这只宝可梦在场上的话，则在自己的回合可以使用1次。将对手的战斗宝可梦与备战宝可梦互换。''[放于战斗场的宝可梦由对手选择。]''",
+    "rule": {
+      "effect": {
+        "kind": "opponent_switch"
+      },
+      "activeOnly": true
+    }
+  }
+]

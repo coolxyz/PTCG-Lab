@@ -1,0 +1,1479 @@
+[
+  {
+    "sourceExample": "帕奇利兹（SV1V）",
+    "english": "This Pokémon can't be Paralyzed.",
+    "chinese": "这只宝可梦不会陷入'''麻痹'''状态。",
+    "rule": {
+      "trigger": "passive",
+      "usageLimit": "unlimited",
+      "kind": "status_immunity",
+      "statuses": [
+        "PARALYZED"
+      ]
+    }
+  },
+  {
+    "sourceExample": "雷電雲（SV3）",
+    "english": "As long as this Pokémon is in the Active Spot, prevent all damage done to your Benched Pokémon by attacks from your opponent's Pokémon.",
+    "chinese": "只要这只宝可梦在战斗场上，自己所有的备战宝可梦，不会受到对手招式的伤害。",
+    "rule": {
+      "trigger": "passive",
+      "usageLimit": "unlimited",
+      "kind": "protection",
+      "damage": true,
+      "scope": "team",
+      "zone": "bench",
+      "holderActive": true
+    }
+  },
+  {
+    "sourceExample": "花洁夫人（SV1V）",
+    "english": "Your Pokémon in play have no Weakness.",
+    "chinese": "只要这只宝可梦在场上，自己所有宝可梦的弱点，全部消除。",
+    "rule": {
+      "trigger": "passive",
+      "usageLimit": "unlimited",
+      "kind": "continuous",
+      "noWeakness": true
+    }
+  },
+  {
+    "sourceExample": "麻花犬（SV1S）",
+    "english": "This Pokémon can't be Burned. Prevent all damage done to this Pokémon by attacks from your opponent's {{e|火}} Pokémon.",
+    "chinese": "这只宝可梦，不会受到对手{{e|火}}宝可梦的招式的伤害，也不会陷入'''{{TCG|灼伤}}'''状态。",
+    "rule": {
+      "trigger": "passive",
+      "usageLimit": "unlimited",
+      "kind": "protection",
+      "damage": true,
+      "sourceType": "FIRE",
+      "statuses": [
+        "BURNED"
+      ]
+    }
+  },
+  {
+    "sourceExample": "尼多王（SV2a）",
+    "english": "If you have Nidoqueen in play, ignore all Energy in the costs of attacks used by this Pokémon.",
+    "chinese": "如果自己的场上有「尼多后」的话，则这只宝可梦的使用招式所需能量，全部消除。",
+    "rule": {
+      "trigger": "passive",
+      "usageLimit": "unlimited",
+      "kind": "continuous",
+      "scope": "self",
+      "requiresNames": [
+        "Nidoqueen"
+      ],
+      "attackFree": true
+    }
+  },
+  {
+    "sourceExample": "魔墙人偶（SV2a）",
+    "english": "If this Pokémon and your opponent's Active Pokémon have the same amount of Energy attached, prevent all damage done to this Pokémon by attacks from your opponent's Pokémon.",
+    "chinese": "如果这只宝可梦身上附着的能量数量与对手战斗宝可梦身上附着的能量数量相同的话，则这只宝可梦，不受到对手宝可梦的招式的伤害。",
+    "rule": {
+      "trigger": "passive",
+      "usageLimit": "unlimited",
+      "kind": "protection",
+      "damage": true,
+      "equalActiveEnergy": true
+    }
+  },
+  {
+    "sourceExample": "電肚蛙（SV3）",
+    "english": "Prevent all damage done to this Pokémon by attacks from your opponent's {{e|Lightning}} Pokémon.",
+    "chinese": "这只宝可梦，不会受到对手{{e|雷}}宝可梦的招式的伤害。",
+    "rule": {
+      "trigger": "passive",
+      "usageLimit": "unlimited",
+      "kind": "protection",
+      "damage": true,
+      "sourceType": "LIGHTNING"
+    }
+  },
+  {
+    "sourceExample": "红莲铠骑（SVD）",
+    "english": "If this Pokémon is in the Active Spot and is damaged by an attack from your opponent's Pokémon ''(even if this Pokémon is Knocked Out)'', the Attacking Pokémon is now Burned.",
+    "chinese": "当这只宝可梦，在战斗场上受到对手宝可梦的招式的伤害时，会令使用了招式的宝可梦陷入'''{{TCG|灼伤}}'''状态。",
+    "rule": {
+      "trigger": "passive",
+      "usageLimit": "unlimited",
+      "kind": "retaliate",
+      "status": "BURNED"
+    }
+  },
+  {
+    "sourceExample": "鹽石巨靈ex（SV-P）",
+    "english": "This Pokémon can't be affected by any Special Conditions.",
+    "chinese": "这只宝可梦不会陷入特殊状态。",
+    "rule": {
+      "trigger": "passive",
+      "usageLimit": "unlimited",
+      "kind": "status_immunity",
+      "statuses": [
+        "all"
+      ]
+    }
+  },
+  {
+    "sourceExample": "堅盾劍怪（SV3a）",
+    "english": "Prevent all damage done to this Pokémon by attacks from your opponent's Pokémon '''''ex''''' and Pokémon '''''V'''''.",
+    "chinese": "这只宝可梦，不受到对手「宝可梦'''''ex'''''・'''''V'''''」的招式的伤害。",
+    "rule": {
+      "trigger": "passive",
+      "usageLimit": "unlimited",
+      "kind": "protection",
+      "damage": true,
+      "source": "ex_v"
+    }
+  },
+  {
+    "sourceExample": "紅蓮鎧騎ex（SV4K）",
+    "english": "If this Pokémon has full HP, it takes 80 less damage from attacks from your opponent's Pokémon ''(after applying Weakness and Resistance)''.",
+    "chinese": "如果这只宝可梦的HP为全满状态的话，则这只宝可梦受到对手宝可梦的招式的伤害「-80」。",
+    "rule": {
+      "trigger": "passive",
+      "usageLimit": "unlimited",
+      "kind": "continuous",
+      "scope": "self",
+      "fullHP": true,
+      "armor": 80
+    }
+  },
+  {
+    "sourceExample": "蟾蜍王（SV3）",
+    "english": "As long as this Pokémon is in the Active Spot, attacks used by your opponent's Active Pokémon cost {{e|Colorless}} more.",
+    "chinese": "只要这只宝可梦在战斗场上，对手的战斗宝可梦使用招式所需能量，就会增加1个{{e|无}}能量。",
+    "rule": {
+      "trigger": "passive",
+      "usageLimit": "unlimited",
+      "kind": "continuous",
+      "scope": "opponent",
+      "holderZone": "active",
+      "affectedZone": "active",
+      "attackMore": 1
+    }
+  },
+  {
+    "sourceExample": "花椰猿（SV4K）",
+    "english": "If you have Simisage, Simisear, and Simipour in play, ignore all {{e|Colorless}} Energy in the costs of attacks used by this Pokémon.",
+    "chinese": "如果自己的场上有「花椰猿」「{{TCGPM|爆香猿}}」「{{TCGPM|冷水猿}}」的话，则这只宝可梦使用招式所需的{{e|无}}能量，全部消除。",
+    "rule": {
+      "trigger": "passive",
+      "usageLimit": "unlimited",
+      "kind": "continuous",
+      "scope": "self",
+      "requiresNames": [
+        "Simisage",
+        "Simisear",
+        "Simipour"
+      ],
+      "attackColorlessFree": true
+    }
+  },
+  {
+    "sourceExample": "超能艳鸵ex（SV4a）",
+    "english": "As long as this Pokémon is in the Active Spot, attacks used by your opponent's Active Pokémon's cost {{e|无色}} more.",
+    "chinese": "只要这只宝可梦在战斗场上，对手的战斗宝可梦使用招式所需能量，就会增加1个{{e|无}}能量。",
+    "rule": {
+      "trigger": "passive",
+      "usageLimit": "unlimited",
+      "kind": "continuous",
+      "scope": "opponent",
+      "holderZone": "active",
+      "affectedZone": "active",
+      "attackMore": 1
+    }
+  },
+  {
+    "sourceExample": "爆香猿（SV4M）",
+    "english": "If you have Simisage, Simisear, and Simipour in play, ignore all {{e|Colorless}} Energy in the costs of attacks used by this Pokémon.",
+    "chinese": "如果自己的场上有「{{TCGPM|花椰猿}}」「爆香猿」「{{TCGPM|冷水猿}}」的话，则这只宝可梦使用招式所需的{{e|无}}能量，全部消除。",
+    "rule": {
+      "trigger": "passive",
+      "usageLimit": "unlimited",
+      "kind": "continuous",
+      "scope": "self",
+      "requiresNames": [
+        "Simisage",
+        "Simisear",
+        "Simipour"
+      ],
+      "attackColorlessFree": true
+    }
+  },
+  {
+    "sourceExample": "冷水猿（SV4M）",
+    "english": "If you have Simisage, Simisear, and Simipour in play, ignore all {{e|Colorless}} Energy in the costs of attacks used by this Pokémon.",
+    "chinese": "如果自己的场上有「{{TCGPM|花椰猿}}」「{{TCGPM|爆香猿}}」「冷水猿」的话，则这只宝可梦使用招式所需的{{e|无}}能量，全部消除。",
+    "rule": {
+      "trigger": "passive",
+      "usageLimit": "unlimited",
+      "kind": "continuous",
+      "scope": "self",
+      "requiresNames": [
+        "Simisage",
+        "Simisear",
+        "Simipour"
+      ],
+      "attackColorlessFree": true
+    }
+  },
+  {
+    "sourceExample": "火恐龙（SV4a）",
+    "english": "Prevent all effects of attacks used by your opponent's Pokémon done to this Pokémon. (Damage is not an effect.)",
+    "chinese": "这只宝可梦，不受到对手宝可梦所使用招式的效果影响。",
+    "rule": {
+      "trigger": "passive",
+      "usageLimit": "unlimited",
+      "kind": "protection",
+      "effects": true
+    }
+  },
+  {
+    "sourceExample": "虫甲圣（SV5M）",
+    "english": "Prevent all damage from and effects of attacks from your opponent's Pokémon done to your Benched Pokémon.",
+    "chinese": "只要这只宝可梦在场上，自己所有的备战宝可梦，不受到对手宝可梦的招式的伤害和效果影响。",
+    "rule": {
+      "trigger": "passive",
+      "usageLimit": "unlimited",
+      "kind": "protection",
+      "damage": true,
+      "effects": true,
+      "scope": "team",
+      "zone": "bench"
+    }
+  },
+  {
+    "sourceExample": "炽焰咆哮虎ex（SV5M）",
+    "english": "Attacks used by this Pokémon cost {{e|Colorless}} less for each of your opponent's Benched Pokémon.",
+    "chinese": "这只宝可梦使用招式所需能量会减少与对手备战宝可梦数量相同数量的{{e|无}}能量。",
+    "rule": {
+      "trigger": "passive",
+      "usageLimit": "unlimited",
+      "kind": "continuous",
+      "scope": "self",
+      "attackLessPerOpponentBench": 1
+    }
+  },
+  {
+    "sourceExample": "怪力（SV2a）",
+    "english": "If this Pokémon would be Knocked Out by damage from an attack, flip a coin. If heads, this Pokémon is not Knocked Out, and its remaining HP becomes 10.",
+    "chinese": "当这只宝可梦，受到招式的伤害而'''{{TCG|昏厥}}'''时，自己抛掷1次硬币。如果为正面，则这只宝可梦不会'''昏厥'''，而是以剩余HP为「10」的状态留在场上。",
+    "rule": {
+      "trigger": "passive",
+      "usageLimit": "unlimited",
+      "kind": "survive_damage",
+      "anyHP": true,
+      "coin": true,
+      "remainingHP": 10
+    }
+  },
+  {
+    "sourceExample": "双弹瓦斯（SV2a）",
+    "english": "If this Pokémon is in the Active Spot and is Knocked Out by damage from an attack from your opponent's Pokémon, flip a coin. If heads, the Attacking Pokémon is Knocked Out.",
+    "chinese": "当这只宝可梦，在战斗场上受到对手宝可梦的招式的伤害而'''{{TCG|昏厥}}'''时，自己抛掷1次硬币。如果为正面，则令使用了招式的宝可梦'''昏厥'''。",
+    "rule": {
+      "trigger": "passive",
+      "usageLimit": "unlimited",
+      "kind": "knockout_retaliate",
+      "coin": true,
+      "knockout": true,
+      "activeOnly": true
+    }
+  },
+  {
+    "sourceExample": "耿鬼ex（30th）",
+    "english": "If this Pokémon is Knocked Out by damage from an attack from your opponent's Pokémon, flip a coin. If heads, the Attacking Pokémon is Knocked Out.",
+    "chinese": "当这只宝可梦受到对手宝可梦的招式的伤害而'''{{TCG|昏厥}}'''时，自己抛掷1次硬币。如果为正面，则令使用了招式的宝可梦'''{{TCG|昏厥}}'''。",
+    "rule": {
+      "trigger": "passive",
+      "usageLimit": "unlimited",
+      "kind": "knockout_retaliate",
+      "coin": true,
+      "knockout": true
+    }
+  },
+  {
+    "sourceExample": "沙鈴仙人掌（SV9）",
+    "english": "If this Pokémon is in the Active Spot and is Knocked Out by damage from an attack from your opponent's Pokémon, put 6 damage counters on the Attacking Pokémon.",
+    "chinese": "当这只宝可梦在战斗场上受到对手宝可梦的招式的伤害而'''{{TCG|昏厥}}'''时，给使用了招式的宝可梦身上放置6个伤害指示物。",
+    "rule": {
+      "trigger": "passive",
+      "usageLimit": "unlimited",
+      "kind": "knockout_retaliate",
+      "counters": 60,
+      "activeOnly": true
+    }
+  },
+  {
+    "sourceExample": "晃晃斑（SV4K）",
+    "english": "If this Pokémon is Confused and is damaged by an attack, flip a coin. If heads, prevent that damage.",
+    "chinese": "如果这只宝可梦处于'''{{TCG|混乱}}'''状态的话，则当这只宝可梦受到招式的伤害时，自己抛掷1次硬币。如果为正面，则这只宝可梦不受到该伤害。",
+    "rule": {
+      "trigger": "passive",
+      "usageLimit": "unlimited",
+      "kind": "coin_armor",
+      "status": "CONFUSED"
+    }
+  },
+  {
+    "sourceExample": "吉雉雞（SV6）",
+    "english": "If this Pokémon has any {{e|Darkness}} Energy attached and is damaged by an attack, flip a coin. If heads, prevent that damage.",
+    "chinese": "如果这只宝可梦身上附着了{{e|恶}}能量的话，则当这只宝可梦受到招式的伤害时，自己抛掷1次硬币。如果为正面，则这只宝可梦不受到该伤害。",
+    "rule": {
+      "trigger": "passive",
+      "usageLimit": "unlimited",
+      "kind": "coin_armor",
+      "energy": "DARK"
+    }
+  },
+  {
+    "sourceExample": "咕咕（SV8a）",
+    "english": "This Pokémon can't be Asleep.",
+    "chinese": "这只宝可梦不会陷入'''{{TCG|睡眠}}'''状态。",
+    "rule": {
+      "trigger": "passive",
+      "usageLimit": "unlimited",
+      "kind": "status_immunity",
+      "statuses": [
+        "ASLEEP"
+      ]
+    }
+  },
+  {
+    "sourceExample": "謝米（SV9a）",
+    "english": "Prevent all damage done to your Benched Pokémon that don't have a Rule Box by attacks from your opponent's Pokémon. ''(Pokémon ex, Pokémon V, etc. have Rule Boxes.)''",
+    "chinese": "只要这只宝可梦在场上，自己所有备战宝可梦（除「拥有规则的宝可梦」外）不会受到对手招式的伤害。",
+    "rule": {
+      "trigger": "passive",
+      "usageLimit": "unlimited",
+      "kind": "protection",
+      "damage": true,
+      "scope": "team",
+      "zone": "bench",
+      "noRuleBox": true
+    }
+  },
+  {
+    "sourceExample": "岩殿居蟹（SV9a）",
+    "english": "Prevent all damage done to this Pokémon by attacks from your opponent's Pokémon ex.",
+    "chinese": "这只宝可梦不会受到对手「宝可梦{{ex}}」的招式的伤害。",
+    "rule": {
+      "trigger": "passive",
+      "usageLimit": "unlimited",
+      "kind": "protection",
+      "damage": true,
+      "source": "ex"
+    }
+  },
+  {
+    "sourceExample": "火箭隊的急凍鳥（SV10）",
+    "english": "Prevent all effects of attacks used by your opponent's Pokémon done to your Basic Team Rocket's Pokémon. ''(Existing effects are not removed. Damage is not an effect.)''",
+    "chinese": "只要这只宝可梦在场上，自己场上所有'''基础'''宝可梦的「火箭队的宝可梦」不会受到对手宝可梦所使用的招式的效果影响。（已经受到的效果不会消失。）",
+    "rule": {
+      "trigger": "passive",
+      "usageLimit": "unlimited",
+      "kind": "protection",
+      "effects": true,
+      "scope": "team",
+      "targetStage": "BASIC",
+      "targetPrefix": "Team Rocket's "
+    }
+  },
+  {
+    "sourceExample": "大吾的小碎钻（SVOD）",
+    "english": "As long as this Pokémon is on your Bench, all of your Steven's Pokémon take 30 less damage from attacks from your opponent's Pokémon ''(after applying Weakness and Resistance)''. The effect of Stone Palace doesn't stack.",
+    "chinese": "只要这只宝可梦在备战区，自己所有「{{DL|的宝可梦（TCG）#大吾的|大吾的宝可梦}}」所受到的对手宝可梦的招式的伤害「-30」。无论拥有这个特性的宝可梦有多少只，这个效果都不会重复。",
+    "rule": {
+      "trigger": "passive",
+      "usageLimit": "unlimited",
+      "kind": "continuous",
+      "holderZone": "bench",
+      "prefix": "Steven's ",
+      "armor": 30,
+      "noStack": "Stone Palace"
+    }
+  },
+  {
+    "sourceExample": "棄世猴（SV10）",
+    "english": "If this Pokémon has 2 or more damage counters on it, attacks used by this Pokémon do 120 more damage to your opponent's Active Pokémon ''(before applying Weakness and Resistance)''.",
+    "chinese": "如果这只宝可梦身上放置有2个及以上伤害指示物的话，则这只宝可梦所使用的招式给对手战斗宝可梦造成的伤害「+120」。",
+    "rule": {
+      "trigger": "passive",
+      "usageLimit": "unlimited",
+      "kind": "continuous",
+      "scope": "self",
+      "minimumCounters": 20,
+      "damage": 120
+    }
+  },
+  {
+    "sourceExample": "電蜘蛛（SV6a）",
+    "english": "Attacks used by this Pokémon do 50 more damage to your opponent's Active Pokémon that has an Ability ''(before applying Weakness and Resistance)''.",
+    "chinese": "这只宝可梦所使用的招式，给对手战斗场上的拥有特性的宝可梦造成的伤害「+50」。",
+    "rule": {
+      "trigger": "passive",
+      "usageLimit": "unlimited",
+      "kind": "continuous",
+      "scope": "self",
+      "damage": 50,
+      "target": "ability"
+    }
+  },
+  {
+    "sourceExample": "好勝毛蟹（SV7）",
+    "english": "Attacks used by this Pokémon cost {{e|Colorless}} less for each {{TCG|Kofu}} card in your discard pile.",
+    "chinese": "这只宝可梦使用招式所需能量会减少与自己弃牌区中的「海岱」张数相同数量的{{e|无}}能量。",
+    "rule": {
+      "trigger": "passive",
+      "usageLimit": "unlimited",
+      "kind": "continuous",
+      "scope": "self",
+      "attackLessPerDiscardName": "Kofu"
+    }
+  },
+  {
+    "sourceExample": "爆炸頭水牛（SV7）",
+    "english": "As long as you have at least 1 other {{TCG|Bouffalant}} in play, all of your Basic {{e|Colorless}} Pokémon take 60 less damage from attacks from your opponent's Pokémon ''(after applying Weakness and Resistance)''. The effect of Curly Wall doesn't stack.",
+    "chinese": "只要这只宝可梦，和自己其他的「爆炸头水牛」在场上，自己所有{{e|无}}属性的'''基础'''宝可梦，受到对手宝可梦的招式的伤害「-60」。这个效果，无论拥有这个特性的宝可梦有多少只，都不会叠加。",
+    "rule": {
+      "trigger": "passive",
+      "usageLimit": "unlimited",
+      "kind": "continuous",
+      "otherName": "Bouffalant",
+      "types": [
+        "COLORLESS"
+      ],
+      "stage": "basic",
+      "armor": 60,
+      "noStack": "Curly Wall"
+    }
+  },
+  {
+    "sourceExample": "請假王ex（SV8）",
+    "english": "If your opponent has no Pokémon ex or Pokémon V in play, this Pokémon can't attack.",
+    "chinese": "如果对手场上没有「宝可梦{{ex}}・{{V}}」的话，则这只宝可梦无法使用招式。",
+    "rule": {
+      "trigger": "passive",
+      "usageLimit": "unlimited",
+      "kind": "continuous",
+      "scope": "self",
+      "requiresOpponentEXV": true
+    }
+  },
+  {
+    "sourceExample": "雙倍多多冰（SV4M）",
+    "english": "Your opponent's Pokémon that have 40 HP or less remaining can't attack.",
+    "chinese": "只要这只宝可梦在场上，剩余HP在「40」及以下的对手的宝可梦，无法使用招式。",
+    "rule": {
+      "trigger": "passive",
+      "usageLimit": "unlimited",
+      "kind": "continuous",
+      "scope": "opponent",
+      "blockAtHP": 40
+    }
+  },
+  {
+    "sourceExample": "请假王（SV2P）",
+    "english": "If this Pokémon is Asleep, flip 2 coins instead of 1 during Pokémon Checkup. If either of them is tails, this Pokémon is still Asleep.",
+    "chinese": "在宝可梦检查时，这只宝可梦因【睡眠】而抛掷的硬币次数变为2次，只要不是全为正面就不会恢复。",
+    "rule": {
+      "kind": "sleep_modifier",
+      "trigger": "passive",
+      "usageLimit": "unlimited",
+      "sleepCoins": 2
+    }
+  },
+  {
+    "sourceExample": "卡比兽（30th）",
+    "english": "If this Pokémon remains Asleep during Pokémon Checkup, heal all damage from this Pokémon.",
+    "chinese": "当这只宝可梦处于'''{{TCG|睡眠}}'''状态时，在宝可梦检查中，如果这只宝可梦没有从'''{{TCG|睡眠}}'''状态恢复的话，则回复这只宝可梦的全部HP。",
+    "rule": {
+      "kind": "sleep_modifier",
+      "trigger": "passive",
+      "usageLimit": "unlimited",
+      "sleepHeal": true
+    }
+  },
+  {
+    "sourceExample": "暴雪王（SV2P）",
+    "english": "Pokémon ''(both yours and your opponent's) ''can't be healed.",
+    "chinese": "只要这只宝可梦在场上，双方所有的宝可梦，无法回复HP。",
+    "rule": {
+      "trigger": "passive",
+      "usageLimit": "unlimited",
+      "kind": "healing_block"
+    }
+  },
+  {
+    "sourceExample": "伊裴尔塔尔（30th）",
+    "english": "Your opponent's Active Pokémon can't be healed.",
+    "chinese": "只要这只宝可梦在场上，对手的战斗宝可梦无法回复HP。",
+    "rule": {
+      "trigger": "passive",
+      "usageLimit": "unlimited",
+      "kind": "healing_block",
+      "opponentActive": true
+    }
+  },
+  {
+    "sourceExample": "盐石巨灵（SV2D）",
+    "english": "During Pokémon Checkup, heal 20 damage from each of your Pokémon.",
+    "chinese": "只要这只宝可梦在场上，每当宝可梦检查时，自己所有宝可梦的HP，各回复「20」。",
+    "rule": {
+      "trigger": "passive",
+      "usageLimit": "unlimited",
+      "kind": "checkup",
+      "teamHeal": 20
+    }
+  },
+  {
+    "sourceExample": "朽木妖（SV3）",
+    "english": "During Pokémon Checkup, if this Pokémon is in the Active Spot, put 1 damage counter on your opponent's Active Pokémon.",
+    "chinese": "只要这只宝可梦在战斗场上，每当宝可梦检查时，给对手的战斗宝可梦身上放置1个伤害指示物。",
+    "rule": {
+      "trigger": "passive",
+      "usageLimit": "unlimited",
+      "kind": "checkup",
+      "activeOnly": true,
+      "opponentActiveCounters": 10
+    }
+  },
+  {
+    "sourceExample": "雪妖女（SV6）",
+    "english": "During Pokémon Checkup, put 1 damage counter on each Pokémon that has an Ability ''(both yours and your opponent's)'', except any Froslass.",
+    "chinese": "只要这只宝可梦在场上，每当宝可梦检查时，给双方所有拥有特性的宝可梦（除「雪妖女」外）身上，各放置1个伤害指示物。",
+    "rule": {
+      "trigger": "passive",
+      "usageLimit": "unlimited",
+      "kind": "checkup",
+      "abilityCounters": 10,
+      "exceptName": "Froslass"
+    }
+  },
+  {
+    "sourceExample": "巨蔓藤（SV5a）",
+    "english": "This Pokémon takes 30 less damage from attacks ''(after applying Weakness and Resistance)''.",
+    "chinese": "这只宝可梦所受到的招式的伤害「-30」。",
+    "rule": {
+      "trigger": "passive",
+      "usageLimit": "unlimited",
+      "kind": "continuous",
+      "scope": "self",
+      "armor": 30
+    }
+  },
+  {
+    "sourceExample": "暴噬龜（SV7）",
+    "english": "Prevent all damage done to this Pokémon by attacks from your opponent's Pokémon if that damage is 200 or more.",
+    "chinese": "这只宝可梦，不会受到对手宝可梦的「200」及以上的招式的伤害。",
+    "rule": {
+      "trigger": "passive",
+      "usageLimit": "unlimited",
+      "kind": "continuous",
+      "scope": "self",
+      "preventDamageAtLeast": 200
+    }
+  },
+  {
+    "sourceExample": "大王銅象（SV6a）",
+    "english": "As long as this Pokémon is in the Active Spot, your opponent can't play any Stadium cards from their hand.",
+    "chinese": "只要这只宝可梦在战斗场上，对手就无法从手牌使出竞技场。",
+    "rule": {
+      "trigger": "passive",
+      "usageLimit": "unlimited",
+      "kind": "hand_lock",
+      "cards": "stadium",
+      "activeOnly": true
+    }
+  },
+  {
+    "sourceExample": "班基拉斯（SV9）",
+    "english": "As long as this Pokémon is in the Active Spot, your opponent can't play any Item cards from their hand.",
+    "chinese": "只要这只宝可梦在战斗场上，对手无法从手牌使出物品。",
+    "rule": {
+      "trigger": "passive",
+      "usageLimit": "unlimited",
+      "kind": "hand_lock",
+      "cards": "item",
+      "activeOnly": true
+    }
+  },
+  {
+    "sourceExample": "蓋諾賽克特（SV6a）",
+    "english": "If this Pokémon has a Pokémon Tool attached, your opponent can't play any {{TCG|ACE SPEC card|'''''ACE SPEC''''' cards}} from their hand.",
+    "chinese": "如果这只宝可梦身上放有「{{TCG|宝可梦道具}}」的话，则对手无法从手牌使出「【ACE SPEC】」卡牌。",
+    "rule": {
+      "trigger": "passive",
+      "usageLimit": "unlimited",
+      "kind": "hand_lock",
+      "cards": "ace",
+      "requiresTool": true
+    }
+  },
+  {
+    "sourceExample": "火箭隊的阿柏怪（SV10）",
+    "english": "As long as this Pokémon is in the Active Spot, your opponent can't play any Pokémon that has an Ability from their hand, except for Team Rocket's Pokémon.",
+    "chinese": "只要这只宝可梦在战斗场上，对手无法从手牌将拥有特性的宝可梦（除「火箭队的宝可梦」外）放于场上。",
+    "rule": {
+      "trigger": "passive",
+      "usageLimit": "unlimited",
+      "kind": "hand_lock",
+      "cards": "ability_pokemon",
+      "activeOnly": true
+    }
+  },
+  {
+    "sourceExample": "瑪力露麗（SVLN）",
+    "english": "If you have any Tera Pokémon in play, this Pokémon can use the Double-Edge attack for {{e|Psychic}}.",
+    "chinese": "如果自己场上有「太晶」宝可梦的话，则这只宝可梦使用「舍身冲撞」所需能量，变为1个{{e|超}}能量。",
+    "rule": {
+      "trigger": "passive",
+      "usageLimit": "unlimited",
+      "kind": "continuous",
+      "scope": "self",
+      "requiresTrait": "TERA",
+      "attackName": "Double-Edge",
+      "attackCost": [
+        "PSYCHIC"
+      ]
+    }
+  },
+  {
+    "sourceExample": "酋雷姆（SV6a）",
+    "english": "If your opponent has any cards in their discard pile that have \"Colress\" in the name, this Pokémon can use the Trifrost attack for {{e|Colorless}}.",
+    "chinese": "如果对手的弃牌区中，有名字中带有「阿克罗玛」的卡牌的话，则这只宝可梦使用「三重冰霜」所需能量，变为1个{{e|无}}能量。",
+    "rule": {
+      "trigger": "passive",
+      "usageLimit": "unlimited",
+      "kind": "continuous",
+      "scope": "self",
+      "requiresOpponentDiscardSubstring": "Colress",
+      "attackName": "Trifrost",
+      "attackCost": [
+        "COLORLESS"
+      ]
+    }
+  },
+  {
+    "sourceExample": "音波龍（SV9）",
+    "english": "If you have the same number of cards in your hand as your opponent, ignore all Energy in the cost of Frightening Howl used by this Pokémon.",
+    "chinese": "如果自己的手牌与对手的手牌张数相同的话，则将这只宝可梦使用「恐慌嗥鸣」所需能量全部消除。",
+    "rule": {
+      "trigger": "passive",
+      "usageLimit": "unlimited",
+      "kind": "continuous",
+      "scope": "self",
+      "equalHands": true,
+      "attackName": "Frightening Howl",
+      "attackCost": []
+    }
+  },
+  {
+    "sourceExample": "阿罗拉 椰蛋树（30th）",
+    "english": "If this Pokémon has 6 or more {{e|Grass}} Energy attached, it gets +250 {{TCG|HP}}.",
+    "chinese": "如果这只宝可梦身上附着了6个及以上{{e|草}}能量的话，则这只宝可梦的最大HP「+250」。",
+    "rule": {
+      "trigger": "passive",
+      "usageLimit": "unlimited",
+      "kind": "continuous",
+      "scope": "self",
+      "typedEnergyMinimum": {
+        "type": "GRASS",
+        "count": 6
+      },
+      "hp": 250
+    }
+  },
+  {
+    "sourceExample": "皮卡丘（30th 022）",
+    "english": "As long as this Pokémon is in the Active Spot, attacks used by your opponent's Active Pokémon do 20 less damage ''(before applying Weakness and Resistance)''.",
+    "chinese": "只要这只宝可梦在战斗场上，对手战斗宝可梦所使用的招式的伤害「-20」。",
+    "rule": {
+      "trigger": "passive",
+      "usageLimit": "unlimited",
+      "kind": "continuous",
+      "scope": "opponent",
+      "holderZone": "active",
+      "affectedZone": "active",
+      "damage": -20
+    }
+  },
+  {
+    "sourceExample": "普隆隆姆ex（SV3）",
+    "english": "This Pokémon may have up to 4 Pokémon Tools attached to it. If it loses this Ability, discard Pokémon Tools from it until only 1 remains.",
+    "chinese": "这只宝可梦身上可以最多放4张「{{TCG|宝可梦道具}}」。（当这个特性失效时，自己将「宝可梦道具」放于弃牌区，直到还剩1张为止。）",
+    "rule": {
+      "kind": "field_capacity",
+      "trigger": "passive",
+      "usageLimit": "unlimited",
+      "toolLimit": 4
+    }
+  },
+  {
+    "sourceExample": "晶光花ex（SV3）",
+    "english": "As long as this Pokémon is in the Active Spot, your opponent can't have more than 3 Benched Pokémon. If they have 4 or more Benched Pokémon, they discard Benched Pokémon until they have 3 Pokémon on the Bench. If more than one effect changes the number of Benched Pokémon allowed, use the smaller number.",
+    "chinese": "只要这只宝可梦在战斗场上，对手可放于备战区的宝可梦数量就会变为3只。如果对手的备战区有4只及以上宝可梦的话，则对手将备战宝可梦放于弃牌区直到备战宝可梦变为3只为止。''［关于变更备战宝可梦的数量的效果，优先执行数量更少的效果。］''",
+    "rule": {
+      "kind": "field_capacity",
+      "trigger": "passive",
+      "usageLimit": "unlimited",
+      "benchLimit": 3,
+      "activeOnly": true
+    }
+  },
+  {
+    "sourceExample": "粉蝶虫（SV1V）",
+    "english": "This Pokémon can evolve during your first turn or the turn you play it.",
+    "chinese": "这只宝可梦，即使是最初的自己的回合，以及刚被放出的回合也可进行进化。",
+    "rule": {
+      "kind": "evolution_permission",
+      "trigger": "passive",
+      "usageLimit": "unlimited"
+    }
+  },
+  {
+    "sourceExample": "粉蝶蛹（SV1V）",
+    "english": "This Pokémon can evolve during your first turn or the turn you play it.",
+    "chinese": "这只宝可梦，即使是最初的自己的回合，以及刚被放出的回合也可进行进化。",
+    "rule": {
+      "kind": "evolution_permission",
+      "trigger": "passive",
+      "usageLimit": "unlimited"
+    }
+  },
+  {
+    "sourceExample": "伊布（SVLN）",
+    "english": "As long as this Pokémon is in the Active Spot, it can evolve during your first turn or the turn you play it.",
+    "chinese": "只要这只宝可梦，在战斗场上，则即使是最初的自己的回合，以及刚被放出的回合也可进行进化。",
+    "rule": {
+      "kind": "evolution_permission",
+      "trigger": "passive",
+      "usageLimit": "unlimited",
+      "activeOnly": true
+    }
+  },
+  {
+    "sourceExample": "伊布ex（SV8a）",
+    "english": "This Pokémon can evolve into any Pokémon ex that evolves from {{TCG|Eevee}} if you play it from your hand onto this Pokémon. ''(This Pokémon can't evolve during your first turn or the turn you play it.)''",
+    "chinese": "这只宝可梦，可以从手牌中使出从「伊布」进化而来的「宝可梦{{ex}}」，放于这只宝可梦身上进行进化。（在自己最初的回合。以及刚出场的回合无法进化。）",
+    "rule": {
+      "kind": "evolution_permission",
+      "trigger": "passive",
+      "usageLimit": "unlimited",
+      "rainbow": true
+    }
+  },
+  {
+    "sourceExample": "晶光花（SV2P）",
+    "english": "When this Pokémon is Knocked Out, flip a coin. If heads, your opponent can't take any Prize cards for it.",
+    "chinese": "当这只宝可梦【昏厥】时，自己抛掷1次硬币。如果为正面，则对手无法拿取奖赏卡。",
+    "rule": {
+      "trigger": "passive",
+      "usageLimit": "unlimited",
+      "kind": "knockout_prizes",
+      "coin": true,
+      "none": true
+    }
+  },
+  {
+    "sourceExample": "雪妖女ex（SV3a）",
+    "english": "If this Pokémon is in the Active Spot and is Knocked Out, flip a coin. If heads, your opponent takes 1 fewer Prize card.",
+    "chinese": "当这只宝可梦，在战斗场上'''{{TCG|昏厥}}'''时，自己抛掷1次硬币。如果为正面，则对手拿取的奖赏卡将减少1张。",
+    "rule": {
+      "trigger": "passive",
+      "usageLimit": "unlimited",
+      "kind": "knockout_prizes",
+      "coin": true,
+      "activeOnly": true,
+      "reduce": 1
+    }
+  },
+  {
+    "sourceExample": "波克基斯（SV8）",
+    "english": "When your opponent's Active Pokémon is Knocked Out, flip a coin. If heads, take 1 more Prize card. The effect of Wonder Kiss doesn't stack.",
+    "chinese": "只要这只宝可梦在场上，每当对手的战斗宝可梦'''{{TCG|昏厥}}'''时，自己抛掷1次硬币。如果为正面，则多拿取1张奖赏卡。这个效果，无论拥有这个特性的宝可梦有多少只，都不会叠加。",
+    "rule": {
+      "trigger": "passive",
+      "usageLimit": "unlimited",
+      "kind": "knockout_prizes",
+      "coin": true,
+      "bonus": 1,
+      "noStack": "Wonder Kiss"
+    }
+  },
+  {
+    "sourceExample": "波克基斯（SV3）",
+    "english": "Once at the end of your turn ''(after your attack)'', you may use this Ability. Draw cards until you have 8 cards in your hand.",
+    "chinese": "在自己的回合结束时可以使用1次。从牌库上方抽取卡牌，直到自己的手牌变为8张为止。",
+    "rule": {
+      "trigger": "passive",
+      "usageLimit": "unlimited",
+      "kind": "end_turn",
+      "optional": true,
+      "drawUntil": 8
+    }
+  },
+  {
+    "sourceExample": "雄偉牙ex（SV4a）",
+    "english": "Once at the end of your turn ''(after your attack)'', if this Pokémon is in the Active Spot, you must discard the top 5 cards of your deck.",
+    "chinese": "在自己的回合结束时，如果这只宝可梦在战斗场上的话，则必须使用1次。将自己牌库上方5张卡牌放于弃牌区。",
+    "rule": {
+      "trigger": "passive",
+      "usageLimit": "unlimited",
+      "kind": "end_turn",
+      "activeOnly": true,
+      "mill": 5
+    }
+  },
+  {
+    "sourceExample": "狠辣椒（SV3）",
+    "english": "As long as this Pokémon is in play, it is {{e|Grass}} and {{e|Fire}} type.",
+    "chinese": "只要这只宝可梦在场上，属性变为{{e|草}}和{{e|火}}2种。",
+    "rule": {
+      "trigger": "passive",
+      "usageLimit": "unlimited",
+      "kind": "dual_type",
+      "types": [
+        "GRASS",
+        "FIRE"
+      ]
+    }
+  },
+  {
+    "sourceExample": "狠辣椒ex（SV8）",
+    "english": "As long as this Pokémon is in play, it is {{e|Grass}} and {{e|Fire}} type.",
+    "chinese": "只要这只宝可梦在场上，属性变为{{e|草}}和{{e|火}}2种。",
+    "rule": {
+      "trigger": "passive",
+      "usageLimit": "unlimited",
+      "kind": "dual_type",
+      "types": [
+        "GRASS",
+        "FIRE"
+      ]
+    }
+  },
+  {
+    "sourceExample": "铁辙迹（SV5M）",
+    "english": "As long as this Pokémon has a Future Booster Energy Capsule attached, it is {{e|Fighting}} and {{e|Metal}} type.",
+    "chinese": "只要这只宝可梦身上放有「驱劲能量 未来」，这只宝可梦的属性变为{{e|斗}}和{{e|钢}}2种。",
+    "rule": {
+      "trigger": "passive",
+      "usageLimit": "unlimited",
+      "kind": "dual_type",
+      "types": [
+        "FIGHTING",
+        "METAL"
+      ],
+      "requiresTool": "Future Booster Energy Capsule"
+    }
+  },
+  {
+    "sourceExample": "莉莉艾的皮皮ex（SV9）",
+    "english": "The Weakness of each of your opponent's {{e|Dragon}} Pokémon in play is now {{e|Psychic}}. ''(Apply Weakness as ×2.)''",
+    "chinese": "只要这只宝可梦在场上，对手场上所有{{e|龙}}宝可梦的弱点全部变为{{e|超}}属性。［弱点按「×2」计算伤害。］",
+    "rule": {
+      "trigger": "passive",
+      "usageLimit": "unlimited",
+      "kind": "continuous",
+      "scope": "opponent",
+      "types": [
+        "DRAGON"
+      ],
+      "weaknessType": "PSYCHIC"
+    }
+  },
+  {
+    "sourceExample": "甜甜萤（30th）",
+    "english": "If you have Volbeat in play, apply Weakness for both Active Pokémon as ×3.",
+    "chinese": "如果自己场上有「{{TCGPM|电萤虫}}」的话，则能生效。只要这只宝可梦在场上，双方战斗宝可梦的弱点按「×3」计算伤害。",
+    "rule": {
+      "trigger": "passive",
+      "usageLimit": "unlimited",
+      "kind": "continuous",
+      "scope": "both",
+      "requiresNames": [
+        "Volbeat"
+      ],
+      "affectedZone": "active",
+      "weaknessMultiplier": 3
+    }
+  },
+  {
+    "sourceExample": "钥圈儿（SV1V）",
+    "english": "As long as this Pokémon is in the Active Spot, Basic Pokémon in play (both yours and your opponent's) have no Abilities, except for Mischievous Lock.",
+    "chinese": "只要这只宝可梦在战斗场上，双方场上'''基础'''宝可梦的特性（除「恶作剧之锁」外），全部消除。",
+    "rule": {
+      "trigger": "passive",
+      "usageLimit": "unlimited",
+      "kind": "suppress_abilities",
+      "targets": "basic",
+      "activeOnly": true,
+      "exceptAbility": "Mischievous Lock"
+    }
+  },
+  {
+    "sourceExample": "古鼎鹿ex（SV2D）",
+    "english": "As long as this Pokémon is in the Active Spot, your opponent's Pokémon in play that have any damage counters on them have no Abilities, except for Pokémon ex.",
+    "chinese": "只要这只宝可梦在战斗场上，对手场上的身上放置有伤害指示物的宝可梦（除宝可梦【ex】外）的特性，全部消除。",
+    "rule": {
+      "trigger": "passive",
+      "usageLimit": "unlimited",
+      "kind": "suppress_abilities",
+      "targets": "opponent_damaged_nonex",
+      "activeOnly": true
+    }
+  },
+  {
+    "sourceExample": "海兔獸（SV8）",
+    "english": "As long as this Pokémon is on your Bench, Benched {{TCG|Stage 2 Pokémon}} ''(both yours and your opponent's)'' have no {{TCG|Ability|Abilities}}.",
+    "chinese": "只要这只宝可梦在备战区，双方备战区中所有'''2阶进化'''宝可梦的特性，全部消除。",
+    "rule": {
+      "trigger": "passive",
+      "usageLimit": "unlimited",
+      "kind": "suppress_abilities",
+      "targets": "bench_stage2",
+      "benchOnly": true
+    }
+  },
+  {
+    "sourceExample": "玛狃拉（SV2D）",
+    "english": "Once during your turn, when this Pokémon moves from your Bench to the Active Spot, you may switch in 1 of your opponent's Benched Basic Pokémon to the Active Spot.",
+    "chinese": "在自己的回合，当这只宝可梦从备战区被放入战斗场时，可使用1次。选择对手备战区中的1只'''基础'''宝可梦，将其与战斗宝可梦互换。",
+    "rule": {
+      "kind": "move_active",
+      "trigger": "move",
+      "usageLimit": "once-per-turn",
+      "effect": {
+        "kind": "gust_basic"
+      }
+    }
+  },
+  {
+    "sourceExample": "鐵毒蛾（SV4M）",
+    "english": "Once during your turn, when this Pokémon moves from your Bench to the Active Spot, you may move any amount of {{e|Fire}} Energy from your other Pokémon to it.",
+    "chinese": "在自己的回合，当这只宝可梦从备战区被放入战斗场时，可使用1次。选择任意数量的自己场上宝可梦身上附着的{{e|火}}能量，转附于这只宝可梦身上。",
+    "rule": {
+      "kind": "move_active",
+      "trigger": "move",
+      "usageLimit": "once-per-turn",
+      "effect": {
+        "kind": "gather_energy",
+        "type": "FIRE"
+      }
+    }
+  },
+  {
+    "sourceExample": "鐵武者ex（SV4M）",
+    "english": "Once during your turn, when this Pokémon moves from your Bench to the Active Spot, you may put 2 damage counters on 1 of your opponent's Pokémon.",
+    "chinese": "在自己的回合，当这只宝可梦从备战区被放入战斗场时，可使用1次。给对手的1只宝可梦身上，放置2个伤害指示物。",
+    "rule": {
+      "kind": "move_active",
+      "trigger": "move",
+      "usageLimit": "once-per-turn",
+      "effect": {
+        "kind": "counters",
+        "zone": "any",
+        "count": 1,
+        "amount": 20
+      }
+    }
+  },
+  {
+    "sourceExample": "遠古巨蜓ex（SV9a）",
+    "english": "Once during your turn, when this Pokémon moves from your Bench to the Active Spot, you may search your deck for up to 3 Basic {{e|Grass}} Energy cards and attach them to this Pokémon. Then, shuffle your deck.",
+    "chinese": "在自己的回合，当这只宝可梦从备战区被放入战斗场时，可以使用1次。选择自己牌库中最多3张「基本{{e|草}}能量」，附着于这只宝可梦身上。并重洗牌库。",
+    "rule": {
+      "kind": "move_active",
+      "trigger": "move",
+      "usageLimit": "once-per-turn",
+      "effect": {
+        "kind": "attach",
+        "origin": "left",
+        "basic": true,
+        "type": "GRASS",
+        "target": "self",
+        "count": 3
+      }
+    }
+  },
+  {
+    "sourceExample": "可達鴨（SV-P）",
+    "english": "Pokémon in play ''(both yours and your opponent's)'' lose any Ability that requires the Pokémon using it to Knock Out itself.",
+    "chinese": "只要这只宝可梦在场上，就将双方所有宝可梦的令自身'''{{TCG|昏厥}}'''的效果的特性全部消除。",
+    "rule": {
+      "trigger": "passive",
+      "usageLimit": "unlimited",
+      "kind": "suppress_abilities",
+      "targets": "self_knockout"
+    }
+  },
+  {
+    "sourceExample": "奇麒麟ex（SV5M）",
+    "english": "Prevent all damage done to this Pokémon by attacks from your opponent's Basic Pokémon '''''ex'''''.",
+    "chinese": "這隻寶可夢不會受到對手的'''{{TCG|基础宝可梦|基礎}}'''寶可夢的「{{TCG|寶可夢ex|寶可夢'''''ex'''''}}」招式的傷害。",
+    "rule": {
+      "trigger": "passive",
+      "usageLimit": "unlimited",
+      "kind": "protection",
+      "damage": true,
+      "source": "basic_ex"
+    }
+  },
+  {
+    "sourceExample": "毽子花（SV2D）",
+    "english": "If any damage is done to this Pokémon by attacks, flip a coin. If heads, prevent that damage.",
+    "chinese": "這隻寶可夢受到招式的傷害時，自己擲1次硬幣。若為正面，則這隻寶可夢不會受到那個傷害。",
+    "rule": {
+      "trigger": "passive",
+      "usageLimit": "unlimited",
+      "kind": "coin_armor"
+    }
+  },
+  {
+    "sourceExample": "弱丁鱼（30th）",
+    "english": "If your Wishiwashi or Wishiwashi '''''ex''''' is in the Active Spot and is damaged by an attack from your opponent's Pokémon ''(even if your Pokémon is Knocked Out)'', place 3 damage counters on the Attacking Pokémon.",
+    "chinese": "只要这只宝可梦在场上，自己战斗场上的「弱丁鱼（包含『宝可梦'''''ex'''''』）」受到对手宝可梦的招式的伤害时，就给使用了招式的宝可梦身上放置3个伤害指示物。",
+    "rule": {
+      "trigger": "passive",
+      "usageLimit": "unlimited",
+      "kind": "continuous",
+      "affectedZone": "active",
+      "affectedNames": [
+        "Wishiwashi",
+        "Wishiwashi ex"
+      ],
+      "reaction": {
+        "kind": "retaliate",
+        "counters": 30
+      }
+    }
+  },
+  {
+    "sourceExample": "臭臭泥（SV1S）",
+    "english": "Your opponent's Poisoned Pokémon don't recover from that Special Condition when they evolve or devolve.",
+    "chinese": "只要这只宝可梦在场上，对手处于'''{{TCG|中毒}}'''状态的宝可梦，即使进化、退化也不会恢复'''中毒'''状态。",
+    "rule": {
+      "trigger": "passive",
+      "usageLimit": "unlimited",
+      "kind": "persistent_poison"
+    }
+  },
+  {
+    "sourceExample": "大吾的巨金怪ex（SVOD）",
+    "english": "Once during your turn, you may search your deck for a Basic {{e|Psychic}} Energy card, a Basic {{e|Metal}} Energy card, or 1 of each and attach them to your {{e|Psychic}} Pokémon and {{e|Metal}} Pokémon in any way you like. Then, shuffle your deck.",
+    "chinese": "在自己的回合可以使用1次。选择自己牌库中的「基本{{e|超}}能量」和「基本{{e|钢}}能量」各最多1张，以任意方式附着于自己的{{e|超}}或{{e|钢}}宝可梦身上。并重洗牌库。",
+    "rule": {
+      "kind": "activated_effect",
+      "effect": {
+        "kind": "attach",
+        "origin": "left",
+        "basic": true,
+        "types": [
+          "PSYCHIC",
+          "METAL"
+        ],
+        "targetTypes": [
+          "PSYCHIC",
+          "METAL"
+        ],
+        "distinctTypes": true,
+        "count": 2
+      }
+    }
+  },
+  {
+    "sourceExample": "小霞的可達鴨（SV9a）",
+    "english": "Once during your turn, if this Pokémon is on your Bench, you may discard the bottom card of your deck. If you do, discard all cards from this Pokémon and put this Pokémon on top of your deck.",
+    "chinese": "如果这只宝可梦在备战区的话，则在自己的回合可以使用1次。将自己牌库下方1张卡牌放于弃牌区。然后，将放于这只宝可梦身上的卡牌全部放于弃牌区，将这只宝可梦放回牌库上方。",
+    "rule": {
+      "kind": "activated_effect",
+      "effect": {
+        "kind": "bottom_leap"
+      }
+    }
+  },
+  {
+    "sourceExample": "美納斯（SV4M）",
+    "english": "Once during your turn, when you play this Pokémon from your hand to evolve 1 of your Pokémon, you may use this Ability. Each player puts a Basic Pokémon from their discard pile onto their Bench. ''(Your opponent puts a Basic Pokémon onto their Bench first.)''",
+    "chinese": "在自己的回合，当将这张卡牌从手牌使出并进行进化时，可使用1次。双方玩家，各选择自己弃牌区中的1张【基础】宝可梦，放于自己的备战区。（由对手开始放于备战区。）",
+    "rule": {
+      "kind": "on_entry",
+      "trigger": "evolve",
+      "effect": {
+        "kind": "both_recover_bench"
+      }
+    }
+  },
+  {
+    "sourceExample": "伦琴猫（SV2D）",
+    "english": "Once during your turn, if this Pokémon is in your hand and you have more Prize cards remaining than your opponent, you may put this Pokémon onto your Bench.",
+    "chinese": "在自己的回合，如果这张卡牌在手牌中，自己的剩余奖赏卡张数，比对手的剩余奖赏卡张数多的话，则可以使用1次。将这张卡牌放于备战区。",
+    "rule": {
+      "kind": "hand_bench",
+      "behind": true
+    }
+  },
+  {
+    "sourceExample": "齒輪怪（SV7）",
+    "english": "Once during your turn, if this Pokémon is in your hand and your opponent has any {{TCG|Stage 2 Pokémon}} in play, you may put this Pokémon onto your Bench.",
+    "chinese": "在自己的回合，如果这张卡牌在手牌中，对手场上有'''2阶进化'''宝可梦的话，则可使用1次。将这张卡牌放于备战区。",
+    "rule": {
+      "kind": "hand_bench",
+      "opponentStage2": true
+    }
+  },
+  {
+    "sourceExample": "負電拍拍（SV3a）",
+    "english": "If you have Plusle in play, whenever your opponent attaches an Energy card from their hand to 1 of their Pokémon, put 2 damage counters on that Pokémon. The effect of Buddy Pulse doesn't stack.",
+    "chinese": "如果自己场上有「{{TCGPM|正电拍拍}}」的话，则能生效。只要这只宝可梦在场上，每当对手从手牌将能量附着于宝可梦身上时，给那只宝可梦身上放置2个伤害指示物。这个效果，无论拥有这个特性的宝可梦有多少只，都不会叠加。",
+    "rule": {
+      "kind": "hand_event",
+      "trigger": "passive",
+      "usageLimit": "unlimited",
+      "event": "energy",
+      "opponent": true,
+      "requiresName": "Plusle",
+      "counters": 20,
+      "noStack": "Buddy Pulse"
+    }
+  },
+  {
+    "sourceExample": "小隕星（SV3a）",
+    "english": "Once during your turn, if this Pokémon is on your Bench, when you attach an Energy card from your hand to this Pokémon, you may switch it with your Active Pokémon.",
+    "chinese": "在自己的回合，如果这只宝可梦在备战区的话，则每当从自己的手牌将能量附着于这只宝可梦身上时，可使用1次。将这只宝可梦与战斗宝可梦互换。",
+    "rule": {
+      "kind": "hand_event",
+      "trigger": "passive",
+      "usageLimit": "unlimited",
+      "event": "energy",
+      "self": true,
+      "benchOnly": true,
+      "optional": true,
+      "once": true,
+      "switch": true
+    }
+  },
+  {
+    "sourceExample": "火箭隊的電龍（SV10）",
+    "english": "Whenever your opponent plays a Pokémon from their hand to evolve 1 of their Pokémon, put 4 damage counters on that Pokémon. The effect of Darkest Impulse doesn't stack.",
+    "chinese": "只要这只宝可梦在场上，每当对手从手牌使出宝可梦并进行进化时，就给那只宝可梦身上放置4个伤害指示物。无论拥有这个特性的宝可梦有多少只，这个效果都不会重复。",
+    "rule": {
+      "kind": "hand_event",
+      "trigger": "passive",
+      "usageLimit": "unlimited",
+      "event": "evolution",
+      "opponent": true,
+      "counters": 40,
+      "noStack": "Darkest Impulse"
+    }
+  },
+  {
+    "sourceExample": "瑪機雅娜（SV9）",
+    "english": "As long as this Pokémon is in the Active Spot, whenever you attach an Energy card from your hand to 1 of your Pokémon, heal 90 damage from that Pokémon.",
+    "chinese": "只要这只宝可梦在战斗场上，每当自己从手牌给宝可梦附着能量时，就回复那只宝可梦「90」HP。",
+    "rule": {
+      "kind": "hand_event",
+      "trigger": "passive",
+      "usageLimit": "unlimited",
+      "event": "energy",
+      "holderActive": true,
+      "heal": 90
+    }
+  },
+  {
+    "sourceExample": "耿鬼ex（SV5K）",
+    "english": "Whenever your opponent attaches an Energy card from their hand to 1 of their Pokémon, put 2 damage counters on that Pokémon.",
+    "chinese": "只要这只宝可梦在场上，每当对手从手牌将能量附着于宝可梦身上时，给那只宝可梦身上放置2个伤害指示物。",
+    "rule": {
+      "kind": "hand_event",
+      "trigger": "passive",
+      "usageLimit": "unlimited",
+      "event": "energy",
+      "opponent": true,
+      "counters": 20
+    }
+  },
+  {
+    "sourceExample": "雷丘（SV2a）",
+    "english": "When 1 of your Pokémon is Knocked Out by damage from an attack from your opponent's Pokémon, you may move a {{e|雷}} Energy from that Pokémon to this Pokémon.",
+    "chinese": "每当自己的宝可梦，受到对手宝可梦的招式的伤害而'''昏厥'''时，可使用1次。选择'''昏厥'''了的宝可梦身上附着的1张{{e|雷}}能量，转附于这只宝可梦身上。",
+    "rule": {
+      "kind": "damage_choice",
+      "trigger": "passive",
+      "usageLimit": "unlimited",
+      "knockout": true,
+      "team": true,
+      "optional": true,
+      "operation": "transfer_energy",
+      "type": "LIGHTNING",
+      "toSelf": true,
+      "count": 1
+    }
+  },
+  {
+    "sourceExample": "毛崖蟹ex（SV-P）",
+    "english": "If this Pokémon is in the Active Spot and is damaged by an attack from your opponent's Pokémon ''(even if this Pokémon is Knocked Out)'', discard an Energy from the Attacking Pokémon.",
+    "chinese": "当这只宝可梦，在战斗场上受到对手宝可梦的招式的伤害时，选择使用了招式的宝可梦身上附着的1个能量，放于弃牌区。",
+    "rule": {
+      "kind": "damage_choice",
+      "trigger": "passive",
+      "usageLimit": "unlimited",
+      "activeOnly": true,
+      "operation": "discard_attacker_energy"
+    }
+  },
+  {
+    "sourceExample": "輕身鱈（SV4K）",
+    "english": "If this Pokémon is in the Active Spot and is Knocked Out by damage from an attack from your opponent's Pokémon, move up to 2 {{e|Water}} Energy cards from this Pokémon to 1 of your Benched Pokémon.",
+    "chinese": "当这只宝可梦，在战斗场上受到对手宝可梦的招式的伤害而'''{{TCG|昏厥}}'''时，选择这只宝可梦身上附着的最多2张{{e|水}}能量，转附于自己的1只备战宝可梦身上。",
+    "rule": {
+      "kind": "damage_choice",
+      "trigger": "passive",
+      "usageLimit": "unlimited",
+      "activeOnly": true,
+      "knockout": true,
+      "operation": "transfer_energy",
+      "type": "WATER",
+      "count": 2
+    }
+  },
+  {
+    "sourceExample": "死神棺ex（SV4K）",
+    "english": "If this Pokémon is Knocked Out by damage from an attack from your opponent's Pokémon, search your deck for a card and put it into your hand. Then, shuffle your deck.",
+    "chinese": "当这只宝可梦，受到对手宝可梦的招式的伤害而'''{{TCG|昏厥}}'''时，选择自己牌库中任意1张卡牌，加入手牌。并重洗牌库。",
+    "rule": {
+      "kind": "damage_choice",
+      "trigger": "passive",
+      "usageLimit": "unlimited",
+      "knockout": true,
+      "operation": "search_hand"
+    }
+  },
+  {
+    "sourceExample": "南瓜怪人（SV4M）",
+    "english": "If this Pokémon is Knocked Out by damage from an attack from your opponent's Pokémon, discard 2 random cards from your opponent's hand.",
+    "chinese": "当这只宝可梦，受到对手宝可梦的招式的伤害而'''昏厥'''时，在不看正面的前提下，选择对手的2张手牌，放于弃牌区。",
+    "rule": {
+      "kind": "damage_choice",
+      "trigger": "passive",
+      "usageLimit": "unlimited",
+      "knockout": true,
+      "operation": "random_hand",
+      "count": 2
+    }
+  },
+  {
+    "sourceExample": "獵斑魚（SV10）",
+    "english": "When 1 of your {{e|Water}} Pokémon is Knocked Out by damage from an attack from your opponent's Pokémon, you may put all Basic {{e|Water}} Energy attached to that Pokémon into your hand instead of the discard pile.",
+    "chinese": "每当自己的{{e|水}}宝可梦受到对手宝可梦的招式的伤害而'''{{TCG|昏厥}}'''时，可以使用1次。不将'''{{TCG|昏厥}}'''了的宝可梦身上附着的「基本{{e|水}}能量」放于弃牌区，而是全部放回手牌。",
+    "rule": {
+      "kind": "damage_choice",
+      "trigger": "passive",
+      "usageLimit": "unlimited",
+      "knockout": true,
+      "team": true,
+      "targetType": "WATER",
+      "optional": true,
+      "operation": "recover_energy",
+      "type": "WATER",
+      "basic": true
+    }
+  },
+  {
+    "sourceExample": "火箭隊的瓦斯彈（SV10）",
+    "english": "If this Pokémon is in the Active Spot and is damaged by an attack from your opponent's Pokémon ''(even if this Pokémon is Knocked Out)'', search your deck for up to 2 Pokémon that have \"Koffing\" in their name and put them onto your Bench. Then, shuffle your deck.",
+    "chinese": "当这只宝可梦在战斗场上受到对手宝可梦的招式的伤害时，选择自己牌库中最多2张名字中带有「瓦斯弹」的宝可梦，放于备战区。并重洗牌库。",
+    "rule": {
+      "kind": "damage_choice",
+      "trigger": "passive",
+      "usageLimit": "unlimited",
+      "activeOnly": true,
+      "operation": "search_bench",
+      "substring": "Koffing",
+      "count": 2
+    }
+  },
+  {
+    "sourceExample": "振翼发（SV5K）",
+    "english": "As long as this Pokémon is in the Active Spot, your opponent's Active Pokémon has no Abilities, except for Midnight Fluttering.",
+    "chinese": "只要這隻寶可夢在戰鬥場上，對手的戰鬥寶可夢的特性（「暗夜羽擊」除外）全部消除。",
+    "rule": {
+      "trigger": "passive",
+      "usageLimit": "unlimited",
+      "kind": "suppress_abilities",
+      "targets": "opponent_active",
+      "activeOnly": true,
+      "exceptAbility": "Midnight Fluttering"
+    }
+  },
+  {
+    "sourceExample": "海豚俠ex（SV6）",
+    "english": "Put this Pokémon into play only with the effect of Palafin's Zero to Hero Ability.",
+    "chinese": "这张卡牌，只有通过「海豚侠」的特性「全能变身」的效果才能被放于场上。",
+    "rule": {
+      "trigger": "passive",
+      "usageLimit": "unlimited",
+      "kind": "hero_only"
+    }
+  },
+  {
+    "sourceExample": "海豚俠（SV6）",
+    "english": "Once during your turn, when this Pokémon moves from the Active Spot to the Bench, you may search your deck for a {{DL|Palafin (TCG)|Palafin ex}} and switch it with this Pokémon. Any attached cards, damage counters, Special Conditions, turns in play, and any other effects remain on the new Pokémon. If you switched a Pokémon in this way, put this card into your deck. Then, shuffle your deck.",
+    "chinese": "在自己的回合，当这只宝可梦从战斗场被放回备战区时，可使用1次。选择自己牌库中的1张「海豚侠{{ex}}」，与这张卡牌互换（继承放于其身上的所有卡牌、伤害指示物、特殊状态、效果等）。如果互换了的话，则将这张卡牌放回牌库。并重洗牌库。",
+    "rule": {
+      "trigger": "passive",
+      "usageLimit": "unlimited",
+      "kind": "zero_to_hero"
+    }
+  },
+  {
+    "sourceExample": "熔岩蜗牛（SV5M）",
+    "english": "Whenever your opponent's Active Pokémon moves to the Bench during their turn, their new Active Pokémon is now Burned.",
+    "chinese": "只要這隻寶可夢在場上，在對手的回合，每次對手的戰鬥寶可夢回到備戰區時，將新上場的寶可夢'''灼傷'''。",
+    "rule": {
+      "trigger": "passive",
+      "usageLimit": "unlimited",
+      "kind": "lava_zone"
+    }
+  },
+  {
+    "sourceExample": "古空棘鱼（SV5K）",
+    "english": "Each of your evolved Pokémon can use any attack from its previous Evolutions. ''(You still need the necessary Energy to use each attack.)''",
+    "chinese": "只要这只宝可梦在场上，自己所有已经进化的宝可梦，可以使用其所有进化前拥有的招式。''[需要满足使用招式所需能量。]''",
+    "rule": {
+      "trigger": "passive",
+      "usageLimit": "unlimited",
+      "kind": "borrow_evolutions"
+    }
+  },
+  {
+    "sourceExample": "梦幻ex（30th）",
+    "english": "This Pokémon can use the attacks of any of your Benched Pokémon. ''<nowiki>(You still need the necessary Energy to use each attack.)</nowiki>''",
+    "chinese": "这只宝可梦可以使用自己备战宝可梦所拥有的全部招式。''<nowiki>[需要满足使用招式所需能量。]</nowiki>''",
+    "rule": {
+      "trigger": "passive",
+      "usageLimit": "unlimited",
+      "kind": "borrow_bench"
+    }
+  },
+  {
+    "sourceExample": "綿綿泡芙（SV6）",
+    "english": "If Festival Grounds is in play, this Pokémon may use an attack it has twice. If the first attack Knocks Out your opponent's Active Pokémon, you may attack again after your opponent chooses a new Active Pokémon.",
+    "chinese": "如果场上有「祭典会场」的话，则这只宝可梦，可以连续使用2次拥有的招式。（如果第1次的招式令对手的战斗宝可梦'''{{TCG|昏厥}}'''的话，则在下一只对手的宝可梦被放于战斗场后，继续使用第2次招式。）",
+    "rule": {
+      "trigger": "passive",
+      "usageLimit": "unlimited",
+      "kind": "festival_lead"
+    }
+  },
+  {
+    "sourceExample": "裹蜜蟲（SV6）",
+    "english": "If Festival Grounds is in play, this Pokémon may use an attack it has twice. If the first attack Knocks Out your opponent's Active Pokémon, you may attack again after your opponent chooses a new Active Pokémon.",
+    "chinese": "如果场上有「{{TCG|祭典会场}}」的话，则这只宝可梦，可以连续使用2次拥有的招式。（如果第1次的招式令对手的战斗宝可梦'''{{TCG|昏厥}}'''的话，则在下一只对手的宝可梦被放于战斗场后，继续使用第2次招式。）",
+    "rule": {
+      "trigger": "passive",
+      "usageLimit": "unlimited",
+      "kind": "festival_lead"
+    }
+  },
+  {
+    "sourceExample": "金魚王（SV8a）",
+    "english": "If {{TCG|Festival Grounds}} is in play, this Pokémon may use an attack it has twice. If the first attack Knocks Out your opponent's Active Pokémon, you may attack again after your opponent chooses a new Active Pokémon.",
+    "chinese": "如果场上有「{{TCG|祭典会场}}」的话，则这只宝可梦，可以连续使用2次拥有的招式。（如果第1次的招式令对手的战斗宝可梦'''{{TCG|昏厥}}'''的话，则在下一只对手的宝可梦被放于战斗场后，继续使用第2次招式。）",
+    "rule": {
+      "trigger": "passive",
+      "usageLimit": "unlimited",
+      "kind": "festival_lead"
+    }
+  },
+  {
+    "sourceExample": "吉利蛋（SV2a）",
+    "english": "If you took this Pokémon as a face-down Prize card during your turn and your Bench isn't full, before you put it into your hand, you may put it onto your Bench. If you put this Pokémon onto your Bench in this way, flip a coin. If heads, take 1 more Prize card.",
+    "chinese": "在自己的回合，当从反面朝上的自己的奖赏卡中拿取了这张卡牌时，如果自己的备战区有空位的话，则在加入手牌前可以使用。将这只宝可梦放于自己的备战区。然后，抛掷1次硬币如果为正面，则额外拿取1张奖赏卡。",
+    "rule": {
+      "kind": "lucky_prize",
+      "trigger": "passive",
+      "usageLimit": "unlimited",
+      "activeZones": [
+        "prize"
+      ]
+    }
+  },
+  {
+    "sourceExample": "斧牙龍（SV6a）",
+    "english": "Whenever your opponent plays an {{TCG|Item card|Item}} or Supporter card from their hand, prevent all effects of that card done to this Pokémon.",
+    "chinese": "这只宝可梦，当对手从手牌使出物品或者支援者时，不受其效果影响。",
+    "rule": {
+      "trigger": "passive",
+      "usageLimit": "unlimited",
+      "kind": "trainer_protection",
+      "cards": [
+        "item",
+        "supporter"
+      ]
+    }
+  },
+  {
+    "sourceExample": "月石（SV3）",
+    "english": "If you have Solrock in play, prevent all effects of any Stadium done to your Pokémon in play.",
+    "chinese": "如果自己场上有「{{TCGPM|太阳岩}}」的话则能生效。只要这只宝可梦在场上，自己所有的宝可梦，不会受到竞技场的效果影响。",
+    "rule": {
+      "trigger": "passive",
+      "usageLimit": "unlimited",
+      "kind": "stadium_protection",
+      "requiresName": "Solrock"
+    }
+  },
+  {
+    "sourceExample": "浩大鯨ex（SV10）",
+    "english": "Whenever your opponent plays an Item or Supporter card from their hand, prevent all effects of that card done to this Pokémon.",
+    "chinese": "当对手从手牌使出物品或支援者时，这只宝可梦不会受到其效果影响。",
+    "rule": {
+      "trigger": "passive",
+      "usageLimit": "unlimited",
+      "kind": "trainer_protection",
+      "cards": [
+        "item",
+        "supporter"
+      ]
+    }
+  },
+  {
+    "sourceExample": "美納斯（SV6）",
+    "english": "Your opponent's Pokémon in play and all attached cards can't be put into your opponent's hand.",
+    "chinese": "只要这只宝可梦在场上，对手场上的宝可梦，以及放于其身上的所有卡牌，都无法被放回手牌。",
+    "rule": {
+      "trigger": "passive",
+      "usageLimit": "unlimited",
+      "kind": "no_field_hand"
+    }
+  },
+  {
+    "sourceExample": "超甲狂犀（SV7）",
+    "english": "As long as this Pokémon is in the Active Spot, whenever your opponent plays a Supporter card from their hand, prevent all effects of that card done to all of your Pokémon.",
+    "chinese": "只要这只宝可梦在战斗场上，自己所有的宝可梦，当对手从手牌使出支援者时，不受其效果影响。",
+    "rule": {
+      "trigger": "passive",
+      "usageLimit": "unlimited",
+      "kind": "trainer_protection",
+      "activeOnly": true,
+      "team": true,
+      "cards": [
+        "supporter"
+      ]
+    }
+  },
+  {
+    "sourceExample": "陸地水母（SV4M）",
+    "english": "Cards in your opponent's discard pile can't be put into their hand by an effect of your opponent's Abilities or Trainer cards.",
+    "chinese": "只要这只宝可梦在场上，对手弃牌区中的卡牌，就无法因为对手的特性或训练家的效果，被加入对手的手牌。",
+    "rule": {
+      "trigger": "passive",
+      "usageLimit": "unlimited",
+      "kind": "no_discard_hand"
+    }
+  }
+]
