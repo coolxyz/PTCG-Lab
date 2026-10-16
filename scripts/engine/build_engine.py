@@ -105,7 +105,7 @@ p=DEST/'ptcg/utils/utils.py'
 s=p.read_text(encoding='utf-8')
 old='    if state.termination_reason == "deck_out" and state.termination_loser is not None:'
 assert s.count(old)==1
-s=s.replace(old, '    if state.termination_reason == "simultaneous_knockout":\n        return True, state.group_winner\n\n'+old)
+s=s.replace(old, '    if state.termination_reason in ("simultaneous_knockout", "victory_symbol", "attack_prizes"):\n        return True, state.group_winner\n\n'+old)
 p.write_text(s, encoding='utf-8', newline='\n')
 # Checkup may require prize/replacement choices, so defer it to the engine.
 s += '''\n_complete_next_turn = next_turn

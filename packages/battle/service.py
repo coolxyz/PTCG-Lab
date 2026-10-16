@@ -30,7 +30,8 @@ from packages.collection.domain import (
     DomainError,
 )
 from packages.collection.store import now
-from packages.battle import agent
+from packages.battle import agent, h2
+from packages.battle.presets import PRESETS
 from packages.battle.decision import decide
 from packages.simulation.a2 import VERSION as A2_VERSION
 
@@ -177,6 +178,7 @@ class MatchService:
 
     def create(self, owner, request):
         request = dict(request)
+        ai_level = request.setdefault("aiLevel", "H2")
         if request.get("aiLevel") == "A1":
             request.pop("aiLevel")  # Preserve pre-A2 creation idempotency hashes.
         rt = runtime()
@@ -217,7 +219,7 @@ class MatchService:
                 opponent_key = "revision:" + opponent_id
             else:
                 template = next(
-                    (t for t in RAW["templates"] if t["id"] == request.get("opponent")),
+                    (t for t in PRESETS + RAW["templates"] if t["id"] == request.get("opponent")),
                     None,
                 )
                 require(
@@ -228,19 +230,20 @@ class MatchService:
                 )
                 opponent = {"entries": template["entries"]}
                 opponent_key = template["id"]
-            ai_level = request.get("aiLevel", "A1")
-            require(ai_level in ("A1", "A2"), "BAD_AI_LEVEL", "请选择 A1 或实验性 A2")
+            require(ai_level in ("A1", "H2", "A2"), "BAD_AI_LEVEL", "请选择 A1、H2或 A2")
             provenance = {
                 "syncReleaseId": __import__("os").getenv("PTCG_RELEASE_ID"),
                 "catalogVersion": CATALOG_VERSION,
                 "formatAsOf": AS_OF,
                 "revisionId": request["revisionId"],
                 "formatHash": content_hash(RULES),
-                "aiVersion": A2_VERSION if ai_level == "A2" else agent.VERSION,
+                "aiVersion": {"A1": agent.VERSION, "H2": h2.VERSION, "A2": A2_VERSION}[ai_level],
                 "effectReleaseVersion": RELEASE_VERSION,
                 "opponentRevisionId": opponent_id,
                 "opponentContentHash": content_hash(opponent),
             }
+            if ai_level == "H2":
+                provenance["aiSourceHash"] = h2.fingerprint()
             game = rt.Adapter(
                 seed=secrets.randbits(63),
                 deck1=self._lines(revision["entries"]),
@@ -286,7 +289,7 @@ class MatchService:
         record = json.loads(row["body"])
         require(
             record["config"].get("provenance", {}).get("aiVersion")
-            in (agent.VERSION, A2_VERSION),
+            in (agent.VERSION, h2.VERSION, A2_VERSION),
             "AI_VERSION_MISMATCH",
             "AI 版本已变化，本局仅可查看已保存回放",
             409,
@@ -299,6 +302,9 @@ class MatchService:
             "效果发布版本已变化，本局仅可查看已保存回放",
             409,
         )
+        if record["config"].get("provenance", {}).get("aiVersion") == h2.VERSION:
+            require(record["config"]["provenance"].get("aiSourceHash") == h2.fingerprint(),
+                    "H2_SOURCE_MISMATCH", "H2 策略或资料版本已变化，本局仅可查看已保存回放", 409)
         cached = self.cache.get(row["id"])
         if cached and cached.version == row["seq"]:
             self.cache.move_to_end(row["id"])
@@ -539,6 +545,8 @@ class MatchService:
             )
         if version == A2_VERSION:
             return self._advance_a2(owner, id)
+        if version == h2.VERSION:
+            return self._advance_h2(owner, id)
         # Bounded batches, each action independently durable. A lost response is
         # resumed from latest seq; parallel requests cannot apply a choice twice.
         began = time.monotonic()
@@ -572,6 +580,40 @@ class MatchService:
                 self.cache.pop(id, None)
                 raise
         return self.snapshot(owner, id)
+
+    def _advance_h2(self, owner, id):
+        """Compute outside the authority lock; stale or duplicate proposals never commit."""
+        import copy
+        from packages.simulation.a2 import legal
+
+        rt = runtime()
+        with self.lock, self.db() as db:
+            row = self._row(db, owner, id)
+            if row["status"] != "playing":
+                return self._snapshot(db, row)
+            game = self._game(row)
+            if game.actor != rt.PlayerId.PLAYER2:
+                return self._snapshot(db, row)
+            sequence = game.version
+            before = copy.deepcopy(rt.view(game, rt.PlayerId.PLAYER2))
+        command, detail = h2.decide(before)
+        with self.lock, self.db(True) as db:
+            row = self._row(db, owner, id)
+            if row["status"] != "playing" or row["seq"] != sequence:
+                return self._snapshot(db, row)
+            game = self._game(row)
+            current = rt.view(game, rt.PlayerId.PLAYER2)
+            require(legal(current, command), "INVALID_AI_PROPOSAL", "AI 提案已失效", 409)
+            try:
+                game.submit(rt.PlayerId.PLAYER2, command)
+                event = self._event(current, command, True)
+                event.update(detail)
+                event["explanation"] = "H2 根据可见信息选择动作；异常时使用基础策略降级"
+                self._save(db, row, game, event)
+                return self._snapshot(db, self._row(db, owner, id))
+            except Exception:
+                self.cache.pop(id, None)
+                raise
 
     def _advance_a2(self, owner, id):
         """Compute outside both the SQLite transaction and the authority lock.

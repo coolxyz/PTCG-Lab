@@ -106,7 +106,8 @@ export type Decision = {
 };
 export type BattleView = {
   aiVersion?: string;
-  result?: { reason: string; conditions: string[] } | null;
+  aiStrategy?: { id: string; version: string; name: string };
+  result?: { reason: string; conditions: string[]; outcome?: string } | null;
   matchId: string;
   stateVersion: number;
   status: string;
@@ -211,7 +212,7 @@ export function Battle({
     [matches, setMatches] = useState<any[]>([]);
   const [revision, setRevision] = useState(""),
     [opponent, setOpponent] = useState("");
-  const [aiLevel, setAiLevel] = useState("A1");
+  const [aiLevel, setAiLevel] = useState("H2");
   const [view, setView] = useState<BattleView | null>(null),
     [frame, setFrame] = useState<BattleView | null>(null);
   const [replaySeq, setReplaySeq] = useState(0),
@@ -299,7 +300,7 @@ export function Battle({
       ...(session?.opponents || []).map((t: any) => t.id),
       ...revisions.filter((r) => r.playable).map((r) => `revision:${r.id}`),
     ];
-    setOpponent((old) => choices.includes(old) ? old : choices.includes("dragapult") ? "dragapult" : choices[0] || "");
+    setOpponent((old) => choices.includes(old) ? old : choices[0] || "");
   }, [session, revisions]);
   useEffect(() => {
     setSelected([]);
@@ -425,7 +426,7 @@ export function Battle({
         <div>
           <span className="eyebrow">PRACTICE ROOM</span>
           <h1>人机练习</h1>
-          <p>支持卡池自由组牌 · A1 启发式 / A2 实验搜索 · 简中规则快照</p>
+          <p>H2 进阶对战 · 五套推荐预设 · 支持卡池自由组牌 · 简中规则快照</p>
         </div>
         <button className="secondary" disabled={busy} onClick={refresh}>
           <RefreshCw size={15} />
@@ -454,6 +455,22 @@ export function Battle({
                 对战范围：G/H/I/J 标记及八种基本能量。当前支持 {cards.filter((card) => card.effectStatus === "verified").length} 个卡牌版本自由组合。
                 待核实例外 {cards.filter(card => card.pendingSourceException).length} 个，不计入已支持数量；未确认资料及范围外卡牌暂不可对战。
               </p>
+              <label>
+                快速使用推荐预设
+                <select aria-label="我的预设卡组" value="" disabled={busy} onChange={(e) => {
+                  const id = e.target.value;
+                  if (id) void run(async () => {
+                    const r = await request(`/presets/${id}/revision`, {});
+                    await loadLobby();
+                    setRevision(r.id);
+                    createId.current = crypto.randomUUID();
+                  });
+                }}>
+                  <option value="">选择预设并保存为我的卡组版本</option>
+                  {session?.presets?.map((p: any) => <option key={p.id} value={p.id}>{p.name}</option>)}
+                </select>
+              </label>
+              <p>五套推荐预设已验证 H2 对战能力；其他自由卡组的强度尚未验证。</p>
               <label>
                 我的卡组版本
                 <select
@@ -509,7 +526,8 @@ export function Battle({
                     createId.current = crypto.randomUUID();
                   }}
                 >
-                  <option value="A1">A1 · 启发式</option>
+                  <option value="A1">基础 AI（A1）</option>
+                  <option value="H2">进阶 AI（H2 · 推荐）</option>
                   <option value="A2">A2 · 实验搜索（强度未评级）</option>
                 </select>
               </label>
@@ -576,6 +594,7 @@ export function Battle({
       ) : (
         <>
           <div className="battle-toolbar">
+            {shown.aiStrategy && <span aria-label="当前 AI 策略">{shown.aiStrategy.name}</span>}
             <strong>
               {frame
                 ? `回放 · 第 ${replaySeq} 步`
@@ -730,6 +749,8 @@ export function Battle({
             <div className="battle-result" role="status">
               {shown.status === "truncated"
                 ? "达到本地步数保护上限，本局记为截断"
+                : shown.result?.outcome === "draw"
+                  ? "平局"
                 : shown.winner === "PLAYER1"
                   ? "你赢了！"
                   : shown.winner === "PLAYER2"
@@ -743,6 +764,8 @@ export function Battle({
                     prizes_taken: "已拿完全部奖赏卡",
                     no_pokemon: "落败方场上已无宝可梦",
                     deck_out: "回合开始时无法抽牌",
+                    simultaneous_draw: "双方同时满足相同数量的胜利条件，本局平局",
+                    simultaneous_knockout: "同时击倒结算后，胜利条件较多的一方获胜",
                     resigned: "认输结束",
                     truncated: "达到步数保护上限，不计作正常胜负",
                     archived: "旧引擎版本已停用，仅供回放；请选择符合当前规则的卡组版本开始新对局",

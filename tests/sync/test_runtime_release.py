@@ -33,6 +33,13 @@ def test_old_and_new_matches_survive_release_restart_and_restore(tmp_path):
         release = sync.releases.archive(catalog=catalog, metadata={"kind": "catalog"})
         sync.extend_identity_archive(release)
         sync.releases.activate(release, None, sync.jobs.path)
+        # Test the activated worker, not only workspace routes: this caught the
+        # production lobby serving old presets behind an updated frontend.
+        manifest = sync.releases.verify(release)
+        assert "packages/battle/h2-presets-v1.json" in manifest["files"]
+        live_session = client.post("/api/battle/session", json={})
+        assert live_session.headers["x-ptcg-release"] == release
+        assert len(live_session.json()["presets"]) == 5
         with TestClient(create_app(database), base_url="http://127.0.0.1:8777") as local:
             assert local.post("/api/battle/session", json={}, headers={"Origin": "http://127.0.0.1:8777"}).status_code == 200
             assert local.post("/api/battle/session", json={}, headers={"Origin": "https://example.com"}).status_code == 403

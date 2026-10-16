@@ -8,6 +8,15 @@ def explain(view):
     if status in ("resigned", "truncated", "archived"):
         return {"reason": status, "conditions": [status]}
     obs = view["observation"]
+    # CN advanced rulebook, section E (pp. 15–16): equal simultaneous
+    # winning conditions are a draw. A null winner alone is never sufficient.
+    if obs.get("termination_reason") == "simultaneous_knockout" and not view.get("winner"):
+        own, other = obs["self"], obs["opponent"]
+        own_wins = int(own["prize_count"] == 0) + int(not (other["active"] or other["bench"]))
+        other_wins = int(other["prize_count"] == 0) + int(not (own["active"] or own["bench"]))
+        if own_wins == other_wins and own_wins > 0:
+            return {"reason": "simultaneous_draw", "conditions": ["equal_simultaneous_win_conditions"], "outcome": "draw"}
+        return {"reason": "unknown", "conditions": []}
     if obs.get("termination_reason"):
         reason = obs["termination_reason"]
         return {"reason": reason, "conditions": [reason]}

@@ -1,0 +1,148 @@
+{
+  "presetId": "h2-joltik-box",
+  "entries": [
+    {
+      "printingId": "CN:CHS:21845",
+      "quantity": 4
+    },
+    {
+      "printingId": "CN:CSV10C:082",
+      "quantity": 1
+    },
+    {
+      "printingId": "CN:CSV1C:050",
+      "quantity": 2
+    },
+    {
+      "printingId": "CN:CSV1C:113",
+      "quantity": 1
+    },
+    {
+      "printingId": "CN:CSV1C:118",
+      "quantity": 2
+    },
+    {
+      "printingId": "CN:CSV2C:113",
+      "quantity": 3
+    },
+    {
+      "printingId": "CN:CSV6C:051",
+      "quantity": 2
+    },
+    {
+      "printingId": "CN:CSV6C:119",
+      "quantity": 1
+    },
+    {
+      "printingId": "CN:CSV7C:033",
+      "quantity": 1
+    },
+    {
+      "printingId": "CN:CSV8C:010",
+      "quantity": 1
+    },
+    {
+      "printingId": "CN:CSV8C:172",
+      "quantity": 1
+    },
+    {
+      "printingId": "CN:CSV9C:054",
+      "quantity": 2
+    },
+    {
+      "printingId": "CN:CSV9C:063",
+      "quantity": 2
+    },
+    {
+      "printingId": "CN:CSV9C:078",
+      "quantity": 1
+    },
+    {
+      "printingId": "CN:CSV9C:196",
+      "quantity": 4
+    },
+    {
+      "printingId": "CN:CSVL1C:126",
+      "quantity": 5
+    },
+    {
+      "printingId": "CN:CSVL1C:129",
+      "quantity": 5
+    },
+    {
+      "printingId": "CN:CSVL1C:130",
+      "quantity": 2
+    },
+    {
+      "printingId": "CN:CSVL1C:133",
+      "quantity": 2
+    },
+    {
+      "printingId": "CN:CSVM2bC:020",
+      "quantity": 1
+    },
+    {
+      "printingId": "CN:CSVM2cC:003",
+      "quantity": 1
+    },
+    {
+      "printingId": "CN:CSVM2cC:006",
+      "quantity": 1
+    },
+    {
+      "printingId": "CN:CSVM2cC:013",
+      "quantity": 1
+    },
+    {
+      "printingId": "CN:CSVM2cC:015",
+      "quantity": 4
+    },
+    {
+      "printingId": "CN:CSVM2cC:016",
+      "quantity": 4
+    },
+    {
+      "printingId": "CN:CSVM2cC:018",
+      "quantity": 1
+    },
+    {
+      "printingId": "CN:CSVM2cC:021",
+      "quantity": 1
+    },
+    {
+      "printingId": "CN:CSVM2cC:028",
+      "quantity": 4
+    }
+  ],
+  "deckHash": "4e3587c99252f8eab1c481270b67ad5de028854662ec5f57d99b254409648abe",
+  "environmentFiles": [
+    "data/cardpool/plain-pokemon.json",
+    "data/simulation/effects.json",
+    "artifacts/engine/overlay-hashes.json"
+  ],
+  "environmentHash": "39b3a63ea316f17e834d67af0af8ba3862c36f4825ed144b741ce9be8f207d57",
+  "parent": "h2-visible-tempo-v4-app-v1",
+  "parentHash": "54a24bedb49432cf34ce13691b2a43acd24101d911fc9e905f9395f5f41dd5cc",
+  "roles": {
+    "accelerator": [
+      "Joltik",
+      "Crispin"
+    ],
+    "attackers": [
+      "Iron Hands ex",
+      "Miraidon ex",
+      "Pikachu ex",
+      "Iron Leaves ex",
+      "Bloodmoon Ursaluna ex"
+    ],
+    "mobility": [
+      "Latias ex",
+      "Switch",
+      "Prime Catcher"
+    ],
+    "draw": [
+      "Mew ex",
+      "Fezandipiti ex"
+    ]
+  }
+}

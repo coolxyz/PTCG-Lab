@@ -53,3 +53,30 @@ def test_deckout_and_unknown_are_not_guessed_from_empty_active():
     v = frame()
     v["observation"]["self"]["prize_count"] = 1
     assert decorate(v)["result"]["reason"] == "unknown"
+
+
+@pytest.mark.parametrize("own_prizes,other_prizes,own_field,other_field,draw", [
+    (0, 0, True, True, True),
+    (2, 2, False, False, True),
+    (0, 2, False, True, True),
+    (0, 0, False, False, True),
+    (0, 0, True, False, False),
+    (2, 2, True, True, False),
+])
+def test_only_proven_equal_simultaneous_conditions_are_draws(own_prizes, other_prizes, own_field, other_field, draw):
+    v = frame(None)
+    v["observation"]["termination_reason"] = "simultaneous_knockout"
+    for side, prizes, field in (("self", own_prizes, own_field), ("opponent", other_prizes, other_field)):
+        v["observation"][side].update(prize_count=prizes, active=[{}] if field else [], bench=[])
+    assert (decorate(v)["result"].get("outcome") == "draw") == draw
+    v["status"] = "truncated"
+    assert decorate(v)["result"]["reason"] == "truncated"
+    v["status"] = "finished"
+    v["done"] = False
+    assert decorate(v)["result"] is None
+
+
+def test_unknown_null_winner_is_not_a_draw():
+    v = frame(None)
+    v["observation"]["opponent"]["prize_count"] = 0
+    assert decorate(v)["result"]["reason"] == "unknown"

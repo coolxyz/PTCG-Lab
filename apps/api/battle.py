@@ -3,8 +3,11 @@
 from fastapi import APIRouter, Request, Response, Query
 from pydantic import BaseModel, ConfigDict, Field, StrictInt, model_validator
 from typing import Literal
-from packages.battle.service import MatchService, COOKIE, runtime
+from packages.battle.service import COOKIE, runtime
+from apps.api.expert_service import MatchService
 from packages.collection.domain import RAW, catalog_view
+from packages.collection.domain import require, normalize
+from packages.battle.presets import PRESETS
 
 
 class Input(BaseModel):
@@ -16,7 +19,7 @@ class CreateMatch(Input):
     revisionId: str = Field(min_length=1, max_length=100)
     opponent: str | None = Field(default=None, min_length=1, max_length=100)
     opponentRevisionId: str | None = Field(default=None, min_length=1, max_length=100)
-    aiLevel: Literal["A1", "A2"] = "A1"
+    aiLevel: Literal["A1", "H2", "A2"] = "H2"
 
     @model_validator(mode="after")
     def one_opponent(self):
@@ -73,8 +76,21 @@ def router(store):
             "mode": "local-practice",
             "cards": request.app.state.card_media.decorate(catalog_view(effect="verified")),
             "engineVersion": rt.ENGINE_VERSION,
-            "opponents": [{"id": t["id"], "name": t["name"]} for t in RAW["templates"]],
+            "opponents": [{"id": t["id"], "name": t["name"]} for t in PRESETS + RAW["templates"]],
+            "presets": [{"id": t["id"], "name": t["name"]} for t in PRESETS],
         }
+
+    @api.post("/presets/{preset_id}/revision")
+    def preset_revision(preset_id: str, request: Request):
+        owner(request)
+        preset = next((p for p in PRESETS if p["id"] == preset_id), None)
+        require(preset is not None, "BAD_PRESET", "预设卡组不存在", 404)
+        entries = normalize(preset["entries"])
+        with service.lock:
+            deck = next((d for d in store.decks() if d["name"] == preset["name"] and d["entries"] == entries), None)
+            if deck is None:
+                deck = store.create_deck(preset["name"], entries)
+            return store.freeze(deck["id"], deck["version"])
 
     @api.get("/revisions")
     def revisions(request: Request):
