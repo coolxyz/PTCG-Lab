@@ -68,6 +68,8 @@ def test_pins_and_environment_fail_closed(setup):
 def test_packaged_default_and_explicit_disable(setup):
     _,_,_,db=setup
     reg.rollout_path(db).unlink()
-    assert reg.select(PRESETS[0]['entries'],db)['id']==PRESETS[0]['id']
+    assert set(reg.POLICIES)=={p['id'] for p in PRESETS}
+    for preset in PRESETS:
+        assert reg.select(preset['entries'],db)['id']==preset['id']
     reg.rollout_path(db).write_text(json.dumps({'bundleHash':reg.bundle_hash(),'enabled':[]}))
     assert reg.select(PRESETS[0]['entries'],db) is None

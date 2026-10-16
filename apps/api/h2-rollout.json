@@ -1,8 +1,10 @@
 {
-  "bundleHash": "e9397a5e1e17a86dbce21b73c6901558e134b6f535891d378d57661a19e4eae1",
+  "bundleHash": "b2e9639cddef9c1709c48a7ff91b1a84e2f8f8cbb5d41cbc511a548ffc4f9dff",
   "enabled": [
     "h2-marnie-grimmsnarl",
     "h2-dragapult-dusknoir",
-    "h2-joltik-box"
+    "h2-joltik-box",
+    "h2-n-zoroark-ex",
+    "h2-gardevoir-ex"
   ]
 }

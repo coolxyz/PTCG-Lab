@@ -1,0 +1,164 @@
+{
+  "presetId": "h2-gardevoir-ex",
+  "entries": [
+    {
+      "printingId": "CN:30thC:102",
+      "quantity": 2
+    },
+    {
+      "printingId": "CN:CHS:20662",
+      "quantity": 1
+    },
+    {
+      "printingId": "CN:CHS:21845",
+      "quantity": 1
+    },
+    {
+      "printingId": "CN:CSV10C:082",
+      "quantity": 1
+    },
+    {
+      "printingId": "CN:CSV1C:109",
+      "quantity": 1
+    },
+    {
+      "printingId": "CN:CSV1C:118",
+      "quantity": 2
+    },
+    {
+      "printingId": "CN:CSV2C:053",
+      "quantity": 4
+    },
+    {
+      "printingId": "CN:CSV2C:054",
+      "quantity": 3
+    },
+    {
+      "printingId": "CN:CSV2C:055",
+      "quantity": 2
+    },
+    {
+      "printingId": "CN:CSV2C:060",
+      "quantity": 1
+    },
+    {
+      "printingId": "CN:CSV2C:112",
+      "quantity": 2
+    },
+    {
+      "printingId": "CN:CSV6C:065",
+      "quantity": 1
+    },
+    {
+      "printingId": "CN:CSV6C:125",
+      "quantity": 1
+    },
+    {
+      "printingId": "CN:CSV7C:109",
+      "quantity": 1
+    },
+    {
+      "printingId": "CN:CSV8C:176",
+      "quantity": 1
+    },
+    {
+      "printingId": "CN:CSV9.5C:004",
+      "quantity": 1
+    },
+    {
+      "printingId": "CN:CSVL1C:130",
+      "quantity": 7
+    },
+    {
+      "printingId": "CN:CSVL1C:132",
+      "quantity": 2
+    },
+    {
+      "printingId": "CN:CSVM2bC:002",
+      "quantity": 2
+    },
+    {
+      "printingId": "CN:CSVM2bC:011",
+      "quantity": 2
+    },
+    {
+      "printingId": "CN:CSVM2bC:020",
+      "quantity": 1
+    },
+    {
+      "printingId": "CN:CSVM2cC:003",
+      "quantity": 1
+    },
+    {
+      "printingId": "CN:CSVM2cC:006",
+      "quantity": 1
+    },
+    {
+      "printingId": "CN:CSVM2cC:013",
+      "quantity": 2
+    },
+    {
+      "printingId": "CN:CSVM2cC:014",
+      "quantity": 3
+    },
+    {
+      "printingId": "CN:CSVM2cC:016",
+      "quantity": 2
+    },
+    {
+      "printingId": "CN:CSVM2cC:021",
+      "quantity": 2
+    },
+    {
+      "printingId": "CN:CSVM2cC:023",
+      "quantity": 1
+    },
+    {
+      "printingId": "CN:CSVM2cC:026",
+      "quantity": 4
+    },
+    {
+      "printingId": "CN:CSVM2cC:028",
+      "quantity": 4
+    },
+    {
+      "printingId": "CN:CSVM2cC:031",
+      "quantity": 1
+    }
+  ],
+  "deckHash": "17e938967f1a49cb2429e6ea7f38f24847aac7426b4cc3c594bcedf138e45a8b",
+  "environmentFiles": [
+    "data/cardpool/plain-pokemon.json",
+    "data/simulation/effects.json",
+    "artifacts/engine/overlay-hashes.json"
+  ],
+  "environmentHash": "39b3a63ea316f17e834d67af0af8ba3862c36f4825ed144b741ce9be8f207d57",
+  "parent": "h2-visible-tempo-v4-app-v1",
+  "parentHash": "54a24bedb49432cf34ce13691b2a43acd24101d911fc9e905f9395f5f41dd5cc",
+  "roles": {
+    "engine": [
+      "Ralts",
+      "Kirlia",
+      "Gardevoir ex"
+    ],
+    "attackers": [
+      "Drifloon",
+      "Scream Tail",
+      "Lillie's Clefairy ex",
+      "Gardevoir ex"
+    ],
+    "draw": [
+      "Mew ex",
+      "Fezandipiti ex",
+      "Iono",
+      "Professor's Research"
+    ],
+    "damageSupport": [
+      "Munkidori"
+    ],
+    "tempo": [
+      "Budew",
+      "Flutter Mane"
+    ]
+  }
+}

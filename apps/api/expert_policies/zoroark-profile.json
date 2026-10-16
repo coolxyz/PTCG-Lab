@@ -1,0 +1,143 @@
+{
+  "presetId": "h2-n-zoroark-ex",
+  "entries": [
+    {
+      "printingId": "CN:30thC:102",
+      "quantity": 3
+    },
+    {
+      "printingId": "CN:30thDC:040",
+      "quantity": 2
+    },
+    {
+      "printingId": "CN:CHS:20141",
+      "quantity": 4
+    },
+    {
+      "printingId": "CN:CHS:21845",
+      "quantity": 2
+    },
+    {
+      "printingId": "CN:CSV10C:040",
+      "quantity": 2
+    },
+    {
+      "printingId": "CN:CSV10C:041",
+      "quantity": 2
+    },
+    {
+      "printingId": "CN:CSV10C:076",
+      "quantity": 1
+    },
+    {
+      "printingId": "CN:CSV10C:090",
+      "quantity": 1
+    },
+    {
+      "printingId": "CN:CSV10C:144",
+      "quantity": 4
+    },
+    {
+      "printingId": "CN:CSV10C:145",
+      "quantity": 4
+    },
+    {
+      "printingId": "CN:CSV10C:166",
+      "quantity": 1
+    },
+    {
+      "printingId": "CN:CSV10C:215",
+      "quantity": 2
+    },
+    {
+      "printingId": "CN:CSV1C:109",
+      "quantity": 1
+    },
+    {
+      "printingId": "CN:CSV8C:136",
+      "quantity": 1
+    },
+    {
+      "printingId": "CN:CSV8C:176",
+      "quantity": 1
+    },
+    {
+      "printingId": "CN:CSV8C:187",
+      "quantity": 2
+    },
+    {
+      "printingId": "CN:CSVL1C:132",
+      "quantity": 8
+    },
+    {
+      "printingId": "CN:CSVM2bC:011",
+      "quantity": 1
+    },
+    {
+      "printingId": "CN:CSVM2cC:003",
+      "quantity": 1
+    },
+    {
+      "printingId": "CN:CSVM2cC:006",
+      "quantity": 1
+    },
+    {
+      "printingId": "CN:CSVM2cC:013",
+      "quantity": 2
+    },
+    {
+      "printingId": "CN:CSVM2cC:014",
+      "quantity": 2
+    },
+    {
+      "printingId": "CN:CSVM2cC:015",
+      "quantity": 2
+    },
+    {
+      "printingId": "CN:CSVM2cC:016",
+      "quantity": 2
+    },
+    {
+      "printingId": "CN:CSVM2cC:021",
+      "quantity": 2
+    },
+    {
+      "printingId": "CN:CSVM2cC:026",
+      "quantity": 3
+    },
+    {
+      "printingId": "CN:CSVM2cC:028",
+      "quantity": 3
+    }
+  ],
+  "deckHash": "53371db5a15c50518b8654a60e6e012b1c791a8f362f7d123c3534cf9ecdb8c0",
+  "environmentFiles": [
+    "data/cardpool/plain-pokemon.json",
+    "data/simulation/effects.json",
+    "artifacts/engine/overlay-hashes.json"
+  ],
+  "environmentHash": "39b3a63ea316f17e834d67af0af8ba3862c36f4825ed144b741ce9be8f207d57",
+  "parent": "h2-visible-tempo-v4-app-v1",
+  "parentHash": "54a24bedb49432cf34ce13691b2a43acd24101d911fc9e905f9395f5f41dd5cc",
+  "roles": {
+    "main": [
+      "N's Zorua",
+      "N's Zoroark ex"
+    ],
+    "donors": [
+      "N's Reshiram",
+      "N's Darumaka",
+      "N's Darmanitan",
+      "N's Sigilyph"
+    ],
+    "draw": [
+      "N's Zoroark ex",
+      "Mew ex",
+      "Fezandipiti ex"
+    ],
+    "mobility": [
+      "Pecharunt ex",
+      "N's Castle"
+    ]
+  }
+}

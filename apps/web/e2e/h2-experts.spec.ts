@@ -14,7 +14,7 @@ for (let index = 0; index < 5; index++) {
     await page.getByRole("button", { name: "开始人机对战", exact: true }).click();
     await expect(page.getByLabel("我的场面")).toBeVisible();
     await page.getByLabel("AI 行动速度").selectOption("1200");
-    await expect(page.getByLabel("当前 AI 策略")).toHaveText(["长毛巨魔专属 v1", "原 H2", "多龙专属 v1", "原 H2", "电电虫专属 v1"][index]);
+    await expect(page.getByLabel("当前 AI 策略")).toHaveText(["长毛巨魔专属 v1", "沙奈朵专属 v5", "多龙专属 v1", "N 索罗亚克专属 v2", "电电虫专属 v1"][index]);
     const id = await page.evaluate(() => localStorage.getItem("ptcg-match"));
     const read = async () => (await page.request.get(`/api/battle/matches/${id}`)).json();
     for (let step = 0; step < 18; step++) {
@@ -32,7 +32,7 @@ for (let index = 0; index < 5; index++) {
     expect((await read()).phase).toBe("playing");
     await page.reload();
     await expect(page.getByLabel("我的场面")).toBeVisible();
-    await page.screenshot({ path: `../../var/browser-artifacts/h2-expert-${index + 1}.png`, fullPage: true });
+    await page.screenshot({ path: `../../var/browser-artifacts/h2-five-expert-${index + 1}.png`, fullPage: true });
     await page.getByRole("button", { name: "认输", exact: true }).click();
     await page.getByRole("button", { name: "确认认输", exact: true }).click();
     await expect(page.locator(".battle-result")).toContainText("你已认输");

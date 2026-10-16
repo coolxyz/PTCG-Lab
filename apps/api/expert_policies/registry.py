@@ -6,9 +6,9 @@ from pathlib import Path
 from packages.battle import h2
 from packages.simulation.a2 import legal
 from packages.collection.domain import require
-from apps.api.expert_policies import grimmsnarl,dragapult,joltik
-POLICIES={p.PROFILE['presetId']:p for p in (grimmsnarl,dragapult,joltik)}
-NAMES={'h2-marnie-grimmsnarl':'长毛巨魔专属 v1','h2-dragapult-dusknoir':'多龙专属 v1','h2-joltik-box':'电电虫专属 v1'}
+from apps.api.expert_policies import grimmsnarl,dragapult,joltik,zoroark,gardevoir
+POLICIES={p.PROFILE['presetId']:p for p in (grimmsnarl,dragapult,joltik,zoroark,gardevoir)}
+NAMES={'h2-gardevoir-ex':'沙奈朵专属 v5','h2-n-zoroark-ex':'N 索罗亚克专属 v2','h2-marnie-grimmsnarl':'长毛巨魔专属 v1','h2-dragapult-dusknoir':'多龙专属 v1','h2-joltik-box':'电电虫专属 v1'}
 
 def bundle_hash():
     folder=Path(__file__).parent
