@@ -7,12 +7,20 @@ from packages.sync.common import read,write
 
 def main():
     ap=argparse.ArgumentParser(description=__doc__)
-    ap.add_argument('command',choices=['status','enable','disable','publish','rollback'])
+    ap.add_argument('command',choices=['status','enable','disable','publish','rollback','diagnose'])
     ap.add_argument('--db',type=Path,default=ROOT/'var/app.sqlite')
     ap.add_argument('--home',type=Path,default=ROOT/'.catalog/sync')
     ap.add_argument('--release',help='Exact previously archived release for rollback')
     a=ap.parse_args();flag=reg.rollout_path(a.db)
     shipped=read(ROOT/'apps/api/h2-rollout.json')
+    if a.command=='diagnose':
+        from scripts.battle.h2_diagnostics import collect
+        report=collect(ROOT)
+        report['bundleMatchesShipped']=reg.bundle_hash()==shipped['bundleHash']
+        report['environmentMatchesProfiles']=all(p.PROFILE['environmentHash']==reg.identity()[1] for p in reg.POLICIES.values())
+        target=a.home/'h2-diagnostics.json';write(target,report)
+        print(json.dumps({k:v for k,v in report.items() if k!='components'},ensure_ascii=True,indent=2))
+        print('Report: '+str(target.resolve()));return
     if a.command=='status':
         print(json.dumps({'rollout':read(flag) if flag.exists() else shipped,'override':flag.exists()},ensure_ascii=False));return
     if a.command in ('enable','disable'):
@@ -41,7 +49,11 @@ def main():
     def call(path,body=None):
         nonlocal cookie
         reply=worker.request('POST','/api/battle'+path,{'cookie':cookie,'content-type':'application/json'},json.dumps(body or {}).encode())
-        if reply['status'] not in (200,201):raise RuntimeError('Archived release smoke check failed: '+path)
+        if reply['status'] not in (200,201):
+            from scripts.battle.h2_diagnostics import smoke_error
+            report=smoke_error(reply,path,candidate,a.home/'logs'/(candidate+'.log'))
+            target=a.home/'h2-publish-failure.json';write(target,report)
+            raise RuntimeError('Archived release smoke check failed: '+path+'; HTTP '+str(reply['status'])+'; '+json.dumps(report['error'],ensure_ascii=True)+'; report: '+str(target.resolve()))
         if 'set-cookie' in reply['headers']:cookie=reply['headers']['set-cookie'].split(';')[0]
         return json.loads(reply['body'])
     try:
