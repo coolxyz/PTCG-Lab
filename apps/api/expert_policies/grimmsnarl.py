@@ -1,238 +1,191 @@
-"""Exact-cardlist experiment. Rebuild a visible plan at every decision boundary.
+"""Preserve executable preparation; compare public two-attack endgame routes.
 
-No engine access, opponent identity, deck order, or saved hidden state enters policy.
-The caller supplies only its own registered construction and environment binding.
+The return model is conditional on the visible board, not a guarantee against
+unknown hands, draws or evolution. Only actual legal first actions are emitted.
 """
-from collections import Counter
-from hashlib import sha256
-import json
 import time
-from pathlib import Path
-
-from packages.battle import h2
-from packages.battle.h2_v4 import policy as base
-from packages.battle.h2_v4.tempo import attack_value, ready_value
-from packages.battle.h2_v4.visible_math import counters
+from apps.api.expert_policies import grimmsnarl_turn as parent
+from packages.battle.h2_v4.policy import deficit
+from packages.battle.h2_v4.tempo import estimate
 from packages.simulation.a2 import legal
 
-ROOT = Path(__file__).resolve().parents[3]
-PROFILE = json.loads((Path(__file__).parent / 'grimmsnarl-profile.json').read_text())
-VERSION = 'h2-grimmsnarl-plan-v1'
-MAIN = "Marnie's Grimmsnarl ex"
-MID = "Marnie's Morgrem"
-BASIC = "Marnie's Impidimp"
-LINE = (BASIC, MID, MAIN)
+previous=parent.previous
+PROFILE=previous.PROFILE
+VERSION='h2-grimmsnarl-exchange-plan-v7'
+MAIN,MID,BASIC=parent.MAIN,parent.MID,parent.BASIC
+facts=parent.parent
 
+def field(team):return team['active']+team['bench']
 
-def deck_hash(entries):
-    counts = Counter()
-    for e in entries:
-        counts[e['printingId']] += e['quantity']
-    return sha256(json.dumps(sorted(counts.items()), ensure_ascii=False).encode()).hexdigest()
+def bench_choice(own,other):
+    """Exactly the inherited v5 bench-target ranking, including its tie order."""
+    cs=other['bench']
+    if not cs:return None
+    baseline=max(cs,key=lambda c:-(c.get('hp') or 999)+(50 if 'ex' in c.get('name','') else 0))
+    def prize(c):return c.get('prize',1) if 0<c.get('hp',9999)<=facts.bench_hit(c,own,other) else 0
+    best=max(cs,key=prize)
+    return best if prize(best)>prize(baseline) else baseline
 
+def after_shadow(own,other,front):
+    attack=facts.shadow(own);a=own['active'][0]
+    team={**other,'active':[front],'bench':[c for c in field(other) if c['ref']!=front['ref']]}
+    amount=0 if facts.protected(front,team,a,False) else facts.damage(attack,a,front,own,team)
+    bench=bench_choice(own,team);points=0;left=[]
+    for c in field(team):
+        hit=amount if c['ref']==front['ref'] else (facts.bench_hit(c,own,team) if bench and c['ref']==bench['ref'] else 0)
+        hp=c['hp']-hit
+        if hp<=0:points+=c.get('prize',1)
+        else:left.append({**c,'hp':hp})
+    return min(own['prize_count'],points),left
 
-def environment_hash():
-    return sha256(json.dumps({p: sha256((ROOT / p).read_bytes()).hexdigest()
-                             for p in PROFILE['environmentFiles']}, sort_keys=True).encode()).hexdigest()
+def checkup_loss(card,teams):
+    shrouds=sum(c['name']=='Froslass' for t in teams for c in field(t))
+    return shrouds*10 if card.get('abilities') and card['name']!='Froslass' else 0
 
+def reply_finish(own,other,points,left,used_gust):
+    """Worst visible promotion/pivot and funded attack; no future energy assumed.
 
-def plan(dto):
-    own, other = dto['observation']['self'], dto['observation']['opponent']
-    field = own['active'] + own['bench']
-    names = Counter(c['name'] for c in field)
-    hand = Counter(c['name'] for c in own['hand'])
-    main = sorted((c for c in field if c['name'] in LINE),
-                  key=lambda c: (LINE.index(c['name']), min(2, c.get('energy', []).count('DARK')), c.get('hp', 0)), reverse=True)
-    lead = main[0] if main else {}
-    needs = []
-    if not main:
-        needs.append(BASIC)
-    elif lead['name'] == BASIC:
-        needs.extend([MAIN, 'Rare Candy'] if hand[MAIN] and hand['Rare Candy'] else [MID, MAIN])
-    elif lead['name'] == MID:
-        needs.append(MAIN)
-    if len(main) < 2:
-        needs.append(BASIC)
-    if not names['Munkidori']:
-        needs.append('Munkidori')
-    if not names['Froslass']:
-        needs.append('Froslass' if names['Snorunt'] else 'Snorunt')
-    # The same resource quotas drive search, recovery and payment, including copies.
-    reserve = {n: 1 for n in needs}
-    if hand[MAIN] and any(c['name'] == BASIC for c in main):
-        reserve['Rare Candy'] = 1
-        reserve[MAIN] = 1
-    reserve['Darkness Energy'] = min(2, max(1, 2 - lead.get('energy', []).count('DARK')))
-    reserve['Arven'] = int(not own.get('turnFlags', {}).get('supporterPlayed') and bool(needs))
-    return {'stateVersion': dto['stateVersion'], 'goal': 'sustain-shadow-bullet' if names[MAIN] else 'establish-shadow-bullet',
-            'leadRef': lead.get('ref'), 'leadName': lead.get('name'), 'needs': list(dict.fromkeys(needs)),
-            'reserve': reserve, 'fieldNames': dict(names), 'handNames': dict(hand),
-            'movableCounters': max((counters(c) for c in field), default=0),
-            'opponentPrizes': other['prize_count'],
-            'chain': ['establish-line', 'search-evolution', 'evolve/punk-up', 'manual-energy-by-purpose', 'promote-ready-attacker', 'attack'],
-            'revalidation': 'rebuild-from-current-visible-state'}
+    Omit unknown draw/evolution, attachment, copying effect extras and new gusts.
+    This is a conditional route estimate, never exposed as a certain win.
+    """
+    remaining=own['prize_count']-points
+    if not remaining or not left:return own['prize_count']
+    hand=list(own['hand'])
+    used=next((i for i,c in enumerate(hand) if c['name']==used_gust),None)
+    if used is not None:hand.pop(used)
+    after_own={**own,'prize_count':remaining,'hand':hand,
+               'turnFlags':{**own.get('turnFlags',{}),'supporterPlayed':False}}
+    after_other={**other,'active':[left[0]],'bench':left[1:],'hand':[]}
+    # End-of-turn checkup can change both the race and the Catcher condition.
+    def tick(team):
+        return [{**c,'hp':c['hp']-checkup_loss(c,(after_own,after_other))} for c in field(team)]
+    ours=tick(after_own);theirs=tick(after_other)
+    lost=sum(c.get('prize',1) for c in ours if c['hp']<=0)
+    gained=sum(c.get('prize',1) for c in theirs if c['hp']<=0)
+    if gained>=remaining:return own['prize_count']
+    if lost>=other['prize_count'] or ours[0]['hp']<=0:return points
+    remaining-=gained
+    after_own={**after_own,'prize_count':remaining,'active':[ours[0]],'bench':[c for c in ours[1:] if c['hp']>0]}
+    theirs=[c for c in theirs if c['hp']>0]
+    if not theirs:return own['prize_count']
+    after_other={**after_other,'prize_count':other['prize_count']-lost,'active':[theirs[0]],'bench':theirs[1:]}
+    # Each currently funded monkey can heal/move at most three existing counters.
+    burst=min(sum(facts.counters(c) for c in theirs),3*sum(c['name']=='Munkidori' and 'DARK' in c.get('energy',[]) for c in theirs))*10
+    values=[]
+    for c in theirs:
+        enemy={**after_other,'active':[c],'bench':[b for b in theirs if b['ref']!=c['ref']]}
+        replies=[None]+[a for a in c.get('attacks',[]) if not c.get('attackBlocked') and a['name'] not in c.get('limitedAttacks',[]) and deficit(a.get('cost',[]),c.get('energy',[]))==0]
+        for a in replies:
+            amount=estimate(a,c,enemy,after_own) if a else 0
+            if a and facts.protected(ours[0],after_own,c,False):amount=0
+            hp=ours[0]['hp']-amount-burst
+            hp-=checkup_loss(ours[0],(after_own,enemy))
+            if hp<=0:values.append(points+gained);continue
+            # Conservative double use of the upper bound: grant the reply both
+            # its maximum transfer pressure and healing on the responding card.
+            healed={**c,'hp':c['hp']+min(burst,facts.counters(c)*10)}
+            enemy={**enemy,'active':[healed]}
+            future_own={**after_own,'active':[{**ours[0],'hp':hp}]}
+            probability=.5 if a and ('confused' in a.get('text','').lower() or a.get('name')=='Mind Bend') else 1
+            future=parent.attack_plan(future_own,enemy)['score']
+            values.append(points+gained+(remaining*probability if future>=remaining else 0))
+    return min(values,default=points+gained)
 
+def attack_routes(own,other,gusts):
+    if not facts.shadow(own) or not other['active']:return {'value':0,'now':0,'front':None,'gust':None}
+    options=[(other['active'][0],None)]+[(c,g) for g in gusts for c in other['bench'] if facts.gust_reachable(c,other) and (g!='Counter Catcher' or own['prize_count']>other['prize_count'])]
+    routes=[]
+    for front,gust in options:
+        points,left=after_shadow(own,other,front)
+        probability=.5 if own['active'][0].get('specialCondition')=='CONFUSED' else 1
+        now=points*probability;value=now
+        # Use the extended model only for the last three prizes. Require a
+        # publicly funded return route that could actually finish, not a bonus
+        # for speculative damage/unknown future development everywhere.
+        if probability==1 and 0<points<own['prize_count']<=3:
+            finish=reply_finish(own,other,points,left,gust)
+            if finish>points:value=finish
+        routes.append({'value':value,'now':now,'front':front['ref'],'gust':gust})
+    return max(routes,key=lambda r:(r['value'],r['now'],r['gust'] is None))
 
-def resource(c, p, own):
-    """Marginal acquisition value; protection uses the same value and copy quotas."""
-    n = c.get('name')
-    needs = p['needs']
-    if n in needs:
-        return (240 - needs.index(n) * 22) if not p['handNames'].get(n) else 35
-    if n == 'Darkness Energy':
-        return 150 if p['handNames'].get(n, 0) < p['reserve'][n] else 10
-    if n == 'Rare Candy' and p['reserve'].get(n):
-        return 230
-    if n in ('Poké Pad', 'Buddy-Buddy Poffin', 'Ultra Ball') and needs:
-        return 170
-    if n == 'Arven' and p['reserve'].get(n):
-        return 160
-    if n in ('Iono', "Lillie's Determination"):
-        return 100 if len(own['hand']) <= 4 else 40
-    return base.utility(c, own)
+def prep_action(dto,chosen,parent_chosen):
+    """Concrete non-attacking work that a gust-generated KO must not truncate."""
+    own,other=dto['observation']['self'],dto['observation']['opponent'];options=dto['decision']['options']
+    if not facts.shadow(own):return None
+    gusts=[o['source'] for o in options if o['actionType'] in ('UseItemAction','UseSupporterAction') and o.get('source') in facts.GUSTS]
+    best=parent.attack_plan(own,other,gusts)['score']
+    # Preserve inherited preparation that does not strip the attack's energy or
+    # switch the attacker. Supporters compete with Boss, so only keep actual
+    # inherited choices; never invent a productive search result.
+    kind=parent_chosen['actionType'];name=parent_chosen.get('source')
+    safe=kind in ('PlayPokemonAction','EvolvePokemonAction','UseStadiumAction')
+    safe |= kind=='UseItemAction' and name in ('Poké Pad','Buddy-Buddy Poffin','Night Stretcher','Super Rod','Rare Candy','Ultra Ball','Secret Box')
+    safe |= kind=='UseSupporterAction' and name in ('Arven','Iono',"Lillie's Determination")
+    if kind=='UseSupporterAction' and name in ('Iono',"Lillie's Determination"):
+        # A shuffle discards the executable gust route. Use an item gust first,
+        # then re-evaluate drawing from its actual resulting hand/board.
+        safe=False
+    if safe and kind=='UseItemAction' and name in ('Ultra Ball','Secret Box'):
+        count=2 if name=='Ultra Ball' else 3
+        safe=sum(c['name'] not in facts.GUSTS and c['ref']!=parent_chosen.get('sourceRef') for c in own['hand'])>=count
+    if safe:return parent_chosen
+    # After gusting, the old KO score would now suppress all the same work.
+    # Complete only material, legal roles, not a blanket bench or draw quota.
+    for o in options:
+        if o['actionType']=='EvolvePokemonAction' and o.get('targetRef')!=(own['active'] or [{}])[0].get('ref'):
+            target=next((c for c in own['bench'] if c['ref']==o.get('targetRef')), {})
+            if o.get('source') in (MAIN,MID) and target.get('energy',[]).count('DARK')>=2:return o
+    n=parent.moving_units(own)
+    if n:
+        for o in options:
+            if o['actionType']=='UseAbilityAction' and o.get('source')=='Munkidori' and parent.best_transfer(own,other,gusts)[0]>=best:return o
+        for o in options:
+            if o['actionType']=='AttachEnergyAction' and o.get('source')=='Darkness Energy':
+                target=next((c for c in own['bench'] if c['ref']==o.get('targetRef')), {})
+                if target.get('name')=='Munkidori' and not target.get('abilityUsed') and 'DARK' not in target.get('energy',[]):
+                    projected={**own,'bench':[({**c,'energy':c.get('energy',[])+['DARK']} if c['ref']==target['ref'] else c) for c in own['bench']]}
+                    if parent.best_transfer(projected,other,gusts)[0]>=best:return o
+    return None
 
+def decide(dto,*,entries,environment):
+    start=time.perf_counter();cmd,detail=parent.decide(dto,entries=entries,environment=environment)
+    if detail.get('route')!=parent.VERSION:return cmd,detail
+    own,other=dto['observation']['self'],dto['observation']['opponent'];d=dto['decision'];reason='inherited-v6'
+    if d['kind']=='options' and facts.shadow(own):
+        options=d['options'];selected=next(o for o in options if o['id']==cmd['choice']['optionId'])
+        gusts=[o['source'] for o in options if o['actionType'] in ('UseItemAction','UseSupporterAction') and o.get('source') in facts.GUSTS]
+        best=attack_routes(own,other,gusts);direct=attack_routes(own,other,[])
+        terminal=own['active'][0].get('specialCondition')!='CONFUSED' and (best['now']>=own['prize_count'] or (not other['bench'] and parent.front_hit(own,other)>=other['active'][0]['hp']))
+        tactical=selected['actionType']=='AttackAction' or selected.get('source') in facts.GUSTS
+        if not terminal and tactical:
+            basecmd,_=facts.decide(dto,entries=entries,environment=environment)
+            basechosen=next(o for o in options if o['id']==basecmd['choice']['optionId'])
+            prep=prep_action(dto,selected,basechosen)
+            if prep:selected=prep;reason='preserve-preparation-before-gust-generated-ko'
+            elif best['value']>direct['value'] and best['gust']:
+                selected=next(o for o in options if o.get('source')==best['gust'] and o['actionType'] in ('UseItemAction','UseSupporterAction'));reason='gust-evaluates-public-return-exchange'
+            elif detail.get('reason')=='start-gust-before-draw-or-direct-attack':
+                attack=next((o for o in options if o['actionType']=='AttackAction' and o.get('attack',{}).get('name')=='Shadow Bullet'),None)
+                if attack:selected=attack;reason='direct-attack-preserves-return-win-route'
+            cmd={**cmd,'choice':{'optionId':selected['id']}}
+    elif d['kind']=='selection' and d.get('source') in facts.GUSTS and not d.get('hidden') and facts.shadow(own) and all(c.get('side')=='opponent' for c in d['candidates']):
+        # Only alter inherited immediate targeting if the two-attack model
+        # strictly improves value. Keep v6 transfer-aware target combinations.
+        chosen=next((c for c in d['candidates'] if c['ref'] in cmd['choice'].get('selectedRefs',[])),None)
+        def value(c):
+            front=facts.candidate_card(c);team={**other,'active':[front],'bench':[b for b in field(other) if b['ref']!=front['ref']]}
+            return attack_routes(own,team,[])['value'] if facts.gust_reachable(front,other) else -1
+        if chosen:
+            best=max(d['candidates'],key=value)
+            if value(best)>value(chosen):cmd={**cmd,'choice':{'selectedRefs':[best['ref']]}};reason='gust-target-includes-public-return-exchange'
+    assert legal(dto,cmd)
+    return cmd,{**detail,'route':VERSION,'reason':reason,'aiMilliseconds':(time.perf_counter()-start)*1000}
 
-def energy_value(c, own, other, p):
-    """Competing uses of this turn's Darkness attachment, not printed attack cost alone."""
-    n, energy = c.get('name'), c.get('energy', [])
-    dark = energy.count('DARK')
-    if n == MAIN and dark < 2:
-        return 290 if dark == 1 else 205
-    if n == 'Munkidori' and not dark:
-        # Ability use must have an actual movable counter; future Froslass is weaker.
-        return 245 if p['movableCounters'] else (135 if p['fieldNames'].get('Froslass') else 40)
-    if n in (BASIC, MID) and dark < 2:
-        # Evolution itself can accelerate: do not spend the attachment first when legal.
-        return 175 if p['handNames'].get(MAIN) else 120
-    if n == 'Bloodmoon Ursaluna ex' and not c.get('attackBlocked'):
-        missing = max(0, 5 - (6 - other['prize_count']) - len(energy))
-        return 270 if missing == 1 else (90 if missing == 2 else -90)
-    if c in own['active'] and not own.get('turnFlags', {}).get('retreated'):
-        cost = len(c.get('retreatCost', []))
-        better = max((ready_value(b, own, other, base.deficit) for b in own['bench']), default=-100)
-        now = ready_value(c, own, other, base.deficit)
-        if len(energy) < cost <= len(energy) + 1 and better > now + 20:
-            return 220
-    return -120
-
-
-def expert(dto, p):
-    own, other = dto['observation']['self'], dto['observation']['opponent']
-    d = dto['decision']
-    field = own['active'] + own['bench']
-    active = (own['active'] or [{}])[0]
-    original, _ = base.decide(dto)
-    if d['kind'] == 'selection':
-        cs = d['candidates']
-        if not cs or d.get('hidden'):
-            return original, 'hidden-or-empty-selection'
-        cost = d.get('zones') == ['CardPosition.HAND'] and dto.get('phase') == 'playing'
-        # Opponent targeting and damage movement retain shared public tactical logic.
-        if not cost and (any(c.get('side') == 'opponent' for c in cs) or d.get('source') == 'Munkidori' or any(c.get('card', {}).get('kind') == 'attack' for c in cs)):
-            return original, 'shared-tactics'
-        count = d['min'] if cost else min(d['max'], len(cs))
-        if cost:
-            # Keep the most valuable quota copies; don't protect every duplicate.
-            keep = {}
-            for name, quota in p['reserve'].items():
-                matches = [c for c in cs if c.get('card', {}).get('name') == name]
-                for c in matches[:quota]:
-                    keep[c['ref']] = 500 + resource(c['card'], p, own)
-            ordered = sorted(cs, key=lambda c: keep.get(c['ref'], resource(c.get('card', {}), p, own) / 10))
-            reason = 'pay-with-surplus-preserve-plan'
-        elif d.get('source') == MAIN and all(c.get('card', {}).get('superType') == 'ENERGY' for c in cs):
-            # Only take the energy required by currently visible Marnie lines.
-            missing = sum(max(0, 2-c.get('energy', []).count('DARK')) for c in field if c['name'] in LINE)
-            count = max(d['min'], min(count, missing))
-            ordered = cs
-            reason = 'punk-up-preserve-deck-energy'
-        elif d.get('source') == MAIN and all(c.get('side') == 'self' for c in cs):
-            ordered = sorted(cs, key=lambda c: energy_value(c['card'], own, other, p), reverse=True)
-            reason = 'punk-up-complete-main-before-backup'
-        elif dto.get('phase') == 'active' or any(c.get('side') == 'self' and c.get('boardRef') for c in cs):
-            return original, 'shared-promotion-or-board-selection'
-        else:
-            ordered = sorted(cs, key=lambda c: resource(c.get('card', {}), p, own), reverse=True)
-            reason = 'search-or-recover-plan-component'
-            if count > 1:
-                # Spread multi-Pokemon searches across useful roles, not four monkeys.
-                unique, rest, seen = [], [], set()
-                for c in ordered:
-                    n = c.get('card', {}).get('name')
-                    (rest if n in seen else unique).append(c)
-                    seen.add(n)
-                ordered = unique + rest
-        choice = {'selectedRefs': [c['ref'] for c in ordered[:count]]}
-    else:
-        def score(o):
-            kind, n = o['actionType'], o.get('source')
-            source = next((c for c in own['hand'] + field if c.get('ref') == o.get('sourceRef')), {})
-            if kind == 'NumberOption' and o.get('label') in ('使用特性', '不使用特性'):
-                # This exact list's optional entry ability is Punk Up. The generic
-                # policy otherwise selects option zero and silently declines it.
-                return 300 if o.get('value') == 1 else 0
-            if kind == 'AttackAction':
-                return attack_value(o.get('attack') or {}, active, own, other)
-            if kind == 'EvolvePokemonAction':
-                return 350 if n == MAIN else (280 if n == MID else 190)
-            if kind == 'AttachEnergyAction':
-                target = next((c for c in field if c.get('ref') == o.get('targetRef')), {})
-                return energy_value(target, own, other, p)
-            if kind == 'PlayPokemonAction':
-                if n == BASIC:
-                    return 300 if not any(p['fieldNames'].get(x) for x in LINE) else (200 if sum(p['fieldNames'].get(x,0) for x in LINE)<2 else -120)
-                if n == 'Munkidori':
-                    return 230 if not p['fieldNames'].get(n) else (125 if p['movableCounters'] >= 3 and p['fieldNames'].get(n,0)<2 else -120)
-                if n in ('Snorunt', 'Shaymin', 'Budew'):
-                    return 180 if not p['fieldNames'].get(n) and len(own['bench']) < 4 else -120
-                if n == 'Bloodmoon Ursaluna ex':
-                    return 190 if other['prize_count'] <= 3 else -110
-            if kind == 'RetreatAction':
-                gain = max((ready_value(c, own, other, base.deficit) for c in own['bench']), default=-100) - ready_value(active, own, other, base.deficit)
-                return 180 + gain if gain > 20 else -150
-            if kind == 'UseAbilityAction' and n == 'Munkidori':
-                return 330 if p['movableCounters'] else -150
-            if kind == 'UseItemAction':
-                if n == 'Rare Candy':
-                    return 345
-                if n in ('Poké Pad', 'Buddy-Buddy Poffin'):
-                    return 250 if p['needs'] else 85
-                if n in ('Secret Box', 'Ultra Ball'):
-                    available = Counter(c['name'] for c in own['hand'] if c.get('ref') != source.get('ref'))
-                    surplus = sum(max(0, v - p['reserve'].get(k, 0)) for k,v in available.items())
-                    return 220 if surplus >= (3 if n == 'Secret Box' else 2) else -130
-                if n == 'Night Stretcher':
-                    best = max((resource(c,p,own) for c in own['discard']), default=0)
-                    return best if best >= 150 else 80
-            if kind == 'UseSupporterAction':
-                if n == 'Arven':
-                    return 225 if p['needs'] else 100
-                if n in ('Iono', "Lillie's Determination"):
-                    return 100 + max(0, 5-len(own['hand']))*12
-            if kind == 'UseStadiumAction' and n in ('Artazon','Spikemuth Gym'):
-                return 240 if p['needs'] else 75
-            # Retain baseline choice for unsupported effects/options, with lower priority
-            # than explicit plan steps. Legal options remain the only action source.
-            return 110 if o['id'] == original['choice'].get('optionId') else ({'UseAbilityAction':130,'UseItemAction':105,'UseToolAction':95,'PutStadiumAction':80,'PassTurn':-100}.get(kind, 0))
-        ranked = sorted(d['options'], key=score, reverse=True)
-        choice = {'optionId': ranked[0]['id']}
-        reason = {'chosen': ranked[0]['actionType'], 'source': ranked[0].get('source'),
-                  'alternatives': [{'id': o['id'], 'value': score(o)} for o in ranked[:5]]}
-    return {**original, 'choice': choice}, reason
-
-
-def decide(dto, *, entries, environment):
-    if dto['observation']['opponent']['hand'] is not None:
-        raise ValueError('HIDDEN_HAND_EXPOSED')
-    if deck_hash(entries) != PROFILE['deckHash'] or environment != PROFILE['environmentHash']:
-        cmd, detail = h2.decide(dto)
-        return cmd, {**detail, 'route': 'frozen-h2'}
-    start = time.perf_counter()
-    p = plan(dto)
-    cmd, reason = expert(dto, p)
-    fallback = not legal(dto, cmd) or time.perf_counter()-start > 1
-    if fallback:
-        cmd, _ = h2.decide(dto)
-    assert legal(dto, cmd)
-    return cmd, {'route': VERSION, 'fallback': fallback, 'plan': p, 'reason': reason,
-                 'aiMilliseconds': (time.perf_counter()-start)*1000}
+# Helper exports used by the four unchanged experts.
+deck_hash=previous.deck_hash
+environment_hash=previous.environment_hash
+plan=previous.plan
+resource=previous.resource
+energy_value=previous.energy_value
+expert=previous.expert
+LINE=previous.LINE

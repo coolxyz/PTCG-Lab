@@ -42,6 +42,8 @@ def main():
             v = call("POST", "/matches", {"requestId": str(uuid.uuid4()), "revisionId": rev["id"], "opponent": preset["id"]}, "create")
             assert v["aiVersion"] == VERSION
             assert v["aiStrategy"]["id"] == (preset["id"] if preset["id"] in registry.POLICIES else "original-h2")
+            if preset["id"] in registry.POLICIES:
+                assert v["aiStrategy"]["version"] == registry.POLICIES[preset["id"]].VERSION
             mid = v["matchId"]
             for step in range(2500):
                 assert v["observation"]["opponent"]["hand"] is None
