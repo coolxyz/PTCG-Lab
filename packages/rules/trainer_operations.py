@@ -87,7 +87,7 @@ def resolve(source, r, s):
     if op in FINAL:
         yield from final_resolve(source, r, s)
     elif op == "search_discard":
-        cards = yield from choice(source, list(p.left), s, 0, r["count"])
+        cards = yield from choice(source, list(p.left), s, 0, r["count"], deck_owner=p)
         move_cards(cards, (p.id, CardPosition.LEFT), (p.id, CardPosition.DISCARD), s)
         shuffle_cards(p.left, s)
     elif op == "bottom_redraw":
@@ -106,7 +106,7 @@ def resolve(source, r, s):
         reveal(cards, s, p)
         move_cards(cards, (p.id, CardPosition.HAND), (p.id, CardPosition.LEFT), s)
         if cards:
-            chosen = yield from choice(source, [c for c in p.left if matches(c, "pokemon")], s, 0, len(cards))
+            chosen = yield from choice(source, [c for c in p.left if matches(c, "pokemon")], s, 0, len(cards), deck_owner=p)
             reveal(chosen, s, p)
             move_cards(chosen, (p.id, CardPosition.LEFT), (p.id, CardPosition.HAND), s)
         shuffle_cards(p.left, s)
@@ -177,7 +177,7 @@ def resolve(source, r, s):
         targets = yield from choice(source,p.active+p.bench,s)
         if targets:
             target = targets[0]
-            cards = yield from choice(source,[c for c in p.left if isinstance(c,PokemonCard) and not getattr(c,"ability",[]) and getattr(c,"evolveFrom",[])[:1] == [target.name]],s,0,1)
+            cards = yield from choice(source,[c for c in p.left if isinstance(c,PokemonCard) and not getattr(c,"ability",[]) and getattr(c,"evolveFrom",[])[:1] == [target.name]],s,0,1, deck_owner=p)
             if cards:
                 move_cards(cards,(p.id,CardPosition.LEFT),(p.id,CardPosition.HAND),s)
                 reduce_evolve_pokemon_action(EvolvePokemonAction(p.id,cards[0],target),s)
@@ -266,7 +266,7 @@ def resolve(source, r, s):
             decision = yield (s.get_obs(p.id),0,False,{"raw_available_actions":[NumberOption(p,0,"检索最多2张基础宝可梦"),NumberOption(p,1,"检索1张进化宝可梦")]})
             category, count = ("basic_pokemon",2) if not decision.value else ("evolution",1)
         pool = [c for c in p.left if matches(c,category) and (not r.get("rocket") or c.name.startswith("Team Rocket's ")) and (op != "love_ball" or c.name in {x.name for x in o.active+o.bench})]
-        cards = yield from choice(source,pool,s,0,count)
+        cards = yield from choice(source,pool,s,0,count, deck_owner=p)
         reveal(cards,s,p)
         move_cards(cards,(p.id,CardPosition.LEFT),(p.id,CardPosition.HAND),s)
         shuffle_cards(p.left,s)
@@ -288,7 +288,7 @@ def resolve(source, r, s):
         cards, types = [],set()
         while len(cards) < r.get("count",8):
             pool = [c for c in p.left if matches(c,"basic_energy") and c.cardType not in types]
-            selected = yield from choice(source,pool,s,0,1)
+            selected = yield from choice(source,pool,s,0,1, deck_owner=p)
             if not selected:
                 break
             cards += selected

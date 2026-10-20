@@ -1,6 +1,6 @@
 """Optional once-per-entry effects, fired only by a hand-to-field action."""
 
-from ptcg.core.action import choose_card_actions
+from packages.rules.deck_search import choose_card_actions
 from ptcg.core.card import EnergyCard
 from ptcg.core.enums import CardPosition, CardType, EnergyType, SpecialCondition, Stage
 from ptcg.core.reducer import reduce_choose_card_actions
@@ -17,10 +17,10 @@ from packages.rules.zone_effects import matches as zone_matches, discard_attache
 from packages.rules.abilities import enabled
 
 
-def choice(source, cards, state, minimum=1, maximum_=1):
+def choice(source, cards, state, minimum=1, maximum_=1, *, deck_owner=None):
     p = current_player(state)
     count = min(maximum_, len(cards))
-    if not cards or not count:
+    if (not cards or not count) and deck_owner is None:
         return []
     return (
         yield from reduce_choose_card_actions(
@@ -32,6 +32,7 @@ def choice(source, cards, state, minimum=1, maximum_=1):
                 cards,
                 indexed=True,
                 source=source,
+                deck_owner=deck_owner,
             ),
             state,
         )
@@ -142,6 +143,7 @@ def effect(source, rule, state):
             state,
             0 if kind == "search" or rule["count"] > 1 else 1,
             rule["count"],
+            deck_owner=owner if kind == "search" else None,
         )
         destination = (
             CardPosition.DISCARD

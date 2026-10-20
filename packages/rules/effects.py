@@ -1,11 +1,13 @@
 """Corrections to effects reached by the P0.1 target deck candidates."""
+from packages.rules.deck_search import choose_card_actions
+
 from packages.rules.maximum_hp import maximum
 
 from ptcg.cards.TEF.ciphermaniacs_codebreaking import TEF145CiphermaniacsCodebreaking
 from ptcg.cards.TEF.dudunsparce import TEF129Dudunsparce
 from ptcg.cards.PAR.professor_turos_scenario import PAR257ProfessorTurosScenario
 from ptcg.core.card import PokemonCard
-from ptcg.core.action import UseSupporterAction, UseAbilityAction, AttackAction, choose_card_actions
+from ptcg.core.action import UseSupporterAction, UseAbilityAction, AttackAction
 from ptcg.core.enums import CardPosition, PokemonPosition
 from ptcg.core.reducer import reduce_choose_card_actions, _force_active_replacement
 from ptcg.utils.utils import current_player, move_cards, shuffle_cards, check_energy, opponent_active
@@ -65,7 +67,7 @@ class Ciphermaniac(TEF145CiphermaniacsCodebreaking):
             move_cards(self, (p.id, CardPosition.HAND), (p.id, CardPosition.DISCARD), state)
             p.supporterPlayedTurn = True
         chosen = yield from reduce_choose_card_actions(
-            choose_card_actions(p.id, p.id, min(2, len(p.left)), min(2, len(p.left)), p.left[:], source=self), state)
+            choose_card_actions(p.id, p.id, min(2, len(p.left)), min(2, len(p.left)), p.left[:], source=self, deck_owner=p), state)
         # Explicit in-flight zone so conservation and replay diagnostics remain
         # valid at the second (ordering) prompt.
         state.pending_cards = list(chosen)
@@ -169,9 +171,8 @@ class TechnicalMachine(PAR178TechnicalMachineEvolution):
                     p.id,p.id,1,min(2,len(p.bench)),list(p.bench),source=self),state)
                 for target in targets:
                     candidates=[c for c in p.left if permitted(c) and getattr(c,'evolveFrom',[])[:1]==[target.name]]
-                    if not candidates: continue
                     chosen=yield from reduce_choose_card_actions(choose_card_actions(
-                        p.id,p.id,0,1,candidates,source=self),state)
+                        p.id,p.id,0,min(1,len(candidates)),candidates,source=self,deck_owner=p),state)
                     if chosen:
                         evolution=chosen[0]
                         # Generic evolution reducer expects hand as source. No
@@ -393,9 +394,9 @@ class Artazon(PAL171Artazon):
         if isinstance(action, UseStadiumAction):
             p = current_player(state)
             eligible = self.eligible(p)
-            if eligible:
+            if p.left:
                 chosen = yield from reduce_choose_card_actions(choose_card_actions(
-                    p.id, p.id, 0, 1, eligible, source=self), state)
+                    p.id, p.id, 0, min(1,len(eligible)), eligible, source=self, deck_owner=p), state)
                 move_cards(chosen, (p.id, CardPosition.LEFT), (p.id, CardPosition.BENCH), state)
                 for card in chosen:
                     card.position = PokemonPosition.BENCH

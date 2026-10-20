@@ -30,7 +30,7 @@ def resolve(source,r,state):
     if op=='double_coin_search':
         heads=sum(flip_coin(state)==Coin.HEAD for _ in range(2))
         if heads==2:
-            picked=yield from choice(source,list(p.left),state,0,1)
+            picked=yield from choice(source,list(p.left),state,0,1, deck_owner=p)
             move_cards(picked,(p.id,CardPosition.LEFT),(p.id,CardPosition.HAND),state)
             shuffle_cards(p.left,state)
     elif op=='draw_inspect_prizes':
@@ -44,7 +44,7 @@ def resolve(source,r,state):
     elif op=='ex_team_bonus':
         p.timed_modifiers=getattr(p,'timed_modifiers',[])+[{'turn':state.turn_number,'damage':40,'target':'ex'}]
     elif op=='supporter_bell':
-        picked=yield from choice(source,[c for c in p.left if matches(c,'supporter')],state,0,1)
+        picked=yield from choice(source,[c for c in p.left if matches(c,'supporter')],state,0,1, deck_owner=p)
         reveal(picked,state,p)
         move_cards(picked,(p.id,CardPosition.LEFT),(p.id,CardPosition.HAND),state)
         shuffle_cards(p.left,state)
@@ -84,7 +84,7 @@ def resolve(source,r,state):
     elif op=='discard_search_three':
         move_cards(list(p.hand),(p.id,CardPosition.HAND),(p.id,CardPosition.DISCARD),state)
         for category in ('pokemon','supporter','basic_energy'):
-            picked=yield from choice(source,[c for c in p.left if matches(c,category)],state,0,1)
+            picked=yield from choice(source,[c for c in p.left if matches(c,category)],state,0,1, deck_owner=p)
             reveal(picked,state,p)
             move_cards(picked,(p.id,CardPosition.LEFT),(p.id,CardPosition.HAND),state)
         shuffle_cards(p.left,state)
@@ -110,7 +110,7 @@ def great_tree(source,state):
     from packages.rules.pokemon_replacement import permitted
     for stage in (Stage.STAGE_1,Stage.STAGE_2):
         pool=[c for c in p.left if getattr(c,'stage',None)==stage and getattr(c,'evolveFrom',[])[:1]==[target.name] and permitted(c)]
-        picked=yield from choice(source,pool,state,0,1)
+        picked=yield from choice(source,pool,state,0,1, deck_owner=p)
         if not picked:break
         evolution=picked[0]
         move_cards(evolution,(p.id,CardPosition.LEFT),(p.id,CardPosition.HAND),state)

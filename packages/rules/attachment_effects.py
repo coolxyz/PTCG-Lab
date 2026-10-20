@@ -1,6 +1,7 @@
 """Choose physical Energy cards, then their recipients, without consuming manual attachment."""
+from packages.rules.deck_search import choose_card_actions
 
-from ptcg.core.action import choose_card_actions
+
 from ptcg.core.card import EnergyCard
 from ptcg.core.enums import CardType, CardPosition, EnergyType, Stage, PokemonRule
 from ptcg.core.reducer import reduce_choose_card_actions
@@ -53,6 +54,10 @@ def resolve(source, rule, state):
         pool = pool[: rule["top"]]
     cards = [c for c in pool if matches(c, rule)]
     targets = recipients(source, rule, p)
+    deck_owner = p if rule["origin"] == "left" else None
+    if deck_owner is not None and targets and not cards:
+        yield from reduce_choose_card_actions(
+            choose_card_actions(p.id, p.id, 0, 0, [], source=source, deck_owner=p), state)
     if targets and rule.get("distinctTargets"):
         selected_targets = yield from reduce_choose_card_actions(
             choose_card_actions(
@@ -71,7 +76,7 @@ def resolve(source, rule, state):
             if cards:
                 chosen = yield from reduce_choose_card_actions(
                     choose_card_actions(
-                        p.id, p.id, int(origin == "discard"), 1, cards, indexed=True, source=source
+                        p.id, p.id, int(origin == "discard"), 1, cards, indexed=True, source=source, deck_owner=deck_owner
                     ),
                     state,
                 )
@@ -100,7 +105,7 @@ def resolve(source, rule, state):
             chosen = []
             available = list(cards)
             while available and len(chosen) < count:
-                selection = yield from choice(source, available, state, 0, 1)
+                selection = yield from choice(source, available, state, 0, 1, deck_owner=deck_owner)
                 if not selection:
                     break
                 chosen.extend(selection)
@@ -113,6 +118,7 @@ def resolve(source, rule, state):
                 count if rule.get("mandatory") else 0,
                 count,
                 cards,
+                deck_owner=deck_owner,
                 indexed=True,
                 source=source,
             ),

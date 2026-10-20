@@ -111,7 +111,7 @@ def resolve(source, rule, state):
         from ptcg.core.action import EvolvePokemonAction
         from ptcg.core.reducer import reduce_evolve_pokemon_action
         from ptcg.utils.utils import shuffle_cards
-        cards = yield from choice(source,[c for c in p.left if c.name in rule["names"]],state,0,1)
+        cards = yield from choice(source,[c for c in p.left if c.name in rule["names"]],state,0,1, deck_owner=p)
         if cards:
             move_cards(cards,(p.id,CardPosition.LEFT),(p.id,CardPosition.HAND),state)
             reduce_evolve_pokemon_action(EvolvePokemonAction(p.id,cards[0],source),state)

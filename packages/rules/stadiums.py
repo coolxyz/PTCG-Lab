@@ -1,10 +1,11 @@
 """Shared Stadium lifecycle, per-turn actions and board-derived modifiers."""
+from packages.rules.deck_search import choose_card_actions
+
 
 from ptcg.core.action import (
     PutStadiumAction,
     DiscardStadiumAction,
     UseStadiumAction,
-    choose_card_actions,
 )
 from ptcg.core.card import StadiumCard, PokemonCard
 from ptcg.core.enums import CardPosition, CardType, Coin
@@ -161,8 +162,8 @@ class CompiledStadium(StadiumCard):
             yield from great_tree(self,state)
         elif use == "search_bench":
             pool = [c for c in p.left if matches(c, r["filter"])]
-            if pool:
-                chosen = yield from reduce_choose_card_actions(choose_card_actions(p.id, p.id, 0, 1, pool, source=self), state)
+            if p.left:
+                chosen = yield from reduce_choose_card_actions(choose_card_actions(p.id, p.id, 0, min(1,len(pool)), pool, source=self, deck_owner=p), state)
                 move_cards(chosen, (p.id, CardPosition.LEFT), (p.id, CardPosition.BENCH), state)
                 for c in chosen:
                     from ptcg.core.enums import PokemonPosition
@@ -182,7 +183,7 @@ class CompiledStadium(StadiumCard):
             if use != "topdeck":
                 pool = [c for c in pool if matches(c, r["filter"])]
             chosen = []
-            if pool:
+            if pool or use == "search":
                 count = min(r.get("count", 1), len(pool))
                 chosen = yield from reduce_choose_card_actions(
                     choose_card_actions(
@@ -192,6 +193,7 @@ class CompiledStadium(StadiumCard):
                         count,
                         pool,
                         source=self,
+                        deck_owner=p if use == "search" else None,
                     ),
                     state,
                 )

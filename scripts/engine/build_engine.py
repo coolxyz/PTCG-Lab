@@ -332,6 +332,9 @@ def _unshielded_damage(source, target, base_damage, state):
     return weakness_resistance(source, target, base_damage, state)
 """
 p.write_text(s,encoding='utf-8',newline='\n')
+# Mark full-deck searches explicitly; do not expose top-N windows or costs.
+from deck_search_overlay import apply as apply_deck_search_visibility
+apply_deck_search_visibility(DEST)
 manifest={p.relative_to(DEST).as_posix():hashlib.sha256(p.read_bytes()).hexdigest() for p in sorted(DEST.rglob('*.py'), key=lambda p: p.relative_to(DEST).as_posix())}
 (ROOT/'artifacts/engine/overlay-hashes.json').write_text(json.dumps(manifest,indent=2), encoding='utf-8', newline='\n')
 print(DEST)

@@ -3,11 +3,12 @@
 The caller supplies the physical source (including copied attacks). Operations
 resolve after attack damage, before knockouts, and never end the turn themselves.
 """
+from packages.rules.deck_search import choose_card_actions
+
 
 from packages.rules.maximum_hp import maximum
 
 
-from ptcg.core.action import choose_card_actions
 from ptcg.core.card import (
     PokemonCard,
     EnergyCard,
@@ -331,7 +332,7 @@ def resolve(mechanic, action, state):
             if matches(c, "basic_energy")
             and (not mechanic.get("type") or has_type(c, CardType[mechanic["type"]]))
         ]
-        if cards:
+        if p.left:
             chosen = yield from reduce_choose_card_actions(
                 choose_card_actions(
                     p.id,
@@ -341,6 +342,7 @@ def resolve(mechanic, action, state):
                     cards,
                     source=source,
                     tips="Search for basic Energy to attach.",
+                    deck_owner=p,
                 ),
                 state,
             )
@@ -395,7 +397,7 @@ def resolve(mechanic, action, state):
             cards = [c for c in p.left if matches(c, mechanic["filter"])]
             limit = len(p.bench) if mechanic.get("countFromBench") else mechanic["count"]
             destination = CardPosition.HAND
-        if cards and limit:
+        if limit:
             chosen = yield from reduce_choose_card_actions(
                 choose_card_actions(
                     p.id,
@@ -405,6 +407,7 @@ def resolve(mechanic, action, state):
                     cards,
                     source=source,
                     tips="Search your deck; you may choose no cards.",
+                    deck_owner=p,
                 ),
                 state,
             )

@@ -9,6 +9,7 @@ import {
 } from "lucide-react";
 import "./battle.css";
 import { Tabletop } from "./Tabletop";
+import { DeckBrowser } from "./DeckBrowser";
 import type { ChineseDetails } from "./CardArtwork";
 
 export type CardInfo = {
@@ -94,6 +95,7 @@ export type Decision = {
   indexed?: boolean;
   source?: string;
   instruction?: string;
+  deckInspection?: { owner: "self" | "opponent"; total: number; ordered: false; cards: {card: EngineCard; count: number}[] };
   candidates: {
     ref: string;
     boardRef?: string;
@@ -559,7 +561,7 @@ export function Battle({
             </div>
             <div>
               <h2>练习说明</h2>
-              <p>双方通过相同规则接口操作；AI 只能看到自己的手牌和公开场面。</p>
+              <p>双方通过相同规则接口操作；AI 可看到自己的手牌、公开场面及规则允许检索时查看的牌库信息。</p>
               <p>
                 每一步裁定均保存。刷新页面、重启服务后可继续；离开练习页时暂停
                 AI 推进。
@@ -581,10 +583,13 @@ export function Battle({
                 onClick={() => open(m.id)}
               >
                 {m.opponent.startsWith("revision:")
-                  ? "自定义 AI 卡组"
-                  : m.opponent === "dragapult"
-                    ? "多龙巴鲁托ex"
-                    : "赛富豪ex"}{" "}
+                  ? (() => {
+                      const r = revisions.find((r) => r.id === m.opponent.slice("revision:".length));
+                      return r ? `${r.name} · 版本 ${r.number}` : "自定义 AI 卡组（原版本已移除）";
+                    })()
+                  : session?.opponents?.find((o: {id: string; name: string}) => o.id === m.opponent)?.name
+                    || ({dragapult: "多龙巴鲁托ex", gholdengo: "赛富豪ex"} as Record<string, string>)[m.opponent]
+                    || "历史 AI 卡组"}{" "}
                 · {m.status === "playing" ? "继续对局" : "查看结果 / 回放"} ·{" "}
                 {m.seq} 步 <ChevronRight size={14} />
               </button>
@@ -857,6 +862,7 @@ export function Battle({
                         ? "卡牌身份隐藏。"
                         : "选择后，后续效果会继续提示。"}
                     </p>}
+                    {d.deckInspection && <DeckBrowser key={d.id} inspection={d.deckInspection} names={names} selectedCount={selected.length} />}
                     {d.source === "Tatsugiri" && !d.hidden && (
                       <p className="inspection-summary" role="status">
                         {d.max === 0

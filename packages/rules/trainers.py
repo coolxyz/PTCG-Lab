@@ -1,4 +1,6 @@
 """Shared Item/Supporter actions with explicit playability and hidden searches."""
+from packages.rules.deck_search import choose_card_actions
+
 from packages.rules.maximum_hp import maximum
 
 
@@ -6,7 +8,6 @@ from ptcg.core.action import (
     UseItemAction,
     UseSupporterAction,
     UseToolAction,
-    choose_card_actions,
 )
 from ptcg.core.card import (
     PokemonCard,
@@ -455,7 +456,7 @@ class CompiledTrainer:
             moved = 0
             for category in r["filters"] if kind == "search_pair" else [r["filter"]]:
                 cards = [c for c in pool if matches(c, category) and (not r.get("excludePayment") or c in original_discard)]
-                if cards:
+                if cards or not recovering:
                     count = min(
                         r["count"],
                         len(cards),
@@ -465,10 +466,11 @@ class CompiledTrainer:
                         choose_card_actions(
                             p.id,
                             p.id,
-                            1 if recovering or category == "any" else 0,
+                            min(count, 1) if recovering or category == "any" else 0,
                             count,
                             cards,
                             source=self,
+                            deck_owner=None if recovering else p,
                         ),
                         state,
                     )

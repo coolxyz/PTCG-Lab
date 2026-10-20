@@ -356,3 +356,18 @@
 .ai-playback-controls { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
 .ai-playback-controls label { display: flex; align-items: center; gap: 6px; font-size: 12px; white-space: nowrap; }
 .battle-page .ai-playback-controls select { width: auto; padding: 7px; }
+
+.deck-browser { margin: 14px 0; border: 1px solid #71856d; border-radius: 8px; padding: 12px; background: #f5f8ef; color: #253b2c; }
+.deck-browser > summary { cursor: pointer; font-weight: 700; padding: 4px 0; }
+.battle-page:has(.arena) .decision-panel .deck-browser p { color: #354b39; }
+.deck-browser label { display: grid; gap: 6px; font-size: 13px; }
+.deck-browser input { width: 100%; box-sizing: border-box; padding: 9px; background: white; color: #253b2c; border: 1px solid #a5b09c; border-radius: 5px; }
+.deck-browser-filters { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 10px; }
+.deck-browser-filters button { padding: 6px 10px; background: white; color: #354b39; border: 1px solid #9aa891; }
+.deck-browser-filters button[aria-pressed=true] { background: #385d39; color: white; }
+.deck-browser-list { max-height: 370px; overflow-y: auto; padding: 0; margin: 8px 0; list-style: none; }
+.deck-browser-list li { border-top: 1px solid #d4ddcd; padding: 8px 0; }
+.deck-browser-list summary { cursor: pointer; }
+.deck-browser-list summary span { float: right; padding-left: 8px; }
+.deck-browser-list small { display: block; margin: 7px 0; }
+.deck-browser-list img { display: block; width: 100%; max-width: 240px; height: auto; margin: 8px auto; }

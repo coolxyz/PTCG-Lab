@@ -40,7 +40,7 @@ def resolve(r, action, state):
         selected, used = [], set()
         for _ in range(r['count']):
             pool = [c for c in p.left if isinstance(c, PokemonCard) and not types(c) & used]
-            picked = yield from choice(source, pool, state, 0, 1)
+            picked = yield from choice(source, pool, state, 0, 1, deck_owner=p)
             if not picked:
                 break
             selected += picked

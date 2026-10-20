@@ -52,7 +52,7 @@ def resolve(source,r,state):
     elif op=='attach_tool':
         if can_attach_tool(source):
             cards=[c for c in p.left if isinstance(c,ToolCard)]
-            picked=yield from choice(source,cards,state,0,1)
+            picked=yield from choice(source,cards,state,0,1, deck_owner=p)
             for c in picked:
                 move_cards(c,(p.id,CardPosition.LEFT),(p.id,CardPosition.BENCH_ATTACHMENT,source.index),state)
                 c.hasAttached=True;c.attachedTo=[source]
@@ -66,7 +66,7 @@ def resolve(source,r,state):
             shuffle_cards(o.left,state)
     elif op=='transform_start':
         cards=[c for c in p.left if isinstance(c,PokemonCard) and c.stage==Stage.BASIC and c.name!=source.name]
-        selected=yield from choice(source,cards,state,0,1)
+        selected=yield from choice(source,cards,state,0,1, deck_owner=p)
         if selected:
             from packages.rules.core_fixes import discard_pokemon
             discard_pokemon(p,source)

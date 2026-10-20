@@ -60,6 +60,14 @@ class Adapter(BaseAdapter):
             result['effectiveTypes'] = sorted(t.name for t in types(card))
         return result
 
+    def _candidate_order(self):
+        prompt = self.info.get('prompt')
+        if getattr(prompt, 'deck_inspection_owner', None) is not None and not self.actions.hidden:
+            import json
+            return sorted(range(len(self.actions.candidates)),
+                          key=lambda i: json.dumps(self._card(self.actions.candidates[i]), sort_keys=True))
+        return super()._candidate_order()
+
     def __init__(self, seed=0, deck1='gholdengo_ex', deck2='charizard_ex', provenance=None):
         self.config = dict(seed=seed, deck1=freeze_deck(deck1), deck2=freeze_deck(deck2))
         self.env = RulesEngine(**self.config, record_game=False)
@@ -72,6 +80,12 @@ class Adapter(BaseAdapter):
             raise ValueError('INVALID_VIEWER')
         result = super().view(viewer)
         players = self.env.get_players()
+        decision = result.get('decision')
+        if decision and decision['kind'] == 'selection' and not decision['hidden']:
+            from packages.rules.deck_search import inspection
+            visible_deck = inspection(self.info.get('prompt'), players, viewer, self._card)
+            if visible_deck is not None:
+                decision['deckInspection'] = visible_deck
         own = next(p for p in players if p.id == viewer)
         other = next(p for p in players if p.id != viewer)
         for role, player in (('self', own), ('opponent', other)):
