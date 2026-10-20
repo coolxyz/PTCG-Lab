@@ -1,0 +1,5 @@
+# These files are hashed as bytes by the H2 policy registry.
+# Preserve the accepted fingerprints when checking out on Windows.
+apps/api/expert_policies/** text eol=lf
+apps/api/expert_service.py text eol=lf
+artifacts/engine/overlay-hashes.json text eol=lf
