@@ -13,15 +13,17 @@
     "P7": "planned",
     "P8": "planned"
   },
-  "acceptanceDocument": "docs/P1迁移基线与发布门禁验收.md",
+  "acceptanceDocument": "docs/P1\u8fc1\u79fb\u57fa\u7ebf\u4e0e\u53d1\u5e03\u95e8\u7981\u9a8c\u6536.md",
   "subphases": {
     "P2-A": "completed",
     "P2-B": "completed",
-    "P2-C": "planned",
+    "P2-C": "completed",
     "P2-D": "planned"
   },
   "p1BaselineCommit": "83e3fb2",
-  "progressDocument": "docs/P2共享协议与规则核心实施记录.md",
+  "progressDocument": "docs/P2\u5171\u4eab\u534f\u8bae\u4e0e\u89c4\u5219\u6838\u5fc3\u5b9e\u65bd\u8bb0\u5f55.md",
   "p2aBaselineCommit": "d99f52b",
-  "providerAcceptanceDocument": "docs/P2B资源Provider与固定资产验收.md"
+  "providerAcceptanceDocument": "docs/P2B\u8d44\u6e90Provider\u4e0e\u56fa\u5b9a\u8d44\u4ea7\u9a8c\u6536.md",
+  "p2bBaselineCommit": "ba6d720",
+  "coreAcceptanceDocument": "docs/P2C\u6838\u5fc3\u63d0\u53d6\u4e0e\u517c\u5bb9\u5c42\u9a8c\u6536.md"
 }

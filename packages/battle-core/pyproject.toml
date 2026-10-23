@@ -4,14 +4,14 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "ptcg-battle-core"
-version = "0.1.0.dev0"
-description = "P1 scaffold; no production implementation"
+version = "0.2.0.dev0"
+description = "Explicit rule core and frozen-runtime compatibility"
 readme = "README.md"
 requires-python = ">=3.14"
 license = "MIT"
 license-files = ["LICENSE"]
-dependencies = []
-classifiers = ["Development Status :: 1 - Planning"]
+dependencies = ["ptcg-engine-provider==0.2.0.dev0", "loguru==0.7.3"]
+classifiers = ["Development Status :: 3 - Alpha"]
 
 [tool.setuptools]
 include-package-data = false

@@ -200,6 +200,8 @@ def build(output, root=ROOT, wheelhouse=None):
                 str(wheelhouse),
                 "--constraint",
                 str(root / "packages/battle-protocol/requirements.lock"),
+                "--constraint",
+                str(root / "packages/battle-core/requirements.lock"),
                 *[str(p) for p in wheels],
             ],
             check=True,
@@ -234,6 +236,9 @@ def build(output, root=ROOT, wheelhouse=None):
         subprocess.run(
             [str(python), "-I", str(provider_smoke)], cwd=scratch, check=True
         )
+        core_smoke = scratch / "core-smoke.py"
+        core_smoke.write_bytes((root / "tests/core/smoke.py").read_bytes())
+        subprocess.run([str(python), "-I", str(core_smoke)], cwd=scratch, check=True)
     hashes = {
         p.name: hashlib.file_digest(p.open("rb"), "sha256").hexdigest()
         for p in output.iterdir()
@@ -244,6 +249,7 @@ def build(output, root=ROOT, wheelhouse=None):
         "wheelInstallOutsideCheckout": "passed",
         "protocolValidationOutsideCheckout": "passed",
         "providerValidationOutsideCheckout": "passed",
+        "coreLoaderOutsideCheckout": "passed",
         "files": hashes,
         "productionReady": False,
     }

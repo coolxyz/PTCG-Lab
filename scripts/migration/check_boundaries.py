@@ -32,7 +32,10 @@ def check(root=ROOT):
             "@ptcg/battle-protocol",
         }
         provider = project["distribution"] == "ptcg-engine-provider"
-        expected_stage = "P2-A" if protocol else "P2-B" if provider else "P1"
+        core = project["distribution"] == "ptcg-battle-core"
+        expected_stage = (
+            "P2-A" if protocol else "P2-B" if provider else "P2-C" if core else "P1"
+        )
         if (
             project["stage"] != expected_stage
             or project["implementationReady"] is not False
@@ -51,7 +54,7 @@ def check(root=ROOT):
                 errors.append(
                     project["path"] + ": runtime requirements differ from contract"
                 )
-            if not protocol and project["allowedRuntimeRequirements"]:
+            if not (protocol or core) and project["allowedRuntimeRequirements"]:
                 errors.append(
                     project["path"] + ": inactive scaffold gained runtime requirements"
                 )
@@ -75,7 +78,19 @@ def check(root=ROOT):
                             "sys.path.insert",
                             "sys.path.append",
                         }:
-                            errors.append(rel + ": dynamic import/path escape")
+                            audited = {
+                                "packages/battle-core/src/ptcg_core/engine_loader.py": {
+                                    "exec"
+                                },
+                                "packages/battle-core/src/ptcg_core/engine_registry.py": {
+                                    "importlib.import_module"
+                                },
+                                "packages/battle-core/src/ptcg_core/compat.py": {
+                                    "importlib.import_module"
+                                },
+                            }
+                            if name not in audited.get(rel, set()):
+                                errors.append(rel + ": dynamic import/path escape")
                     for name in imports:
                         top = name.split(".")[0]
                         allowed = {

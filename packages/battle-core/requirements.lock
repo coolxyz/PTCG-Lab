@@ -1,0 +1,2 @@
+# Engine runtime only. Local workspace wheels are installed separately.
+loguru==0.7.3

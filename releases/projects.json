@@ -1,6 +1,6 @@
 {
   "schema": 1,
-  "phase": "P2-B",
+  "phase": "P2-C",
   "projects": [
     {
       "path": "apps/desktop-api",
@@ -29,11 +29,37 @@
       "distribution": "ptcg-battle-core",
       "module": "ptcg_core",
       "language": "python",
-      "stage": "P1",
+      "stage": "P2-C",
       "implementationReady": false,
-      "allowedInternalImports": [],
-      "allowedExternalImports": [],
-      "allowedRuntimeRequirements": []
+      "allowedInternalImports": [
+        "ptcg_engine_provider"
+      ],
+      "allowedExternalImports": [
+        "__future__",
+        "ast",
+        "collections",
+        "copy",
+        "dataclasses",
+        "datetime",
+        "enum",
+        "functools",
+        "hashlib",
+        "importlib",
+        "inspect",
+        "itertools",
+        "json",
+        "loguru",
+        "ptcg",
+        "re",
+        "sys",
+        "threading",
+        "types",
+        "typing"
+      ],
+      "allowedRuntimeRequirements": [
+        "ptcg-engine-provider==0.2.0.dev0",
+        "loguru==0.7.3"
+      ]
     },
     {
       "path": "packages/engine-provider",
