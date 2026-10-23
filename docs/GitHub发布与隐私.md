@@ -57,3 +57,7 @@ Windows 使用相应 Python 命令与 `start.ps1 -Setup -Check` / `start.ps1`。
 ## 发布与维护注意
 
 完整 release 构建涉及受限资料，命令需显式 `python scripts/release.py build --include-restricted-data`，该开关只是确认范围，不是取得第三方授权。个人数据备份与恢复见 [安装与使用手册](启动使用与跨系统迁移.md#备份恢复与升级)。
+
+## P1 源码和制品门禁
+
+公开导出现在覆盖新项目骨架，并拒绝已识别的秘密模式、机器路径和越界/符号链接。审计覆盖 tracked 和未忽略的 untracked 文件；可用 `python scripts/public/audit.py --check --artifact exports/p1-source-check.zip` 检查已生成源码包，失败以非零退出码报告，不打印秘密值。新包的 wheel/sdist/npm 包在构建门禁中另外检查。具体命令和限制见 [P1 验收](P1迁移基线与发布门禁验收.md)。这些工具不代替历史审计或第三方内容复核。

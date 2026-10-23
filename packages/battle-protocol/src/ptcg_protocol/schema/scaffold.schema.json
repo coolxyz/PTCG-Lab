@@ -1,0 +1,13 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://schemas.example.org/ptcg/scaffold.schema.json",
+  "title": "ScaffoldMetadata",
+  "description": "Build-time P1 fixture only; not an online battle protocol.",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "stage": {"type": "string", "enum": ["P1"]},
+    "implementationReady": {"type": "boolean", "enum": [false]}
+  },
+  "required": ["stage", "implementationReady"]
+}

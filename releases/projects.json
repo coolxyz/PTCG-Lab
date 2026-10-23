@@ -1,0 +1,110 @@
+{
+  "schema": 1,
+  "phase": "P1",
+  "projects": [
+    {
+      "path": "apps/desktop-api",
+      "distribution": "ptcg-desktop-api",
+      "module": "ptcg_desktop_api",
+      "language": "python",
+      "stage": "P1",
+      "implementationReady": false,
+      "allowedInternalImports": [],
+      "allowedExternalImports": []
+    },
+    {
+      "path": "apps/online-server",
+      "distribution": "ptcg-online-server",
+      "module": "ptcg_online_server",
+      "language": "python",
+      "stage": "P1",
+      "implementationReady": false,
+      "allowedInternalImports": [],
+      "allowedExternalImports": []
+    },
+    {
+      "path": "packages/battle-core",
+      "distribution": "ptcg-battle-core",
+      "module": "ptcg_core",
+      "language": "python",
+      "stage": "P1",
+      "implementationReady": false,
+      "allowedInternalImports": [],
+      "allowedExternalImports": []
+    },
+    {
+      "path": "packages/engine-provider",
+      "distribution": "ptcg-engine-provider",
+      "module": "ptcg_engine_provider",
+      "language": "python",
+      "stage": "P1",
+      "implementationReady": false,
+      "allowedInternalImports": [],
+      "allowedExternalImports": []
+    },
+    {
+      "path": "packages/battle-protocol",
+      "distribution": "ptcg-battle-protocol",
+      "module": "ptcg_protocol",
+      "language": "python",
+      "stage": "P1",
+      "implementationReady": false,
+      "allowedInternalImports": [],
+      "allowedExternalImports": [
+        "typing",
+        "typing_extensions",
+        "__future__"
+      ]
+    },
+    {
+      "path": "packages/online-client",
+      "distribution": "ptcg-online-client",
+      "module": "ptcg_online_client",
+      "language": "python",
+      "stage": "P1",
+      "implementationReady": false,
+      "allowedInternalImports": [],
+      "allowedExternalImports": []
+    },
+    {
+      "path": "packages/ai-runtime",
+      "distribution": "ptcg-ai-runtime",
+      "module": "ptcg_ai_runtime",
+      "language": "python",
+      "stage": "P1",
+      "implementationReady": false,
+      "allowedInternalImports": [],
+      "allowedExternalImports": []
+    },
+    {
+      "path": "apps/desktop-web",
+      "distribution": "@ptcg/desktop-web",
+      "module": "desktop-web",
+      "language": "javascript",
+      "stage": "P1",
+      "implementationReady": false,
+      "allowedInternalImports": [],
+      "allowedExternalImports": []
+    },
+    {
+      "path": "packages/battle-ui",
+      "distribution": "@ptcg/battle-ui",
+      "module": "battle-ui",
+      "language": "javascript",
+      "stage": "P1",
+      "implementationReady": false,
+      "allowedInternalImports": [],
+      "allowedExternalImports": []
+    },
+    {
+      "path": "packages/battle-protocol/ts",
+      "distribution": "@ptcg/battle-protocol",
+      "module": "battle-protocol",
+      "language": "javascript",
+      "stage": "P1",
+      "implementationReady": false,
+      "allowedInternalImports": [],
+      "allowedExternalImports": []
+    }
+  ]
+}

@@ -1,0 +1,155 @@
+# ruff: noqa: E402
+"""Fail closed on scaffold dependency, generated-status and publication drift."""
+
+import argparse
+import ast
+import json
+from pathlib import Path
+import re
+import sys
+import tomllib
+
+ROOT = Path(__file__).resolve().parents[2]
+if __package__ in (None, ""):
+    sys.path.insert(0, str(ROOT))
+from scripts.public.policy import source_files, safe_file
+
+
+def check(root=ROOT):
+    root = Path(root).resolve()
+    registry = json.loads((root / "releases/projects.json").read_text())
+    projects = registry["projects"]
+    errors = []
+    export = set(source_files(root))
+    python_modules = {p["module"]: p for p in projects if p["language"] == "python"}
+    names = [p["distribution"] for p in projects]
+    if len(names) != len(set(names)):
+        errors.append("duplicate distribution")
+    for project in projects:
+        base = root / project["path"]
+        if project["stage"] != "P1" or project["implementationReady"] is not False:
+            errors.append(project["path"] + ": scaffold status drift")
+        if project["language"] == "python":
+            metadata = tomllib.loads(
+                safe_file(root, project["path"] + "/pyproject.toml").read_text()
+            )
+            if metadata["project"]["name"] != project["distribution"]:
+                errors.append(project["path"] + ": distribution mismatch")
+            if metadata["project"].get("dependencies"):
+                errors.append(
+                    project["path"] + ": P1 runtime dependencies must remain empty"
+                )
+            for file in sorted((base / "src").rglob("*.py")):
+                rel = file.relative_to(root).as_posix()
+                tree = ast.parse(safe_file(root, rel).read_text())
+                for node in ast.walk(tree):
+                    imports = []
+                    if isinstance(node, ast.Import):
+                        imports = [a.name for a in node.names]
+                    elif isinstance(node, ast.ImportFrom) and not node.level:
+                        imports = [node.module or ""]
+                    elif isinstance(node, ast.Call):
+                        # Dynamic imports and import-path modification bypass static contracts.
+                        name = ast.unparse(node.func)
+                        if name in {
+                            "__import__",
+                            "eval",
+                            "exec",
+                            "importlib.import_module",
+                            "sys.path.insert",
+                            "sys.path.append",
+                        }:
+                            errors.append(rel + ": dynamic import/path escape")
+                    for name in imports:
+                        top = name.split(".")[0]
+                        allowed = {
+                            project["module"],
+                            *project["allowedInternalImports"],
+                            *project["allowedExternalImports"],
+                        }
+                        if top not in allowed:
+                            errors.append(rel + ": forbidden import " + top)
+                        if (
+                            top in python_modules
+                            and top != project["module"]
+                            and top not in project["allowedInternalImports"]
+                        ):
+                            errors.append(rel + ": undeclared project dependency")
+                if file.name == "__init__.py":
+                    # P1 imports must be inert: only docstrings and constant metadata.
+                    for node in tree.body:
+                        if isinstance(node, ast.Expr) and isinstance(
+                            node.value, ast.Constant
+                        ):
+                            continue
+                        if isinstance(node, ast.Assign) and isinstance(
+                            node.value, ast.Constant
+                        ):
+                            continue
+                        errors.append(rel + ": non-inert scaffold initialization")
+                if rel not in export:
+                    errors.append(rel + ": not exported")
+        else:
+            metadata = json.loads(
+                safe_file(root, project["path"] + "/package.json").read_text()
+            )
+            if (
+                metadata["name"] != project["distribution"]
+                or metadata.get("private") is not True
+            ):
+                errors.append(
+                    project["path"] + ": JS package identity/private flag mismatch"
+                )
+            if metadata.get("dependencies") or metadata.get("scripts"):
+                errors.append(
+                    project["path"] + ": P1 JS scaffold must not install runtime hooks"
+                )
+            for file in (base / "src").rglob("*"):
+                if file.is_file() and file.suffix in {".js", ".ts", ".tsx"}:
+                    rel = file.relative_to(root).as_posix()
+                    content = safe_file(root, rel).read_text()
+                    refs = re.findall(
+                        r"""(?:from\s*|import\s*(?:\(\s*)?|require\s*\(\s*)['"]([^'"]+)""",
+                        content,
+                    )
+                    if any(
+                        not ref.startswith("./") or ".." in ref.split("/")
+                        for ref in refs
+                    ):
+                        errors.append(rel + ": cross-package or external JS import")
+                    if re.search(
+                        r"\b(fetch|WebSocket|localStorage|sessionStorage)\b", content
+                    ):
+                        errors.append(rel + ": networking/storage in scaffold")
+                    if rel not in export:
+                        errors.append(rel + ": not exported")
+        for filename in [
+            "LICENSE",
+            "README.md",
+            "pyproject.toml" if project["language"] == "python" else "package.json",
+        ]:
+            name = project["path"] + "/" + filename
+            if name not in export:
+                errors.append(name + ": metadata/license not exported")
+    status = json.loads((root / "releases/migration-status.json").read_text())
+    if (
+        status.get("currentPhase") != "P1"
+        or status.get("productionRoutingChanged") is not False
+    ):
+        errors.append("migration phase/routing marker drift")
+    for phase in range(2, 9):
+        if status["phases"].get("P" + str(phase)) != "planned":
+            errors.append("future implementation misrepresented as complete")
+    for name in ["docs/产品化重构设计.md", "docs/产品化重构分阶段实施.md"]:
+        text = (root / name).read_text()
+        if "<!-- migration-phase: P1; production-routing: legacy -->" not in text:
+            errors.append(name + ": missing phase status")
+    return sorted(set(errors))
+
+
+if __name__ == "__main__":
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.parse_args()
+    errors = check()
+    print(json.dumps({"boundaryErrors": errors}, ensure_ascii=False))
+    raise SystemExit(bool(errors))

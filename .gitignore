@@ -46,3 +46,10 @@ tests/fixtures/
 tests/sync/real-recovery.json
 *.sqlite-wal
 *.sqlite-shm
+
+# P1 independently built packages (source remains under src/)
+apps/desktop-web/dist/
+packages/*/dist/
+packages/*/ts/dist/
+**/*.egg-info/
+**/build/

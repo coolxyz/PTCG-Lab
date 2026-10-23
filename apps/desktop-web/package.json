@@ -1,0 +1,16 @@
+{
+  "name": "@ptcg/desktop-web",
+  "version": "0.0.0-p1",
+  "private": true,
+  "type": "module",
+  "license": "MIT",
+  "files": [
+    "src",
+    "LICENSE",
+    "README.md"
+  ],
+  "exports": {
+    "types": "./src/index.d.ts",
+    "default": "./src/index.js"
+  }
+}

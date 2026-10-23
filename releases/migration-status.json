@@ -1,0 +1,17 @@
+{
+  "schema": 1,
+  "currentPhase": "P1",
+  "productionRoutingChanged": false,
+  "phases": {
+    "P0": "documented",
+    "P1": "completed",
+    "P2": "planned",
+    "P3": "planned",
+    "P4": "planned",
+    "P5": "planned",
+    "P6": "planned",
+    "P7": "planned",
+    "P8": "planned"
+  },
+  "acceptanceDocument": "docs/P1迁移基线与发布门禁验收.md"
+}

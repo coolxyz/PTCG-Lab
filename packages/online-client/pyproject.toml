@@ -1,0 +1,22 @@
+[build-system]
+requires = ["setuptools==80.9.0"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "ptcg-online-client"
+version = "0.1.0.dev0"
+description = "P1 scaffold; no production implementation"
+readme = "README.md"
+requires-python = ">=3.14"
+license = "MIT"
+license-files = ["LICENSE"]
+dependencies = []
+classifiers = ["Development Status :: 1 - Planning"]
+
+[tool.setuptools]
+include-package-data = false
+
+[tool.setuptools.packages.find]
+where = ["src"]
+include = ["ptcg_online_client", "ptcg_online_client.*"]
+namespaces = false
