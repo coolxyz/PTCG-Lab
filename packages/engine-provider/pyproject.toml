@@ -4,14 +4,14 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "ptcg-engine-provider"
-version = "0.1.0.dev0"
-description = "P1 scaffold; no production implementation"
+version = "0.2.0.dev0"
+description = "P2-B verified rule assets and immutable catalog providers"
 readme = "README.md"
 requires-python = ">=3.14"
 license = "MIT"
 license-files = ["LICENSE"]
 dependencies = []
-classifiers = ["Development Status :: 1 - Planning"]
+classifiers = ["Development Status :: 3 - Alpha"]
 
 [tool.setuptools]
 include-package-data = false

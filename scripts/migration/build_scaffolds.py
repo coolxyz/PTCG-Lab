@@ -229,6 +229,11 @@ def build(output, root=ROOT, wheelhouse=None):
             cwd=scratch,
             check=True,
         )
+        provider_smoke = scratch / "provider-smoke.py"
+        provider_smoke.write_bytes((root / "tests/providers/synthetic.py").read_bytes())
+        subprocess.run(
+            [str(python), "-I", str(provider_smoke)], cwd=scratch, check=True
+        )
     hashes = {
         p.name: hashlib.file_digest(p.open("rb"), "sha256").hexdigest()
         for p in output.iterdir()
@@ -238,6 +243,7 @@ def build(output, root=ROOT, wheelhouse=None):
         "projects": results,
         "wheelInstallOutsideCheckout": "passed",
         "protocolValidationOutsideCheckout": "passed",
+        "providerValidationOutsideCheckout": "passed",
         "files": hashes,
         "productionReady": False,
     }

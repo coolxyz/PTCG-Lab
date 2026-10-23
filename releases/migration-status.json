@@ -16,10 +16,12 @@
   "acceptanceDocument": "docs/P1迁移基线与发布门禁验收.md",
   "subphases": {
     "P2-A": "completed",
-    "P2-B": "planned",
+    "P2-B": "completed",
     "P2-C": "planned",
     "P2-D": "planned"
   },
   "p1BaselineCommit": "83e3fb2",
-  "progressDocument": "docs/P2共享协议与规则核心实施记录.md"
+  "progressDocument": "docs/P2共享协议与规则核心实施记录.md",
+  "p2aBaselineCommit": "d99f52b",
+  "providerAcceptanceDocument": "docs/P2B资源Provider与固定资产验收.md"
 }

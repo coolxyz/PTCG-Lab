@@ -31,7 +31,8 @@ def check(root=ROOT):
             "ptcg-battle-protocol",
             "@ptcg/battle-protocol",
         }
-        expected_stage = "P2-A" if protocol else "P1"
+        provider = project["distribution"] == "ptcg-engine-provider"
+        expected_stage = "P2-A" if protocol else "P2-B" if provider else "P1"
         if (
             project["stage"] != expected_stage
             or project["implementationReady"] is not False
@@ -83,7 +84,7 @@ def check(root=ROOT):
                             *project["allowedExternalImports"],
                         }
                         if top not in allowed or (
-                            protocol
+                            (protocol or provider)
                             and top
                             in {
                                 "apps",

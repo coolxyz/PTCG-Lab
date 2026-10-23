@@ -1,4 +1,4 @@
-"""P1 scaffold. No production behavior or import-time side effects."""
+"""Explicit verified rule inputs; no engine activation or import-time I/O."""
 
-__version__ = "0.1.0.dev0"
+__version__ = "0.2.0.dev0"
 IMPLEMENTATION_READY = False
