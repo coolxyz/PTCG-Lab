@@ -26,6 +26,7 @@ FILES = (
     "SECURITY.md",
     "CONTRIBUTING.md",
     ".gitignore",
+    ".gitattributes",
     "start.sh",
     "start.ps1",
     "RELEASE.json",

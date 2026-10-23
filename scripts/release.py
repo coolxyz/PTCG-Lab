@@ -29,7 +29,7 @@ def release_files(root, release):
             rel = p.relative_to(root)
             if p.is_file() and not SKIP.intersection(rel.parts) and not p.name.endswith(('.pyc', '.tsbuildinfo')):
                 files.add(rel.as_posix())
-    for name in ('README.md', 'LICENSE', 'THIRD_PARTY_NOTICES.md', 'licenses', 'RELEASE.json', 'start.ps1', 'start.sh', '.gitignore', 'apps/api', 'apps/web/src', 'apps/web/dist', 'apps/web/e2e', 'packages', 'data', 'rulesets', 'scripts', 'tests', 'docs', 'runtime/engine', 'artifacts/engine/overlay-hashes.json'):
+    for name in ('README.md', 'LICENSE', 'THIRD_PARTY_NOTICES.md', 'licenses', 'RELEASE.json', 'start.ps1', 'start.sh', '.gitignore', '.gitattributes', 'apps/api', 'apps/web/src', 'apps/web/dist', 'apps/web/e2e', 'packages', 'data', 'rulesets', 'scripts', 'tests', 'docs', 'runtime/engine', 'artifacts/engine/overlay-hashes.json'):
         add(name)
     for p in (root / 'apps/web').iterdir():
         if p.is_file() and not p.name.endswith('.tsbuildinfo'):

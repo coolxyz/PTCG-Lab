@@ -1,6 +1,8 @@
 import importlib.util
 from pathlib import Path
 import sys
+from types import SimpleNamespace
+import pytest
 
 ROOT = Path(__file__).resolve().parents[2]
 
@@ -12,16 +14,29 @@ def load(name, path):
     return module
 
 
-def test_launcher_uses_project_cwd_and_loopback(monkeypatch):
+@pytest.mark.parametrize('platform', ['nt', 'posix'])
+def test_launcher_uses_project_cwd_and_loopback(monkeypatch, tmp_path, platform):
     launcher = load('launcher', 'scripts/start.py')
+    project = tmp_path / '中文 project space'
+    interpreter = project / '.venv' / ('Scripts/python.exe' if platform == 'nt' else 'bin/python')
+    for path in [interpreter, *(project / name for name in (
+            'apps/web/dist/index.html', 'runtime/engine/ptcg',
+            'artifacts/engine/overlay-hashes.json', 'data/catalog/catalog.json'))]:
+        path.parent.mkdir(parents=True, exist_ok=True)
+        path.touch()
+    monkeypatch.setattr(launcher, 'ROOT', project)
+    monkeypatch.setattr(launcher, 'os', SimpleNamespace(name=platform, environ={}))
     calls = []
     monkeypatch.setattr(sys, 'argv', ['start.py', '--port', '8799'])
     monkeypatch.setattr(launcher.subprocess, 'call', lambda command, **kw: calls.append((command, kw)) or 0)
     assert launcher.main() == 0
     command, options = calls[0]
     assert command[-4:] == ['--host', '127.0.0.1', '--port', '8799']
-    assert options['cwd'] == ROOT
+    assert command[0] == str(interpreter)
+    assert command[1:3] == ['-X', 'utf8']
+    assert options['cwd'] == project
     assert options['env']['PYTHONUTF8'] == '1'
+    assert options['env']['PYTHONPATH'] == str(project)
 
 
 def test_release_verify_rejects_tampering_and_traversal(tmp_path):

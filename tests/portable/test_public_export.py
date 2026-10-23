@@ -27,6 +27,7 @@ def test_public_export_excludes_state_data_and_history():
     } & set(names)
     assert {
         "LICENSE",
+        ".gitattributes",
         "THIRD_PARTY_NOTICES.md",
         "licenses/ptcg-engine-MIT.txt",
         "scripts/public/import_local_assets.py",

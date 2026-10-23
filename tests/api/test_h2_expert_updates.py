@@ -3,7 +3,7 @@ from copy import deepcopy
 
 import pytest
 
-from apps.api.expert_policies import dragapult, grimmsnarl, registry
+from apps.api.expert_policies import dragapult, grimmsnarl, registry, zoroark
 from packages.simulation.a2 import legal
 
 
@@ -93,16 +93,16 @@ def test_grimmsnarl_preserves_concrete_preparation_before_nonterminal_gust():
     dto = dict(observation=dict(self=own, opponent=other),
                decision=dict(options=[gust, evolution]))
     before = deepcopy(dto)
-    assert grimmsnarl.prep_action(dto, gust, evolution) == evolution
+    assert grimmsnarl.previous.prep_action(dto, gust, evolution) == evolution
     assert dto == before
 
 
 def test_shipped_routes_have_exact_accepted_versions(tmp_path):
     expected = {
-        'h2-marnie-grimmsnarl': 'h2-grimmsnarl-exchange-plan-v7',
+        'h2-marnie-grimmsnarl': 'h2-grimmsnarl-pre-pivot-v22',
         'h2-dragapult-dusknoir': 'h2-dragapult-draw-development-v9',
         'h2-gardevoir-ex': 'h2-gardevoir-basic-v5',
-        'h2-n-zoroark-ex': 'h2-zoroark-basic-v2',
+        'h2-n-zoroark-ex': 'h2-zoroark-copy-chain-v3',
         'h2-joltik-box': 'h2-joltik-basic-v1',
     }
     for preset, version in expected.items():
@@ -111,9 +111,51 @@ def test_shipped_routes_have_exact_accepted_versions(tmp_path):
         assert pin['version'] == version
 
 
-@pytest.mark.parametrize('policy', [grimmsnarl, dragapult])
+@pytest.mark.parametrize('policy', [grimmsnarl, dragapult, zoroark])
 def test_updated_policies_keep_the_hidden_hand_boundary(policy):
     dto = draw_board()
     dto['observation']['opponent']['hand'] = []
     with pytest.raises(ValueError, match='HIDDEN_HAND_EXPOSED'):
         choose(policy, dto)
+
+
+def test_zoroark_retreat_pays_old_front_and_rebuilds_copy_donors():
+    old = card("N's Darumaka", 'old-front')
+    old.update(energy=['DARK'], retreatCost=['COLORLESS'])
+    main = card(zoroark.MAIN, 'new-front', 280, 2)
+    main['energy'] = ['DARK', 'DARK']
+    own = side([old], [main], [], 6)
+    before = deepcopy(own)
+    projected = zoroark.m.after_promotion(own, main)
+    assert projected['active'][0]['ref'] == 'new-front'
+    assert projected['active'][0]['energy'] == ['DARK', 'DARK']
+    assert projected['bench'][0]['ref'] == 'old-front'
+    assert projected['bench'][0]['energy'] == []
+    assert projected['discard'][-1]['name'] == 'Darkness Energy'
+    assert own == before
+
+
+def test_zoroark_never_projects_an_unpayable_retreat():
+    old = card("N's Darumaka", 'old-front')
+    old['retreatCost'] = ['COLORLESS']
+    main = card(zoroark.MAIN, 'new-front', 280, 2)
+    own = side([old], [main], [], 6)
+    assert zoroark.m.after_promotion(own, main) is None
+
+
+def test_grimmsnarl_banks_retreat_energy_before_drawing_and_preserves_terminal_attack():
+    front = card('Budew', 'front')
+    front['retreatCost'] = ['COLORLESS']
+    main = card(grimmsnarl.MAIN, 'main', 320, 2)
+    main.update(energy=['DARK', 'DARK'],
+                attacks=[dict(name='Shadow Bullet', damage=180, cost=['DARK', 'DARK'])])
+    own = side([front], [main], [dict(name='Darkness Energy'), dict(name='Iono')], 6)
+    other = side([card('Synthetic defender', 'enemy-front', 160)],
+                 [card('Synthetic reserve', 'enemy-bench', 200)], None, 6)
+    options = [dict(id='attach', actionType='AttachEnergyAction', source='Darkness Energy', targetRef='front'),
+               dict(id='draw', actionType='UseSupporterAction', source='Iono')]
+    dto = dict(observation=dict(self=own, opponent=other), decision=dict(options=options))
+    step, _ = grimmsnarl.pre_pivot_preparation(dto, options)
+    assert step['id'] == 'attach'
+    own['prize_count'] = 1
+    assert grimmsnarl.pre_pivot_preparation(dto, options) == (None, None)
