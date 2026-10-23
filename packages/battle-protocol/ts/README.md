@@ -1,5 +1,5 @@
 # @ptcg/battle-protocol
 
-P1 包骨架，尚未实现产品功能。未接入现有人机、网络或 AI 运行路径。
+P2-A v2 的生成类型，导出 `Command`、`MatchSnapshot`、`Capabilities`、`ProtocolError`、`ReplayPage`、`DeckSubmission` 等合同。`protocolVersion` 为 `2.0`，包仍为 private，不自动发布。
 
-本包仅验证独立打包与依赖边界；后续合同与迁移顺序见仓库 docs/产品化重构分阶段实施.md。
+类型由 Python 包内的 `schema/v2.schema.json` 生成。不要手改 src/v2.d.ts。TypeScript 类型无法替代运行时 schema 校验，例如数组数量与两种 choice 的互斥仍需校验器检查。本包不含网络、认证或对战渲染逻辑，未接入旧 apps/web。

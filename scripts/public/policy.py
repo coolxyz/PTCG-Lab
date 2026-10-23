@@ -89,7 +89,7 @@ ALLOWED = {
     ".yml",
     ".sql",
 }
-SYNTHETIC_JSON = frozenset({"tests/synthetic/protocol/scaffold.json"})
+SYNTHETIC_JSON = frozenset({"tests/synthetic/protocol/scaffold.json", "tests/synthetic/protocol/v2.json"})
 PATTERNS = {
     "credential_pattern": rb"(?:gh[pousr]_[A-Za-z0-9]{30,}|github_pat_[A-Za-z0-9_]{30,}|AKIA[0-9A-Z]{16}|-----BEGIN (?:RSA |EC |OPENSSH )?PRIVATE KEY-----)",
     "machine_path": rb"(?:/Users/[A-Za-z0-9_-]+/|/Volumes/[A-Za-z0-9_-]+/|[A-Z]:[\\/](?:Users|Work)[\\/])",

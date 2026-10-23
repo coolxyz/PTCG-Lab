@@ -1,5 +1,5 @@
 # ruff: noqa: E402
-"""P1 public-source gate. No application startup or asset import."""
+"""Public-source and package gate. No application startup or asset import."""
 
 import argparse
 import json
@@ -23,6 +23,7 @@ def main():
         type=Path,
         help="Also build and inspect all scaffolds in a new directory",
     )
+    parser.add_argument("--dependency-wheelhouse", type=Path)
     args = parser.parse_args()
     errors = check()
     findings = audit_worktree()
@@ -39,6 +40,16 @@ def main():
         cwd=ROOT,
         check=True,
     )
+    subprocess.run(
+        [
+            "node",
+            "node_modules/typescript/bin/tsc",
+            "-p",
+            "scripts/protocol/tsconfig.json",
+        ],
+        cwd=ROOT,
+        check=True,
+    )
     with tempfile.TemporaryDirectory(prefix="ptcg-public-gate-") as temp:
         output = Path(temp) / "source.zip"
         export_source(output)
@@ -49,13 +60,14 @@ def main():
     if args.build_output:
         from scripts.migration.build_scaffolds import build
 
-        build(args.build_output)
+        build(args.build_output, wheelhouse=args.dependency_wheelhouse)
     print(
         json.dumps(
             {
                 "boundaries": "passed",
                 "trackedAndUntrackedScan": "passed",
                 "generatedProtocol": "passed",
+                "typescriptContracts": "passed",
                 "sourceArtifact": "passed",
                 "scaffoldBuild": "passed" if args.build_output else "not-requested",
             }

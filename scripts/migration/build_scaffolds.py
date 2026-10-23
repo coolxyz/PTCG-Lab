@@ -9,6 +9,7 @@ import subprocess
 import sys
 import tarfile
 import tempfile
+import tomllib
 import zipfile
 
 ROOT = Path(__file__).resolve().parents[2]
@@ -26,7 +27,7 @@ def check_members(members, allowed):
             raise ValueError("Build artifact blocked [" + ",".join(findings) + "]")
 
 
-def build(output, root=ROOT):
+def build(output, root=ROOT, wheelhouse=None):
     root, output = Path(root).resolve(), Path(output).resolve()
     output.mkdir(parents=True, exist_ok=False)
     registry = json.loads((root / "releases/projects.json").read_text())
@@ -46,7 +47,10 @@ def build(output, root=ROOT):
             names += [
                 p.relative_to(source).as_posix()
                 for p in (source / "src").rglob("*")
-                if p.is_file() and "__pycache__" not in p.parts and p.suffix != ".pyc"
+                if p.is_file()
+                and "__pycache__" not in p.parts
+                and not any(part.endswith(".egg-info") for part in p.parts)
+                and p.suffix != ".pyc"
             ]
             for name in names:
                 data = safe_file(root, project["path"] + "/" + name).read_bytes()
@@ -57,6 +61,9 @@ def build(output, root=ROOT):
                 target.parent.mkdir(parents=True, exist_ok=True)
                 target.write_bytes(data)
             if project["language"] == "python":
+                version = tomllib.loads((stage / "pyproject.toml").read_text())[
+                    "project"
+                ]["version"]
                 subprocess.run(
                     [
                         sys.executable,
@@ -79,7 +86,7 @@ def build(output, root=ROOT):
                     names_in = archive.namelist()
                     distinfo = (
                         project["distribution"].replace("-", "_")
-                        + "-0.1.0.dev0.dist-info/"
+                        + f"-{version}.dist-info/"
                     )
                     allowed = {
                         n.removeprefix("src/") for n in names if n.startswith("src/")
@@ -100,7 +107,7 @@ def build(output, root=ROOT):
                     output.glob(project["distribution"].replace("-", "_") + "-*.tar.gz")
                 )
                 with tarfile.open(sdist) as archive:
-                    prefix = project["distribution"].replace("-", "_") + "-0.1.0.dev0/"
+                    prefix = project["distribution"].replace("-", "_") + f"-{version}/"
                     allowed = set(names) | {"PKG-INFO", "setup.cfg"}
                     egg = (
                         "src/"
@@ -116,6 +123,8 @@ def build(output, root=ROOT):
                             "top_level.txt",
                         ]
                     )
+                    if project["allowedRuntimeRequirements"]:
+                        allowed.add(egg + "requires.txt")
                     members = []
                     for item in archive.getmembers():
                         if item.isdir():
@@ -173,6 +182,13 @@ def build(output, root=ROOT):
             "Scripts/python.exe" if sys.platform == "win32" else "bin/python"
         )
         wheels = sorted(output.glob("*.whl"))
+        # Installation is offline and constrained to the separately pinned closure.
+        # Do not silently inherit dependencies from the developer environment.
+        if wheelhouse is None:
+            raise ValueError("P2 protocol requires --dependency-wheelhouse")
+        wheelhouse = Path(wheelhouse).resolve()
+        if not wheelhouse.is_dir():
+            raise ValueError("Dependency wheelhouse does not exist")
         subprocess.run(
             [
                 str(python),
@@ -180,7 +196,10 @@ def build(output, root=ROOT):
                 "pip",
                 "install",
                 "--no-index",
-                "--no-deps",
+                "--find-links",
+                str(wheelhouse),
+                "--constraint",
+                str(root / "packages/battle-protocol/requirements.lock"),
                 *[str(p) for p in wheels],
             ],
             check=True,
@@ -192,9 +211,24 @@ def build(output, root=ROOT):
         code = (
             "import importlib; modules="
             + repr(modules)
-            + '; assert all(importlib.import_module(n).IMPLEMENTATION_READY is False for n in modules); from importlib.resources import files; assert files("ptcg_protocol").joinpath("schema/scaffold.schema.json").is_file()'
+            + '; assert all(importlib.import_module(n).IMPLEMENTATION_READY is False for n in modules); from importlib.resources import files; assert files("ptcg_protocol").joinpath("schema/v2.schema.json").is_file()'
         )
         subprocess.run([str(python), "-I", "-c", code], cwd=scratch, check=True)
+        fixture = scratch / "protocol-cases.json"
+        fixture.write_bytes((root / "tests/synthetic/protocol/v2.json").read_bytes())
+        subprocess.run(
+            [
+                str(python),
+                "-I",
+                "-c",
+                "import json, sys; from ptcg_protocol import v2; from ptcg_protocol.validation import validate; "
+                'cases=json.load(open("protocol-cases.json")); '
+                'assert all(validate(c["kind"], c["value"]) == c["value"] for c in cases); '
+                'assert not any(n.split(".")[0] in {"apps", "packages", "ptcg", "fastapi", "torch", "sqlite3"} for n in sys.modules)',
+            ],
+            cwd=scratch,
+            check=True,
+        )
     hashes = {
         p.name: hashlib.file_digest(p.open("rb"), "sha256").hexdigest()
         for p in output.iterdir()
@@ -203,6 +237,7 @@ def build(output, root=ROOT):
     report = {
         "projects": results,
         "wheelInstallOutsideCheckout": "passed",
+        "protocolValidationOutsideCheckout": "passed",
         "files": hashes,
         "productionReady": False,
     }
@@ -215,8 +250,9 @@ if __name__ == "__main__":
     parser.add_argument(
         "--output", type=Path, required=True, help="New output directory"
     )
+    parser.add_argument("--dependency-wheelhouse", type=Path, required=True)
     args = parser.parse_args()
-    report = build(args.output)
+    report = build(args.output, wheelhouse=args.dependency_wheelhouse)
     print(
         json.dumps(
             {

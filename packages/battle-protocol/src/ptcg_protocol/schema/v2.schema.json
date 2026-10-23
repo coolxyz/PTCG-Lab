@@ -1,0 +1,1138 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:ptcg-lab:protocol:v2",
+  "title": "BattleProtocolV2",
+  "description": "P2-A wire contract. Private engine records and seeds are deliberately not representable.",
+  "oneOf": [
+    {
+      "$ref": "#/$defs/Command"
+    },
+    {
+      "$ref": "#/$defs/DeckSubmission"
+    },
+    {
+      "$ref": "#/$defs/MatchSnapshot"
+    },
+    {
+      "$ref": "#/$defs/Capabilities"
+    },
+    {
+      "$ref": "#/$defs/ProtocolError"
+    },
+    {
+      "$ref": "#/$defs/ReplayPage"
+    }
+  ],
+  "$defs": {
+    "Identifier": {
+      "title": "Identifier",
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 128,
+      "pattern": "^[A-Za-z0-9][A-Za-z0-9._:-]*$"
+    },
+    "Seat": {
+      "title": "Seat",
+      "enum": [
+        "PLAYER1",
+        "PLAYER2"
+      ]
+    },
+    "ProtocolVersion": {
+      "title": "ProtocolVersion",
+      "enum": [
+        "2.0"
+      ]
+    },
+    "DeckEntry": {
+      "title": "DeckEntry",
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "printingId": {
+          "$ref": "#/$defs/Identifier"
+        },
+        "quantity": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 60
+        }
+      },
+      "required": [
+        "printingId",
+        "quantity"
+      ]
+    },
+    "DeckSubmission": {
+      "title": "DeckSubmission",
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "protocolVersion": {
+          "$ref": "#/$defs/ProtocolVersion"
+        },
+        "requestId": {
+          "$ref": "#/$defs/Identifier"
+        },
+        "ruleReleaseId": {
+          "$ref": "#/$defs/Identifier"
+        },
+        "entries": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/DeckEntry"
+          },
+          "maxItems": 60,
+          "minItems": 1
+        },
+        "name": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 100
+        }
+      },
+      "required": [
+        "protocolVersion",
+        "requestId",
+        "ruleReleaseId",
+        "entries"
+      ]
+    },
+    "OptionChoice": {
+      "title": "OptionChoice",
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "optionId": {
+          "$ref": "#/$defs/Identifier"
+        }
+      },
+      "required": [
+        "optionId"
+      ]
+    },
+    "SelectionChoice": {
+      "title": "SelectionChoice",
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "selectedRefs": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/Identifier"
+          },
+          "maxItems": 60,
+          "uniqueItems": true
+        }
+      },
+      "required": [
+        "selectedRefs"
+      ]
+    },
+    "Command": {
+      "title": "Command",
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "protocolVersion": {
+          "$ref": "#/$defs/ProtocolVersion"
+        },
+        "commandId": {
+          "$ref": "#/$defs/Identifier"
+        },
+        "expectedMatchSeq": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 9007199254740991
+        },
+        "expectedStateVersion": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 9007199254740991
+        },
+        "controllerEpoch": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 9007199254740991
+        },
+        "decisionId": {
+          "$ref": "#/$defs/Identifier"
+        },
+        "choice": {
+          "oneOf": [
+            {
+              "$ref": "#/$defs/OptionChoice"
+            },
+            {
+              "$ref": "#/$defs/SelectionChoice"
+            }
+          ]
+        }
+      },
+      "required": [
+        "protocolVersion",
+        "commandId",
+        "expectedMatchSeq",
+        "expectedStateVersion",
+        "controllerEpoch",
+        "decisionId",
+        "choice"
+      ]
+    },
+    "CardIdentity": {
+      "title": "CardIdentity",
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "cardId": {
+          "$ref": "#/$defs/Identifier"
+        },
+        "printingId": {
+          "$ref": "#/$defs/Identifier"
+        },
+        "name": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 200
+        }
+      },
+      "required": [
+        "cardId",
+        "name"
+      ]
+    },
+    "CardState": {
+      "title": "CardState",
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "ref": {
+          "$ref": "#/$defs/Identifier"
+        },
+        "card": {
+          "$ref": "#/$defs/CardIdentity"
+        },
+        "damage": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 100000
+        },
+        "hp": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 100000
+        },
+        "maximumHp": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 100000
+        },
+        "energy": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 32
+          },
+          "maxItems": 120
+        },
+        "tools": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/CardIdentity"
+          },
+          "maxItems": 60
+        },
+        "evolved": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/CardIdentity"
+          },
+          "maxItems": 60
+        },
+        "conditions": {
+          "type": "array",
+          "items": {
+            "enum": [
+              "ASLEEP",
+              "PARALYZED",
+              "CONFUSED",
+              "POISONED",
+              "BURNED"
+            ]
+          },
+          "maxItems": 5,
+          "uniqueItems": true
+        },
+        "flags": {
+          "type": "array",
+          "items": {
+            "enum": [
+              "abilityUsed",
+              "abilitiesSuppressed",
+              "retreatBlocked",
+              "attackBlocked",
+              "firstTurnPlayed"
+            ]
+          },
+          "maxItems": 5,
+          "uniqueItems": true
+        }
+      },
+      "required": [
+        "ref",
+        "card"
+      ]
+    },
+    "VisiblePrize": {
+      "title": "VisiblePrize",
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "index": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 59
+        },
+        "card": {
+          "$ref": "#/$defs/CardIdentity"
+        }
+      },
+      "required": [
+        "index",
+        "card"
+      ]
+    },
+    "OwnSide": {
+      "title": "OwnSide",
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "active": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/CardState"
+          },
+          "maxItems": 1
+        },
+        "bench": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/CardState"
+          },
+          "maxItems": 60
+        },
+        "discard": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/CardIdentity"
+          },
+          "maxItems": 60
+        },
+        "lostZone": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/CardIdentity"
+          },
+          "maxItems": 60
+        },
+        "handCount": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 600
+        },
+        "deckCount": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 600
+        },
+        "prizeCount": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 60
+        },
+        "faceUpPrizes": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/VisiblePrize"
+          },
+          "maxItems": 60
+        },
+        "benchCapacity": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 60
+        },
+        "hand": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/CardIdentity"
+          },
+          "maxItems": 60
+        }
+      },
+      "required": [
+        "active",
+        "bench",
+        "discard",
+        "lostZone",
+        "handCount",
+        "deckCount",
+        "prizeCount",
+        "faceUpPrizes",
+        "benchCapacity",
+        "hand"
+      ]
+    },
+    "OpponentSide": {
+      "title": "OpponentSide",
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "active": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/CardState"
+          },
+          "maxItems": 1
+        },
+        "bench": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/CardState"
+          },
+          "maxItems": 60
+        },
+        "discard": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/CardIdentity"
+          },
+          "maxItems": 60
+        },
+        "lostZone": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/CardIdentity"
+          },
+          "maxItems": 60
+        },
+        "handCount": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 600
+        },
+        "deckCount": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 600
+        },
+        "prizeCount": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 60
+        },
+        "faceUpPrizes": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/VisiblePrize"
+          },
+          "maxItems": 60
+        },
+        "benchCapacity": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 60
+        },
+        "hand": {
+          "type": "null"
+        }
+      },
+      "required": [
+        "active",
+        "bench",
+        "discard",
+        "lostZone",
+        "handCount",
+        "deckCount",
+        "prizeCount",
+        "faceUpPrizes",
+        "benchCapacity",
+        "hand"
+      ]
+    },
+    "Option": {
+      "title": "Option",
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "id": {
+          "$ref": "#/$defs/Identifier"
+        },
+        "actionType": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 80
+        },
+        "label": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 200
+        },
+        "sourceRef": {
+          "$ref": "#/$defs/Identifier"
+        },
+        "targetRef": {
+          "$ref": "#/$defs/Identifier"
+        },
+        "activeRef": {
+          "$ref": "#/$defs/Identifier"
+        }
+      },
+      "required": [
+        "id",
+        "actionType",
+        "label"
+      ]
+    },
+    "Candidate": {
+      "title": "Candidate",
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "ref": {
+          "$ref": "#/$defs/Identifier"
+        },
+        "card": {
+          "$ref": "#/$defs/CardIdentity"
+        },
+        "boardRef": {
+          "$ref": "#/$defs/Identifier"
+        },
+        "side": {
+          "enum": [
+            "self",
+            "opponent"
+          ]
+        },
+        "zone": {
+          "enum": [
+            "active",
+            "bench",
+            "discard",
+            "hand",
+            "lostZone",
+            "stadium"
+          ]
+        },
+        "index": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 600
+        }
+      },
+      "required": [
+        "ref"
+      ]
+    },
+    "DeckInspection": {
+      "title": "DeckInspection",
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "owner": {
+          "enum": [
+            "self",
+            "opponent"
+          ]
+        },
+        "ordered": {
+          "enum": [
+            false
+          ]
+        },
+        "total": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 600
+        },
+        "cards": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "card": {
+                "$ref": "#/$defs/CardIdentity"
+              },
+              "count": {
+                "type": "integer",
+                "minimum": 1,
+                "maximum": 60
+              }
+            },
+            "required": [
+              "card",
+              "count"
+            ]
+          },
+          "maxItems": 60
+        }
+      },
+      "required": [
+        "owner",
+        "ordered",
+        "total",
+        "cards"
+      ]
+    },
+    "OptionsDecision": {
+      "title": "OptionsDecision",
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "id": {
+          "$ref": "#/$defs/Identifier"
+        },
+        "actor": {
+          "$ref": "#/$defs/Seat"
+        },
+        "kind": {
+          "enum": [
+            "options"
+          ]
+        },
+        "options": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/Option"
+          },
+          "maxItems": 2048,
+          "minItems": 1
+        },
+        "instruction": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 500
+        }
+      },
+      "required": [
+        "id",
+        "actor",
+        "kind",
+        "options"
+      ]
+    },
+    "SelectionDecision": {
+      "title": "SelectionDecision",
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "id": {
+          "$ref": "#/$defs/Identifier"
+        },
+        "actor": {
+          "$ref": "#/$defs/Seat"
+        },
+        "kind": {
+          "enum": [
+            "selection"
+          ]
+        },
+        "min": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 60
+        },
+        "max": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 60
+        },
+        "hidden": {
+          "type": "boolean"
+        },
+        "indexed": {
+          "type": "boolean"
+        },
+        "candidates": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/Candidate"
+          },
+          "maxItems": 60
+        },
+        "instruction": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 500
+        },
+        "deckInspection": {
+          "$ref": "#/$defs/DeckInspection"
+        }
+      },
+      "required": [
+        "id",
+        "actor",
+        "kind",
+        "min",
+        "max",
+        "hidden",
+        "indexed",
+        "candidates"
+      ]
+    },
+    "Decision": {
+      "title": "Decision",
+      "oneOf": [
+        {
+          "$ref": "#/$defs/OptionsDecision"
+        },
+        {
+          "$ref": "#/$defs/SelectionDecision"
+        }
+      ]
+    },
+    "VisibleEvent": {
+      "title": "VisibleEvent",
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "seq": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 9007199254740991
+        },
+        "actor": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/Seat"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "kind": {
+          "enum": [
+            "action",
+            "setup",
+            "reveal",
+            "coin",
+            "result"
+          ]
+        },
+        "text": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 1000
+        },
+        "cards": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/CardIdentity"
+          },
+          "maxItems": 60
+        },
+        "coins": {
+          "type": "array",
+          "items": {
+            "enum": [
+              "heads",
+              "tails"
+            ]
+          },
+          "maxItems": 200
+        }
+      },
+      "required": [
+        "seq",
+        "actor",
+        "kind",
+        "text"
+      ]
+    },
+    "Observation": {
+      "title": "Observation",
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "turn": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/Seat"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "turnNumber": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 9007199254740991
+        },
+        "self": {
+          "$ref": "#/$defs/OwnSide"
+        },
+        "opponent": {
+          "$ref": "#/$defs/OpponentSide"
+        },
+        "stadium": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/CardState"
+          },
+          "maxItems": 1
+        }
+      },
+      "required": [
+        "turn",
+        "turnNumber",
+        "self",
+        "opponent",
+        "stadium"
+      ]
+    },
+    "MatchSnapshot": {
+      "title": "MatchSnapshot",
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "protocolVersion": {
+          "$ref": "#/$defs/ProtocolVersion"
+        },
+        "matchId": {
+          "$ref": "#/$defs/Identifier"
+        },
+        "ruleReleaseId": {
+          "$ref": "#/$defs/Identifier"
+        },
+        "viewerSeat": {
+          "$ref": "#/$defs/Seat"
+        },
+        "matchSeq": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 9007199254740991
+        },
+        "stateVersion": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 9007199254740991
+        },
+        "controllerEpoch": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 9007199254740991
+        },
+        "streamCursor": {
+          "$ref": "#/$defs/Identifier"
+        },
+        "status": {
+          "enum": [
+            "playing",
+            "finished",
+            "aborted"
+          ]
+        },
+        "phase": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 64
+        },
+        "done": {
+          "type": "boolean"
+        },
+        "winner": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/Seat"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "decision": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/Decision"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "observation": {
+          "$ref": "#/$defs/Observation"
+        },
+        "events": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/VisibleEvent"
+          },
+          "maxItems": 256
+        }
+      },
+      "required": [
+        "protocolVersion",
+        "matchId",
+        "ruleReleaseId",
+        "viewerSeat",
+        "matchSeq",
+        "stateVersion",
+        "controllerEpoch",
+        "streamCursor",
+        "status",
+        "phase",
+        "done",
+        "winner",
+        "decision",
+        "observation",
+        "events"
+      ]
+    },
+    "ResourceVersions": {
+      "title": "ResourceVersions",
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "displayCatalogVersion": {
+          "$ref": "#/$defs/Identifier"
+        },
+        "assetManifestVersion": {
+          "$ref": "#/$defs/Identifier"
+        }
+      },
+      "required": [
+        "displayCatalogVersion",
+        "assetManifestVersion"
+      ]
+    },
+    "Capabilities": {
+      "title": "Capabilities",
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "protocolVersion": {
+          "$ref": "#/$defs/ProtocolVersion"
+        },
+        "supportedProtocolVersions": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/ProtocolVersion"
+          },
+          "maxItems": 8,
+          "minItems": 1,
+          "uniqueItems": true
+        },
+        "ruleReleaseIds": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/Identifier"
+          },
+          "maxItems": 16,
+          "uniqueItems": true
+        },
+        "resources": {
+          "$ref": "#/$defs/ResourceVersions"
+        },
+        "acceptingMatches": {
+          "type": "boolean"
+        },
+        "maxCommandBytes": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 16384
+        },
+        "features": {
+          "type": "array",
+          "items": {
+            "enum": [
+              "invite",
+              "duel",
+              "private-replay",
+              "reconnect"
+            ]
+          },
+          "maxItems": 4,
+          "uniqueItems": true
+        }
+      },
+      "required": [
+        "protocolVersion",
+        "supportedProtocolVersions",
+        "ruleReleaseIds",
+        "resources",
+        "acceptingMatches",
+        "maxCommandBytes",
+        "features"
+      ]
+    },
+    "ErrorCode": {
+      "title": "ErrorCode",
+      "enum": [
+        "INVALID_JSON",
+        "PAYLOAD_TOO_LARGE",
+        "INVALID_PAYLOAD",
+        "UNSUPPORTED_PROTOCOL",
+        "NOT_ACTOR",
+        "STALE_DECISION",
+        "MATCH_VERSION_CONFLICT",
+        "CONTROL_LOST",
+        "INVALID_OPTION",
+        "INVALID_SELECTION",
+        "IDEMPOTENCY_CONFLICT",
+        "UNAUTHORIZED",
+        "FORBIDDEN",
+        "RESYNC_REQUIRED",
+        "RULE_RELEASE_UNAVAILABLE",
+        "CAPACITY_EXCEEDED",
+        "INTERNAL_ERROR"
+      ]
+    },
+    "ProtocolError": {
+      "title": "ProtocolError",
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "protocolVersion": {
+          "$ref": "#/$defs/ProtocolVersion"
+        },
+        "code": {
+          "$ref": "#/$defs/ErrorCode"
+        },
+        "requestId": {
+          "$ref": "#/$defs/Identifier"
+        },
+        "retryable": {
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "protocolVersion",
+        "code",
+        "retryable"
+      ]
+    },
+    "ReplayFrame": {
+      "title": "ReplayFrame",
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "frameSeq": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 9007199254740991
+        },
+        "matchSeq": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 9007199254740991
+        },
+        "stateVersion": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 9007199254740991
+        },
+        "status": {
+          "enum": [
+            "playing",
+            "finished",
+            "aborted"
+          ]
+        },
+        "phase": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 64
+        },
+        "done": {
+          "type": "boolean"
+        },
+        "winner": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/Seat"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "observation": {
+          "$ref": "#/$defs/Observation"
+        },
+        "events": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/VisibleEvent"
+          },
+          "maxItems": 256
+        }
+      },
+      "required": [
+        "frameSeq",
+        "matchSeq",
+        "stateVersion",
+        "status",
+        "phase",
+        "done",
+        "winner",
+        "observation",
+        "events"
+      ]
+    },
+    "ReplayPage": {
+      "title": "ReplayPage",
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "protocolVersion": {
+          "$ref": "#/$defs/ProtocolVersion"
+        },
+        "replaySchemaVersion": {
+          "enum": [
+            "visible-replay-v2"
+          ]
+        },
+        "matchId": {
+          "$ref": "#/$defs/Identifier"
+        },
+        "ruleReleaseId": {
+          "$ref": "#/$defs/Identifier"
+        },
+        "viewerSeat": {
+          "$ref": "#/$defs/Seat"
+        },
+        "frames": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/ReplayFrame"
+          },
+          "maxItems": 32
+        },
+        "nextCursor": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/Identifier"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        }
+      },
+      "required": [
+        "protocolVersion",
+        "replaySchemaVersion",
+        "matchId",
+        "ruleReleaseId",
+        "viewerSeat",
+        "frames",
+        "nextCursor"
+      ]
+    }
+  }
+}

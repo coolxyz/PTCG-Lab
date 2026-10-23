@@ -1,0 +1,324 @@
+[
+  {
+    "kind": "Command",
+    "value": {
+      "protocolVersion": "2.0",
+      "commandId": "synthetic-command-1",
+      "expectedMatchSeq": 3,
+      "expectedStateVersion": 2,
+      "controllerEpoch": 1,
+      "decisionId": "d2",
+      "choice": {
+        "optionId": "d2:o0"
+      }
+    }
+  },
+  {
+    "kind": "Command",
+    "value": {
+      "protocolVersion": "2.0",
+      "commandId": "synthetic-command-1",
+      "expectedMatchSeq": 3,
+      "expectedStateVersion": 2,
+      "controllerEpoch": 1,
+      "decisionId": "d2",
+      "choice": {
+        "selectedRefs": [
+          "d2:c0"
+        ]
+      }
+    }
+  },
+  {
+    "kind": "MatchSnapshot",
+    "value": {
+      "protocolVersion": "2.0",
+      "matchId": "synthetic-match-1",
+      "ruleReleaseId": "synthetic-rules-1",
+      "viewerSeat": "PLAYER1",
+      "matchSeq": 3,
+      "stateVersion": 2,
+      "controllerEpoch": 1,
+      "streamCursor": "cursor-3",
+      "status": "playing",
+      "phase": "playing",
+      "done": false,
+      "winner": null,
+      "decision": {
+        "id": "d2",
+        "actor": "PLAYER1",
+        "kind": "options",
+        "options": [
+          {
+            "id": "d2:o0",
+            "actionType": "PassTurn",
+            "label": "结束回合"
+          }
+        ]
+      },
+      "observation": {
+        "turn": "PLAYER1",
+        "turnNumber": 1,
+        "self": {
+          "active": [],
+          "bench": [],
+          "discard": [],
+          "lostZone": [],
+          "handCount": 1,
+          "deckCount": 53,
+          "prizeCount": 6,
+          "faceUpPrizes": [],
+          "benchCapacity": 5,
+          "hand": [
+            {
+              "cardId": "synthetic-basic-1",
+              "printingId": "synthetic-print-1",
+              "name": "合成训练卡一"
+            }
+          ]
+        },
+        "opponent": {
+          "active": [],
+          "bench": [],
+          "discard": [],
+          "lostZone": [],
+          "handCount": 1,
+          "deckCount": 53,
+          "prizeCount": 6,
+          "faceUpPrizes": [],
+          "benchCapacity": 5,
+          "hand": null
+        },
+        "stadium": []
+      },
+      "events": []
+    }
+  },
+  {
+    "kind": "MatchSnapshot",
+    "value": {
+      "protocolVersion": "2.0",
+      "matchId": "synthetic-match-1",
+      "ruleReleaseId": "synthetic-rules-1",
+      "viewerSeat": "PLAYER2",
+      "matchSeq": 3,
+      "stateVersion": 2,
+      "controllerEpoch": 1,
+      "streamCursor": "cursor-3",
+      "status": "playing",
+      "phase": "playing",
+      "done": false,
+      "winner": null,
+      "decision": null,
+      "observation": {
+        "turn": "PLAYER1",
+        "turnNumber": 1,
+        "self": {
+          "active": [],
+          "bench": [],
+          "discard": [],
+          "lostZone": [],
+          "handCount": 1,
+          "deckCount": 53,
+          "prizeCount": 6,
+          "faceUpPrizes": [],
+          "benchCapacity": 5,
+          "hand": [
+            {
+              "cardId": "synthetic-basic-2",
+              "name": "合成训练卡二"
+            }
+          ]
+        },
+        "opponent": {
+          "active": [],
+          "bench": [],
+          "discard": [],
+          "lostZone": [],
+          "handCount": 1,
+          "deckCount": 53,
+          "prizeCount": 6,
+          "faceUpPrizes": [],
+          "benchCapacity": 5,
+          "hand": null
+        },
+        "stadium": []
+      },
+      "events": []
+    }
+  },
+  {
+    "kind": "MatchSnapshot",
+    "value": {
+      "protocolVersion": "2.0",
+      "matchId": "synthetic-match-1",
+      "ruleReleaseId": "synthetic-rules-1",
+      "viewerSeat": "PLAYER1",
+      "matchSeq": 3,
+      "stateVersion": 2,
+      "controllerEpoch": 1,
+      "streamCursor": "cursor-3",
+      "status": "playing",
+      "phase": "playing",
+      "done": false,
+      "winner": null,
+      "decision": {
+        "id": "d2",
+        "actor": "PLAYER1",
+        "kind": "selection",
+        "min": 1,
+        "max": 2,
+        "hidden": true,
+        "indexed": true,
+        "candidates": [
+          {
+            "ref": "d2:c0"
+          },
+          {
+            "ref": "d2:c1"
+          }
+        ]
+      },
+      "observation": {
+        "turn": "PLAYER1",
+        "turnNumber": 1,
+        "self": {
+          "active": [],
+          "bench": [],
+          "discard": [],
+          "lostZone": [],
+          "handCount": 1,
+          "deckCount": 53,
+          "prizeCount": 6,
+          "faceUpPrizes": [],
+          "benchCapacity": 5,
+          "hand": [
+            {
+              "cardId": "synthetic-basic-1",
+              "printingId": "synthetic-print-1",
+              "name": "合成训练卡一"
+            }
+          ]
+        },
+        "opponent": {
+          "active": [],
+          "bench": [],
+          "discard": [],
+          "lostZone": [],
+          "handCount": 1,
+          "deckCount": 53,
+          "prizeCount": 6,
+          "faceUpPrizes": [],
+          "benchCapacity": 5,
+          "hand": null
+        },
+        "stadium": []
+      },
+      "events": []
+    }
+  },
+  {
+    "kind": "DeckSubmission",
+    "value": {
+      "protocolVersion": "2.0",
+      "requestId": "synthetic-request-1",
+      "ruleReleaseId": "synthetic-rules-1",
+      "entries": [
+        {
+          "printingId": "synthetic-print-1",
+          "quantity": 60
+        }
+      ]
+    }
+  },
+  {
+    "kind": "Capabilities",
+    "value": {
+      "protocolVersion": "2.0",
+      "supportedProtocolVersions": [
+        "2.0"
+      ],
+      "ruleReleaseIds": [
+        "synthetic-rules-1"
+      ],
+      "resources": {
+        "displayCatalogVersion": "synthetic-catalog-1",
+        "assetManifestVersion": "synthetic-assets-1"
+      },
+      "acceptingMatches": true,
+      "maxCommandBytes": 16384,
+      "features": [
+        "invite",
+        "duel",
+        "private-replay",
+        "reconnect"
+      ]
+    }
+  },
+  {
+    "kind": "ProtocolError",
+    "value": {
+      "protocolVersion": "2.0",
+      "code": "INVALID_OPTION",
+      "retryable": false
+    }
+  },
+  {
+    "kind": "ReplayPage",
+    "value": {
+      "protocolVersion": "2.0",
+      "replaySchemaVersion": "visible-replay-v2",
+      "matchId": "synthetic-match-1",
+      "ruleReleaseId": "synthetic-rules-1",
+      "viewerSeat": "PLAYER1",
+      "frames": [
+        {
+          "matchSeq": 3,
+          "stateVersion": 2,
+          "status": "playing",
+          "phase": "playing",
+          "done": false,
+          "winner": null,
+          "observation": {
+            "turn": "PLAYER1",
+            "turnNumber": 1,
+            "self": {
+              "active": [],
+              "bench": [],
+              "discard": [],
+              "lostZone": [],
+              "handCount": 1,
+              "deckCount": 53,
+              "prizeCount": 6,
+              "faceUpPrizes": [],
+              "benchCapacity": 5,
+              "hand": [
+                {
+                  "cardId": "synthetic-basic-1",
+                  "printingId": "synthetic-print-1",
+                  "name": "合成训练卡一"
+                }
+              ]
+            },
+            "opponent": {
+              "active": [],
+              "bench": [],
+              "discard": [],
+              "lostZone": [],
+              "handCount": 1,
+              "deckCount": 53,
+              "prizeCount": 6,
+              "faceUpPrizes": [],
+              "benchCapacity": 5,
+              "hand": null
+            },
+            "stadium": []
+          },
+          "events": [],
+          "frameSeq": 0
+        }
+      ],
+      "nextCursor": null
+    }
+  }
+]

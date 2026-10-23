@@ -1,5 +1,5 @@
 # ruff: noqa: E402
-"""Fail closed on scaffold dependency, generated-status and publication drift."""
+"""Enforce registered package dependencies, publication and migration status."""
 
 import argparse
 import ast
@@ -27,7 +27,15 @@ def check(root=ROOT):
         errors.append("duplicate distribution")
     for project in projects:
         base = root / project["path"]
-        if project["stage"] != "P1" or project["implementationReady"] is not False:
+        protocol = project["distribution"] in {
+            "ptcg-battle-protocol",
+            "@ptcg/battle-protocol",
+        }
+        expected_stage = "P2-A" if protocol else "P1"
+        if (
+            project["stage"] != expected_stage
+            or project["implementationReady"] is not False
+        ):
             errors.append(project["path"] + ": scaffold status drift")
         if project["language"] == "python":
             metadata = tomllib.loads(
@@ -35,9 +43,16 @@ def check(root=ROOT):
             )
             if metadata["project"]["name"] != project["distribution"]:
                 errors.append(project["path"] + ": distribution mismatch")
-            if metadata["project"].get("dependencies"):
+            if (
+                metadata["project"].get("dependencies", [])
+                != project["allowedRuntimeRequirements"]
+            ):
                 errors.append(
-                    project["path"] + ": P1 runtime dependencies must remain empty"
+                    project["path"] + ": runtime requirements differ from contract"
+                )
+            if not protocol and project["allowedRuntimeRequirements"]:
+                errors.append(
+                    project["path"] + ": inactive scaffold gained runtime requirements"
                 )
             for file in sorted((base / "src").rglob("*.py")):
                 rel = file.relative_to(root).as_posix()
@@ -67,7 +82,18 @@ def check(root=ROOT):
                             *project["allowedInternalImports"],
                             *project["allowedExternalImports"],
                         }
-                        if top not in allowed:
+                        if top not in allowed or (
+                            protocol
+                            and top
+                            in {
+                                "apps",
+                                "packages",
+                                "ptcg",
+                                "fastapi",
+                                "sqlite3",
+                                "torch",
+                            }
+                        ):
                             errors.append(rel + ": forbidden import " + top)
                         if (
                             top in python_modules
@@ -133,16 +159,18 @@ def check(root=ROOT):
                 errors.append(name + ": metadata/license not exported")
     status = json.loads((root / "releases/migration-status.json").read_text())
     if (
-        status.get("currentPhase") != "P1"
+        status.get("currentPhase") != "P2"
         or status.get("productionRoutingChanged") is not False
     ):
         errors.append("migration phase/routing marker drift")
-    for phase in range(2, 9):
+    if status["phases"].get("P2") != "in_progress":
+        errors.append("P2 implementation misrepresented as complete")
+    for phase in range(3, 9):
         if status["phases"].get("P" + str(phase)) != "planned":
             errors.append("future implementation misrepresented as complete")
     for name in ["docs/产品化重构设计.md", "docs/产品化重构分阶段实施.md"]:
         text = (root / name).read_text()
-        if "<!-- migration-phase: P1; production-routing: legacy -->" not in text:
+        if "<!-- migration-phase: P2; production-routing: legacy -->" not in text:
             errors.append(name + ": missing phase status")
     return sorted(set(errors))
 

@@ -31,3 +31,10 @@ typing-inspection==0.4.4
 typing_extensions==4.16.0
 wheel==0.45.1
 colorama==0.4.6; sys_platform == "win32"
+
+# P2-A runtime validation, also needed by the contract tests.
+jsonschema==4.25.1
+referencing==0.37.0
+attrs==26.1.0
+rpds-py==2026.9.1
+jsonschema-specifications==2025.9.1

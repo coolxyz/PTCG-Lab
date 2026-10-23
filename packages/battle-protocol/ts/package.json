@@ -1,6 +1,6 @@
 {
   "name": "@ptcg/battle-protocol",
-  "version": "0.0.0-p1",
+  "version": "0.2.0-p2a",
   "private": true,
   "type": "module",
   "license": "MIT",

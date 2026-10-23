@@ -1,0 +1,7 @@
+# P2-A protocol runtime closure; no GUI, API framework, AI or engine.
+jsonschema==4.25.1
+referencing==0.37.0
+attrs==26.1.0
+rpds-py==2026.9.1
+jsonschema-specifications==2025.9.1
+typing_extensions==4.16.0

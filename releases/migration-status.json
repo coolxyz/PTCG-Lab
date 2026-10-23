@@ -1,11 +1,11 @@
 {
   "schema": 1,
-  "currentPhase": "P1",
+  "currentPhase": "P2",
   "productionRoutingChanged": false,
   "phases": {
     "P0": "documented",
     "P1": "completed",
-    "P2": "planned",
+    "P2": "in_progress",
     "P3": "planned",
     "P4": "planned",
     "P5": "planned",
@@ -13,5 +13,13 @@
     "P7": "planned",
     "P8": "planned"
   },
-  "acceptanceDocument": "docs/P1迁移基线与发布门禁验收.md"
+  "acceptanceDocument": "docs/P1迁移基线与发布门禁验收.md",
+  "subphases": {
+    "P2-A": "completed",
+    "P2-B": "planned",
+    "P2-C": "planned",
+    "P2-D": "planned"
+  },
+  "p1BaselineCommit": "83e3fb2",
+  "progressDocument": "docs/P2共享协议与规则核心实施记录.md"
 }

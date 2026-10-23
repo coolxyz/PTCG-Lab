@@ -1,6 +1,6 @@
 {
   "schema": 1,
-  "phase": "P1",
+  "phase": "P2-A",
   "projects": [
     {
       "path": "apps/desktop-api",
@@ -10,7 +10,8 @@
       "stage": "P1",
       "implementationReady": false,
       "allowedInternalImports": [],
-      "allowedExternalImports": []
+      "allowedExternalImports": [],
+      "allowedRuntimeRequirements": []
     },
     {
       "path": "apps/online-server",
@@ -20,7 +21,8 @@
       "stage": "P1",
       "implementationReady": false,
       "allowedInternalImports": [],
-      "allowedExternalImports": []
+      "allowedExternalImports": [],
+      "allowedRuntimeRequirements": []
     },
     {
       "path": "packages/battle-core",
@@ -30,7 +32,8 @@
       "stage": "P1",
       "implementationReady": false,
       "allowedInternalImports": [],
-      "allowedExternalImports": []
+      "allowedExternalImports": [],
+      "allowedRuntimeRequirements": []
     },
     {
       "path": "packages/engine-provider",
@@ -40,20 +43,30 @@
       "stage": "P1",
       "implementationReady": false,
       "allowedInternalImports": [],
-      "allowedExternalImports": []
+      "allowedExternalImports": [],
+      "allowedRuntimeRequirements": []
     },
     {
       "path": "packages/battle-protocol",
       "distribution": "ptcg-battle-protocol",
       "module": "ptcg_protocol",
       "language": "python",
-      "stage": "P1",
+      "stage": "P2-A",
       "implementationReady": false,
       "allowedInternalImports": [],
       "allowedExternalImports": [
         "typing",
         "typing_extensions",
-        "__future__"
+        "__future__",
+        "functools",
+        "importlib",
+        "json",
+        "jsonschema",
+        "referencing"
+      ],
+      "allowedRuntimeRequirements": [
+        "jsonschema==4.25.1",
+        "referencing==0.37.0"
       ]
     },
     {
@@ -64,7 +77,8 @@
       "stage": "P1",
       "implementationReady": false,
       "allowedInternalImports": [],
-      "allowedExternalImports": []
+      "allowedExternalImports": [],
+      "allowedRuntimeRequirements": []
     },
     {
       "path": "packages/ai-runtime",
@@ -74,7 +88,8 @@
       "stage": "P1",
       "implementationReady": false,
       "allowedInternalImports": [],
-      "allowedExternalImports": []
+      "allowedExternalImports": [],
+      "allowedRuntimeRequirements": []
     },
     {
       "path": "apps/desktop-web",
@@ -84,7 +99,8 @@
       "stage": "P1",
       "implementationReady": false,
       "allowedInternalImports": [],
-      "allowedExternalImports": []
+      "allowedExternalImports": [],
+      "allowedRuntimeRequirements": []
     },
     {
       "path": "packages/battle-ui",
@@ -94,17 +110,19 @@
       "stage": "P1",
       "implementationReady": false,
       "allowedInternalImports": [],
-      "allowedExternalImports": []
+      "allowedExternalImports": [],
+      "allowedRuntimeRequirements": []
     },
     {
       "path": "packages/battle-protocol/ts",
       "distribution": "@ptcg/battle-protocol",
       "module": "battle-protocol",
       "language": "javascript",
-      "stage": "P1",
+      "stage": "P2-A",
       "implementationReady": false,
       "allowedInternalImports": [],
-      "allowedExternalImports": []
+      "allowedExternalImports": [],
+      "allowedRuntimeRequirements": []
     }
   ]
 }
