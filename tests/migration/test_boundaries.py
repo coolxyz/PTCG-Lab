@@ -29,6 +29,8 @@ def scaffold(tmp_path):
         "docs/产品化重构设计.md",
         "docs/产品化重构分阶段实施.md",
         "docs/P3C完整产品接入验收.md",
+        "docs/P4D完整对局与故障恢复验收.md",
+        "releases/p4d-acceptance.json",
     ]:
         p = tmp_path / name
         p.parent.mkdir(parents=True, exist_ok=True)
@@ -170,9 +172,27 @@ def test_online_server_cannot_import_local_app_ai_or_unpinned_engine(scaffold, c
     assert any("forbidden import" in e for e in check(scaffold))
 
 
-def test_p4_a_cannot_claim_full_online_acceptance(scaffold):
+@pytest.mark.parametrize(
+    "missing", ["subphase", "document", "report", "result", "source"]
+)
+def test_p4_completion_requires_current_acceptance_evidence(scaffold, missing):
     p = scaffold / "releases/migration-status.json"
     data = json.loads(p.read_text())
     data["phases"]["P4"] = "completed"
+    if missing == "subphase":
+        data["subphases"]["P4-D"] = "planned"
+    elif missing == "document":
+        (scaffold / "docs/P4D完整对局与故障恢复验收.md").unlink()
+    elif missing == "report":
+        (scaffold / "releases/p4d-acceptance.json").unlink()
+    elif missing == "result":
+        evidence = scaffold / "releases/p4d-acceptance.json"
+        result = json.loads(evidence.read_text())
+        result["naturalMatch"]["natural"] = False
+        evidence.write_text(json.dumps(result))
+    else:
+        (
+            scaffold / "apps/online-server/src/ptcg_online_server/unverified.py"
+        ).write_text("VALUE = 1\n")
     p.write_text(json.dumps(data))
     assert any("P4 implementation misrepresented" in e for e in check(scaffold))

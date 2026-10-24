@@ -1,13 +1,13 @@
-# 独立在线 API 部署入口（P4-C）
+# 独立在线 API 部署入口（P4-D）
 
-此目录对应新 `ptcg-online-server`，不复用旧网页 v1 镜像、数据库、CA 或服务。P4-C 已支持认证、卡组、房间、权威命令、控制权、私有推送/回放和重启恢复；完整自然终局及故障矩阵仍由 P4-D 验收。外部发布、正式镜像摘要锁定及完整运维验收属于 P8。
+此目录对应新 `ptcg-online-server`，不复用旧网页 v1 镜像、数据库、CA 或服务。P4-C 已支持认证、卡组、房间、权威命令、控制权、私有推送/回放和重启恢复；P4-D 已通过完整自然终局及故障矩阵的本地验收。外部发布、正式镜像摘要锁定及完整运维验收属于 P8。
 
 ## 基础镜像与规则输入
 
 在仓库根目录构建：
 
 ```sh
-docker build -f ops/online/Dockerfile -t ptcg-lab-online-api:p4c .
+docker build -f ops/online/Dockerfile -t ptcg-lab-online-api:p4d .
 ```
 
 Dockerfile 专属 ignore 采用白名单，只允许三个共享 Python 包与 online-server 的源码和包元数据进入构建上下文。运行层安装 wheel，不安装 React、图片、Pillow、AI/训练包，也不复制真实规则或用户数据。`PYTHON_IMAGE` 默认已固定本次构建使用的 Python 3.14 slim 摘要，可由部署方显式覆盖为其他已批准摘要；执行身份包含 Python patch 版本，因此应针对最终镜像确认 ruleReleaseId。
@@ -46,4 +46,4 @@ TLS 网关需同时代理 HTTP 和 `/api/online/v2/stream` WebSocket，保留配
 
 实际镜像构建/运行状态见 [P4 验收记录](../../docs/P4纯API服务实施记录.md)，配置文件存在不代表已经完成 Docker 或外部部署验收。
 
-P4-C 必须显式应用新增 003 migration。已升级的数据库不能直接给旧 p4a/p4b 镜像使用；回退需升级前备份或专用新库。详细证据与范围见 [P4-C 验收](../../docs/P4C对局提交与私有推送验收.md)。本次未启动长期 Compose 部署。
+P4-C 必须显式应用新增 003 migration。已升级的数据库不能直接给旧 p4a/p4b 镜像使用；回退需升级前备份或专用新库。详细证据与范围见 [P4-C 验收](../../docs/P4C对局提交与私有推送验收.md)。P4-D 沿用 001—003，不新增 migration；版本为 0.4.0.dev4，测试故障工厂不进入 wheel 或镜像。结果见 [P4-D 验收](../../docs/P4D完整对局与故障恢复验收.md)。本次未启动长期 Compose 部署。

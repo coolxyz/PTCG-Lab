@@ -13,6 +13,7 @@ ROOT = Path(__file__).resolve().parents[2]
 if __package__ in (None, ""):
     sys.path.insert(0, str(ROOT))
 from scripts.public.policy import source_files, safe_file
+from scripts.migration.p4d_report import evidence_valid
 
 
 def check(root=ROOT):
@@ -39,7 +40,7 @@ def check(root=ROOT):
             ("P3-C" if project["distribution"] == "@ptcg/desktop-web" else "P3-B")
             if gui
             else (
-                "P4-C"
+                "P4-D"
                 if online
                 else "P2-D" if (protocol or core) else "P2-B" if provider else "P1"
             )
@@ -241,7 +242,20 @@ def check(root=ROOT):
         )
     ):
         errors.append("P3 implementation misrepresented as complete")
-    if status["phases"].get("P4") != "in_progress":
+    p4_phase = status["phases"].get("P4")
+    if p4_phase not in {"in_progress", "completed"} or (
+        p4_phase == "completed"
+        and (
+            any(
+                status.get("subphases", {}).get(p) != "completed"
+                for p in ("P4-A", "P4-B", "P4-C", "P4-D")
+            )
+            or status.get("p4dAcceptanceDocument")
+            != "docs/P4D完整对局与故障恢复验收.md"
+            or not (root / "docs/P4D完整对局与故障恢复验收.md").is_file()
+            or not evidence_valid(root)
+        )
+    ):
         errors.append("P4 implementation misrepresented as complete")
     for phase in range(5, 9):
         if status["phases"].get("P" + str(phase)) != "planned":

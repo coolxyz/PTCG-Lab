@@ -13,28 +13,31 @@ from urllib.error import URLError
 
 
 @contextmanager
-def server(settings, tmp_path, *, tls=None):
+def server(
+    settings, tmp_path, *, tls=None, factory=None, extra_env=None, on_started=None
+):
     with socket.socket() as sock:
         sock.bind(("127.0.0.1", 0))
         port = sock.getsockname()[1]
     origin = f"{'https' if tls else 'http'}://127.0.0.1:{port}"
     context = ssl.create_default_context(cafile=str(tls[0])) if tls else None
     command = [sys.executable, "-m", "ptcg_online_server"]
-    if tls:
+    if tls or factory:
         command = [
             sys.executable,
             "-m",
             "uvicorn",
-            "ptcg_online_server.api:create_app",
+            factory or "ptcg_online_server.api:create_app",
             "--factory",
             "--host",
             "127.0.0.1",
             "--port",
             str(port),
-            "--ssl-certfile",
-            str(tls[0]),
-            "--ssl-keyfile",
-            str(tls[1]),
+            *(
+                ["--ssl-certfile", str(tls[0]), "--ssl-keyfile", str(tls[1])]
+                if tls
+                else []
+            ),
             "--no-access-log",
             "--no-proxy-headers",
             "--ws",
@@ -65,6 +68,7 @@ def server(settings, tmp_path, *, tls=None):
                     if settings.rule_directory
                     else {}
                 ),
+                **(extra_env or {}),
             },
             stdout=log,
             stderr=log,
@@ -82,6 +86,8 @@ def server(settings, tmp_path, *, tls=None):
                     time.sleep(0.1)
             else:
                 raise AssertionError("Dedicated API did not become alive")
+            if on_started:
+                on_started(child)
             yield origin
         finally:
             # Simulates power loss; no cooperative shutdown or in-memory token cache.

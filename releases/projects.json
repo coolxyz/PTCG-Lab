@@ -1,6 +1,6 @@
 {
   "schema": 1,
-  "phase": "P4-C",
+  "phase": "P4-D",
   "projects": [
     {
       "path": "apps/desktop-api",
@@ -18,7 +18,7 @@
       "distribution": "ptcg-online-server",
       "module": "ptcg_online_server",
       "language": "python",
-      "stage": "P4-C",
+      "stage": "P4-D",
       "implementationReady": false,
       "allowedInternalImports": [
         "ptcg_core",

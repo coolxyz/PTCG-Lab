@@ -4,8 +4,8 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "ptcg-online-server"
-version = "0.4.0.dev3"
-description = "P4-C authoritative API, durable match commits and private streams"
+version = "0.4.0.dev4"
+description = "P4-D authoritative API with natural-game and process-recovery acceptance"
 readme = "README.md"
 requires-python = ">=3.14"
 license = "MIT"

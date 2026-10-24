@@ -39,6 +39,7 @@ FILES = (
     "package-lock.json",
     "releases/projects.json",
     "releases/migration-status.json",
+    "releases/p4d-acceptance.json",
     "releases/source-candidates.json",
     "ops/online/Dockerfile.dockerignore",
 )

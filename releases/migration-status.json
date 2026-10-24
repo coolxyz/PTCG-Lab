@@ -7,7 +7,7 @@
     "P1": "completed",
     "P2": "completed",
     "P3": "completed",
-    "P4": "in_progress",
+    "P4": "completed",
     "P5": "planned",
     "P6": "planned",
     "P7": "planned",
@@ -25,7 +25,7 @@
     "P4-A": "completed",
     "P4-B": "completed",
     "P4-C": "completed",
-    "P4-D": "planned"
+    "P4-D": "completed"
   },
   "p1BaselineCommit": "83e3fb2",
   "progressDocument": "docs/P2共享协议与规则核心实施记录.md",
@@ -46,5 +46,7 @@
   "p4aBaselineCommit": "9067663",
   "p4bAcceptanceDocument": "docs/P4B房间邀请与开局验收.md",
   "p4bBaselineCommit": "577a6c1",
-  "p4cAcceptanceDocument": "docs/P4C对局提交与私有推送验收.md"
+  "p4cAcceptanceDocument": "docs/P4C对局提交与私有推送验收.md",
+  "p4cBaselineCommit": "6801d38",
+  "p4dAcceptanceDocument": "docs/P4D完整对局与故障恢复验收.md"
 }

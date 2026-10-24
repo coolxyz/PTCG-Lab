@@ -1,0 +1,46 @@
+{
+  "schema": 1,
+  "stage": "P4-D",
+  "status": "passed",
+  "tests": 76,
+  "baselineCommit": "6801d38",
+  "serverSourceSha256": "0f9b74c6acbf94487e1763f9b2f983f08a9ea12deafa60644bf77c154974a74b",
+  "naturalMatch": {
+    "acceptedCommands": 104,
+    "commandsBySeat": [
+      52,
+      52
+    ],
+    "visibleFramesCompared": 210,
+    "reason": "deck_out",
+    "transport": "HTTPS/WSS",
+    "privateReplays": 2,
+    "natural": true,
+    "maxHandshakeSeconds": 0.047
+  },
+  "processFailures": {
+    "api-before-commit": {
+      "committedBeforeLoss": false,
+      "finalMatchSeq": 1,
+      "receipts": 1,
+      "visibleFrames": 4,
+      "initialRecordUnchanged": true
+    },
+    "rule-before-commit": {
+      "committedBeforeLoss": false,
+      "finalMatchSeq": 1,
+      "receipts": 1,
+      "visibleFrames": 4,
+      "initialRecordUnchanged": true
+    },
+    "api-after-commit": {
+      "committedBeforeLoss": true,
+      "finalMatchSeq": 1,
+      "receipts": 1,
+      "visibleFrames": 4,
+      "initialRecordUnchanged": true
+    }
+  },
+  "productionRoutingChanged": false,
+  "productionReady": false
+}

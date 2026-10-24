@@ -14,7 +14,7 @@ services:
       timeout: 3s
       retries: 20
   api:
-    image: ptcg-lab-online-api:p4c
+    image: ptcg-lab-online-api:p4d
     build:
       context: ../..
       dockerfile: ops/online/Dockerfile
