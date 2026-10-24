@@ -1,6 +1,6 @@
 {
   "schema": 1,
-  "currentPhase": "P4",
+  "currentPhase": "P5",
   "productionRoutingChanged": false,
   "phases": {
     "P0": "documented",
@@ -8,7 +8,7 @@
     "P2": "completed",
     "P3": "completed",
     "P4": "completed",
-    "P5": "planned",
+    "P5": "in_progress",
     "P6": "planned",
     "P7": "planned",
     "P8": "planned"
@@ -25,7 +25,11 @@
     "P4-A": "completed",
     "P4-B": "completed",
     "P4-C": "completed",
-    "P4-D": "completed"
+    "P4-D": "completed",
+    "P5-A": "completed",
+    "P5-B": "planned",
+    "P5-C": "planned",
+    "P5-D": "planned"
   },
   "p1BaselineCommit": "83e3fb2",
   "progressDocument": "docs/P2共享协议与规则核心实施记录.md",
@@ -48,5 +52,7 @@
   "p4bBaselineCommit": "577a6c1",
   "p4cAcceptanceDocument": "docs/P4C对局提交与私有推送验收.md",
   "p4cBaselineCommit": "6801d38",
-  "p4dAcceptanceDocument": "docs/P4D完整对局与故障恢复验收.md"
+  "p4dAcceptanceDocument": "docs/P4D完整对局与故障恢复验收.md",
+  "p4dBaselineCommit": "f355c90",
+  "p5ProgressDocument": "docs/P5本地网络客户端实施记录.md"
 }

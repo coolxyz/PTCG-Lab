@@ -1,0 +1,172 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$defs": {
+    "Create": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "protocolVersion"
+      ],
+      "properties": {
+        "protocolVersion": {
+          "const": "2.0"
+        },
+        "name": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 24,
+          "not": {
+            "pattern": "[\\u0000-\\u001f\\u007f]"
+          }
+        },
+        "deviceName": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 64,
+          "not": {
+            "pattern": "[\\u0000-\\u001f\\u007f]"
+          }
+        }
+      }
+    },
+    "Refresh": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "protocolVersion",
+        "refreshToken"
+      ],
+      "properties": {
+        "protocolVersion": {
+          "const": "2.0"
+        },
+        "refreshToken": {
+          "type": "string",
+          "pattern": "^rtk_[A-Za-z0-9_-]{43}$",
+          "minLength": 47,
+          "maxLength": 47
+        }
+      }
+    },
+    "Revoke": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "protocolVersion"
+      ],
+      "properties": {
+        "protocolVersion": {
+          "const": "2.0"
+        }
+      }
+    },
+    "Identity": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "protocolVersion",
+        "serverId",
+        "userId",
+        "deviceId",
+        "sessionId"
+      ],
+      "properties": {
+        "protocolVersion": {
+          "const": "2.0"
+        },
+        "serverId": {
+          "type": "string",
+          "maxLength": 128
+        },
+        "userId": {
+          "type": "string",
+          "pattern": "^[a-f0-9]{32}$"
+        },
+        "deviceId": {
+          "type": "string",
+          "pattern": "^[a-f0-9]{32}$"
+        },
+        "sessionId": {
+          "type": "string",
+          "pattern": "^[a-f0-9]{32}$"
+        }
+      }
+    },
+    "Tokens": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "protocolVersion",
+        "serverId",
+        "userId",
+        "deviceId",
+        "sessionId",
+        "tokenType",
+        "accessToken",
+        "refreshToken",
+        "accessExpiresAt",
+        "refreshExpiresAt"
+      ],
+      "properties": {
+        "protocolVersion": {
+          "const": "2.0"
+        },
+        "serverId": {
+          "type": "string",
+          "maxLength": 128
+        },
+        "userId": {
+          "type": "string",
+          "pattern": "^[a-f0-9]{32}$"
+        },
+        "deviceId": {
+          "type": "string",
+          "pattern": "^[a-f0-9]{32}$"
+        },
+        "sessionId": {
+          "type": "string",
+          "pattern": "^[a-f0-9]{32}$"
+        },
+        "tokenType": {
+          "const": "Bearer"
+        },
+        "accessToken": {
+          "type": "string",
+          "pattern": "^atk_[A-Za-z0-9_-]{43}$",
+          "minLength": 47,
+          "maxLength": 47
+        },
+        "refreshToken": {
+          "type": "string",
+          "pattern": "^rtk_[A-Za-z0-9_-]{43}$",
+          "minLength": 47,
+          "maxLength": 47
+        },
+        "accessExpiresAt": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "refreshExpiresAt": {
+          "type": "string",
+          "format": "date-time"
+        }
+      }
+    },
+    "Revoked": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "protocolVersion",
+        "revoked"
+      ],
+      "properties": {
+        "protocolVersion": {
+          "const": "2.0"
+        },
+        "revoked": {
+          "const": true
+        }
+      }
+    }
+  }
+}

@@ -15,14 +15,15 @@ import uuid
 ROOT = Path(__file__).resolve().parents[2]
 
 
-def run(output, python, image=None):
+def run(output, python, image=None, suite="server"):
+    test_path = {"server": "tests/online_v2", "client": "tests/online_client"}[suite]
     output = Path(output).resolve()
     if not any(
         output.is_relative_to(ROOT / name)
-        for name in ("var/p4a", "var/p4b", "var/p4c", "var/p4d")
+        for name in ("var/p4a", "var/p4b", "var/p4c", "var/p4d", "var/p5a")
     ):
         raise ValueError(
-            "Acceptance output must be below var/p4a, var/p4b, var/p4c or var/p4d"
+            "Acceptance output must be below var/p4a, var/p4b, var/p4c, var/p4d or var/p5a"
         )
     output.mkdir(parents=True, exist_ok=False)
     password = secrets.token_urlsafe(32)
@@ -87,7 +88,7 @@ def run(output, python, image=None):
                 str(python),
                 "-m",
                 "pytest",
-                "tests/online_v2",
+                test_path,
                 "-q",
                 "--junitxml",
                 str(output / "results.xml"),
@@ -105,7 +106,12 @@ def run(output, python, image=None):
                     if image
                     else {}
                 ),
-                "PYTHONPATH": str(ROOT / "apps/online-server/src"),
+                "PYTHONPATH": os.pathsep.join(
+                    [
+                        str(ROOT / "apps/online-server/src"),
+                        str(ROOT / "packages/online-client/src"),
+                    ]
+                ),
             },
         )
     finally:
@@ -125,6 +131,7 @@ if __name__ == "__main__":
     parser.add_argument(
         "--image", help="Optional freshly built API image for container acceptance"
     )
+    parser.add_argument("--suite", choices=("server", "client"), default="server")
     args = parser.parse_args()
     # resolve() preserves the venv path; don't resolve the interpreter symlink.
-    raise SystemExit(run(args.output, args.python.absolute(), args.image))
+    raise SystemExit(run(args.output, args.python.absolute(), args.image, args.suite))

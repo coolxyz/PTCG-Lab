@@ -1,4 +1,4 @@
-"""P1 scaffold. No production behavior or import-time side effects."""
+"""Native networking foundation. Import does not open files or connections."""
 
-__version__ = "0.1.0.dev0"
+__version__ = "0.5.0.dev1"
 IMPLEMENTATION_READY = False

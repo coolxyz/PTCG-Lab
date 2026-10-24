@@ -204,6 +204,8 @@ def build(output, root=ROOT, wheelhouse=None):
                 str(root / "packages/battle-core/requirements.lock"),
                 "--constraint",
                 str(root / "apps/online-server/requirements.lock"),
+                "--constraint",
+                str(root / "packages/online-client/requirements.lock"),
                 *[str(p) for p in wheels],
             ],
             check=True,
@@ -244,6 +246,9 @@ def build(output, root=ROOT, wheelhouse=None):
         online_smoke = scratch / "online-smoke.py"
         online_smoke.write_bytes((root / "tests/online_v2/smoke.py").read_bytes())
         subprocess.run([str(python), "-I", str(online_smoke)], cwd=scratch, check=True)
+        client_smoke = scratch / "client-smoke.py"
+        client_smoke.write_bytes((root / "tests/online_client/smoke.py").read_bytes())
+        subprocess.run([str(python), "-I", str(client_smoke)], cwd=scratch, check=True)
     hashes = {
         p.name: hashlib.file_digest(p.open("rb"), "sha256").hexdigest()
         for p in output.iterdir()
@@ -256,6 +261,7 @@ def build(output, root=ROOT, wheelhouse=None):
         "providerValidationOutsideCheckout": "passed",
         "coreLoaderOutsideCheckout": "passed",
         "onlineAPIOutsideCheckout": "passed",
+        "onlineClientOutsideCheckout": "passed",
         "files": hashes,
         "productionReady": False,
     }

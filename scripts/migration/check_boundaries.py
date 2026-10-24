@@ -35,6 +35,7 @@ def check(root=ROOT):
         provider = project["distribution"] == "ptcg-engine-provider"
         core = project["distribution"] == "ptcg-battle-core"
         online = project["distribution"] == "ptcg-online-server"
+        client = project["distribution"] == "ptcg-online-client"
         gui = project["distribution"] in {"@ptcg/battle-ui", "@ptcg/desktop-web"}
         expected_stage = (
             ("P3-C" if project["distribution"] == "@ptcg/desktop-web" else "P3-B")
@@ -42,7 +43,11 @@ def check(root=ROOT):
             else (
                 "P4-D"
                 if online
-                else "P2-D" if (protocol or core) else "P2-B" if provider else "P1"
+                else (
+                    "P5-A"
+                    if client
+                    else "P2-D" if (protocol or core) else "P2-B" if provider else "P1"
+                )
             )
         )
         if (
@@ -64,7 +69,7 @@ def check(root=ROOT):
                     project["path"] + ": runtime requirements differ from contract"
                 )
             if (
-                not (protocol or core or online)
+                not (protocol or core or online or client)
                 and project["allowedRuntimeRequirements"]
             ):
                 errors.append(
@@ -216,7 +221,7 @@ def check(root=ROOT):
                 errors.append(name + ": metadata/license not exported")
     status = json.loads((root / "releases/migration-status.json").read_text())
     if (
-        status.get("currentPhase") != "P4"
+        status.get("currentPhase") != "P5"
         or status.get("productionRoutingChanged") is not False
     ):
         errors.append("migration phase/routing marker drift")
@@ -257,12 +262,25 @@ def check(root=ROOT):
         )
     ):
         errors.append("P4 implementation misrepresented as complete")
-    for phase in range(5, 9):
+    if status["phases"].get("P5") != "in_progress":
+        errors.append("P5 implementation misrepresented as complete")
+    for filename in ("session", "lobby", "match"):
+        name = filename + ".schema.json"
+        if (
+            safe_file(
+                root, "packages/online-client/src/ptcg_online_client/schemas/" + name
+            ).read_bytes()
+            != safe_file(
+                root, "apps/online-server/src/ptcg_online_server/schemas/" + name
+            ).read_bytes()
+        ):
+            errors.append("native client/server envelope schema drift")
+    for phase in range(6, 9):
         if status["phases"].get("P" + str(phase)) != "planned":
             errors.append("future implementation misrepresented as complete")
     for name in ["docs/产品化重构设计.md", "docs/产品化重构分阶段实施.md"]:
         text = (root / name).read_text()
-        if "<!-- migration-phase: P4; production-routing: legacy -->" not in text:
+        if "<!-- migration-phase: P5; production-routing: legacy -->" not in text:
             errors.append(name + ": missing phase status")
     return sorted(set(errors))
 

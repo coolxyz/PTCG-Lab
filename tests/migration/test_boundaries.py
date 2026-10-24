@@ -196,3 +196,36 @@ def test_p4_completion_requires_current_acceptance_evidence(scaffold, missing):
         ).write_text("VALUE = 1\n")
     p.write_text(json.dumps(data))
     assert any("P4 implementation misrepresented" in e for e in check(scaffold))
+
+
+@pytest.mark.parametrize(
+    "code",
+    [
+        "import ptcg_online_server",
+        "import ptcg_core",
+        "import ptcg_ai_runtime",
+        "import sqlite3",
+    ],
+)
+def test_native_client_cannot_import_engine_server_or_local_data(scaffold, code):
+    (scaffold / "packages/online-client/src/ptcg_online_client/leak.py").write_text(
+        code
+    )
+    assert any("forbidden import" in e for e in check(scaffold))
+
+
+def test_native_client_envelopes_must_match_service(scaffold):
+    path = (
+        scaffold
+        / "packages/online-client/src/ptcg_online_client/schemas/session.schema.json"
+    )
+    path.write_text(path.read_text() + "\n")
+    assert any("envelope schema drift" in e for e in check(scaffold))
+
+
+def test_native_client_foundation_cannot_claim_all_p5_complete(scaffold):
+    path = scaffold / "releases/migration-status.json"
+    data = json.loads(path.read_text())
+    data["phases"]["P5"] = "completed"
+    path.write_text(json.dumps(data))
+    assert any("P5 implementation misrepresented" in e for e in check(scaffold))

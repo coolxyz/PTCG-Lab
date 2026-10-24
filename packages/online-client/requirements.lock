@@ -1,0 +1,8 @@
+# P5-A native client closure; no server, engine, GUI or AI.
+jsonschema==4.25.1
+referencing==0.37.0
+attrs==26.1.0
+rpds-py==2026.9.1
+jsonschema-specifications==2025.9.1
+typing_extensions==4.16.0
+websockets==15.0.1

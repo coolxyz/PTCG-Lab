@@ -1,6 +1,6 @@
 {
   "schema": 1,
-  "phase": "P4-D",
+  "phase": "P5-A",
   "projects": [
     {
       "path": "apps/desktop-api",
@@ -152,11 +152,40 @@
       "distribution": "ptcg-online-client",
       "module": "ptcg_online_client",
       "language": "python",
-      "stage": "P1",
+      "stage": "P5-A",
       "implementationReady": false,
-      "allowedInternalImports": [],
-      "allowedExternalImports": [],
-      "allowedRuntimeRequirements": []
+      "allowedInternalImports": [
+        "ptcg_protocol"
+      ],
+      "allowedExternalImports": [
+        "contextlib",
+        "copy",
+        "dataclasses",
+        "datetime",
+        "fcntl",
+        "functools",
+        "hashlib",
+        "http",
+        "importlib",
+        "json",
+        "jsonschema",
+        "os",
+        "pathlib",
+        "re",
+        "secrets",
+        "ssl",
+        "stat",
+        "threading",
+        "time",
+        "urllib",
+        "uuid",
+        "websockets"
+      ],
+      "allowedRuntimeRequirements": [
+        "ptcg-battle-protocol==0.2.0.dev1",
+        "websockets==15.0.1",
+        "jsonschema==4.25.1"
+      ]
     },
     {
       "path": "packages/ai-runtime",
