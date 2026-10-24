@@ -33,9 +33,7 @@ def check(root=ROOT):
         }
         provider = project["distribution"] == "ptcg-engine-provider"
         core = project["distribution"] == "ptcg-battle-core"
-        expected_stage = (
-            "P2-A" if protocol else "P2-B" if provider else "P2-C" if core else "P1"
-        )
+        expected_stage = "P2-D" if (protocol or core) else "P2-B" if provider else "P1"
         if (
             project["stage"] != expected_stage
             or project["implementationReady"] is not False
@@ -179,7 +177,14 @@ def check(root=ROOT):
         or status.get("productionRoutingChanged") is not False
     ):
         errors.append("migration phase/routing marker drift")
-    if status["phases"].get("P2") != "in_progress":
+    phase = status["phases"].get("P2")
+    if phase not in {"in_progress", "completed"} or (
+        phase == "completed"
+        and (
+            status.get("subphases", {}).get("P2-D") != "completed"
+            or not (root / "releases/p2d-acceptance.json").is_file()
+        )
+    ):
         errors.append("P2 implementation misrepresented as complete")
     for phase in range(3, 9):
         if status["phases"].get("P" + str(phase)) != "planned":

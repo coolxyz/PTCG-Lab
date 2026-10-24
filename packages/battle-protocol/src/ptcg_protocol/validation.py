@@ -170,11 +170,41 @@ def _semantics(kind, value):
                 <= len(decision["candidates"])
             ):
                 _fail()
-            if decision["hidden"] and (
-                "deckInspection" in decision
-                or any(set(c) != {"ref"} for c in decision["candidates"])
-            ):
-                _fail()
+            if decision["hidden"]:
+                if "deckInspection" in decision:
+                    _fail()
+                for candidate in decision["candidates"]:
+                    if set(candidate) == {"ref"}:
+                        continue
+                    if set(candidate) != {
+                        "ref",
+                        "card",
+                        "revealedPrizeIndex",
+                        "revealedPrizeSide",
+                    }:
+                        _fail()
+                    prizes = value["observation"][candidate["revealedPrizeSide"]][
+                        "faceUpPrizes"
+                    ]
+                    visible = next(
+                        (
+                            p["card"]
+                            for p in prizes
+                            if p["index"] == candidate["revealedPrizeIndex"]
+                        ),
+                        None,
+                    )
+                    card = candidate["card"]
+                    if (
+                        visible is None
+                        or visible["cardId"] != card["cardId"]
+                        or visible["name"] != card["name"]
+                    ):
+                        _fail()
+                    known = dict(visible.get("presentation", {}))
+                    known.pop("prizeIndex", None)
+                    if known != card.get("presentation", {}):
+                        _fail()
             inspection = decision.get("deckInspection")
             if (
                 inspection

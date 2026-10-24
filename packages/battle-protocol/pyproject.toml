@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "ptcg-battle-protocol"
-version = "0.2.0.dev0"
+version = "0.2.0.dev1"
 description = "P2-A v2 wire contracts and bounded runtime validation"
 readme = "README.md"
 requires-python = ">=3.14"

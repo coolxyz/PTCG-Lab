@@ -1,6 +1,6 @@
 # ptcg-battle-core
 
-P2-C 显式激活的规则核心，版本 `0.2.0.dev0`。未切换现有人机、局域网或 AI 的入口；`IMPLEMENTATION_READY=False` 表示产品迁移尚未完成。
+P2-C 显式激活的规则核心，版本 `0.2.0.dev1`。未切换现有人机、局域网或 AI 的入口；`IMPLEMENTATION_READY=False` 表示产品迁移尚未完成。
 
 ```python
 from pathlib import Path
@@ -24,4 +24,4 @@ restored = factory.restore_match(private_record)
 - 新恢复记录为 `core-recovery-v2`，绑定安装代码、依赖、Python 版本和资源内容。拒绝旧 `p01-replay-v1`，不能修改旧记录身份强行恢复。
 - 新进程可先调用 `ptcg_core.compat.install_legacy_imports(factory)`，再导入受支持的 `packages.rules.*`、`packages.battle.runtime`、`packages.engine_adapter.base/cn_format`。这些旧名称仅指向新核心。SQLite session、AI agents、旧 catalog/UI 不在兼容范围。`Adapter` 的显式引擎行输入只适合可信内部调用；API 须使用 factory 准入。
 
-完整提取边界、旧运行时冻结规则和验收命令见 `docs/P2C核心提取与兼容层验收.md`。P2-D 专项等价/并发隔离尚待完成。
+完整提取边界、旧运行时冻结规则和验收命令见 `docs/P2C核心提取与兼容层验收.md`。P2-D 验收与视角绑定见 `docs/P2D等价与隔离验收.md`。

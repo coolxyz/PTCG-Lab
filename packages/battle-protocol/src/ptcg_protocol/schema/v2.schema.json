@@ -2,7 +2,7 @@
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "urn:ptcg-lab:protocol:v2",
   "title": "BattleProtocolV2",
-  "description": "P2-A wire contract. Private engine records and seeds are deliberately not representable.",
+  "description": "P2-D strict v2 development contract; explicit visible presentation fields, no private recovery payload.",
   "oneOf": [
     {
       "$ref": "#/$defs/Command"
@@ -194,6 +194,9 @@
           "type": "string",
           "minLength": 1,
           "maxLength": 200
+        },
+        "presentation": {
+          "$ref": "#/$defs/VisibleCardPresentation"
         }
       },
       "required": [
@@ -369,6 +372,15 @@
             "$ref": "#/$defs/CardIdentity"
           },
           "maxItems": 60
+        },
+        "id": {
+          "enum": [
+            "player1",
+            "player2"
+          ]
+        },
+        "turnFlags": {
+          "$ref": "#/$defs/TurnFlags"
         }
       },
       "required": [
@@ -446,6 +458,15 @@
         },
         "hand": {
           "type": "null"
+        },
+        "id": {
+          "enum": [
+            "player1",
+            "player2"
+          ]
+        },
+        "turnFlags": {
+          "$ref": "#/$defs/TurnFlags"
         }
       },
       "required": [
@@ -476,23 +497,279 @@
         },
         "label": {
           "type": "string",
-          "minLength": 1,
+          "minLength": 0,
           "maxLength": 200
         },
         "sourceRef": {
-          "$ref": "#/$defs/Identifier"
+          "anyOf": [
+            {
+              "type": "string",
+              "maxLength": 1000
+            },
+            {
+              "type": "null"
+            }
+          ]
         },
         "targetRef": {
-          "$ref": "#/$defs/Identifier"
+          "anyOf": [
+            {
+              "type": "string",
+              "maxLength": 1000
+            },
+            {
+              "type": "null"
+            }
+          ]
         },
         "activeRef": {
           "$ref": "#/$defs/Identifier"
+        },
+        "source": {
+          "anyOf": [
+            {
+              "type": "string",
+              "maxLength": 1000
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "sourceId": {
+          "anyOf": [
+            {
+              "type": "string",
+              "maxLength": 1000
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "sourcePosition": {
+          "anyOf": [
+            {
+              "type": "string",
+              "maxLength": 1000
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "target": {
+          "anyOf": [
+            {
+              "type": "string",
+              "maxLength": 1000
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "targetId": {
+          "anyOf": [
+            {
+              "type": "string",
+              "maxLength": 1000
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "targetPosition": {
+          "anyOf": [
+            {
+              "type": "string",
+              "maxLength": 1000
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "active_pokemon": {
+          "anyOf": [
+            {
+              "type": "string",
+              "maxLength": 1000
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "active_pokemonId": {
+          "anyOf": [
+            {
+              "type": "string",
+              "maxLength": 1000
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "active_pokemonPosition": {
+          "anyOf": [
+            {
+              "type": "string",
+              "maxLength": 1000
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "active_pokemonRef": {
+          "anyOf": [
+            {
+              "type": "string",
+              "maxLength": 1000
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "ability": {
+          "anyOf": [
+            {
+              "type": "string",
+              "maxLength": 1000
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "attack": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "name": {
+              "type": "string",
+              "maxLength": 200
+            },
+            "damage": {
+              "type": "integer",
+              "minimum": -100000,
+              "maximum": 100000
+            }
+          },
+          "required": [
+            "name",
+            "damage"
+          ]
+        },
+        "position": {
+          "anyOf": [
+            {
+              "type": "string",
+              "maxLength": 1000
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "kind": {
+          "anyOf": [
+            {
+              "type": "string",
+              "maxLength": 1000
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "description": {
+          "anyOf": [
+            {
+              "type": "string",
+              "maxLength": 1000
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "sourceIndex": {
+          "anyOf": [
+            {
+              "type": "integer",
+              "minimum": -1,
+              "maximum": 600
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "targetIndex": {
+          "anyOf": [
+            {
+              "type": "integer",
+              "minimum": -1,
+              "maximum": 600
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "active_pokemonIndex": {
+          "anyOf": [
+            {
+              "type": "integer",
+              "minimum": -1,
+              "maximum": 600
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "candidates": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "maxLength": 200
+          },
+          "maxItems": 60
+        },
+        "chosen": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "maxLength": 200
+          },
+          "maxItems": 60
+        },
+        "value": {
+          "anyOf": [
+            {
+              "type": "string",
+              "maxLength": 1000
+            },
+            {
+              "type": "integer",
+              "minimum": -100000,
+              "maximum": 100000
+            },
+            {
+              "type": "boolean"
+            }
+          ]
         }
       },
       "required": [
         "id",
-        "actionType",
-        "label"
+        "actionType"
       ]
     },
     "Candidate": {
@@ -529,6 +806,21 @@
           "type": "integer",
           "minimum": 0,
           "maximum": 600
+        },
+        "position": {
+          "type": "string",
+          "maxLength": 128
+        },
+        "revealedPrizeIndex": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 59
+        },
+        "revealedPrizeSide": {
+          "enum": [
+            "self",
+            "opponent"
+          ]
         }
       },
       "required": [
@@ -669,6 +961,36 @@
         },
         "deckInspection": {
           "$ref": "#/$defs/DeckInspection"
+        },
+        "source": {
+          "anyOf": [
+            {
+              "type": "string",
+              "maxLength": 200
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "sourceId": {
+          "anyOf": [
+            {
+              "type": "string",
+              "maxLength": 128
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "zones": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "maxLength": 128
+          },
+          "maxItems": 20
         }
       },
       "required": [
@@ -784,6 +1106,39 @@
             "$ref": "#/$defs/CardState"
           },
           "maxItems": 1
+        },
+        "viewer": {
+          "enum": [
+            "player1",
+            "player2"
+          ]
+        },
+        "timestep": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 9007199254740991
+        },
+        "isChoosingCard": {
+          "type": "boolean"
+        },
+        "terminationReason": {
+          "anyOf": [
+            {
+              "type": "string",
+              "maxLength": 128
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "autoEvents": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "maxLength": 1000
+          },
+          "maxItems": 256
         }
       },
       "required": [
@@ -873,6 +1228,51 @@
             "$ref": "#/$defs/VisibleEvent"
           },
           "maxItems": 256
+        },
+        "startingPlayer": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/Seat"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "catalogVersion": {
+          "type": "string",
+          "maxLength": 128
+        },
+        "setupEvents": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/SetupEvent"
+          },
+          "maxItems": 256
+        },
+        "publicReveals": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/PublicReveal"
+          },
+          "maxItems": 256
+        },
+        "visualEffects": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/VisualEffect"
+          },
+          "maxItems": 256
+        },
+        "result": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/ResultExplanation"
+            },
+            {
+              "type": "null"
+            }
+          ]
         }
       },
       "required": [
@@ -1070,6 +1470,51 @@
             "$ref": "#/$defs/VisibleEvent"
           },
           "maxItems": 256
+        },
+        "startingPlayer": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/Seat"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "catalogVersion": {
+          "type": "string",
+          "maxLength": 128
+        },
+        "setupEvents": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/SetupEvent"
+          },
+          "maxItems": 256
+        },
+        "publicReveals": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/PublicReveal"
+          },
+          "maxItems": 256
+        },
+        "visualEffects": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/VisualEffect"
+          },
+          "maxItems": 256
+        },
+        "result": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/ResultExplanation"
+            },
+            {
+              "type": "null"
+            }
+          ]
         }
       },
       "required": [
@@ -1132,6 +1577,567 @@
         "viewerSeat",
         "frames",
         "nextCursor"
+      ]
+    },
+    "VisibleAttack": {
+      "title": "VisibleAttack",
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "name": {
+          "type": "string",
+          "maxLength": 200
+        },
+        "damage": {
+          "type": "integer",
+          "minimum": -100000,
+          "maximum": 100000
+        },
+        "cost": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "maxLength": 32
+          },
+          "maxItems": 120
+        },
+        "text": {
+          "type": "string",
+          "maxLength": 8000
+        }
+      },
+      "required": [
+        "name",
+        "damage",
+        "cost"
+      ]
+    },
+    "VisibleAbility": {
+      "title": "VisibleAbility",
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "name": {
+          "type": "string",
+          "maxLength": 200
+        },
+        "text": {
+          "type": "string",
+          "maxLength": 8000
+        }
+      },
+      "required": [
+        "name",
+        "text"
+      ]
+    },
+    "RecoveryEffect": {
+      "title": "RecoveryEffect",
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "amount": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 100000
+        },
+        "cure": {
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "amount",
+        "cure"
+      ]
+    },
+    "AttackProtection": {
+      "title": "AttackProtection",
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "damage": {
+          "type": "boolean"
+        },
+        "effects": {
+          "type": "boolean"
+        },
+        "source": {
+          "type": "string",
+          "maxLength": 200
+        }
+      },
+      "required": []
+    },
+    "VisibleCardPresentation": {
+      "title": "VisibleCardPresentation",
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "name": {
+          "type": "string",
+          "maxLength": 200
+        },
+        "id": {
+          "type": "string",
+          "maxLength": 128
+        },
+        "kind": {
+          "enum": [
+            "card",
+            "attack"
+          ]
+        },
+        "ref": {
+          "$ref": "#/$defs/Identifier"
+        },
+        "prizeIndex": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 59
+        },
+        "set_name": {
+          "type": "string",
+          "maxLength": 128
+        },
+        "number": {
+          "type": "string",
+          "maxLength": 128
+        },
+        "superType": {
+          "type": "string",
+          "maxLength": 128
+        },
+        "trainerType": {
+          "type": "string",
+          "maxLength": 128
+        },
+        "cardType": {
+          "type": "string",
+          "maxLength": 128
+        },
+        "pokemonType": {
+          "type": "string",
+          "maxLength": 128
+        },
+        "energyType": {
+          "type": "string",
+          "maxLength": 128
+        },
+        "stage": {
+          "type": "string",
+          "maxLength": 128
+        },
+        "specialCondition": {
+          "type": "string",
+          "maxLength": 128
+        },
+        "effect": {
+          "type": "string",
+          "maxLength": 8000
+        },
+        "text": {
+          "type": "string",
+          "maxLength": 8000
+        },
+        "attachment": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "maxLength": 200
+          },
+          "maxItems": 120
+        },
+        "tool": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "maxLength": 200
+          },
+          "maxItems": 120
+        },
+        "energy": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "maxLength": 200
+          },
+          "maxItems": 120
+        },
+        "evolved": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "maxLength": 200
+          },
+          "maxItems": 120
+        },
+        "effectiveTypes": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "maxLength": 200
+          },
+          "maxItems": 120
+        },
+        "evolveFrom": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "maxLength": 200
+          },
+          "maxItems": 120
+        },
+        "provides": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "maxLength": 200
+          },
+          "maxItems": 120
+        },
+        "resistance": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "maxLength": 200
+          },
+          "maxItems": 120
+        },
+        "weakness": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "maxLength": 200
+          },
+          "maxItems": 120
+        },
+        "retreatCost": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "maxLength": 200
+          },
+          "maxItems": 120
+        },
+        "limitedAttacks": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "maxLength": 200
+          },
+          "maxItems": 120
+        },
+        "cost": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "maxLength": 200
+          },
+          "maxItems": 120
+        },
+        "abilityUsed": {
+          "type": "boolean"
+        },
+        "firstTurnPlayed": {
+          "type": "boolean"
+        },
+        "retreatBlocked": {
+          "type": "boolean"
+        },
+        "attackBlocked": {
+          "type": "boolean"
+        },
+        "poisoned": {
+          "type": "boolean"
+        },
+        "burned": {
+          "type": "boolean"
+        },
+        "abilitiesSuppressed": {
+          "type": "boolean"
+        },
+        "maximumHp": {
+          "type": "integer",
+          "minimum": -100000,
+          "maximum": 100000
+        },
+        "damage_counters": {
+          "type": "integer",
+          "minimum": -100000,
+          "maximum": 100000
+        },
+        "prize": {
+          "type": "integer",
+          "minimum": -100000,
+          "maximum": 100000
+        },
+        "poisonDamage": {
+          "type": "integer",
+          "minimum": -100000,
+          "maximum": 100000
+        },
+        "attackDamageReduction": {
+          "type": "integer",
+          "minimum": -100000,
+          "maximum": 100000
+        },
+        "preventAttackDamageAtMost": {
+          "type": "integer",
+          "minimum": -100000,
+          "maximum": 100000
+        },
+        "attackPowerReduction": {
+          "type": "integer",
+          "minimum": -100000,
+          "maximum": 100000
+        },
+        "attackPowerBonus": {
+          "type": "integer",
+          "minimum": -100000,
+          "maximum": 100000
+        },
+        "retaliationCounters": {
+          "type": "integer",
+          "minimum": -100000,
+          "maximum": 100000
+        },
+        "damage": {
+          "type": "integer",
+          "minimum": -100000,
+          "maximum": 100000
+        },
+        "hp": {
+          "anyOf": [
+            {
+              "type": "integer",
+              "minimum": -100000,
+              "maximum": 100000
+            },
+            {
+              "type": "string",
+              "pattern": "^-?[0-9]{1,6}$"
+            }
+          ]
+        },
+        "attacks": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/VisibleAttack"
+          },
+          "maxItems": 30
+        },
+        "abilities": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/VisibleAbility"
+          },
+          "maxItems": 30
+        },
+        "recovery": {
+          "$ref": "#/$defs/RecoveryEffect"
+        },
+        "attackProtection": {
+          "$ref": "#/$defs/AttackProtection"
+        }
+      },
+      "required": [
+        "name"
+      ]
+    },
+    "TurnFlags": {
+      "title": "TurnFlags",
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "firstPersonalTurn": {
+          "type": "boolean"
+        },
+        "energyPlayed": {
+          "type": "boolean"
+        },
+        "supporterPlayed": {
+          "type": "boolean"
+        },
+        "itemsBlocked": {
+          "type": "boolean"
+        },
+        "retreated": {
+          "type": "boolean"
+        },
+        "attacksBlocked": {
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "firstPersonalTurn",
+        "energyPlayed",
+        "supporterPlayed",
+        "itemsBlocked",
+        "retreated"
+      ]
+    },
+    "RevealedMulliganHands": {
+      "title": "RevealedMulliganHands",
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "PLAYER1": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/VisibleCardPresentation"
+          },
+          "maxItems": 7
+        },
+        "PLAYER2": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/VisibleCardPresentation"
+          },
+          "maxItems": 7
+        }
+      },
+      "required": []
+    },
+    "SetupEvent": {
+      "title": "SetupEvent",
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "kind": {
+          "enum": [
+            "order_draw",
+            "mulligan"
+          ]
+        },
+        "winner": {
+          "$ref": "#/$defs/Seat"
+        },
+        "hands": {
+          "$ref": "#/$defs/RevealedMulliganHands"
+        }
+      },
+      "required": [
+        "kind"
+      ]
+    },
+    "PublicReveal": {
+      "title": "PublicReveal",
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "kind": {
+          "type": "string",
+          "maxLength": 80
+        },
+        "actor": {
+          "$ref": "#/$defs/Seat"
+        },
+        "cards": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/VisibleCardPresentation"
+          },
+          "maxItems": 60
+        }
+      },
+      "required": [
+        "kind",
+        "actor",
+        "cards"
+      ]
+    },
+    "VisualEffect": {
+      "title": "VisualEffect",
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "kind": {
+          "enum": [
+            "move",
+            "count",
+            "hp",
+            "turn"
+          ]
+        },
+        "side": {
+          "enum": [
+            "self",
+            "opponent"
+          ]
+        },
+        "zone": {
+          "type": "string",
+          "maxLength": 32
+        },
+        "fromZone": {
+          "type": "string",
+          "maxLength": 32
+        },
+        "cardName": {
+          "anyOf": [
+            {
+              "type": "string",
+              "maxLength": 200
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "label": {
+          "type": "string",
+          "maxLength": 200
+        },
+        "index": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 60
+        },
+        "before": {
+          "type": "integer",
+          "minimum": -100000,
+          "maximum": 100000
+        },
+        "after": {
+          "type": "integer",
+          "minimum": -100000,
+          "maximum": 100000
+        }
+      },
+      "required": [
+        "kind",
+        "side",
+        "zone",
+        "before",
+        "after"
+      ]
+    },
+    "ResultExplanation": {
+      "title": "ResultExplanation",
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "reason": {
+          "type": "string",
+          "maxLength": 128
+        },
+        "conditions": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "maxLength": 128
+          },
+          "maxItems": 10
+        },
+        "outcome": {
+          "enum": [
+            "draw"
+          ]
+        }
+      },
+      "required": [
+        "reason",
+        "conditions"
       ]
     }
   }

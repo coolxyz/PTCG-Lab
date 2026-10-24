@@ -1,7 +1,7 @@
 // Generated from v2.schema.json. Do not edit. Runtime validation is required.
 
 /**
- * P2-A wire contract. Private engine records and seeds are deliberately not representable.
+ * P2-D strict v2 development contract; explicit visible presentation fields, no private recovery payload.
  */
 export type BattleProtocolV2 = Command | DeckSubmission | MatchSnapshot | Capabilities | ProtocolError | ReplayPage;
 export type ProtocolVersion = "2.0";
@@ -79,6 +79,21 @@ export interface MatchSnapshot {
    * @maxItems 256
    */
   events: VisibleEvent[];
+  startingPlayer?: Seat | null;
+  catalogVersion?: string;
+  /**
+   * @maxItems 256
+   */
+  setupEvents?: SetupEvent[];
+  /**
+   * @maxItems 256
+   */
+  publicReveals?: PublicReveal[];
+  /**
+   * @maxItems 256
+   */
+  visualEffects?: VisualEffect[];
+  result?: ResultExplanation | null;
 }
 export interface OptionsDecision {
   id: Identifier;
@@ -94,10 +109,40 @@ export interface OptionsDecision {
 export interface Option {
   id: Identifier;
   actionType: string;
-  label: string;
-  sourceRef?: Identifier;
-  targetRef?: Identifier;
+  label?: string;
+  sourceRef?: string | null;
+  targetRef?: string | null;
   activeRef?: Identifier;
+  source?: string | null;
+  sourceId?: string | null;
+  sourcePosition?: string | null;
+  target?: string | null;
+  targetId?: string | null;
+  targetPosition?: string | null;
+  active_pokemon?: string | null;
+  active_pokemonId?: string | null;
+  active_pokemonPosition?: string | null;
+  active_pokemonRef?: string | null;
+  ability?: string | null;
+  attack?: {
+    name: string;
+    damage: number;
+  };
+  position?: string | null;
+  kind?: string | null;
+  description?: string | null;
+  sourceIndex?: number | null;
+  targetIndex?: number | null;
+  active_pokemonIndex?: number | null;
+  /**
+   * @maxItems 60
+   */
+  candidates?: string[];
+  /**
+   * @maxItems 60
+   */
+  chosen?: string[];
+  value?: string | number | boolean;
 }
 export interface SelectionDecision {
   id: Identifier;
@@ -113,6 +158,12 @@ export interface SelectionDecision {
   candidates: Candidate[];
   instruction?: string;
   deckInspection?: DeckInspection;
+  source?: string | null;
+  sourceId?: string | null;
+  /**
+   * @maxItems 20
+   */
+  zones?: string[];
 }
 export interface Candidate {
   ref: Identifier;
@@ -121,11 +172,131 @@ export interface Candidate {
   side?: "self" | "opponent";
   zone?: "active" | "bench" | "discard" | "hand" | "lostZone" | "stadium";
   index?: number;
+  position?: string;
+  revealedPrizeIndex?: number;
+  revealedPrizeSide?: "self" | "opponent";
 }
 export interface CardIdentity {
   cardId: Identifier;
   printingId?: Identifier;
   name: string;
+  presentation?: VisibleCardPresentation;
+}
+export interface VisibleCardPresentation {
+  name: string;
+  id?: string;
+  kind?: "card" | "attack";
+  ref?: Identifier;
+  prizeIndex?: number;
+  set_name?: string;
+  number?: string;
+  superType?: string;
+  trainerType?: string;
+  cardType?: string;
+  pokemonType?: string;
+  energyType?: string;
+  stage?: string;
+  specialCondition?: string;
+  effect?: string;
+  text?: string;
+  /**
+   * @maxItems 120
+   */
+  attachment?: string[];
+  /**
+   * @maxItems 120
+   */
+  tool?: string[];
+  /**
+   * @maxItems 120
+   */
+  energy?: string[];
+  /**
+   * @maxItems 120
+   */
+  evolved?: string[];
+  /**
+   * @maxItems 120
+   */
+  effectiveTypes?: string[];
+  /**
+   * @maxItems 120
+   */
+  evolveFrom?: string[];
+  /**
+   * @maxItems 120
+   */
+  provides?: string[];
+  /**
+   * @maxItems 120
+   */
+  resistance?: string[];
+  /**
+   * @maxItems 120
+   */
+  weakness?: string[];
+  /**
+   * @maxItems 120
+   */
+  retreatCost?: string[];
+  /**
+   * @maxItems 120
+   */
+  limitedAttacks?: string[];
+  /**
+   * @maxItems 120
+   */
+  cost?: string[];
+  abilityUsed?: boolean;
+  firstTurnPlayed?: boolean;
+  retreatBlocked?: boolean;
+  attackBlocked?: boolean;
+  poisoned?: boolean;
+  burned?: boolean;
+  abilitiesSuppressed?: boolean;
+  maximumHp?: number;
+  damage_counters?: number;
+  prize?: number;
+  poisonDamage?: number;
+  attackDamageReduction?: number;
+  preventAttackDamageAtMost?: number;
+  attackPowerReduction?: number;
+  attackPowerBonus?: number;
+  retaliationCounters?: number;
+  damage?: number;
+  hp?: number | string;
+  /**
+   * @maxItems 30
+   */
+  attacks?: VisibleAttack[];
+  /**
+   * @maxItems 30
+   */
+  abilities?: VisibleAbility[];
+  recovery?: RecoveryEffect;
+  attackProtection?: AttackProtection;
+}
+export interface VisibleAttack {
+  name: string;
+  damage: number;
+  /**
+   * @maxItems 120
+   */
+  cost: string[];
+  text?: string;
+}
+export interface VisibleAbility {
+  name: string;
+  text: string;
+}
+export interface RecoveryEffect {
+  amount: number;
+  cure: boolean;
+}
+export interface AttackProtection {
+  damage?: boolean;
+  effects?: boolean;
+  source?: string;
 }
 export interface DeckInspection {
   owner: "self" | "opponent";
@@ -148,6 +319,14 @@ export interface Observation {
    * @maxItems 1
    */
   stadium: CardState[];
+  viewer?: "player1" | "player2";
+  timestep?: number;
+  isChoosingCard?: boolean;
+  terminationReason?: string | null;
+  /**
+   * @maxItems 256
+   */
+  autoEvents?: string[];
 }
 export interface OwnSide {
   /**
@@ -178,6 +357,8 @@ export interface OwnSide {
    * @maxItems 60
    */
   hand: CardIdentity[];
+  id?: "player1" | "player2";
+  turnFlags?: TurnFlags;
 }
 export interface CardState {
   ref: Identifier;
@@ -210,6 +391,14 @@ export interface VisiblePrize {
   index: number;
   card: CardIdentity;
 }
+export interface TurnFlags {
+  firstPersonalTurn: boolean;
+  energyPlayed: boolean;
+  supporterPlayed: boolean;
+  itemsBlocked: boolean;
+  retreated: boolean;
+  attacksBlocked?: boolean;
+}
 export interface OpponentSide {
   /**
    * @maxItems 1
@@ -236,6 +425,8 @@ export interface OpponentSide {
   faceUpPrizes: VisiblePrize[];
   benchCapacity: number;
   hand: null;
+  id?: "player1" | "player2";
+  turnFlags?: TurnFlags;
 }
 export interface VisibleEvent {
   seq: number;
@@ -250,6 +441,48 @@ export interface VisibleEvent {
    * @maxItems 200
    */
   coins?: ("heads" | "tails")[];
+}
+export interface SetupEvent {
+  kind: "order_draw" | "mulligan";
+  winner?: Seat;
+  hands?: RevealedMulliganHands;
+}
+export interface RevealedMulliganHands {
+  /**
+   * @maxItems 7
+   */
+  PLAYER1?: VisibleCardPresentation[];
+  /**
+   * @maxItems 7
+   */
+  PLAYER2?: VisibleCardPresentation[];
+}
+export interface PublicReveal {
+  kind: string;
+  actor: Seat;
+  /**
+   * @maxItems 60
+   */
+  cards: VisibleCardPresentation[];
+}
+export interface VisualEffect {
+  kind: "move" | "count" | "hp" | "turn";
+  side: "self" | "opponent";
+  zone: string;
+  fromZone?: string;
+  cardName?: string | null;
+  label?: string;
+  index?: number;
+  before: number;
+  after: number;
+}
+export interface ResultExplanation {
+  reason: string;
+  /**
+   * @maxItems 10
+   */
+  conditions: string[];
+  outcome?: "draw";
 }
 export interface Capabilities {
   protocolVersion: ProtocolVersion;
@@ -305,4 +538,19 @@ export interface ReplayFrame {
    * @maxItems 256
    */
   events: VisibleEvent[];
+  startingPlayer?: Seat | null;
+  catalogVersion?: string;
+  /**
+   * @maxItems 256
+   */
+  setupEvents?: SetupEvent[];
+  /**
+   * @maxItems 256
+   */
+  publicReveals?: PublicReveal[];
+  /**
+   * @maxItems 256
+   */
+  visualEffects?: VisualEffect[];
+  result?: ResultExplanation | null;
 }

@@ -26,7 +26,8 @@ def main():
     parser.add_argument("--dependency-wheelhouse", type=Path)
     args = parser.parse_args()
     from scripts.migration.check_legacy_freeze import check as check_frozen
-    errors = check() + check_frozen()
+    from scripts.migration.check_p2d import check as check_p2d
+    errors = check() + check_frozen() + check_p2d()
     findings = audit_worktree()
     if errors or any(findings.values()):
         print(

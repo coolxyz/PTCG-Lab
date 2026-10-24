@@ -32,6 +32,9 @@ def scaffold(tmp_path):
         p = tmp_path / name
         p.parent.mkdir(parents=True, exist_ok=True)
         shutil.copyfile(ROOT / name, p)
+    acceptance = ROOT / "releases/p2d-acceptance.json"
+    if acceptance.is_file():
+        shutil.copyfile(acceptance, tmp_path / "releases/p2d-acceptance.json")
     return tmp_path
 
 
@@ -74,6 +77,7 @@ def test_phase_marker_cannot_claim_p2_complete(scaffold):
     p = scaffold / "releases/migration-status.json"
     data = json.loads(p.read_text())
     data["phases"]["P2"] = "completed"
+    data["subphases"]["P2-D"] = "planned"
     p.write_text(json.dumps(data))
     assert any("misrepresented" in e for e in check(scaffold))
 

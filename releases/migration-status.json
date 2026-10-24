@@ -5,7 +5,7 @@
   "phases": {
     "P0": "documented",
     "P1": "completed",
-    "P2": "in_progress",
+    "P2": "completed",
     "P3": "planned",
     "P4": "planned",
     "P5": "planned",
@@ -18,12 +18,14 @@
     "P2-A": "completed",
     "P2-B": "completed",
     "P2-C": "completed",
-    "P2-D": "planned"
+    "P2-D": "completed"
   },
   "p1BaselineCommit": "83e3fb2",
   "progressDocument": "docs/P2\u5171\u4eab\u534f\u8bae\u4e0e\u89c4\u5219\u6838\u5fc3\u5b9e\u65bd\u8bb0\u5f55.md",
   "p2aBaselineCommit": "d99f52b",
   "providerAcceptanceDocument": "docs/P2B\u8d44\u6e90Provider\u4e0e\u56fa\u5b9a\u8d44\u4ea7\u9a8c\u6536.md",
   "p2bBaselineCommit": "ba6d720",
-  "coreAcceptanceDocument": "docs/P2C\u6838\u5fc3\u63d0\u53d6\u4e0e\u517c\u5bb9\u5c42\u9a8c\u6536.md"
+  "coreAcceptanceDocument": "docs/P2C\u6838\u5fc3\u63d0\u53d6\u4e0e\u517c\u5bb9\u5c42\u9a8c\u6536.md",
+  "p2cBaselineCommit": "1a7cc47",
+  "p2dAcceptanceDocument": "docs/P2D\u7b49\u4ef7\u4e0e\u9694\u79bb\u9a8c\u6536.md"
 }

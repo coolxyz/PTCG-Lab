@@ -50,6 +50,12 @@ def view(game, viewer):
             for item, original in zip(decision["candidates"], game._candidate_order()):
                 card = game.actions.candidates[original]
                 zone = str(getattr(card, "cardPosition", ""))
+                if decision["hidden"] and getattr(card, "prize_face_up", False):
+                    for player in players:
+                        for prize_index, prize in enumerate(player.prize):
+                            if card is prize:
+                                item["revealedPrizeIndex"] = prize_index
+                                item["revealedPrizeSide"] = "self" if player.id == viewer else "opponent"
                 if not decision["hidden"] and id(card) in locations:
                     item["boardRef"] = locations[id(card)]
                 if not decision["hidden"] and zone in (

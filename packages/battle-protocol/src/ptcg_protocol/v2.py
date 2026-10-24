@@ -45,101 +45,48 @@ class Command(TypedDict):
     choice: Union[OptionChoice, SelectionChoice]
 
 
-class CardIdentity(TypedDict):
-    cardId: Identifier
-    printingId: NotRequired[Identifier]
-    name: str
-
-
 EnergyItem = str
 
 
-class CardState(TypedDict):
-    ref: Identifier
-    card: CardIdentity
-    damage: NotRequired[int]
-    hp: NotRequired[int]
-    maximumHp: NotRequired[int]
-    energy: NotRequired[List[EnergyItem]]
-    tools: NotRequired[List[CardIdentity]]
-    evolved: NotRequired[List[CardIdentity]]
-    conditions: NotRequired[
-        List[Literal['ASLEEP', 'PARALYZED', 'CONFUSED', 'POISONED', 'BURNED']]
-    ]
-    flags: NotRequired[
-        List[
-            Literal[
-                'abilityUsed',
-                'abilitiesSuppressed',
-                'retreatBlocked',
-                'attackBlocked',
-                'firstTurnPlayed',
-            ]
-        ]
-    ]
+class Attack(TypedDict):
+    name: str
+    damage: int
 
 
-class VisiblePrize(TypedDict):
-    index: int
-    card: CardIdentity
+Candidate = str
 
 
-class OwnSide(TypedDict):
-    active: List[CardState]
-    bench: List[CardState]
-    discard: List[CardIdentity]
-    lostZone: List[CardIdentity]
-    handCount: int
-    deckCount: int
-    prizeCount: int
-    faceUpPrizes: List[VisiblePrize]
-    benchCapacity: int
-    hand: List[CardIdentity]
-
-
-class OpponentSide(TypedDict):
-    active: List[CardState]
-    bench: List[CardState]
-    discard: List[CardIdentity]
-    lostZone: List[CardIdentity]
-    handCount: int
-    deckCount: int
-    prizeCount: int
-    faceUpPrizes: List[VisiblePrize]
-    benchCapacity: int
-    hand: None
+ChosenItem = str
 
 
 class Option(TypedDict):
     id: Identifier
     actionType: str
-    label: str
-    sourceRef: NotRequired[Identifier]
-    targetRef: NotRequired[Identifier]
+    label: NotRequired[str]
+    sourceRef: NotRequired[Optional[str]]
+    targetRef: NotRequired[Optional[str]]
     activeRef: NotRequired[Identifier]
-
-
-class Candidate(TypedDict):
-    ref: Identifier
-    card: NotRequired[CardIdentity]
-    boardRef: NotRequired[Identifier]
-    side: NotRequired[Literal['self', 'opponent']]
-    zone: NotRequired[
-        Literal['active', 'bench', 'discard', 'hand', 'lostZone', 'stadium']
-    ]
-    index: NotRequired[int]
-
-
-class Card(TypedDict):
-    card: CardIdentity
-    count: int
-
-
-class DeckInspection(TypedDict):
-    owner: Literal['self', 'opponent']
-    ordered: Literal[False]
-    total: int
-    cards: List[Card]
+    source: NotRequired[Optional[str]]
+    sourceId: NotRequired[Optional[str]]
+    sourcePosition: NotRequired[Optional[str]]
+    target: NotRequired[Optional[str]]
+    targetId: NotRequired[Optional[str]]
+    targetPosition: NotRequired[Optional[str]]
+    active_pokemon: NotRequired[Optional[str]]
+    active_pokemonId: NotRequired[Optional[str]]
+    active_pokemonPosition: NotRequired[Optional[str]]
+    active_pokemonRef: NotRequired[Optional[str]]
+    ability: NotRequired[Optional[str]]
+    attack: NotRequired[Attack]
+    position: NotRequired[Optional[str]]
+    kind: NotRequired[Optional[str]]
+    description: NotRequired[Optional[str]]
+    sourceIndex: NotRequired[Optional[int]]
+    targetIndex: NotRequired[Optional[int]]
+    active_pokemonIndex: NotRequired[Optional[int]]
+    candidates: NotRequired[List[Candidate]]
+    chosen: NotRequired[List[ChosenItem]]
+    value: NotRequired[Union[str, int, bool]]
 
 
 class OptionsDecision(TypedDict):
@@ -150,55 +97,10 @@ class OptionsDecision(TypedDict):
     instruction: NotRequired[str]
 
 
-class SelectionDecision(TypedDict):
-    id: Identifier
-    actor: Seat
-    kind: Literal['selection']
-    min: int
-    max: int
-    hidden: bool
-    indexed: bool
-    candidates: List[Candidate]
-    instruction: NotRequired[str]
-    deckInspection: NotRequired[DeckInspection]
+Zone = str
 
 
-Decision = Union[OptionsDecision, SelectionDecision]
-
-
-class VisibleEvent(TypedDict):
-    seq: int
-    actor: Optional[Seat]
-    kind: Literal['action', 'setup', 'reveal', 'coin', 'result']
-    text: str
-    cards: NotRequired[List[CardIdentity]]
-    coins: NotRequired[List[Literal['heads', 'tails']]]
-
-
-class Observation(TypedDict):
-    turn: Optional[Seat]
-    turnNumber: int
-    self: OwnSide
-    opponent: OpponentSide
-    stadium: List[CardState]
-
-
-class MatchSnapshot(TypedDict):
-    protocolVersion: ProtocolVersion
-    matchId: Identifier
-    ruleReleaseId: Identifier
-    viewerSeat: Seat
-    matchSeq: int
-    stateVersion: int
-    controllerEpoch: int
-    streamCursor: Identifier
-    status: Literal['playing', 'finished', 'aborted']
-    phase: str
-    done: bool
-    winner: Optional[Seat]
-    decision: Optional[Decision]
-    observation: Observation
-    events: List[VisibleEvent]
+AutoEvent = str
 
 
 class ResourceVersions(TypedDict):
@@ -244,6 +146,320 @@ class ProtocolError(TypedDict):
     retryable: bool
 
 
+CostItem = str
+
+
+class VisibleAttack(TypedDict):
+    name: str
+    damage: int
+    cost: List[CostItem]
+    text: NotRequired[str]
+
+
+class VisibleAbility(TypedDict):
+    name: str
+    text: str
+
+
+class RecoveryEffect(TypedDict):
+    amount: int
+    cure: bool
+
+
+class AttackProtection(TypedDict):
+    damage: NotRequired[bool]
+    effects: NotRequired[bool]
+    source: NotRequired[str]
+
+
+AttachmentItem = str
+
+
+ToolItem = str
+
+
+EvolvedItem = str
+
+
+EffectiveType = str
+
+
+EvolveFromItem = str
+
+
+Provide = str
+
+
+ResistanceItem = str
+
+
+WeaknessItem = str
+
+
+RetreatCostItem = str
+
+
+LimitedAttack = str
+
+
+class VisibleCardPresentation(TypedDict):
+    name: str
+    id: NotRequired[str]
+    kind: NotRequired[Literal['card', 'attack']]
+    ref: NotRequired[Identifier]
+    prizeIndex: NotRequired[int]
+    set_name: NotRequired[str]
+    number: NotRequired[str]
+    superType: NotRequired[str]
+    trainerType: NotRequired[str]
+    cardType: NotRequired[str]
+    pokemonType: NotRequired[str]
+    energyType: NotRequired[str]
+    stage: NotRequired[str]
+    specialCondition: NotRequired[str]
+    effect: NotRequired[str]
+    text: NotRequired[str]
+    attachment: NotRequired[List[AttachmentItem]]
+    tool: NotRequired[List[ToolItem]]
+    energy: NotRequired[List[EnergyItem]]
+    evolved: NotRequired[List[EvolvedItem]]
+    effectiveTypes: NotRequired[List[EffectiveType]]
+    evolveFrom: NotRequired[List[EvolveFromItem]]
+    provides: NotRequired[List[Provide]]
+    resistance: NotRequired[List[ResistanceItem]]
+    weakness: NotRequired[List[WeaknessItem]]
+    retreatCost: NotRequired[List[RetreatCostItem]]
+    limitedAttacks: NotRequired[List[LimitedAttack]]
+    cost: NotRequired[List[CostItem]]
+    abilityUsed: NotRequired[bool]
+    firstTurnPlayed: NotRequired[bool]
+    retreatBlocked: NotRequired[bool]
+    attackBlocked: NotRequired[bool]
+    poisoned: NotRequired[bool]
+    burned: NotRequired[bool]
+    abilitiesSuppressed: NotRequired[bool]
+    maximumHp: NotRequired[int]
+    damage_counters: NotRequired[int]
+    prize: NotRequired[int]
+    poisonDamage: NotRequired[int]
+    attackDamageReduction: NotRequired[int]
+    preventAttackDamageAtMost: NotRequired[int]
+    attackPowerReduction: NotRequired[int]
+    attackPowerBonus: NotRequired[int]
+    retaliationCounters: NotRequired[int]
+    damage: NotRequired[int]
+    hp: NotRequired[Union[int, str]]
+    attacks: NotRequired[List[VisibleAttack]]
+    abilities: NotRequired[List[VisibleAbility]]
+    recovery: NotRequired[RecoveryEffect]
+    attackProtection: NotRequired[AttackProtection]
+
+
+class TurnFlags(TypedDict):
+    firstPersonalTurn: bool
+    energyPlayed: bool
+    supporterPlayed: bool
+    itemsBlocked: bool
+    retreated: bool
+    attacksBlocked: NotRequired[bool]
+
+
+class RevealedMulliganHands(TypedDict):
+    PLAYER1: NotRequired[List[VisibleCardPresentation]]
+    PLAYER2: NotRequired[List[VisibleCardPresentation]]
+
+
+class SetupEvent(TypedDict):
+    kind: Literal['order_draw', 'mulligan']
+    winner: NotRequired[Seat]
+    hands: NotRequired[RevealedMulliganHands]
+
+
+class PublicReveal(TypedDict):
+    kind: str
+    actor: Seat
+    cards: List[VisibleCardPresentation]
+
+
+class VisualEffect(TypedDict):
+    kind: Literal['move', 'count', 'hp', 'turn']
+    side: Literal['self', 'opponent']
+    zone: str
+    fromZone: NotRequired[str]
+    cardName: NotRequired[Optional[str]]
+    label: NotRequired[str]
+    index: NotRequired[int]
+    before: int
+    after: int
+
+
+Condition = str
+
+
+class ResultExplanation(TypedDict):
+    reason: str
+    conditions: List[Condition]
+    outcome: NotRequired[Literal['draw']]
+
+
+class CardIdentity(TypedDict):
+    cardId: Identifier
+    printingId: NotRequired[Identifier]
+    name: str
+    presentation: NotRequired[VisibleCardPresentation]
+
+
+class CardState(TypedDict):
+    ref: Identifier
+    card: CardIdentity
+    damage: NotRequired[int]
+    hp: NotRequired[int]
+    maximumHp: NotRequired[int]
+    energy: NotRequired[List[EnergyItem]]
+    tools: NotRequired[List[CardIdentity]]
+    evolved: NotRequired[List[CardIdentity]]
+    conditions: NotRequired[
+        List[Literal['ASLEEP', 'PARALYZED', 'CONFUSED', 'POISONED', 'BURNED']]
+    ]
+    flags: NotRequired[
+        List[
+            Literal[
+                'abilityUsed',
+                'abilitiesSuppressed',
+                'retreatBlocked',
+                'attackBlocked',
+                'firstTurnPlayed',
+            ]
+        ]
+    ]
+
+
+class VisiblePrize(TypedDict):
+    index: int
+    card: CardIdentity
+
+
+class OwnSide(TypedDict):
+    active: List[CardState]
+    bench: List[CardState]
+    discard: List[CardIdentity]
+    lostZone: List[CardIdentity]
+    handCount: int
+    deckCount: int
+    prizeCount: int
+    faceUpPrizes: List[VisiblePrize]
+    benchCapacity: int
+    hand: List[CardIdentity]
+    id: NotRequired[Literal['player1', 'player2']]
+    turnFlags: NotRequired[TurnFlags]
+
+
+class OpponentSide(TypedDict):
+    active: List[CardState]
+    bench: List[CardState]
+    discard: List[CardIdentity]
+    lostZone: List[CardIdentity]
+    handCount: int
+    deckCount: int
+    prizeCount: int
+    faceUpPrizes: List[VisiblePrize]
+    benchCapacity: int
+    hand: None
+    id: NotRequired[Literal['player1', 'player2']]
+    turnFlags: NotRequired[TurnFlags]
+
+
+class Candidate1(TypedDict):
+    ref: Identifier
+    card: NotRequired[CardIdentity]
+    boardRef: NotRequired[Identifier]
+    side: NotRequired[Literal['self', 'opponent']]
+    zone: NotRequired[
+        Literal['active', 'bench', 'discard', 'hand', 'lostZone', 'stadium']
+    ]
+    index: NotRequired[int]
+    position: NotRequired[str]
+    revealedPrizeIndex: NotRequired[int]
+    revealedPrizeSide: NotRequired[Literal['self', 'opponent']]
+
+
+class Card(TypedDict):
+    card: CardIdentity
+    count: int
+
+
+class DeckInspection(TypedDict):
+    owner: Literal['self', 'opponent']
+    ordered: Literal[False]
+    total: int
+    cards: List[Card]
+
+
+class SelectionDecision(TypedDict):
+    id: Identifier
+    actor: Seat
+    kind: Literal['selection']
+    min: int
+    max: int
+    hidden: bool
+    indexed: bool
+    candidates: List[Candidate1]
+    instruction: NotRequired[str]
+    deckInspection: NotRequired[DeckInspection]
+    source: NotRequired[Optional[str]]
+    sourceId: NotRequired[Optional[str]]
+    zones: NotRequired[List[Zone]]
+
+
+Decision = Union[OptionsDecision, SelectionDecision]
+
+
+class VisibleEvent(TypedDict):
+    seq: int
+    actor: Optional[Seat]
+    kind: Literal['action', 'setup', 'reveal', 'coin', 'result']
+    text: str
+    cards: NotRequired[List[CardIdentity]]
+    coins: NotRequired[List[Literal['heads', 'tails']]]
+
+
+class Observation(TypedDict):
+    turn: Optional[Seat]
+    turnNumber: int
+    self: OwnSide
+    opponent: OpponentSide
+    stadium: List[CardState]
+    viewer: NotRequired[Literal['player1', 'player2']]
+    timestep: NotRequired[int]
+    isChoosingCard: NotRequired[bool]
+    terminationReason: NotRequired[Optional[str]]
+    autoEvents: NotRequired[List[AutoEvent]]
+
+
+class MatchSnapshot(TypedDict):
+    protocolVersion: ProtocolVersion
+    matchId: Identifier
+    ruleReleaseId: Identifier
+    viewerSeat: Seat
+    matchSeq: int
+    stateVersion: int
+    controllerEpoch: int
+    streamCursor: Identifier
+    status: Literal['playing', 'finished', 'aborted']
+    phase: str
+    done: bool
+    winner: Optional[Seat]
+    decision: Optional[Decision]
+    observation: Observation
+    events: List[VisibleEvent]
+    startingPlayer: NotRequired[Optional[Seat]]
+    catalogVersion: NotRequired[str]
+    setupEvents: NotRequired[List[SetupEvent]]
+    publicReveals: NotRequired[List[PublicReveal]]
+    visualEffects: NotRequired[List[VisualEffect]]
+    result: NotRequired[Optional[ResultExplanation]]
+
+
 class ReplayFrame(TypedDict):
     frameSeq: int
     matchSeq: int
@@ -254,6 +470,12 @@ class ReplayFrame(TypedDict):
     winner: Optional[Seat]
     observation: Observation
     events: List[VisibleEvent]
+    startingPlayer: NotRequired[Optional[Seat]]
+    catalogVersion: NotRequired[str]
+    setupEvents: NotRequired[List[SetupEvent]]
+    publicReveals: NotRequired[List[PublicReveal]]
+    visualEffects: NotRequired[List[VisualEffect]]
+    result: NotRequired[Optional[ResultExplanation]]
 
 
 class ReplayPage(TypedDict):

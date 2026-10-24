@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "ptcg-battle-core"
-version = "0.2.0.dev0"
+version = "0.2.0.dev1"
 description = "Explicit rule core and frozen-runtime compatibility"
 readme = "README.md"
 requires-python = ">=3.14"
