@@ -229,3 +229,17 @@ def test_native_client_foundation_cannot_claim_all_p5_complete(scaffold):
     data["phases"]["P5"] = "completed"
     path.write_text(json.dumps(data))
     assert any("P5 implementation misrepresented" in e for e in check(scaffold))
+
+
+@pytest.mark.parametrize(
+    "code",
+    [
+        "import ptcg_online_server",
+        "import ptcg_core",
+        "import ptcg_ai_runtime",
+        "import sqlite3",
+    ],
+)
+def test_local_bridge_cannot_import_server_engine_ai_or_user_database(scaffold, code):
+    (scaffold / "apps/desktop-api/src/ptcg_desktop_api/leak.py").write_text(code)
+    assert any("forbidden import" in e for e in check(scaffold))

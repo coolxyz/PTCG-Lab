@@ -47,6 +47,35 @@ class Client:
                 "pendingMatches": list(state["pending"]),
             }
 
+    def recovery_status(self):
+        """Safe recovery metadata for a trusted local bridge, never raw requests/tokens."""
+        with self.vault.transaction() as state:
+            return {
+                "commands": [
+                    {
+                        "matchId": mid,
+                        "commandId": item["body"]["commandId"],
+                        "action": item["action"],
+                    }
+                    for mid, item in state["pending"].items()
+                ],
+                "controls": [
+                    {
+                        "matchId": mid,
+                        "expectedControllerEpoch": item["expectedControllerEpoch"],
+                    }
+                    for mid, item in state.get("controlPending", {}).items()
+                ],
+            }
+
+    def recover_control(self, match_id):
+        segment(match_id)
+        with self.vault.transaction() as state:
+            pending = state.get("controlPending", {}).get(match_id)
+            if pending is None:
+                return None
+            return self.take_control(match_id, pending["expectedControllerEpoch"])
+
     @staticmethod
     def _identity(credentials):
         return {

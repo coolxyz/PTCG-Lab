@@ -36,6 +36,7 @@ def check(root=ROOT):
         core = project["distribution"] == "ptcg-battle-core"
         online = project["distribution"] == "ptcg-online-server"
         client = project["distribution"] == "ptcg-online-client"
+        desktop = project["distribution"] == "ptcg-desktop-api"
         gui = project["distribution"] in {"@ptcg/battle-ui", "@ptcg/desktop-web"}
         expected_stage = (
             ("P3-C" if project["distribution"] == "@ptcg/desktop-web" else "P3-B")
@@ -46,7 +47,15 @@ def check(root=ROOT):
                 else (
                     "P5-A"
                     if client
-                    else "P2-D" if (protocol or core) else "P2-B" if provider else "P1"
+                    else (
+                        "P5-B"
+                        if desktop
+                        else (
+                            "P2-D"
+                            if (protocol or core)
+                            else "P2-B" if provider else "P1"
+                        )
+                    )
                 )
             )
         )
@@ -69,7 +78,7 @@ def check(root=ROOT):
                     project["path"] + ": runtime requirements differ from contract"
                 )
             if (
-                not (protocol or core or online or client)
+                not (protocol or core or online or client or desktop)
                 and project["allowedRuntimeRequirements"]
             ):
                 errors.append(

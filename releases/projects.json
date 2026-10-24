@@ -1,17 +1,35 @@
 {
   "schema": 1,
-  "phase": "P5-A",
+  "phase": "P5-B",
   "projects": [
     {
       "path": "apps/desktop-api",
       "distribution": "ptcg-desktop-api",
       "module": "ptcg_desktop_api",
       "language": "python",
-      "stage": "P1",
+      "stage": "P5-B",
       "implementationReady": false,
-      "allowedInternalImports": [],
-      "allowedExternalImports": [],
-      "allowedRuntimeRequirements": []
+      "allowedInternalImports": [
+        "ptcg_online_client"
+      ],
+      "allowedExternalImports": [
+        "asyncio",
+        "contextlib",
+        "copy",
+        "dataclasses",
+        "pathlib",
+        "re",
+        "secrets",
+        "starlette",
+        "threading",
+        "time",
+        "urllib"
+      ],
+      "allowedRuntimeRequirements": [
+        "ptcg-online-client==0.5.0.dev2",
+        "starlette==0.46.2",
+        "uvicorn==0.34.2"
+      ]
     },
     {
       "path": "apps/online-server",

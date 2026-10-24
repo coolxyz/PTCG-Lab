@@ -27,7 +27,7 @@
     "P4-C": "completed",
     "P4-D": "completed",
     "P5-A": "completed",
-    "P5-B": "planned",
+    "P5-B": "completed",
     "P5-C": "planned",
     "P5-D": "planned"
   },
@@ -54,5 +54,7 @@
   "p4cBaselineCommit": "6801d38",
   "p4dAcceptanceDocument": "docs/P4D完整对局与故障恢复验收.md",
   "p4dBaselineCommit": "f355c90",
-  "p5ProgressDocument": "docs/P5本地网络客户端实施记录.md"
+  "p5ProgressDocument": "docs/P5本地网络客户端实施记录.md",
+  "p5aBaselineCommit": "b35174e",
+  "p5bAcceptanceDocument": "docs/P5B本地网络桥接验收.md"
 }

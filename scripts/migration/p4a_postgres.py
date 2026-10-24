@@ -16,14 +16,18 @@ ROOT = Path(__file__).resolve().parents[2]
 
 
 def run(output, python, image=None, suite="server"):
-    test_path = {"server": "tests/online_v2", "client": "tests/online_client"}[suite]
+    test_paths = {
+        "server": ["tests/online_v2"],
+        "client": ["tests/online_client"],
+        "bridge": ["tests/online_client", "tests/desktop_bridge"],
+    }[suite]
     output = Path(output).resolve()
     if not any(
         output.is_relative_to(ROOT / name)
-        for name in ("var/p4a", "var/p4b", "var/p4c", "var/p4d", "var/p5a")
+        for name in ("var/p4a", "var/p4b", "var/p4c", "var/p4d", "var/p5a", "var/p5b")
     ):
         raise ValueError(
-            "Acceptance output must be below var/p4a, var/p4b, var/p4c, var/p4d or var/p5a"
+            "Acceptance output must be below var/p4a, var/p4b, var/p4c, var/p4d, var/p5a or var/p5b"
         )
     output.mkdir(parents=True, exist_ok=False)
     password = secrets.token_urlsafe(32)
@@ -88,7 +92,7 @@ def run(output, python, image=None, suite="server"):
                 str(python),
                 "-m",
                 "pytest",
-                test_path,
+                *test_paths,
                 "-q",
                 "--junitxml",
                 str(output / "results.xml"),
@@ -110,6 +114,7 @@ def run(output, python, image=None, suite="server"):
                     [
                         str(ROOT / "apps/online-server/src"),
                         str(ROOT / "packages/online-client/src"),
+                        str(ROOT / "apps/desktop-api/src"),
                     ]
                 ),
             },
@@ -131,7 +136,9 @@ if __name__ == "__main__":
     parser.add_argument(
         "--image", help="Optional freshly built API image for container acceptance"
     )
-    parser.add_argument("--suite", choices=("server", "client"), default="server")
+    parser.add_argument(
+        "--suite", choices=("server", "client", "bridge"), default="server"
+    )
     args = parser.parse_args()
     # resolve() preserves the venv path; don't resolve the interpreter symlink.
     raise SystemExit(run(args.output, args.python.absolute(), args.image, args.suite))

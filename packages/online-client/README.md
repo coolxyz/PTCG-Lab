@@ -1,6 +1,6 @@
 # ptcg-online-client
 
-P5-A 原生 API v2 客户端，版本 `0.5.0.dev1`。由本地后台持有，提供能力协商、游客身份、卡组提交、房间邀请、控制权、对战命令、WSS 私有快照和本人回放。当前只完成客户端基础层，尚未接入本地 GUI。
+P5-A 原生 API v2 客户端，当前版本 `0.5.0.dev2`。由本地后台持有，提供能力协商、游客身份、卡组提交、房间邀请、控制权、对战命令、WSS 私有快照和本人回放。当前只完成客户端基础层，尚未接入本地 GUI。
 
 运行需要 Python 3.14、`ptcg-battle-protocol==0.2.0.dev1`、`jsonschema==4.25.1`、`websockets==15.0.1`；完整外部依赖锁见 `requirements.lock`。不依赖服务端、规则引擎、AI、本地数据库或卡图。
 
@@ -23,6 +23,8 @@ with Client(server, Path.home() / ".ptcg-lab-online") as client:
 
 `submit()` 在发送前持久保存原始请求；结果未知时使用 `recover(match_id)` 先查回执，再按原 commandId 重试。未解决前不能发送另一个命令。刷新响应丢失后停止自动刷新并返回 `REAUTHENTICATION_REQUIRED`，重启也不会重用已消费的 refresh token。当前游客没有账号找回机制；显式 `forget_identity()` 会失去此身份，存在待确认操作时默认拒绝清理。
 
-房间写入在单次调用内沿用同一 requestId；跨调用/重启重试需要调用方保存并传入 `request_id`。P5-B 本地桥接将提供面向 GUI 的操作流程，浏览器不应直接调用本包或获得其内部 `vault`。
+房间写入在单次调用内沿用同一 requestId；跨调用/重启重试需要调用方保存并传入 `request_id`。P5-B 本地桥接已提供安全的恢复摘要与操作接口，浏览器不应直接调用本包或获得其内部 `vault`。
 
 服务 envelope 的三个 schema 是服务端合同的逐字节副本，发布门禁检查同步；对战 DTO 直接复用共享协议包。详见 [P5 实施记录](../../docs/P5本地网络客户端实施记录.md)。
+
+P5-B 增加 `recovery_status()` 和 `recover_control(match_id)`：前者只返回待确认命令标识/动作及控制请求的期望 epoch，后者重试持久化的同一控制请求。二者不返回 token、controllerId 或原始 choice。

@@ -43,7 +43,8 @@ jobs:
       - run: python -m pip install --no-build-isolation --no-deps ./packages/battle-protocol ./packages/engine-provider ./packages/battle-core
       - run: python -m pip install --no-build-isolation --no-deps ./apps/online-server
       - run: python -m pip install --no-build-isolation --no-deps ./packages/online-client
-      - run: python -m pytest tests/online_client -q
+      - run: python -m pip install --no-build-isolation --no-deps ./apps/desktop-api
+      - run: python -m pytest tests/online_client tests/desktop_bridge -q
       - name: Dedicated PostgreSQL session acceptance (synthetic inputs only)
         run: |
           mkdir -p var/p4a

@@ -206,6 +206,8 @@ def build(output, root=ROOT, wheelhouse=None):
                 str(root / "apps/online-server/requirements.lock"),
                 "--constraint",
                 str(root / "packages/online-client/requirements.lock"),
+                "--constraint",
+                str(root / "apps/desktop-api/requirements.lock"),
                 *[str(p) for p in wheels],
             ],
             check=True,
@@ -249,6 +251,9 @@ def build(output, root=ROOT, wheelhouse=None):
         client_smoke = scratch / "client-smoke.py"
         client_smoke.write_bytes((root / "tests/online_client/smoke.py").read_bytes())
         subprocess.run([str(python), "-I", str(client_smoke)], cwd=scratch, check=True)
+        bridge_smoke = scratch / "bridge-smoke.py"
+        bridge_smoke.write_bytes((root / "tests/desktop_bridge/smoke.py").read_bytes())
+        subprocess.run([str(python), "-I", str(bridge_smoke)], cwd=scratch, check=True)
     hashes = {
         p.name: hashlib.file_digest(p.open("rb"), "sha256").hexdigest()
         for p in output.iterdir()
@@ -262,6 +267,7 @@ def build(output, root=ROOT, wheelhouse=None):
         "coreLoaderOutsideCheckout": "passed",
         "onlineAPIOutsideCheckout": "passed",
         "onlineClientOutsideCheckout": "passed",
+        "desktopBridgeOutsideCheckout": "passed",
         "files": hashes,
         "productionReady": False,
     }

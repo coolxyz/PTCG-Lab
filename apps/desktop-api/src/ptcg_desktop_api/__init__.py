@@ -1,4 +1,4 @@
-"""P1 scaffold. No production behavior or import-time side effects."""
+"""P5-B optional bridge. Importing the package starts no services."""
 
-__version__ = "0.1.0.dev0"
+__version__ = "0.5.0.dev2"
 IMPLEMENTATION_READY = False
