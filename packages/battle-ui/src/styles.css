@@ -1,0 +1,85 @@
+/* Standalone theme, scoped to the display boundary rather than host navigation. */
+.battle-screen {
+  font-family: -apple-system, BlinkMacSystemFont, "Noto Sans SC", sans-serif;
+  color: #23342b;
+  --green: #244f3a;
+  --muted: #7a857b;
+  --line: #e1e6dd;
+  --gold: #d1aa64;
+}
+.battle-screen,
+.battle-screen * {
+  box-sizing: border-box;
+}
+.battle-screen :is(button, input, select, textarea) {
+  font: inherit;
+  color: inherit;
+}
+.battle-screen button {
+  cursor: pointer;
+  border: 0;
+  background: none;
+}
+.battle-screen button:disabled {
+  cursor: not-allowed;
+  opacity: 0.48;
+}
+.battle-screen :is(button, a, input, select) {
+  outline-offset: 4px;
+}
+.battle-screen :is(button, a):focus-visible {
+  outline: 2px solid #bd954e;
+}
+.battle-screen :is(input, select, textarea) {
+  border: 1px solid var(--line);
+  background: white;
+  border-radius: 7px;
+  padding: 10px 12px;
+  min-width: 0;
+}
+.battle-screen select {
+  font-size: 12px;
+  max-width: 100%;
+}
+.battle-screen :is(h1, h2, h3, h4, p) {
+  margin: 0;
+}
+.battle-screen small {
+  font-size: 11px;
+}
+.battle-screen svg {
+  flex-shrink: 0;
+}
+.battle-screen .primary,
+.battle-screen .secondary {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+  border-radius: 7px;
+  padding: 10px 15px;
+}
+.battle-screen .primary {
+  background: var(--green);
+  color: white;
+}
+.battle-screen .secondary {
+  background: white;
+  border: 1px solid var(--line);
+}
+.battle-screen .muted {
+  color: var(--muted);
+}
+.battle-screen .error-banner {
+  background: #fff0ed;
+  color: #893d2c;
+  padding: 12px;
+}
+.battle-screen .chinese-description {
+  display: grid;
+  gap: 12px;
+}
+.battle-screen .card-rule-section {
+  display: grid;
+  gap: 5px;
+}

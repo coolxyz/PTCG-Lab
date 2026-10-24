@@ -1,6 +1,6 @@
 {
   "name": "@ptcg/battle-ui",
-  "version": "0.0.0-p1",
+  "version": "0.3.0-p3a",
   "private": true,
   "type": "module",
   "license": "MIT",
@@ -10,7 +10,17 @@
     "README.md"
   ],
   "exports": {
-    "types": "./src/index.d.ts",
-    "default": "./src/index.js"
+    ".": {
+      "types": "./src/index.ts",
+      "default": "./src/index.ts"
+    },
+    "./styles.css": "./src/styles.css"
+  },
+  "peerDependencies": {
+    "react": "19.1.1",
+    "react-dom": "19.1.1"
+  },
+  "dependencies": {
+    "lucide-react": "0.468.0"
   }
 }

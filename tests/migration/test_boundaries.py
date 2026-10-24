@@ -99,3 +99,25 @@ def test_gui_side_effect_import_cannot_bypass_boundary(scaffold):
         'import "some-network-client";'
     )
     assert any("external JS import" in e for e in check(scaffold))
+
+
+@pytest.mark.parametrize(
+    "code",
+    [
+        'import "../../../ai-runtime/src/index.js";',
+        'import "@ptcg/online-client";',
+        "new XMLHttpRequest();",
+        'navigator.sendBeacon("/api/submit", "data");',
+    ],
+)
+def test_shared_display_cannot_gain_mode_or_transport_dependencies(scaffold, code):
+    (scaffold / "packages/battle-ui/src/leak.ts").write_text(code)
+    assert check(scaffold)
+
+
+def test_gui_dependency_contract_is_pinned(scaffold):
+    p = scaffold / "packages/battle-ui/package.json"
+    data = json.loads(p.read_text())
+    data["dependencies"]["some-network-client"] = "1.0.0"
+    p.write_text(json.dumps(data))
+    assert any("contract" in e for e in check(scaffold))

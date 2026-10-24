@@ -33,7 +33,12 @@ def check(root=ROOT):
         }
         provider = project["distribution"] == "ptcg-engine-provider"
         core = project["distribution"] == "ptcg-battle-core"
-        expected_stage = "P2-D" if (protocol or core) else "P2-B" if provider else "P1"
+        gui = project["distribution"] in {"@ptcg/battle-ui", "@ptcg/desktop-web"}
+        expected_stage = (
+            "P3-A"
+            if gui
+            else "P2-D" if (protocol or core) else "P2-B" if provider else "P1"
+        )
         if (
             project["stage"] != expected_stage
             or project["implementationReady"] is not False
@@ -140,10 +145,16 @@ def check(root=ROOT):
                 errors.append(
                     project["path"] + ": JS package identity/private flag mismatch"
                 )
-            if metadata.get("dependencies") or metadata.get("scripts"):
-                errors.append(
-                    project["path"] + ": P1 JS scaffold must not install runtime hooks"
-                )
+            for field, contract in (
+                ("dependencies", "allowedPackageDependencies"),
+                ("peerDependencies", "allowedPeerDependencies"),
+                ("scripts", "allowedScripts"),
+            ):
+                if metadata.get(field, {}) != project.get(contract, {}):
+                    errors.append(
+                        project["path"]
+                        + ": JS dependencies/scripts differ from contract"
+                    )
             for file in (base / "src").rglob("*"):
                 if file.is_file() and file.suffix in {".js", ".ts", ".tsx"}:
                     rel = file.relative_to(root).as_posix()
@@ -152,13 +163,24 @@ def check(root=ROOT):
                         r"""(?:from\s*|import\s*(?:\(\s*)?|require\s*\(\s*)['"]([^'"]+)""",
                         content,
                     )
+                    allowed_refs = set(
+                        project["allowedInternalImports"]
+                        + project["allowedExternalImports"]
+                    )
                     if any(
-                        not ref.startswith("./") or ".." in ref.split("/")
+                        (
+                            not (file.parent / ref)
+                            .resolve()
+                            .is_relative_to(base.resolve())
+                            if ref.startswith(".")
+                            else ref not in allowed_refs
+                        )
                         for ref in refs
                     ):
                         errors.append(rel + ": cross-package or external JS import")
                     if re.search(
-                        r"\b(fetch|WebSocket|localStorage|sessionStorage)\b", content
+                        r"\b(fetch|WebSocket|XMLHttpRequest|localStorage|sessionStorage|sendBeacon)\b",
+                        content,
                     ):
                         errors.append(rel + ": networking/storage in scaffold")
                     if rel not in export:
@@ -173,7 +195,7 @@ def check(root=ROOT):
                 errors.append(name + ": metadata/license not exported")
     status = json.loads((root / "releases/migration-status.json").read_text())
     if (
-        status.get("currentPhase") != "P2"
+        status.get("currentPhase") != "P3"
         or status.get("productionRoutingChanged") is not False
     ):
         errors.append("migration phase/routing marker drift")
@@ -186,12 +208,14 @@ def check(root=ROOT):
         )
     ):
         errors.append("P2 implementation misrepresented as complete")
-    for phase in range(3, 9):
+    if status["phases"].get("P3") != "in_progress":
+        errors.append("P3 implementation misrepresented as complete")
+    for phase in range(4, 9):
         if status["phases"].get("P" + str(phase)) != "planned":
             errors.append("future implementation misrepresented as complete")
     for name in ["docs/产品化重构设计.md", "docs/产品化重构分阶段实施.md"]:
         text = (root / name).read_text()
-        if "<!-- migration-phase: P2; production-routing: legacy -->" not in text:
+        if "<!-- migration-phase: P3; production-routing: legacy -->" not in text:
             errors.append(name + ": missing phase status")
     return sorted(set(errors))
 

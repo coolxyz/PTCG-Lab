@@ -1,6 +1,6 @@
 {
   "schema": 1,
-  "phase": "P2-D",
+  "phase": "P3-A",
   "projects": [
     {
       "path": "apps/desktop-api",
@@ -136,22 +136,52 @@
       "distribution": "@ptcg/desktop-web",
       "module": "desktop-web",
       "language": "javascript",
-      "stage": "P1",
+      "stage": "P3-A",
       "implementationReady": false,
-      "allowedInternalImports": [],
-      "allowedExternalImports": [],
-      "allowedRuntimeRequirements": []
+      "allowedInternalImports": [
+        "@ptcg/battle-ui",
+        "@ptcg/battle-protocol"
+      ],
+      "allowedExternalImports": [
+        "react",
+        "react-dom/client"
+      ],
+      "allowedRuntimeRequirements": [],
+      "allowedPackageDependencies": {
+        "@ptcg/battle-ui": "0.3.0-p3a",
+        "@ptcg/battle-protocol": "0.2.0-p2d",
+        "react": "19.1.1",
+        "react-dom": "19.1.1"
+      },
+      "allowedPeerDependencies": {},
+      "allowedScripts": {
+        "dev": "vite --host 127.0.0.1",
+        "build": "tsc --noEmit && vite build",
+        "test": "playwright test"
+      }
     },
     {
       "path": "packages/battle-ui",
       "distribution": "@ptcg/battle-ui",
       "module": "battle-ui",
       "language": "javascript",
-      "stage": "P1",
+      "stage": "P3-A",
       "implementationReady": false,
       "allowedInternalImports": [],
-      "allowedExternalImports": [],
-      "allowedRuntimeRequirements": []
+      "allowedExternalImports": [
+        "react",
+        "react-dom",
+        "lucide-react"
+      ],
+      "allowedRuntimeRequirements": [],
+      "allowedPackageDependencies": {
+        "lucide-react": "0.468.0"
+      },
+      "allowedPeerDependencies": {
+        "react": "19.1.1",
+        "react-dom": "19.1.1"
+      },
+      "allowedScripts": {}
     },
     {
       "path": "packages/battle-protocol/ts",

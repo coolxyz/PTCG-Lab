@@ -1,6 +1,6 @@
 {
   "name": "@ptcg/desktop-web",
-  "version": "0.0.0-p1",
+  "version": "0.3.0-p3a",
   "private": true,
   "type": "module",
   "license": "MIT",
@@ -10,7 +10,20 @@
     "README.md"
   ],
   "exports": {
-    "types": "./src/index.d.ts",
-    "default": "./src/index.js"
+    ".": {
+      "types": "./src/index.ts",
+      "default": "./src/index.ts"
+    }
+  },
+  "scripts": {
+    "dev": "vite --host 127.0.0.1",
+    "build": "tsc --noEmit && vite build",
+    "test": "playwright test"
+  },
+  "dependencies": {
+    "@ptcg/battle-ui": "0.3.0-p3a",
+    "@ptcg/battle-protocol": "0.2.0-p2d",
+    "react": "19.1.1",
+    "react-dom": "19.1.1"
   }
 }

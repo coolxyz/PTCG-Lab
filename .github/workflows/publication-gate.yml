@@ -23,7 +23,11 @@ jobs:
       - run: python -m pip install -r scripts/migration/requirements.lock
       - run: python -m pip install -r packages/battle-core/requirements.lock
       - run: npm ci --ignore-scripts
+      - run: npm run p3:build
+      - run: npx playwright install --with-deps chromium
+      - run: npm run p3:test
       - run: python -m pip install --no-build-isolation --no-deps ./packages/battle-protocol ./packages/engine-provider ./packages/battle-core
       - run: python -m pytest tests/core tests/providers tests/protocol tests/migration tests/portable/test_public_export.py -q
       - run: python -m pip download --only-binary=:all: -r packages/battle-protocol/requirements.lock -r packages/battle-core/requirements.lock --dest var/p2/wheelhouse
       - run: python scripts/migration/gate.py --build-output var/p2/ci-build --dependency-wheelhouse var/p2/wheelhouse
+      - run: node scripts/migration/p3_package_smoke.mjs var/p2/ci-build

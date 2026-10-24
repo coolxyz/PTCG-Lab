@@ -1,0 +1,101 @@
+/* The controller remains mounted; only the application chrome is hidden. */
+html:has(body.battle-screen-open) {
+  overflow: hidden;
+  scrollbar-gutter: auto;
+}
+body.battle-screen-open {
+  overflow: hidden;
+}
+.battle-page.battle-screen {
+  position: fixed;
+  inset: 0;
+  z-index: 100;
+  width: 100%;
+  max-width: none;
+  height: 100dvh;
+  overflow: auto;
+  overscroll-behavior: contain;
+  padding: 18px clamp(12px, 2vw, 32px) 28px;
+  background: #f1f4f2;
+  outline: none;
+}
+.battle-screen:fullscreen {
+  height: 100%;
+}
+.battle-screen-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding-bottom: 16px;
+  margin-bottom: 14px;
+  border-bottom: 1px solid #d4ded9;
+}
+.battle-screen-brand {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  color: #244f3a;
+}
+.battle-screen-brand span {
+  font-size: 9px;
+  letter-spacing: 2px;
+}
+.battle-screen .battle-screen-brand h1 {
+  font-size: 20px;
+  margin: 2px 0 0;
+}
+.battle-screen-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+.battle-display-message {
+  padding: 10px 0;
+}
+.battle-screen .battle-toolbar {
+  align-items: center;
+}
+.battle-screen .battle-toolbar > div {
+  align-items: center;
+}
+.battle-screen .battle-log > ol {
+  max-height: 280px;
+  overflow-x: hidden;
+  overflow-y: auto;
+  overflow-wrap: anywhere;
+}
+.battle-screen .battle-replay input[type="range"] {
+  flex-basis: 160px;
+}
+.battle-screen .battle-replay select {
+  width: auto;
+}
+@media (min-width: 1101px) {
+  .battle-screen .battle-controls {
+    position: sticky;
+    top: 0;
+  }
+}
+@media (max-width: 650px) {
+  .battle-page.battle-screen {
+    padding: 12px 10px 24px;
+  }
+  .battle-screen-header {
+    align-items: flex-start;
+  }
+  .battle-screen-brand {
+    gap: 6px;
+    flex-shrink: 0;
+  }
+  .battle-screen .battle-screen-brand h1 {
+    font-size: 18px;
+  }
+  .battle-screen-actions {
+    justify-content: flex-end;
+  }
+  .battle-screen-actions .secondary {
+    padding: 8px;
+    font-size: 11px;
+  }
+}
