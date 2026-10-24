@@ -33,11 +33,16 @@ def check(root=ROOT):
         }
         provider = project["distribution"] == "ptcg-engine-provider"
         core = project["distribution"] == "ptcg-battle-core"
+        online = project["distribution"] == "ptcg-online-server"
         gui = project["distribution"] in {"@ptcg/battle-ui", "@ptcg/desktop-web"}
         expected_stage = (
             ("P3-C" if project["distribution"] == "@ptcg/desktop-web" else "P3-B")
             if gui
-            else "P2-D" if (protocol or core) else "P2-B" if provider else "P1"
+            else (
+                "P4-A"
+                if online
+                else "P2-D" if (protocol or core) else "P2-B" if provider else "P1"
+            )
         )
         if (
             project["stage"] != expected_stage
@@ -57,7 +62,10 @@ def check(root=ROOT):
                 errors.append(
                     project["path"] + ": runtime requirements differ from contract"
                 )
-            if not (protocol or core) and project["allowedRuntimeRequirements"]:
+            if (
+                not (protocol or core or online)
+                and project["allowedRuntimeRequirements"]
+            ):
                 errors.append(
                     project["path"] + ": inactive scaffold gained runtime requirements"
                 )
@@ -207,7 +215,7 @@ def check(root=ROOT):
                 errors.append(name + ": metadata/license not exported")
     status = json.loads((root / "releases/migration-status.json").read_text())
     if (
-        status.get("currentPhase") != "P3"
+        status.get("currentPhase") != "P4"
         or status.get("productionRoutingChanged") is not False
     ):
         errors.append("migration phase/routing marker drift")
@@ -233,12 +241,14 @@ def check(root=ROOT):
         )
     ):
         errors.append("P3 implementation misrepresented as complete")
-    for phase in range(4, 9):
+    if status["phases"].get("P4") != "in_progress":
+        errors.append("P4 implementation misrepresented as complete")
+    for phase in range(5, 9):
         if status["phases"].get("P" + str(phase)) != "planned":
             errors.append("future implementation misrepresented as complete")
     for name in ["docs/产品化重构设计.md", "docs/产品化重构分阶段实施.md"]:
         text = (root / name).read_text()
-        if "<!-- migration-phase: P3; production-routing: legacy -->" not in text:
+        if "<!-- migration-phase: P4; production-routing: legacy -->" not in text:
             errors.append(name + ": missing phase status")
     return sorted(set(errors))
 

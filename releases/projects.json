@@ -1,6 +1,6 @@
 {
   "schema": 1,
-  "phase": "P3-C",
+  "phase": "P4-A",
   "projects": [
     {
       "path": "apps/desktop-api",
@@ -18,11 +18,45 @@
       "distribution": "ptcg-online-server",
       "module": "ptcg_online_server",
       "language": "python",
-      "stage": "P1",
+      "stage": "P4-A",
       "implementationReady": false,
-      "allowedInternalImports": [],
-      "allowedExternalImports": [],
-      "allowedRuntimeRequirements": []
+      "allowedInternalImports": [
+        "ptcg_core",
+        "ptcg_engine_provider",
+        "ptcg_protocol"
+      ],
+      "allowedExternalImports": [
+        "asyncio",
+        "contextlib",
+        "dataclasses",
+        "datetime",
+        "fastapi",
+        "functools",
+        "hashlib",
+        "importlib",
+        "json",
+        "jsonschema",
+        "logging",
+        "os",
+        "pathlib",
+        "psycopg",
+        "re",
+        "secrets",
+        "starlette",
+        "sys",
+        "urllib",
+        "uuid",
+        "uvicorn"
+      ],
+      "allowedRuntimeRequirements": [
+        "ptcg-battle-core==0.2.0.dev1",
+        "ptcg-engine-provider==0.2.0.dev0",
+        "ptcg-battle-protocol==0.2.0.dev1",
+        "fastapi==0.115.12",
+        "uvicorn==0.34.2",
+        "psycopg[binary]==3.2.10",
+        "jsonschema==4.25.1"
+      ]
     },
     {
       "path": "packages/battle-core",

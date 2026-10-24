@@ -153,3 +153,26 @@ def test_p3_completion_requires_product_acceptance(scaffold, missing):
         (scaffold / data["p3cAcceptanceDocument"]).unlink()
     p.write_text(json.dumps(data))
     assert any("P3 implementation misrepresented" in e for e in check(scaffold))
+
+
+@pytest.mark.parametrize(
+    "code",
+    [
+        "import apps.api.main",
+        "import packages.ai.agent",
+        "import sqlite3",
+        "import torch",
+        "import ptcg",
+    ],
+)
+def test_online_server_cannot_import_local_app_ai_or_unpinned_engine(scaffold, code):
+    (scaffold / "apps/online-server/src/ptcg_online_server/leak.py").write_text(code)
+    assert any("forbidden import" in e for e in check(scaffold))
+
+
+def test_p4_a_cannot_claim_full_online_acceptance(scaffold):
+    p = scaffold / "releases/migration-status.json"
+    data = json.loads(p.read_text())
+    data["phases"]["P4"] = "completed"
+    p.write_text(json.dumps(data))
+    assert any("P4 implementation misrepresented" in e for e in check(scaffold))

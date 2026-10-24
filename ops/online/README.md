@@ -1,3 +1,45 @@
-# 在线部署
+# 独立在线 API 部署入口（P4-A）
 
-P1 仅保留部署边界；纯 API 与 Docker 部署在 P4/P8 实现。尚无可运行服务，不能替换现有局域网容器。
+此目录对应新 `ptcg-online-server`，不复用旧网页 v1 镜像、数据库、CA 或服务。P4-A 目前可验证认证与配置，尚不能创建房间或对战。外部发布、正式镜像摘要锁定及完整运维验收属于 P8。
+
+## 基础镜像与规则输入
+
+在仓库根目录构建：
+
+```sh
+docker build -f ops/online/Dockerfile -t ptcg-lab-online-api:p4a .
+```
+
+Dockerfile 专属 ignore 采用白名单，只允许三个共享 Python 包与 online-server 的源码和包元数据进入构建上下文。运行层安装 wheel，不安装 React、图片、Pillow、AI/训练包，也不复制真实规则或用户数据。`PYTHON_IMAGE` 默认已固定本次构建使用的 Python 3.14 slim 摘要，可由部署方显式覆盖为其他已批准摘要；执行身份包含 Python patch 版本，因此应针对最终镜像确认 ruleReleaseId。
+
+无规则的基础镜像 `/healthz` 可正常响应，`/readyz` 必须失败。Docker HEALTHCHECK 仅检查存活，不代表已安装可开局规则。可选 `compose.rules.yaml` 只读挂载受控 provider 目录，并要求显式 `bundle.json` SHA-256 和批准的执行身份；不自动从研究工作区搜索规则或复制资产。
+
+## 专用本地 Compose 配置
+
+先创建权限受限的独立凭证目录（输出必须不存在）：
+
+```sh
+python scripts/migration/p4a_secrets.py --output var/online-v2/new-secrets
+export PTCG_V2_DATABASE_PASSWORD_FILE="$PWD/var/online-v2/new-secrets/database-password"
+export PTCG_V2_API_ENV_FILE="$PWD/var/online-v2/new-secrets/api.env"
+export PTCG_V2_SERVER_ID=ptcg-v2-local-acceptance
+docker compose -p ptcg-v2-new-acceptance -f ops/online/compose.yaml config --quiet
+```
+
+API 环境文件由 Compose 客户端读取后注入容器，避免非 root API 用户无法读取宿主 0600 bind secret 的差异；它不进入镜像或 GUI。运维仍需保护 Docker 管理权限，不把 `docker inspect`/完整 Compose 展开结果作为公开日志。也支持通过 `PTCG_ONLINE_V2_DATABASE_URL_FILE` 从部署秘密管理器读取 DSN；与直接 DATABASE_URL 二选一。
+
+在**专用新项目**启动时，先启动 database，再使用 API 镜像显式迁移，最后启动 api：
+
+```sh
+docker compose -p ptcg-v2-new-acceptance -f ops/online/compose.yaml up -d database
+docker compose -p ptcg-v2-new-acceptance -f ops/online/compose.yaml run --rm --entrypoint python api -m ptcg_online_server.migrate
+docker compose -p ptcg-v2-new-acceptance -f ops/online/compose.yaml up -d api
+```
+
+API 端口仅映射 `127.0.0.1:8784`，数据库不发布宿主端口；新项目拥有自己的卷。原 v1 服务不在本 Compose 中。API 运行层使用 UID 10001、只读根目录和空能力集合。默认环回 HTTP 仅用于本机验收，外部环境需配置准确 HTTPS public origin 和 TLS 网关。
+
+如需规则 overlay，所有上述命令一致追加 `-f ops/online/compose.rules.yaml`，并设置 `PTCG_V2_RULE_DIRECTORY`、`PTCG_V2_RULE_MANIFEST_SHA256`、`PTCG_V2_APPROVED_RULE_RELEASE_ID`。该目录需对容器 UID 10001 可读；不存在时拒绝创建宿主路径。即使输入就绪，P4-A 的 `acceptingMatches` 仍为 false。
+
+停止时只对自己创建的项目执行 down；不使用全局 Docker prune，不停止其他项目，也不将新库合并回旧局域网数据。没有默认 `down -v` 操作，数据删除需要单独处理。
+
+实际镜像构建/运行状态见 [P4 验收记录](../../docs/P4纯API服务实施记录.md)，配置文件存在不代表已经完成 Docker 或外部部署验收。

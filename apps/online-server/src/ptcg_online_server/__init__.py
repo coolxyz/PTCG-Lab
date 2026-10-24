@@ -1,4 +1,4 @@
-"""P1 scaffold. No production behavior or import-time side effects."""
+"""Native online API; P4-A foundation, full P4 acceptance is not yet complete."""
 
-__version__ = "0.1.0.dev0"
+__version__ = "0.4.0.dev1"
 IMPLEMENTATION_READY = False

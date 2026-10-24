@@ -1,0 +1,14 @@
+# Optional overlay for an operator-approved, immutable provider directory.
+services:
+  api:
+    environment:
+      PTCG_ONLINE_V2_RULE_DIRECTORY: /rules
+      PTCG_ONLINE_V2_RULE_MANIFEST_SHA256: ${PTCG_V2_RULE_MANIFEST_SHA256:?Pin bundle.json SHA-256}
+      PTCG_ONLINE_V2_APPROVED_RULE_RELEASE_ID: ${PTCG_V2_APPROVED_RULE_RELEASE_ID:?Approve execution identity for this image}
+    volumes:
+      - type: bind
+        source: ${PTCG_V2_RULE_DIRECTORY:?Provide a verified rules directory}
+        target: /rules
+        read_only: true
+        bind:
+          create_host_path: false

@@ -40,6 +40,7 @@ FILES = (
     "releases/projects.json",
     "releases/migration-status.json",
     "releases/source-candidates.json",
+    "ops/online/Dockerfile.dockerignore",
 )
 EXCLUDED = {
     ".git",

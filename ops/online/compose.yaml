@@ -1,0 +1,38 @@
+name: ptcg-lab-online-v2
+services:
+  database:
+    image: postgres:17
+    environment:
+      POSTGRES_USER: ptcg_v2
+      POSTGRES_DB: ptcg_v2
+      POSTGRES_PASSWORD_FILE: /run/secrets/database_password
+    secrets: [database_password]
+    volumes: [v2_database:/var/lib/postgresql/data]
+    healthcheck:
+      test: [CMD-SHELL, 'pg_isready -U ptcg_v2 -d ptcg_v2']
+      interval: 5s
+      timeout: 3s
+      retries: 20
+  api:
+    image: ptcg-lab-online-api:p4a
+    build:
+      context: ../..
+      dockerfile: ops/online/Dockerfile
+    environment:
+      PTCG_ONLINE_V2_SERVER_ID: ${PTCG_V2_SERVER_ID:?Set a unique deployment server ID}
+      PTCG_ONLINE_V2_PUBLIC_ORIGIN: ${PTCG_V2_PUBLIC_ORIGIN:-http://127.0.0.1:8784}
+      PTCG_ONLINE_V2_ALLOW_LOOPBACK_HTTP: ${PTCG_V2_ALLOW_LOOPBACK_HTTP:-1}
+    env_file: ["${PTCG_V2_API_ENV_FILE:?Set the private API environment file}"]
+    ports: ['127.0.0.1:8784:8784']
+    depends_on:
+      database:
+        condition: service_healthy
+    read_only: true
+    tmpfs: [/tmp]
+    cap_drop: [ALL]
+    security_opt: ['no-new-privileges:true']
+secrets:
+  database_password:
+    file: ${PTCG_V2_DATABASE_PASSWORD_FILE:?Set the dedicated database password file}
+volumes:
+  v2_database:
