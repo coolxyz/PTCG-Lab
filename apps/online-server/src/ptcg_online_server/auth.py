@@ -81,17 +81,35 @@ class Sessions:
             ).fetchone()
             return self._issue(db, row)
 
-    def authenticate(self, token):
+    def authenticate_in(self, db, token):
+        """Hold a shared session lock through the caller's business commit.
+
+        Refresh/revoke take the exclusive lock. Recheck the access token after
+        waiting, so a token replaced while waiting cannot authorize a mutation.
+        """
         digest = token_digest(token, "atk")
+        ref = db.execute(
+            "SELECT session_id FROM ptcg_v2.access_tokens WHERE digest=%s", (digest,)
+        ).fetchone()
+        if not ref:
+            raise ServiceError("UNAUTHORIZED", 401)
+        db.execute(
+            "SELECT id FROM ptcg_v2.sessions WHERE id=%s FOR SHARE",
+            (ref["session_id"],),
+        )
+        row = db.execute(
+            """SELECT s.* FROM ptcg_v2.sessions s JOIN ptcg_v2.access_tokens a ON a.session_id=s.id
+            WHERE a.digest=%s AND a.expires_at>clock_timestamp()
+            AND s.expires_at>clock_timestamp() AND s.revoked_at IS NULL""",
+            (digest,),
+        ).fetchone()
+        if not row:
+            raise ServiceError("UNAUTHORIZED", 401)
+        return identity(row, self.settings.server_id)
+
+    def authenticate(self, token):
         with self.repo.transaction() as db:
-            row = db.execute(
-                """SELECT s.* FROM ptcg_v2.sessions s JOIN ptcg_v2.access_tokens a ON a.session_id=s.id
-                WHERE a.digest=%s AND a.expires_at>now() AND s.expires_at>now() AND s.revoked_at IS NULL""",
-                (digest,),
-            ).fetchone()
-            if not row:
-                raise ServiceError("UNAUTHORIZED", 401)
-            return identity(row, self.settings.server_id)
+            return self.authenticate_in(db, token)
 
     def refresh(self, token):
         digest = token_digest(token, "rtk")

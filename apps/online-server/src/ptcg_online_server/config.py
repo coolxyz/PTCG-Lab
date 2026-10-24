@@ -21,6 +21,11 @@ class Settings:
     max_rate_keys: int = 4096
     max_inflight: int = 32
     body_timeout: float = 10
+    join_per_minute: int = 20
+    max_rooms: int = 100
+    max_decks_per_user: int = 100
+    max_lobby_receipts: int = 2000
+    room_seconds: int = 900
     rule_directory: str | None = field(default=None, repr=False)
     rule_manifest_sha256: str | None = None
     approved_rule_release_id: str | None = None
@@ -55,6 +60,11 @@ class Settings:
             self.global_per_minute,
             self.max_rate_keys,
             self.max_inflight,
+            self.join_per_minute,
+            self.max_rooms,
+            self.max_decks_per_user,
+            self.max_lobby_receipts,
+            self.room_seconds,
         ):
             if type(value) is not int or value < 1:
                 raise ValueError("INVALID_DEPLOYMENT_LIMIT")
@@ -100,6 +110,11 @@ class Settings:
                 global_per_minute=int(env("GLOBAL_PER_MINUTE", "1200")),
                 max_rate_keys=int(env("MAX_RATE_KEYS", "4096")),
                 max_inflight=int(env("MAX_INFLIGHT", "32")),
+                join_per_minute=int(env("JOIN_PER_MINUTE", "20")),
+                max_rooms=int(env("MAX_ROOMS", "100")),
+                max_decks_per_user=int(env("MAX_DECKS_PER_USER", "100")),
+                max_lobby_receipts=int(env("MAX_LOBBY_RECEIPTS", "2000")),
+                room_seconds=int(env("ROOM_SECONDS", "900")),
                 rule_directory=env("RULE_DIRECTORY"),
                 rule_manifest_sha256=env("RULE_MANIFEST_SHA256"),
                 approved_rule_release_id=env("APPROVED_RULE_RELEASE_ID"),

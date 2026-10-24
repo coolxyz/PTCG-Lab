@@ -11,6 +11,13 @@ settings = Settings(
 )
 app = create_app(settings)
 assert {route.path for route in app.routes} == {
+    "/api/online/v2/decks",
+    "/api/online/v2/rooms",
+    "/api/online/v2/rooms/join",
+    "/api/online/v2/rooms/{room_id}",
+    "/api/online/v2/rooms/{room_id}/deck",
+    "/api/online/v2/rooms/{room_id}/ready",
+    "/api/online/v2/rooms/{room_id}/leave",
     "/healthz",
     "/readyz",
     "/api/online/v2/capabilities",

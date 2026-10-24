@@ -6,18 +6,28 @@ Battle DTOs continue to use the unchanged shared v2 protocol package.
 from functools import lru_cache
 from importlib.resources import files
 import json
-from jsonschema import Draft202012Validator, FormatChecker
+from jsonschema import Draft202012Validator, FormatChecker, validators
+from ptcg_protocol.validation import decode as protocol_decode, ProtocolViolation
 from .errors import ServiceError
 
 
-@lru_cache(maxsize=6)
+@lru_cache(maxsize=16)
 def validator(kind):
+    filename = (
+        "lobby.schema.json"
+        if kind.startswith("Room") or kind == "DeckAccepted"
+        else "session.schema.json"
+    )
     schema = json.loads(
-        files("ptcg_online_server").joinpath("schemas/session.schema.json").read_text()
+        files("ptcg_online_server").joinpath("schemas/" + filename).read_text()
     )
     if kind not in schema["$defs"]:
         raise ValueError("UNKNOWN_SESSION_CONTRACT")
-    return Draft202012Validator(
+    integer = Draft202012Validator.TYPE_CHECKER.redefine(
+        "integer", lambda checker, value: type(value) is int
+    )
+    cls = validators.extend(Draft202012Validator, type_checker=integer)
+    return cls(
         {"$defs": schema["$defs"], "$ref": "#/$defs/" + kind},
         format_checker=FormatChecker(),
     )
@@ -30,6 +40,12 @@ def checked(kind, value):
 
 
 def decode(kind, body):
+    if kind == "DeckSubmission":
+        try:
+            return protocol_decode(kind, body)
+        except ProtocolViolation as error:
+            raise ServiceError(error.code, 422) from None
+
     def pairs(items):
         value = {}
         for key, item in items:

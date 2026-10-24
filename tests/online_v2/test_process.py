@@ -27,6 +27,15 @@ def server(settings, tmp_path):
                 "PTCG_ONLINE_V2_PUBLIC_ORIGIN": origin,
                 "PTCG_ONLINE_V2_PORT": str(port),
                 "PTCG_ONLINE_V2_ALLOW_LOOPBACK_HTTP": "1",
+                **(
+                    {
+                        "PTCG_ONLINE_V2_RULE_DIRECTORY": settings.rule_directory,
+                        "PTCG_ONLINE_V2_RULE_MANIFEST_SHA256": settings.rule_manifest_sha256,
+                        "PTCG_ONLINE_V2_APPROVED_RULE_RELEASE_ID": settings.approved_rule_release_id,
+                    }
+                    if settings.rule_directory
+                    else {}
+                ),
             },
             stdout=log,
             stderr=log,

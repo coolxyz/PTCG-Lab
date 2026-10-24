@@ -39,7 +39,7 @@ def check(root=ROOT):
             ("P3-C" if project["distribution"] == "@ptcg/desktop-web" else "P3-B")
             if gui
             else (
-                "P4-A"
+                "P4-B"
                 if online
                 else "P2-D" if (protocol or core) else "P2-B" if provider else "P1"
             )

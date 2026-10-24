@@ -19,11 +19,10 @@ RATE_LOCK = 74040102
 def migrations():
     return [
         (
-            1,
-            files("ptcg_online_server")
-            .joinpath("migrations/001_sessions.sql")
-            .read_bytes(),
+            version,
+            files("ptcg_online_server").joinpath("migrations/" + name).read_bytes(),
         )
+        for version, name in ((1, "001_sessions.sql"), (2, "002_lobby.sql"))
     ]
 
 
@@ -129,7 +128,7 @@ class Repository:
                 )
             self.check_schema(db)
 
-    def rate(self, peer, *, creating=False):
+    def rate(self, peer, *, creating=False, joining=False):
         """Durable, bounded fixed windows; forwarded addresses are not trusted."""
         settings = self.settings
         digest = sha256((settings.server_id + ":" + peer).encode()).hexdigest()
@@ -139,6 +138,8 @@ class Repository:
         ]
         if creating:
             limits.append(("create:" + digest, settings.create_per_minute))
+        if joining:
+            limits.append(("join:" + digest, settings.join_per_minute))
         denied = False
         with self.transaction() as db:
             db.execute("SELECT pg_advisory_xact_lock(%s)", (RATE_LOCK,))

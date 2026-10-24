@@ -1,13 +1,13 @@
-# 独立在线 API 部署入口（P4-A）
+# 独立在线 API 部署入口（P4-B）
 
-此目录对应新 `ptcg-online-server`，不复用旧网页 v1 镜像、数据库、CA 或服务。P4-A 目前可验证认证与配置，尚不能创建房间或对战。外部发布、正式镜像摘要锁定及完整运维验收属于 P8。
+此目录对应新 `ptcg-online-server`，不复用旧网页 v1 镜像、数据库、CA 或服务。P4-B 已支持认证、卡组、房间和初局持久化；可操作对战、WSS/回放仍待 P4-C。外部发布、正式镜像摘要锁定及完整运维验收属于 P8。
 
 ## 基础镜像与规则输入
 
 在仓库根目录构建：
 
 ```sh
-docker build -f ops/online/Dockerfile -t ptcg-lab-online-api:p4a .
+docker build -f ops/online/Dockerfile -t ptcg-lab-online-api:p4b .
 ```
 
 Dockerfile 专属 ignore 采用白名单，只允许三个共享 Python 包与 online-server 的源码和包元数据进入构建上下文。运行层安装 wheel，不安装 React、图片、Pillow、AI/训练包，也不复制真实规则或用户数据。`PYTHON_IMAGE` 默认已固定本次构建使用的 Python 3.14 slim 摘要，可由部署方显式覆盖为其他已批准摘要；执行身份包含 Python patch 版本，因此应针对最终镜像确认 ruleReleaseId。
@@ -38,8 +38,10 @@ docker compose -p ptcg-v2-new-acceptance -f ops/online/compose.yaml up -d api
 
 API 端口仅映射 `127.0.0.1:8784`，数据库不发布宿主端口；新项目拥有自己的卷。原 v1 服务不在本 Compose 中。API 运行层使用 UID 10001、只读根目录和空能力集合。默认环回 HTTP 仅用于本机验收，外部环境需配置准确 HTTPS public origin 和 TLS 网关。
 
-如需规则 overlay，所有上述命令一致追加 `-f ops/online/compose.rules.yaml`，并设置 `PTCG_V2_RULE_DIRECTORY`、`PTCG_V2_RULE_MANIFEST_SHA256`、`PTCG_V2_APPROVED_RULE_RELEASE_ID`。该目录需对容器 UID 10001 可读；不存在时拒绝创建宿主路径。即使输入就绪，P4-A 的 `acceptingMatches` 仍为 false。
+如需规则 overlay，所有上述命令一致追加 `-f ops/online/compose.rules.yaml`，并设置 `PTCG_V2_RULE_DIRECTORY`、`PTCG_V2_RULE_MANIFEST_SHA256`、`PTCG_V2_APPROVED_RULE_RELEASE_ID`。该目录需对容器 UID 10001 可读；不存在时拒绝创建宿主路径。readiness 还要求真实规则子进程启动成功；即使就绪，P4-B 的 `acceptingMatches` 仍为 false。
 
 停止时只对自己创建的项目执行 down；不使用全局 Docker prune，不停止其他项目，也不将新库合并回旧局域网数据。没有默认 `down -v` 操作，数据删除需要单独处理。
 
 实际镜像构建/运行状态见 [P4 验收记录](../../docs/P4纯API服务实施记录.md)，配置文件存在不代表已经完成 Docker 或外部部署验收。
+
+P4-B 必须显式应用新增 002 migration。已升级的数据库不能直接给旧 p4a 镜像使用；回退需升级前备份或专用新库。详细证据与范围见 [P4-B 验收](../../docs/P4B房间邀请与开局验收.md)。本次未启动长期 Compose 部署。

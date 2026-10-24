@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "ptcg-online-server"
-version = "0.4.0.dev1"
+version = "0.4.0.dev2"
 description = "P4-A native API, PostgreSQL session boundary and pinned rule readiness"
 readme = "README.md"
 requires-python = ">=3.14"

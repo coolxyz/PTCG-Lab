@@ -1,4 +1,4 @@
-# P4-A foundation image. Rule assets are supplied separately as read-only inputs.
+# P4-B API and isolated rule worker image. Rule assets are supplied separately as read-only inputs.
 ARG PYTHON_IMAGE=python:3.14-slim@sha256:35caba83af2fe6da9a5d922f9b0156f21d1246a48278c58a08bd253303ba42e8
 FROM ${PYTHON_IMAGE} AS wheels
 WORKDIR /source
@@ -16,7 +16,7 @@ FROM ${PYTHON_IMAGE}
 ENV PYTHONDONTWRITEBYTECODE=1 PYTHONUNBUFFERED=1 \
     PTCG_ONLINE_V2_BIND=0.0.0.0 PTCG_ONLINE_V2_PORT=8784
 COPY --from=wheels /wheels /wheels
-RUN python -m pip install --no-cache-dir --no-index --find-links=/wheels ptcg-online-server==0.4.0.dev1 \
+RUN python -m pip install --no-cache-dir --no-index --find-links=/wheels ptcg-online-server==0.4.0.dev2 \
  && rm -rf /wheels \
  && useradd --uid 10001 --create-home api
 USER 10001

@@ -107,7 +107,7 @@ def test_no_rules_reports_failed_readiness_and_no_game_features(repo):
         assert "card" not in caps.text.lower()
         assert (
             c.post(PREFIX + "/rooms", json={"protocolVersion": "2.0"}).status_code
-            == 404
+            == 422
         )
 
 

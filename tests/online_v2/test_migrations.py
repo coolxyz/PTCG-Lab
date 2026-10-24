@@ -16,7 +16,7 @@ def test_migration_is_explicit_idempotent_and_checksum_pinned(settings):
             db.execute(
                 "SELECT count(*) AS n FROM ptcg_v2.schema_migrations"
             ).fetchone()["n"]
-            == 1
+            == 2
         )
         db.execute("UPDATE ptcg_v2.schema_migrations SET checksum='edited'")
     with pytest.raises(ServiceError):
@@ -55,3 +55,34 @@ def test_schema_and_server_identity_cannot_silently_drift(repo):
         )
     with pytest.raises(ServiceError):
         repo.migrate()
+
+
+def test_incremental_upgrade_keeps_p4a_tokens_and_migration_checksum(
+    settings, monkeypatch
+):
+    from ptcg_online_server import repository
+    from ptcg_online_server.auth import Sessions
+
+    original = repository.migrations
+    with monkeypatch.context() as m:
+        m.setattr(repository, "migrations", lambda: original()[:1])
+        old = Repository(settings)
+        old.migrate()
+        tokens = Sessions(old).create(name="existing", device_name="p4a")
+        with old.db() as db:
+            checksum = db.execute(
+                "SELECT checksum FROM ptcg_v2.schema_migrations WHERE version=1"
+            ).fetchone()["checksum"]
+    current = Repository(settings)
+    current.migrate()
+    assert (
+        Sessions(current).authenticate(tokens["accessToken"])["userId"]
+        == tokens["userId"]
+    )
+    with current.db() as db:
+        assert (
+            db.execute(
+                "SELECT checksum FROM ptcg_v2.schema_migrations WHERE version=1"
+            ).fetchone()["checksum"]
+            == checksum
+        )

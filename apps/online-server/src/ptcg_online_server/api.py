@@ -16,6 +16,9 @@ from .contracts import checked, decode
 from .errors import ServiceError
 from .repository import Repository
 from .rules import RuleStatus
+from .worker import RuleWorker
+from .lobby import Lobby
+from .initialization import Initializer
 
 PREFIX = "/api/online/v2"
 MAX_BODY = 16384
@@ -91,6 +94,8 @@ class Boundary:
                     (scope.get("client") or ("unknown",))[0],
                     creating=scope["path"] == PREFIX + "/sessions"
                     and scope["method"] == "POST",
+                    joining=scope["path"] == PREFIX + "/rooms/join"
+                    and scope["method"] == "POST",
                 )
             body = bytearray()
 
@@ -148,15 +153,44 @@ def bearer(request):
     return parts[1]
 
 
-def create_app(settings=None):
+def create_app(settings=None, *, worker=None, background=True):
     settings = settings or Settings.from_env()
     repo = Repository(settings)
     sessions = Sessions(repo)
+    worker = worker or RuleWorker(settings)
+    lobby = Lobby(repo, worker)
+    initializer = Initializer(repo, worker)
 
     @asynccontextmanager
     async def lifespan(app):
         app.state.rules = await run_in_threadpool(RuleStatus, settings)
-        yield
+        if app.state.rules.failure is None:
+            await run_in_threadpool(worker.probe)
+        stop = asyncio.Event()
+
+        async def initialize_pending():
+            while not stop.is_set():
+                try:
+                    if app.state.rules.failure is None and not worker.available:
+                        await run_in_threadpool(worker.probe)
+                    if worker.available:
+                        await run_in_threadpool(initializer.tick)
+                except Exception:
+                    logging.getLogger("ptcg_online_server").error(
+                        "initialization_unavailable"
+                    )
+                try:
+                    await asyncio.wait_for(stop.wait(), timeout=2)
+                except TimeoutError:
+                    pass
+
+        task = asyncio.create_task(initialize_pending()) if background else None
+        try:
+            yield
+        finally:
+            stop.set()
+            if task:
+                await task
 
     app = FastAPI(docs_url=None, redoc_url=None, openapi_url=None, lifespan=lifespan)
     app.add_middleware(Boundary, settings=settings, repository=repo)
@@ -180,7 +214,7 @@ def create_app(settings=None):
             await run_in_threadpool(repo.healthy)
         except ServiceError:
             database = False
-        rules = app.state.rules.failure is None
+        rules = app.state.rules.failure is None and worker.available
         return JSONResponse(
             {"ready": database and rules, "database": database, "rules": rules},
             status_code=200 if database and rules else 503,
@@ -201,7 +235,7 @@ def create_app(settings=None):
                 },
                 "acceptingMatches": False,
                 "maxCommandBytes": MAX_BODY,
-                "features": [],
+                "features": ["invite"] if worker.available else [],
             },
         )
 
@@ -233,5 +267,52 @@ def create_app(settings=None):
         return checked(
             "Revoked", await run_in_threadpool(sessions.revoke, bearer(request))
         )
+
+    @app.post(PREFIX + "/decks", status_code=201)
+    async def deck(request: Request):
+        body = decode("DeckSubmission", await request.body())
+        return checked(
+            "DeckAccepted",
+            await run_in_threadpool(lobby.submit_deck, bearer(request), body),
+        )
+
+    @app.post(PREFIX + "/rooms", status_code=201)
+    async def create_room(request: Request):
+        body = decode("RoomCreate", await request.body())
+        return checked(
+            "RoomView", await run_in_threadpool(lobby.create, bearer(request), body)
+        )
+
+    @app.post(PREFIX + "/rooms/join")
+    async def join_room(request: Request):
+        body = decode("RoomJoin", await request.body())
+        return checked(
+            "RoomView", await run_in_threadpool(lobby.join, bearer(request), body)
+        )
+
+    @app.get(PREFIX + "/rooms/{room_id}")
+    async def get_room(room_id: str, request: Request):
+        return checked(
+            "RoomView", await run_in_threadpool(lobby.get, bearer(request), room_id)
+        )
+
+    async def change_room(room_id, action, kind, request):
+        body = decode(kind, await request.body())
+        result = await run_in_threadpool(
+            lobby.change, bearer(request), room_id, action, body
+        )
+        return checked("RoomLeft" if action == "leave" else "RoomView", result)
+
+    @app.post(PREFIX + "/rooms/{room_id}/deck")
+    async def room_deck(room_id: str, request: Request):
+        return await change_room(room_id, "deck", "RoomDeck", request)
+
+    @app.post(PREFIX + "/rooms/{room_id}/ready")
+    async def room_ready(room_id: str, request: Request):
+        return await change_room(room_id, "ready", "RoomReady", request)
+
+    @app.post(PREFIX + "/rooms/{room_id}/leave")
+    async def room_leave(room_id: str, request: Request):
+        return await change_room(room_id, "leave", "RoomLeave", request)
 
     return app

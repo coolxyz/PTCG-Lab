@@ -1,6 +1,6 @@
 {
   "schema": 1,
-  "phase": "P4-A",
+  "phase": "P4-B",
   "projects": [
     {
       "path": "apps/desktop-api",
@@ -18,7 +18,7 @@
       "distribution": "ptcg-online-server",
       "module": "ptcg_online_server",
       "language": "python",
-      "stage": "P4-A",
+      "stage": "P4-B",
       "implementationReady": false,
       "allowedInternalImports": [
         "ptcg_core",
@@ -43,7 +43,10 @@
         "re",
         "secrets",
         "starlette",
+        "subprocess",
         "sys",
+        "threading",
+        "time",
         "urllib",
         "uuid",
         "uvicorn"
