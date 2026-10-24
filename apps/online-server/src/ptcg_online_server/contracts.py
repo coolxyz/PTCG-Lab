@@ -14,9 +14,13 @@ from .errors import ServiceError
 @lru_cache(maxsize=16)
 def validator(kind):
     filename = (
-        "lobby.schema.json"
-        if kind.startswith("Room") or kind == "DeckAccepted"
-        else "session.schema.json"
+        "match.schema.json"
+        if kind.startswith("Match")
+        else (
+            "lobby.schema.json"
+            if kind.startswith("Room") or kind == "DeckAccepted"
+            else "session.schema.json"
+        )
     )
     schema = json.loads(
         files("ptcg_online_server").joinpath("schemas/" + filename).read_text()
@@ -40,7 +44,7 @@ def checked(kind, value):
 
 
 def decode(kind, body):
-    if kind == "DeckSubmission":
+    if kind in {"DeckSubmission", "Command"}:
         try:
             return protocol_decode(kind, body)
         except ProtocolViolation as error:

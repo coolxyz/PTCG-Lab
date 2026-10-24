@@ -4,8 +4,8 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "ptcg-online-server"
-version = "0.4.0.dev2"
-description = "P4-A native API, PostgreSQL session boundary and pinned rule readiness"
+version = "0.4.0.dev3"
+description = "P4-C authoritative API, durable match commits and private streams"
 readme = "README.md"
 requires-python = ">=3.14"
 license = "MIT"
@@ -16,6 +16,7 @@ dependencies = [
   "ptcg-battle-protocol==0.2.0.dev1",
   "fastapi==0.115.12",
   "uvicorn==0.34.2",
+  "websockets==15.0.1",
   "psycopg[binary]==3.2.10",
   "jsonschema==4.25.1",
 ]

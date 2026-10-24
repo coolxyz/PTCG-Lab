@@ -95,3 +95,13 @@ class RuleWorker:
         ):
             raise ServiceError("RULE_RELEASE_UNAVAILABLE", 503)
         return record
+
+    def project(self, recovery):
+        if not self.available:
+            raise ServiceError("RULE_RELEASE_UNAVAILABLE", 503, retryable=True)
+        return self.call("project", recovery=recovery)
+
+    def command(self, recovery, seat, command):
+        if not self.available:
+            raise ServiceError("RULE_RELEASE_UNAVAILABLE", 503, retryable=True)
+        return self.call("command", recovery=recovery, seat=seat, command=command)

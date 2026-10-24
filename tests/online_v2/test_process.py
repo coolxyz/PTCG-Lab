@@ -4,6 +4,7 @@ from contextlib import contextmanager
 import json
 import os
 import socket
+import ssl
 import subprocess
 import sys
 import time
@@ -12,14 +13,42 @@ from urllib.error import URLError
 
 
 @contextmanager
-def server(settings, tmp_path):
+def server(settings, tmp_path, *, tls=None):
     with socket.socket() as sock:
         sock.bind(("127.0.0.1", 0))
         port = sock.getsockname()[1]
-    origin = f"http://127.0.0.1:{port}"
+    origin = f"{'https' if tls else 'http'}://127.0.0.1:{port}"
+    context = ssl.create_default_context(cafile=str(tls[0])) if tls else None
+    command = [sys.executable, "-m", "ptcg_online_server"]
+    if tls:
+        command = [
+            sys.executable,
+            "-m",
+            "uvicorn",
+            "ptcg_online_server.api:create_app",
+            "--factory",
+            "--host",
+            "127.0.0.1",
+            "--port",
+            str(port),
+            "--ssl-certfile",
+            str(tls[0]),
+            "--ssl-keyfile",
+            str(tls[1]),
+            "--no-access-log",
+            "--no-proxy-headers",
+            "--ws",
+            "websockets",
+            "--ws-max-size",
+            "16384",
+            "--ws-max-queue",
+            "2",
+            "--ws-per-message-deflate",
+            "false",
+        ]
     with (tmp_path / f"server-{port}.log").open("w") as log:
         child = subprocess.Popen(
-            [sys.executable, "-m", "ptcg_online_server"],
+            command,
             env={
                 **os.environ,
                 "PTCG_ONLINE_V2_DATABASE_URL": settings.database_url,
@@ -44,7 +73,9 @@ def server(settings, tmp_path):
             for _ in range(60):
                 assert child.poll() is None, "Dedicated API process failed startup"
                 try:
-                    with urlopen(origin + "/healthz", timeout=0.5) as result:
+                    with urlopen(
+                        origin + "/healthz", timeout=0.5, context=context
+                    ) as result:
                         if result.status == 200:
                             break
                 except URLError:
@@ -58,16 +89,18 @@ def server(settings, tmp_path):
             child.wait(timeout=5)
 
 
-def call(origin, path, *, body=None, access=None):
+def call(origin, path, *, body=None, access=None, controller=None, context=None):
     headers = {"Content-Type": "application/json"}
     if access:
         headers["Authorization"] = "Bearer " + access
+    if controller:
+        headers["X-PTCG-Controller"] = controller
     request = Request(
         origin + "/api/online/v2" + path,
         data=json.dumps(body).encode() if body is not None else None,
         headers=headers,
     )
-    with urlopen(request, timeout=5) as result:
+    with urlopen(request, timeout=25, context=context) as result:
         return json.loads(result.read())
 
 

@@ -18,6 +18,16 @@ assert {route.path for route in app.routes} == {
     "/api/online/v2/rooms/{room_id}/deck",
     "/api/online/v2/rooms/{room_id}/ready",
     "/api/online/v2/rooms/{room_id}/leave",
+    "/api/online/v2/matches/{match_id}",
+    "/api/online/v2/matches/{match_id}/control",
+    "/api/online/v2/matches/{match_id}/commands",
+    "/api/online/v2/matches/{match_id}/resign",
+    "/api/online/v2/matches/{match_id}/receipts/{command_id}",
+    "/api/online/v2/matches/{match_id}/frames",
+    "/api/online/v2/matches/{match_id}/frames/{cursor}",
+    "/api/online/v2/matches/{match_id}/timeline",
+    "/api/online/v2/matches/{match_id}/timeline/{cursor}",
+    "/api/online/v2/stream",
     "/healthz",
     "/readyz",
     "/api/online/v2/capabilities",
@@ -28,6 +38,8 @@ assert {route.path for route in app.routes} == {
 }
 assert "unreachable" not in repr(settings)
 assert files("ptcg_online_server").joinpath("migrations/001_sessions.sql").is_file()
+assert files("ptcg_online_server").joinpath("migrations/003_matches.sql").is_file()
+assert files("ptcg_online_server").joinpath("schemas/match.schema.json").is_file()
 assert decode("Create", b'{"protocolVersion":"2.0"}') == {"protocolVersion": "2.0"}
 assert not {"apps", "packages", "ptcg", "torch", "sqlite3", "PIL"} & {
     n.split(".")[0] for n in sys.modules

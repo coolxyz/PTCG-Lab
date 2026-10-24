@@ -1,0 +1,115 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$defs": {
+    "MatchControl": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "protocolVersion": {
+          "const": "2.0"
+        },
+        "requestId": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 128
+        },
+        "controllerId": {
+          "type": "string",
+          "pattern": "^[a-f0-9]{32}$"
+        },
+        "expectedControllerEpoch": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 9007199254740991
+        }
+      },
+      "required": [
+        "protocolVersion",
+        "requestId",
+        "controllerId",
+        "expectedControllerEpoch"
+      ]
+    },
+    "MatchResign": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "protocolVersion": {
+          "const": "2.0"
+        },
+        "commandId": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 128
+        },
+        "expectedMatchSeq": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 9007199254740991
+        },
+        "expectedStateVersion": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 9007199254740991
+        },
+        "controllerEpoch": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 9007199254740991
+        }
+      },
+      "required": [
+        "protocolVersion",
+        "commandId",
+        "expectedMatchSeq",
+        "expectedStateVersion",
+        "controllerEpoch"
+      ]
+    },
+    "MatchSubscribe": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "protocolVersion": {
+          "const": "2.0"
+        },
+        "matchId": {
+          "type": "string",
+          "pattern": "^[a-f0-9]{32}$"
+        },
+        "streamCursor": {
+          "anyOf": [
+            {
+              "type": "string",
+              "pattern": "^[a-f0-9]{32}$"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        }
+      },
+      "required": [
+        "protocolVersion",
+        "matchId",
+        "streamCursor"
+      ]
+    },
+    "MatchPing": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "protocolVersion": {
+          "const": "2.0"
+        },
+        "type": {
+          "const": "ping"
+        }
+      },
+      "required": [
+        "protocolVersion",
+        "type"
+      ]
+    }
+  }
+}

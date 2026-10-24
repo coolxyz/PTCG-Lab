@@ -12,6 +12,8 @@ import time
 import sys
 from ptcg_core.factory import CoreFactory
 from ptcg_core.identity import execution_identity
+from ptcg_core.events import public_effects
+from ptcg_core.results import explain
 from ptcg_engine_provider.bundle import DirectoryEngineProvider
 from ptcg_engine_provider.values import canonical
 
@@ -40,6 +42,27 @@ def execute(request):
             ],
             "asOf": as_of,
         }
+    if request["operation"] in ("project", "command"):
+        match = factory.restore_match(request["recovery"])
+        before = {seat: match.project_view(seat) for seat in ("PLAYER1", "PLAYER2")}
+        if request["operation"] == "command":
+            match.apply_command(request["seat"], request["command"])
+        views = {seat: match.project_view(seat) for seat in before}
+        return {
+            "recovery": match.export_recovery_record(),
+            "views": views,
+            "effects": {
+                seat: (
+                    public_effects(
+                        before[seat]["observation"], views[seat]["observation"]
+                    )
+                    if request["operation"] == "command"
+                    else []
+                )
+                for seat in views
+            },
+            "results": {seat: explain(views[seat]) for seat in views},
+        }
     if request["operation"] != "initialize" or request["as_of"] != as_of:
         raise ValueError("INVALID_WORKER_OPERATION")
     match = factory.create_match(
@@ -58,8 +81,8 @@ def watch_parent(parent):
 
 def main():
     try:
-        raw = sys.stdin.buffer.read(65537)
-        if len(raw) > 65536:
+        raw = sys.stdin.buffer.read(16 * 1024 * 1024 + 1)
+        if len(raw) > 16 * 1024 * 1024:
             raise ValueError("REQUEST_TOO_LARGE")
         request = json.loads(raw)
         if os.name == "posix":

@@ -3,8 +3,9 @@
 import asyncio
 from contextlib import asynccontextmanager
 import logging
+import re
 
-from fastapi import FastAPI, Request
+from fastapi import FastAPI, Request, WebSocket
 from fastapi.responses import JSONResponse
 from starlette.concurrency import run_in_threadpool
 from starlette.exceptions import HTTPException
@@ -19,6 +20,8 @@ from .rules import RuleStatus
 from .worker import RuleWorker
 from .lobby import Lobby
 from .initialization import Initializer
+from .matches import Matches
+from .stream import Streams
 
 PREFIX = "/api/online/v2"
 MAX_BODY = 16384
@@ -42,8 +45,7 @@ class Boundary:
 
     async def __call__(self, scope, receive, send):
         if scope["type"] == "websocket":
-            # Stream authentication/subscriptions are introduced with P4-C.
-            return await send({"type": "websocket.close", "code": 1008})
+            return await self.app(scope, receive, send)
         if scope["type"] != "http":
             return await self.app(scope, receive, send)
         started = False
@@ -69,7 +71,13 @@ class Boundary:
         try:
             items = scope.get("headers", [])
             headers = dict(items)
-            for key in (b"host", b"authorization", b"content-type", b"content-length"):
+            for key in (
+                b"host",
+                b"authorization",
+                b"content-type",
+                b"content-length",
+                b"x-ptcg-controller",
+            ):
                 if sum(k == key for k, _ in items) > 1:
                     raise ServiceError("INVALID_PAYLOAD", 400)
             if (
@@ -160,6 +168,8 @@ def create_app(settings=None, *, worker=None, background=True):
     worker = worker or RuleWorker(settings)
     lobby = Lobby(repo, worker)
     initializer = Initializer(repo, worker)
+    matches = Matches(repo, worker)
+    streams = Streams(settings, matches)
 
     @asynccontextmanager
     async def lifespan(app):
@@ -175,6 +185,7 @@ def create_app(settings=None, *, worker=None, background=True):
                         await run_in_threadpool(worker.probe)
                     if worker.available:
                         await run_in_threadpool(initializer.tick)
+                        await run_in_threadpool(matches.promote_one)
                 except Exception:
                     logging.getLogger("ptcg_online_server").error(
                         "initialization_unavailable"
@@ -233,9 +244,13 @@ def create_app(settings=None, *, worker=None, background=True):
                     "displayCatalogVersion": rules.catalog_version,
                     "assetManifestVersion": "unavailable",
                 },
-                "acceptingMatches": False,
+                "acceptingMatches": bool(worker.available and rules.release_id),
                 "maxCommandBytes": MAX_BODY,
-                "features": ["invite"] if worker.available else [],
+                "features": (
+                    ["invite", "duel", "private-replay", "reconnect"]
+                    if worker.available
+                    else []
+                ),
             },
         )
 
@@ -314,5 +329,88 @@ def create_app(settings=None, *, worker=None, background=True):
     @app.post(PREFIX + "/rooms/{room_id}/leave")
     async def room_leave(room_id: str, request: Request):
         return await change_room(room_id, "leave", "RoomLeave", request)
+
+    def controller(request):
+        value = request.headers.get("x-ptcg-controller", "")
+        if not re.fullmatch(r"[a-f0-9]{32}", value):
+            raise ServiceError("CONTROL_LOST", 409)
+        return value
+
+    @app.get(PREFIX + "/matches/{match_id}")
+    async def get_match(match_id: str, request: Request):
+        return await run_in_threadpool(matches.get, bearer(request), match_id)
+
+    @app.post(PREFIX + "/matches/{match_id}/control")
+    async def take_control(match_id: str, request: Request):
+        body = decode("MatchControl", await request.body())
+        return await run_in_threadpool(matches.control, bearer(request), match_id, body)
+
+    @app.post(PREFIX + "/matches/{match_id}/commands")
+    async def submit_command(match_id: str, request: Request):
+        body = decode("Command", await request.body())
+        return await run_in_threadpool(
+            matches.command, bearer(request), match_id, body, controller(request)
+        )
+
+    @app.post(PREFIX + "/matches/{match_id}/resign")
+    async def resign_match(match_id: str, request: Request):
+        body = decode("MatchResign", await request.body())
+        return await run_in_threadpool(
+            matches.resign, bearer(request), match_id, body, controller(request)
+        )
+
+    @app.get(PREFIX + "/matches/{match_id}/receipts/{command_id}")
+    async def command_receipt(match_id: str, command_id: str, request: Request):
+        return await run_in_threadpool(
+            matches.receipt, bearer(request), match_id, command_id
+        )
+
+    @app.get(PREFIX + "/matches/{match_id}/frames")
+    @app.get(PREFIX + "/matches/{match_id}/frames/{cursor}")
+    async def match_frames(match_id: str, request: Request, cursor: str | None = None):
+        return await run_in_threadpool(
+            matches.frames, bearer(request), match_id, cursor
+        )
+
+    @app.get(PREFIX + "/matches/{match_id}/timeline")
+    @app.get(PREFIX + "/matches/{match_id}/timeline/{cursor}")
+    async def match_timeline(
+        match_id: str, request: Request, cursor: str | None = None
+    ):
+        page = await run_in_threadpool(
+            matches.frames, bearer(request), match_id, cursor
+        )
+        return {
+            **{
+                k: page[k]
+                for k in (
+                    "protocolVersion",
+                    "matchId",
+                    "ruleReleaseId",
+                    "viewerSeat",
+                    "nextCursor",
+                )
+            },
+            "events": [
+                {
+                    k: frame[k]
+                    for k in (
+                        "frameSeq",
+                        "matchSeq",
+                        "stateVersion",
+                        "status",
+                        "events",
+                        "visualEffects",
+                        "result",
+                    )
+                    if k in frame
+                }
+                for frame in page["frames"]
+            ],
+        }
+
+    @app.websocket(PREFIX + "/stream")
+    async def stream(ws: WebSocket):
+        await streams.serve(ws)
 
     return app

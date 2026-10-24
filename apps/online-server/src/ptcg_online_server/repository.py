@@ -22,7 +22,11 @@ def migrations():
             version,
             files("ptcg_online_server").joinpath("migrations/" + name).read_bytes(),
         )
-        for version, name in ((1, "001_sessions.sql"), (2, "002_lobby.sql"))
+        for version, name in (
+            (1, "001_sessions.sql"),
+            (2, "002_lobby.sql"),
+            (3, "003_matches.sql"),
+        )
     ]
 
 

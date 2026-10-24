@@ -21,6 +21,9 @@ class Settings:
     max_rate_keys: int = 4096
     max_inflight: int = 32
     body_timeout: float = 10
+    max_streams: int = 32
+    outbox_retention: int = 64
+    max_match_commands: int = 2000
     join_per_minute: int = 20
     max_rooms: int = 100
     max_decks_per_user: int = 100
@@ -60,6 +63,9 @@ class Settings:
             self.global_per_minute,
             self.max_rate_keys,
             self.max_inflight,
+            self.max_streams,
+            self.outbox_retention,
+            self.max_match_commands,
             self.join_per_minute,
             self.max_rooms,
             self.max_decks_per_user,
@@ -110,6 +116,9 @@ class Settings:
                 global_per_minute=int(env("GLOBAL_PER_MINUTE", "1200")),
                 max_rate_keys=int(env("MAX_RATE_KEYS", "4096")),
                 max_inflight=int(env("MAX_INFLIGHT", "32")),
+                max_streams=int(env("MAX_STREAMS", "32")),
+                outbox_retention=int(env("OUTBOX_RETENTION", "64")),
+                max_match_commands=int(env("MAX_MATCH_COMMANDS", "2000")),
                 join_per_minute=int(env("JOIN_PER_MINUTE", "20")),
                 max_rooms=int(env("MAX_ROOMS", "100")),
                 max_decks_per_user=int(env("MAX_DECKS_PER_USER", "100")),

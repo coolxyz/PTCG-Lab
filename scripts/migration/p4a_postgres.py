@@ -17,8 +17,10 @@ ROOT = Path(__file__).resolve().parents[2]
 
 def run(output, python, image=None):
     output = Path(output).resolve()
-    if not any(output.is_relative_to(ROOT / name) for name in ("var/p4a", "var/p4b")):
-        raise ValueError("Acceptance output must be below var/p4a or var/p4b")
+    if not any(
+        output.is_relative_to(ROOT / name) for name in ("var/p4a", "var/p4b", "var/p4c")
+    ):
+        raise ValueError("Acceptance output must be below var/p4a, var/p4b or var/p4c")
     output.mkdir(parents=True, exist_ok=False)
     password = secrets.token_urlsafe(32)
     envfile = output / "postgres.env"

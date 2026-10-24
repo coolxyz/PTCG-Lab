@@ -30,6 +30,10 @@ def main():
         server_header=False,
         limit_concurrency=settings.max_inflight,
         timeout_keep_alive=5,
+        ws="websockets",
+        ws_max_size=16384,
+        ws_max_queue=2,
+        ws_per_message_deflate=False,
     )
     return 0
 

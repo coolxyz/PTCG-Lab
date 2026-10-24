@@ -24,7 +24,7 @@
     "P3-C": "completed",
     "P4-A": "completed",
     "P4-B": "completed",
-    "P4-C": "planned",
+    "P4-C": "completed",
     "P4-D": "planned"
   },
   "p1BaselineCommit": "83e3fb2",
@@ -44,5 +44,7 @@
   "p3cBaselineCommit": "097ee99",
   "p4ProgressDocument": "docs/P4纯API服务实施记录.md",
   "p4aBaselineCommit": "9067663",
-  "p4bAcceptanceDocument": "docs/P4B房间邀请与开局验收.md"
+  "p4bAcceptanceDocument": "docs/P4B房间邀请与开局验收.md",
+  "p4bBaselineCommit": "577a6c1",
+  "p4cAcceptanceDocument": "docs/P4C对局提交与私有推送验收.md"
 }

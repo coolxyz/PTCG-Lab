@@ -1,4 +1,4 @@
-# P4-A API runtime closure; no GUI, image, model, local-app or training dependency.
+# P4-C API runtime closure; no GUI, image, model, local-app or training dependency.
 annotated-types==0.8.0
 anyio==4.15.1
 attrs==26.1.0
@@ -19,4 +19,5 @@ starlette==0.46.2
 typing_extensions==4.16.0
 typing-inspection==0.4.4
 uvicorn==0.34.2
+websockets==15.0.1
 colorama==0.4.6; sys_platform == "win32"
