@@ -1967,3 +1967,17 @@ html {
 .variant-card label { display: flex; flex-direction: column; gap: 4px; }
 .variant-card input { width: 100%; min-width: 0; box-sizing: border-box; }
 .variant-card button { white-space: normal; }
+
+/* Shared battle display is portalled to body; keep the product controller mounted. */
+body.battle-screen-open #root > .app {
+  display: none;
+}
+@media (max-width: 800px) {
+  .sidebar nav {
+    overflow-x: auto;
+  }
+  .sidebar nav button {
+    flex: 0 0 auto;
+    padding-inline: 10px;
+  }
+}

@@ -35,7 +35,7 @@ function fixture() {
     saveCreation: (c) => {
       creation = c ? structuredClone(c) : null;
     },
-    preferredRevision: () => null,
+    takePreferredRevision: () => null,
   };
   const view = (): PracticeView => snapshotView(demoSnapshot());
   const calls: {
@@ -259,4 +259,35 @@ test("leaving during an accepted AI request retains its result without starting 
   c.setActive(true);
   expect(c.snapshot().view?.stateVersion).toBe(8);
   expect(f.calls.creates).toHaveLength(1);
+});
+
+test("returning from construction refreshes revisions and honors a newly chosen version", async () => {
+  const f = fixture(),
+    c = f.make();
+  await ready(c);
+  c.setActive(false);
+  f.storage.takePreferredRevision = () => "new-revision";
+  f.api.revisions = async () => [
+    { id: "new-revision", name: "new", number: 2, playable: true },
+  ];
+  c.setActive(true);
+  await expect.poll(() => c.snapshot().revision).toBe("new-revision");
+  expect(f.calls.sessions).toBe(1);
+  expect(f.calls.creates).toHaveLength(0);
+});
+
+test("navigation keeps uncertain action errors and pending receipts visible", async () => {
+  const f = fixture(),
+    c = f.make();
+  await ready(c);
+  await c.create();
+  f.api.command = async () => {
+    throw new Error("lost reply");
+  };
+  await c.submit({ optionId: "demo-pass" });
+  c.setActive(false);
+  c.setActive(true);
+  await expect.poll(() => c.snapshot().busy).toBe(false);
+  expect(c.snapshot().error).toBe("lost reply");
+  expect(c.snapshot().pending).not.toBeNull();
 });

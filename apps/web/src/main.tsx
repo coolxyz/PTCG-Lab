@@ -27,7 +27,7 @@ import {
   Trash2,
 } from "lucide-react";
 import "./style.css";
-import { Battle } from "./Battle";
+import { PracticeApp } from "./Practice";
 import { Sync } from "./Sync";
 import { CardArtwork, CardDescription, type ChineseDetails } from "./CardArtwork";
 import { CardVariants } from './CardVariants';
@@ -116,12 +116,18 @@ const subtypeLabels: Record<string, string> = {
   SUPPORTER: "支援者",
   STADIUM: "竞技场",
 };
+function productPage() {
+  const hash = window.location.hash.slice(1);
+  if (hash === "practice" || hash === "battle") return "battle";
+  if (hash === "build") return "decks";
+  return ["cards", "collection", "decks", "sync"].includes(hash) ? hash : "cards";
+}
 function App() {
   const [cardPage, setCardPage] = useState(0);
   const [effect, setEffect] = useState("");
   const [failedImages, setFailedImages] = useState<Set<string>>(new Set());
   const [page, setPage] = useState(
-      window.location.hash === "#sync" ? "sync" : window.location.hash === "#battle" ? "battle" : "cards",
+      productPage,
     ),
     [cards, setCards] = useState<Card[]>([]),
     [meta, setMeta] = useState<any>(null),
@@ -130,6 +136,11 @@ function App() {
       entries: Holding[];
     }>({ version: 0, entries: [] }),
     [decks, setDecks] = useState<Deck[]>([]);
+  useEffect(() => {
+    const navigate = () => setPage(productPage());
+    window.addEventListener("hashchange", navigate);
+    return () => window.removeEventListener("hashchange", navigate);
+  }, []);
   const [query, setQuery] = useState(""),
     [category, setCategory] = useState(""),
     [product, setProduct] = useState(""),
@@ -1499,15 +1510,14 @@ function App() {
               </div>
             </>
           )}
-          {page === "battle" && (
-            <Battle
+          <PracticeApp
+              active={page === "battle"}
               cards={cards}
               onBuild={() => {
                 setPage("decks");
                 window.location.hash = "decks";
               }}
-            />
-          )}
+          />
         </main>
         <footer className="footer">
           为每一次认真构筑而作。<span>非官方工具 · 仅限本地管理与验证</span>

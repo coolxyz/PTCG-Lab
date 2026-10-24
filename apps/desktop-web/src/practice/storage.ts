@@ -8,9 +8,9 @@ export interface PracticeStorage {
   savePending(id: string, command: Command | null): void;
   creation(): Creation | null;
   saveCreation(value: Creation | null): void;
-  preferredRevision(): string | null;
+  takePreferredRevision(): string | null;
 }
-/** Separate P3 namespace; no Cookie, bearer token, rules state or AI data is read. */
+/** Receipts stay in P3 storage. The old same-origin match pointer is shared for rollback. */
 export function practiceStorage(
   local: Storage,
   session: Storage,
@@ -30,9 +30,15 @@ export function practiceStorage(
       ? local.removeItem(prefix + key)
       : local.setItem(prefix + key, JSON.stringify(value));
   return {
-    match: () => local.getItem(prefix + "match"),
-    saveMatch: (id) => local.setItem(prefix + "match", id),
-    forgetMatch: () => local.removeItem(prefix + "match"),
+    match: () => local.getItem("ptcg-match") || local.getItem(prefix + "match"),
+    saveMatch: (id) => {
+      local.setItem(prefix + "match", id);
+      local.setItem("ptcg-match", id);
+    },
+    forgetMatch: () => {
+      local.removeItem(prefix + "match");
+      local.removeItem("ptcg-match");
+    },
     pending: (id) => {
       const p = read("pending:" + id) as Command | null;
       return p &&
@@ -59,7 +65,11 @@ export function practiceStorage(
         : null;
     },
     saveCreation: (p) => write("creation", p),
-    preferredRevision: () => session.getItem("ptcg-preferred-revision"),
+    takePreferredRevision: () => {
+      const revision = session.getItem("ptcg-preferred-revision");
+      session.removeItem("ptcg-preferred-revision");
+      return revision;
+    },
   };
 }
 

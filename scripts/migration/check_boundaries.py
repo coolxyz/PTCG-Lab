@@ -35,7 +35,9 @@ def check(root=ROOT):
         core = project["distribution"] == "ptcg-battle-core"
         gui = project["distribution"] in {"@ptcg/battle-ui", "@ptcg/desktop-web"}
         expected_stage = (
-            "P3-B" if gui else "P2-D" if (protocol or core) else "P2-B" if provider else "P1"
+            ("P3-C" if project["distribution"] == "@ptcg/desktop-web" else "P3-B")
+            if gui
+            else "P2-D" if (protocol or core) else "P2-B" if provider else "P1"
         )
         if (
             project["stage"] != expected_stage
@@ -218,7 +220,18 @@ def check(root=ROOT):
         )
     ):
         errors.append("P2 implementation misrepresented as complete")
-    if status["phases"].get("P3") != "in_progress":
+    p3_phase = status["phases"].get("P3")
+    if p3_phase not in {"in_progress", "completed"} or (
+        p3_phase == "completed"
+        and (
+            any(
+                status.get("subphases", {}).get(p) != "completed"
+                for p in ("P3-A", "P3-B", "P3-C")
+            )
+            or status.get("p3cAcceptanceDocument") != "docs/P3C完整产品接入验收.md"
+            or not (root / "docs/P3C完整产品接入验收.md").is_file()
+        )
+    ):
         errors.append("P3 implementation misrepresented as complete")
     for phase in range(4, 9):
         if status["phases"].get("P" + str(phase)) != "planned":

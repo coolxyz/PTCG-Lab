@@ -81,7 +81,10 @@ test("real commands, receipt retry, refresh, single step, resign and historical 
         for (let n = 0; n < d.min; n++)
           await page.locator(".decision-candidates button").nth(n).click();
         await page
-          .getByRole("button", { name: `确认选择 ${d.min} 张`, exact: true })
+          .getByRole("button", {
+            name: d.max === 0 ? "已查看，继续结算" : `确认选择 ${d.min} 张`,
+            exact: true,
+          })
           .click();
       } else await page.locator(".decision-options button").first().click();
       decisions++;
@@ -128,6 +131,11 @@ test("real commands, receipt retry, refresh, single step, resign and historical 
   await page.getByRole("button", { name: "认输", exact: true }).click();
   await page.getByRole("button", { name: "确认认输", exact: true }).click();
   await expect(page.locator(".battle-result")).toContainText("你已认输");
-  await page.screenshot({ path: path.resolve(import.meta.dirname, "../../../var/p3b/practice-result.png") });
+  await page.screenshot({
+    path: path.resolve(
+      import.meta.dirname,
+      "../../../var/p3b/practice-result.png",
+    ),
+  });
   expect(errors).toEqual([]);
 });

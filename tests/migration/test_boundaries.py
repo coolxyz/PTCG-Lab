@@ -28,6 +28,7 @@ def scaffold(tmp_path):
         "releases/migration-status.json",
         "docs/产品化重构设计.md",
         "docs/产品化重构分阶段实施.md",
+        "docs/P3C完整产品接入验收.md",
     ]:
         p = tmp_path / name
         p.parent.mkdir(parents=True, exist_ok=True)
@@ -137,3 +138,18 @@ def test_gui_dependency_contract_is_pinned(scaffold):
 def test_practice_capabilities_stay_in_their_specific_adapter(scaffold, path, code):
     (scaffold / path).write_text(code)
     assert any("networking/storage" in e for e in check(scaffold))
+
+
+@pytest.mark.parametrize("missing", ["subphase", "document"])
+def test_p3_completion_requires_product_acceptance(scaffold, missing):
+    p = scaffold / "releases/migration-status.json"
+    data = json.loads(p.read_text())
+    data["phases"]["P3"] = "completed"
+    data["subphases"].update({p: "completed" for p in ("P3-A", "P3-B", "P3-C")})
+    data["p3cAcceptanceDocument"] = "docs/P3C完整产品接入验收.md"
+    if missing == "subphase":
+        data["subphases"]["P3-C"] = "planned"
+    else:
+        (scaffold / data["p3cAcceptanceDocument"]).unlink()
+    p.write_text(json.dumps(data))
+    assert any("P3 implementation misrepresented" in e for e in check(scaffold))

@@ -65,6 +65,7 @@ export class PracticeController {
     paused: false,
     coinPlaying: false,
   };
+  private lobbyRefreshNeeded = false;
   private listeners = new Set<() => void>();
   private timer: ReturnType<typeof setTimeout> | undefined;
   constructor(
@@ -99,9 +100,9 @@ export class PracticeController {
     if (!s.view.done && !s.view.decision && !s.paused && !s.coinPlaying)
       this.timer = setTimeout(() => void this.advance(), s.aiDelay);
   }
-  private async run(work: () => Promise<void>) {
+  private async run(work: () => Promise<void>, clearError = true) {
     if (this.state.busy) return;
-    this.patch({ busy: true, error: "" });
+    this.patch({ busy: true, ...(clearError ? { error: "" } : {}) });
     try {
       await work();
     } catch (error) {
@@ -111,11 +112,24 @@ export class PracticeController {
       });
     } finally {
       this.patch({ busy: false });
+      if (
+        this.lobbyRefreshNeeded &&
+        this.state.active &&
+        this.state.initialized
+      ) {
+        this.lobbyRefreshNeeded = false;
+        void this.run(() => this.lobby(), false);
+      }
     }
   }
   setActive = (active: boolean) => {
+    const entering = active && !this.state.active;
     this.patch({ active, playing: active ? this.state.playing : false });
     if (active && !this.state.initialized) void this.initialize();
+    else if (entering) {
+      if (this.state.busy) this.lobbyRefreshNeeded = true;
+      else void this.run(() => this.lobby(), false);
+    }
   };
   private async lobby() {
     const [revisions, matches] = await Promise.all([
@@ -126,11 +140,12 @@ export class PracticeController {
       ...(this.state.session?.opponents ?? []).map((o) => o.id),
       ...revisions.filter((r) => r.playable).map((r) => "revision:" + r.id),
     ];
-    const preferred = this.storage.preferredRevision();
+    const preferred = this.storage.takePreferredRevision();
     this.patch({
       revisions,
       matches,
       revision:
+        revisions.find((r) => r.playable && r.id === preferred)?.id ||
         revisions.find((r) => r.playable && r.id === this.state.revision)?.id ||
         revisions.find((r) => r.playable && r.id === preferred)?.id ||
         revisions.find((r) => r.playable)?.id ||
@@ -186,7 +201,7 @@ export class PracticeController {
   };
   leave = () => {
     this.patch({ showing: false, playing: false, coinPlaying: false });
-    void this.run(() => this.lobby());
+    void this.run(() => this.lobby(), false);
   };
   select = (field: "revision" | "opponent" | "aiLevel", value: string) => {
     if (this.state.busy || this.state.creation) return;

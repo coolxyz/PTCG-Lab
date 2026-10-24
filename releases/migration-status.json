@@ -6,7 +6,7 @@
     "P0": "documented",
     "P1": "completed",
     "P2": "completed",
-    "P3": "in_progress",
+    "P3": "completed",
     "P4": "planned",
     "P5": "planned",
     "P6": "planned",
@@ -21,7 +21,7 @@
     "P2-D": "completed",
     "P3-A": "completed",
     "P3-B": "completed",
-    "P3-C": "planned"
+    "P3-C": "completed"
   },
   "p1BaselineCommit": "83e3fb2",
   "progressDocument": "docs/P2共享协议与规则核心实施记录.md",
@@ -34,5 +34,7 @@
   "p2dBaselineCommit": "68529ed",
   "p3ProgressDocument": "docs/P3共享界面与本地接入实施记录.md",
   "p3aBaselineCommit": "b2d79e0",
-  "p3bAcceptanceDocument": "docs/P3B本地人机适配验收.md"
+  "p3bAcceptanceDocument": "docs/P3B本地人机适配验收.md",
+  "p3bBaselineCommit": "3ce7ba2",
+  "p3cAcceptanceDocument": "docs/P3C完整产品接入验收.md"
 }

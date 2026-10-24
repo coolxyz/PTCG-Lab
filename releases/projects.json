@@ -1,6 +1,6 @@
 {
   "schema": 1,
-  "phase": "P3-B",
+  "phase": "P3-C",
   "projects": [
     {
       "path": "apps/desktop-api",
@@ -136,7 +136,7 @@
       "distribution": "@ptcg/desktop-web",
       "module": "desktop-web",
       "language": "javascript",
-      "stage": "P3-B",
+      "stage": "P3-C",
       "implementationReady": false,
       "allowedInternalImports": [
         "@ptcg/battle-ui",
