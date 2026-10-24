@@ -121,3 +121,19 @@ def test_gui_dependency_contract_is_pinned(scaffold):
     data["dependencies"]["some-network-client"] = "1.0.0"
     p.write_text(json.dumps(data))
     assert any("contract" in e for e in check(scaffold))
+
+
+@pytest.mark.parametrize(
+    "path,code",
+    [
+        ("apps/desktop-web/src/unreviewed.ts", 'fetch("/api/battle/matches")'),
+        (
+            "apps/desktop-web/src/practice/transport.ts",
+            'localStorage.getItem("secret")',
+        ),
+        ("apps/desktop-web/src/practice/storage.ts", 'fetch("https://example.com")'),
+    ],
+)
+def test_practice_capabilities_stay_in_their_specific_adapter(scaffold, path, code):
+    (scaffold / path).write_text(code)
+    assert any("networking/storage" in e for e in check(scaffold))

@@ -5,7 +5,7 @@ export default defineConfig({
   timeout: 30000,
   reporter: [
     ["list"],
-    ["json", { outputFile: "../../var/p3/browser-results.json" }],
+    ["json", { outputFile: "../../var/p3b/browser-results.json" }],
   ],
   use: {
     baseURL: "http://127.0.0.1:5183",
@@ -17,6 +17,7 @@ export default defineConfig({
   },
   webServer: {
     command: "npm run dev",
+    env: {PTCG_PRACTICE_MODE: "1"},
     url: "http://127.0.0.1:5183",
     reuseExistingServer: false,
     timeout: 15000,

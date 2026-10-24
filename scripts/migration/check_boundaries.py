@@ -35,9 +35,7 @@ def check(root=ROOT):
         core = project["distribution"] == "ptcg-battle-core"
         gui = project["distribution"] in {"@ptcg/battle-ui", "@ptcg/desktop-web"}
         expected_stage = (
-            "P3-A"
-            if gui
-            else "P2-D" if (protocol or core) else "P2-B" if provider else "P1"
+            "P3-B" if gui else "P2-D" if (protocol or core) else "P2-B" if provider else "P1"
         )
         if (
             project["stage"] != expected_stage
@@ -178,11 +176,23 @@ def check(root=ROOT):
                         for ref in refs
                     ):
                         errors.append(rel + ": cross-package or external JS import")
-                    if re.search(
-                        r"\b(fetch|WebSocket|XMLHttpRequest|localStorage|sessionStorage|sendBeacon)\b",
-                        content,
-                    ):
-                        errors.append(rel + ": networking/storage in scaffold")
+                    capabilities = set(
+                        re.findall(
+                            r"\b(fetch|WebSocket|XMLHttpRequest|localStorage|sessionStorage|sendBeacon)\b",
+                            content,
+                        )
+                    )
+                    audited_capabilities = {
+                        "apps/desktop-web/src/practice/transport.ts": {"fetch"},
+                        "apps/desktop-web/src/practice/storage.ts": {
+                            "localStorage",
+                            "sessionStorage",
+                        },
+                    }
+                    if capabilities - audited_capabilities.get(rel, set()):
+                        errors.append(
+                            rel + ": networking/storage outside audited mode adapter"
+                        )
                     if rel not in export:
                         errors.append(rel + ": not exported")
         for filename in [

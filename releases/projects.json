@@ -1,6 +1,6 @@
 {
   "schema": 1,
-  "phase": "P3-A",
+  "phase": "P3-B",
   "projects": [
     {
       "path": "apps/desktop-api",
@@ -136,7 +136,7 @@
       "distribution": "@ptcg/desktop-web",
       "module": "desktop-web",
       "language": "javascript",
-      "stage": "P3-A",
+      "stage": "P3-B",
       "implementationReady": false,
       "allowedInternalImports": [
         "@ptcg/battle-ui",
@@ -148,7 +148,7 @@
       ],
       "allowedRuntimeRequirements": [],
       "allowedPackageDependencies": {
-        "@ptcg/battle-ui": "0.3.0-p3a",
+        "@ptcg/battle-ui": "0.3.0-p3b",
         "@ptcg/battle-protocol": "0.2.0-p2d",
         "react": "19.1.1",
         "react-dom": "19.1.1"
@@ -165,7 +165,7 @@
       "distribution": "@ptcg/battle-ui",
       "module": "battle-ui",
       "language": "javascript",
-      "stage": "P3-A",
+      "stage": "P3-B",
       "implementationReady": false,
       "allowedInternalImports": [],
       "allowedExternalImports": [

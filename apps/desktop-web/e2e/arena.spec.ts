@@ -165,12 +165,12 @@ test("PLAYER2 terminal winner and waiting state", async ({ page }) => {
 test("standalone desktop and narrow screenshots", async ({ page }) => {
   await open(page, "selection", "PLAYER2");
   await page.screenshot({
-    path: "../../var/p3/arena-desktop.png",
+    path: "../../var/p3b/arena-desktop.png",
     fullPage: true,
   });
   await page.setViewportSize({ width: 390, height: 844 });
   await page.screenshot({
-    path: "../../var/p3/arena-narrow.png",
+    path: "../../var/p3b/arena-narrow.png",
     fullPage: true,
   });
 });

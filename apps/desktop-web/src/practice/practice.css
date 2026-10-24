@@ -1,0 +1,46 @@
+.practice-lobby {
+  max-width: 1100px;
+  margin: 24px auto;
+  padding: 20px;
+  display: grid;
+  gap: 24px;
+}
+.practice-lobby section {
+  background: white;
+  border: 1px solid #d4ded9;
+  padding: 20px;
+  border-radius: 12px;
+  display: grid;
+  gap: 16px;
+}
+.practice-lobby label {
+  display: grid;
+  gap: 8px;
+}
+.practice-lobby :is(button, select) {
+  font: inherit;
+  padding: 10px 14px;
+  border: 1px solid #d4ded9;
+  border-radius: 8px;
+  background: white;
+  color: #244f3a;
+  cursor: pointer;
+  max-width: 100%;
+}
+.practice-lobby button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+.practice-lobby [role="alert"] {
+  color: #893d2c;
+}
+.desktop-nav {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 16px;
+  flex-wrap: wrap;
+}
+body.battle-screen-open .desktop-nav {
+  display: none;
+}

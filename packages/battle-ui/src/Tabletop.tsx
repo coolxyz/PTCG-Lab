@@ -518,7 +518,7 @@ export function Tabletop({
       )}
       {side(view.observation.self, false)}
       <CoinResults
-        key={`${view.matchId}:${lastAction?.seq}`}
+        key={`coins:${view.matchId}:${lastAction?.seq}`}
         coins={lastAction?.coins || []}
         animate={motion && animateEvents}
         onPlaying={onCoinPlaying}
@@ -538,7 +538,7 @@ export function Tabletop({
       </section>
       <div
         className="tabletop-feedback"
-        key={`${view.matchId}:${view.stateVersion}`}
+        key={`dialog:${view.matchId}:${view.stateVersion}`}
         aria-live="polite"
       >
         {view.events?.at(-1)?.text ||

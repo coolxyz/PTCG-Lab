@@ -1,7 +1,7 @@
 # @ptcg/desktop-web
 
-P3-A 显示适配和独立演示宿主，版本 `0.3.0-p3a`。导出 `snapshotView` / `replayView`，将已校验及已授权的 v2 DTO 转成共享 UI 的独立显示对象；不是网络验证器。
+P3-B 显示适配、本地练习宿主与独立网络界面演示，版本 `0.3.0-p3b`。主入口导出 `snapshotView` / `replayView`；`@ptcg/desktop-web/practice` 导出 PracticeApp 与模式控制器，后续产品导航可保持其挂载并通过 active 暂停调度。
 
-`npm run p3:dev` 在仓库根目录启动仅本机可访问的 5183 端口；`p3:build` 构建，`p3:test` 在独立服务器运行浏览器/DTO 验收。网络模式明确标注未连接，仅使用原创合成数据，不创建实际房间或对局。
+本地模式沿用同源 `/api/battle` 与 HttpOnly 会话 Cookie，不重构 AI。会话、选择重试、AI 计时、投币等待和回放由模式宿主持有；共享显示包不访问 API。默认构建仍只启用合成网络演示。隔离人机验证见 [P3-B 验收](../../docs/P3B本地人机适配验收.md)。
 
-旧 apps/web、本地人机、局域网服务和 AI 仍使用原入口。P3-B 将接本地模式控制器，详见 [P3 实施记录](../../docs/P3共享界面与本地接入实施记录.md)。
+在根目录运行 `npm run p3:dev` / `p3:build` / `p3:test`。本地模式只允许显式启用和专用环回后端端口；不会默认代理正在运行的旧服务。旧 apps/web 与根启动脚本继续使用原入口，完整产品导航、收藏/构筑/同步接入属于 P3-C。

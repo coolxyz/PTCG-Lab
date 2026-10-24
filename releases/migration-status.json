@@ -20,7 +20,7 @@
     "P2-C": "completed",
     "P2-D": "completed",
     "P3-A": "completed",
-    "P3-B": "planned",
+    "P3-B": "completed",
     "P3-C": "planned"
   },
   "p1BaselineCommit": "83e3fb2",
@@ -32,5 +32,7 @@
   "p2cBaselineCommit": "1a7cc47",
   "p2dAcceptanceDocument": "docs/P2D等价与隔离验收.md",
   "p2dBaselineCommit": "68529ed",
-  "p3ProgressDocument": "docs/P3共享界面与本地接入实施记录.md"
+  "p3ProgressDocument": "docs/P3共享界面与本地接入实施记录.md",
+  "p3aBaselineCommit": "b2d79e0",
+  "p3bAcceptanceDocument": "docs/P3B本地人机适配验收.md"
 }

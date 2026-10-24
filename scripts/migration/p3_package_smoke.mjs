@@ -66,8 +66,9 @@ try {
     `import {createRoot} from "react-dom/client";
 import {BattleArena} from "@ptcg/battle-ui";
 import {snapshotView} from "@ptcg/desktop-web";
+import {PracticeApp} from "@ptcg/desktop-web/practice";
 import cases from "./cases.json";
-createRoot(document.getElementById("root")).render(<BattleArena view={snapshotView(cases[0].value)} cards={{}} onRefresh={()=>{}} onLeave={()=>{}}/>);`,
+createRoot(document.getElementById("root")).render(<><BattleArena view={snapshotView(cases[0].value)} cards={{}} onRefresh={()=>{}} onLeave={()=>{}}/><PracticeApp active={false} onBuild={()=>{}}/></>);`,
   );
   await build({
     root: temp,
