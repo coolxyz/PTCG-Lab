@@ -67,8 +67,9 @@ try {
 import {BattleArena} from "@ptcg/battle-ui";
 import {snapshotView} from "@ptcg/desktop-web";
 import {PracticeApp} from "@ptcg/desktop-web/practice";
+import {OnlineApp} from "@ptcg/desktop-web/online";
 import cases from "./cases.json";
-createRoot(document.getElementById("root")).render(<><BattleArena view={snapshotView(cases[0].value)} cards={{}} onRefresh={()=>{}} onLeave={()=>{}}/><PracticeApp active={false} onBuild={()=>{}}/></>);`,
+createRoot(document.getElementById("root")).render(<><BattleArena view={snapshotView(cases[0].value)} cards={{}} onRefresh={()=>{}} onLeave={()=>{}}/><PracticeApp active={false} onBuild={()=>{}}/><OnlineApp/></>);`,
   );
   await build({
     root: temp,

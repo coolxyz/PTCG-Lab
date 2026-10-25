@@ -1,29 +1,40 @@
 {
   "schema": 1,
-  "phase": "P5-B",
+  "phase": "P5-C",
   "projects": [
     {
       "path": "apps/desktop-api",
       "distribution": "ptcg-desktop-api",
       "module": "ptcg_desktop_api",
       "language": "python",
-      "stage": "P5-B",
+      "stage": "P5-C",
       "implementationReady": false,
       "allowedInternalImports": [
         "ptcg_online_client"
       ],
       "allowedExternalImports": [
+        "argparse",
         "asyncio",
         "contextlib",
         "copy",
         "dataclasses",
+        "hashlib",
+        "html",
+        "http",
+        "json",
+        "os",
         "pathlib",
         "re",
         "secrets",
+        "socket",
+        "ssl",
         "starlette",
         "threading",
         "time",
-        "urllib"
+        "urllib",
+        "uuid",
+        "uvicorn",
+        "webbrowser"
       ],
       "allowedRuntimeRequirements": [
         "ptcg-online-client==0.5.0.dev2",
@@ -221,7 +232,7 @@
       "distribution": "@ptcg/desktop-web",
       "module": "desktop-web",
       "language": "javascript",
-      "stage": "P3-C",
+      "stage": "P5-C",
       "implementationReady": false,
       "allowedInternalImports": [
         "@ptcg/battle-ui",

@@ -24,6 +24,7 @@
     "p3:build": "npm run build --workspace @ptcg/desktop-web",
     "p3:test": "npm test --workspace @ptcg/desktop-web",
     "p3:product:build": "tsc --noEmit -p apps/web && tsc --noEmit -p apps/desktop-web && vite build --config scripts/migration/p3c_product.config.ts",
-    "p3:product:test": "playwright test --config scripts/migration/p3c_playwright.config.ts"
+    "p3:product:test": "playwright test --config scripts/migration/p3c_playwright.config.ts",
+    "p5:build": "tsc --noEmit -p apps/desktop-web && vite build --config scripts/migration/p5c_web.config.ts"
   }
 }

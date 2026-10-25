@@ -20,14 +20,23 @@ def run(output, python, image=None, suite="server"):
         "server": ["tests/online_v2"],
         "client": ["tests/online_client"],
         "bridge": ["tests/online_client", "tests/desktop_bridge"],
+        "gui": ["tests/online_client", "tests/desktop_bridge", "tests/desktop_host"],
     }[suite]
     output = Path(output).resolve()
     if not any(
         output.is_relative_to(ROOT / name)
-        for name in ("var/p4a", "var/p4b", "var/p4c", "var/p4d", "var/p5a", "var/p5b")
+        for name in (
+            "var/p4a",
+            "var/p4b",
+            "var/p4c",
+            "var/p4d",
+            "var/p5a",
+            "var/p5b",
+            "var/p5c",
+        )
     ):
         raise ValueError(
-            "Acceptance output must be below var/p4a, var/p4b, var/p4c, var/p4d, var/p5a or var/p5b"
+            "Acceptance output must be below var/p4a, var/p4b, var/p4c, var/p4d, var/p5a, var/p5b or var/p5c"
         )
     output.mkdir(parents=True, exist_ok=False)
     password = secrets.token_urlsafe(32)
@@ -137,7 +146,7 @@ if __name__ == "__main__":
         "--image", help="Optional freshly built API image for container acceptance"
     )
     parser.add_argument(
-        "--suite", choices=("server", "client", "bridge"), default="server"
+        "--suite", choices=("server", "client", "bridge", "gui"), default="server"
     )
     args = parser.parse_args()
     # resolve() preserves the venv path; don't resolve the interpreter symlink.

@@ -39,7 +39,7 @@ def check(root=ROOT):
         desktop = project["distribution"] == "ptcg-desktop-api"
         gui = project["distribution"] in {"@ptcg/battle-ui", "@ptcg/desktop-web"}
         expected_stage = (
-            ("P3-C" if project["distribution"] == "@ptcg/desktop-web" else "P3-B")
+            ("P5-C" if project["distribution"] == "@ptcg/desktop-web" else "P3-B")
             if gui
             else (
                 "P4-D"
@@ -48,7 +48,7 @@ def check(root=ROOT):
                     "P5-A"
                     if client
                     else (
-                        "P5-B"
+                        "P5-C"
                         if desktop
                         else (
                             "P2-D"
@@ -208,6 +208,8 @@ def check(root=ROOT):
                         )
                     )
                     audited_capabilities = {
+                        "apps/desktop-web/src/online/transport.ts": {"fetch"},
+                        "apps/desktop-web/src/online/storage.ts": {"sessionStorage"},
                         "apps/desktop-web/src/practice/transport.ts": {"fetch"},
                         "apps/desktop-web/src/practice/storage.ts": {
                             "localStorage",

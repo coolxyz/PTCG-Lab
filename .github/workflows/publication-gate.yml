@@ -37,6 +37,8 @@ jobs:
       - run: npm ci --ignore-scripts
       - run: npm run p3:build
       - run: npm run p3:product:build
+      - run: npm run p5:build
+      - run: node scripts/migration/p5c_controller_test.mjs
       - run: npm --prefix apps/web run build -- --outDir ../../var/p3c/legacy-ci
       - run: npx playwright install --with-deps chromium
       - run: npm run p3:test
@@ -44,7 +46,7 @@ jobs:
       - run: python -m pip install --no-build-isolation --no-deps ./apps/online-server
       - run: python -m pip install --no-build-isolation --no-deps ./packages/online-client
       - run: python -m pip install --no-build-isolation --no-deps ./apps/desktop-api
-      - run: python -m pytest tests/online_client tests/desktop_bridge -q
+      - run: python -m pytest tests/online_client tests/desktop_bridge tests/desktop_host -q
       - name: Dedicated PostgreSQL session acceptance (synthetic inputs only)
         run: |
           mkdir -p var/p4a

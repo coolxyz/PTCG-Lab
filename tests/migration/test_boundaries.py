@@ -243,3 +243,18 @@ def test_native_client_foundation_cannot_claim_all_p5_complete(scaffold):
 def test_local_bridge_cannot_import_server_engine_ai_or_user_database(scaffold, code):
     (scaffold / "apps/desktop-api/src/ptcg_desktop_api/leak.py").write_text(code)
     assert any("forbidden import" in e for e in check(scaffold))
+
+
+@pytest.mark.parametrize(
+    "path,code",
+    [
+        ("apps/desktop-web/src/online/controller.ts", 'fetch("https://example.test")'),
+        (
+            "apps/desktop-web/src/online/transport.ts",
+            'sessionStorage.setItem("remoteToken", "bad")',
+        ),
+    ],
+)
+def test_online_transport_and_nonsecret_storage_remain_separate(scaffold, path, code):
+    (scaffold / path).write_text(code)
+    assert any("networking/storage" in e for e in check(scaffold))
