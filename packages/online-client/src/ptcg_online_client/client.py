@@ -293,9 +293,19 @@ class Client:
         return view
 
     def snapshot(self, match_id):
-        return self._snapshot(
-            match_id, self._request("GET", "/matches/" + segment(match_id))
-        )
+        value = self._request("GET", "/matches/" + segment(match_id))
+        try:
+            return self._snapshot(match_id, value)
+        except ClientError as error:
+            if error.code != "STALE_STREAM":
+                raise
+            # A WSS update may finish while this HTTP snapshot is in flight.
+            # _snapshot has already checked identity; never replace newer state.
+            with self.vault.transaction() as state:
+                latest = state["snapshots"].get(match_id)
+                if latest is None:
+                    raise error
+                return deepcopy(latest)
 
     def take_control(self, match_id, expected_epoch):
         path = "/matches/" + segment(match_id)

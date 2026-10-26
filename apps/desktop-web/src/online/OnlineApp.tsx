@@ -61,11 +61,18 @@ function Connected({ controller: c }: { controller: OnlineController }) {
           error={s.error}
           pendingCommand={s.pending}
           statusLabel={
-            <span>
-              {s.view.viewerSeat === "PLAYER2" ? "玩家 2" : "玩家 1"} ·{" "}
-              {s.replay ? "只读回放" : s.lease ? "本窗口可操作" : "只读观察"}
-              {s.missing ? " · 缺少本地图源，使用文字显示" : ""}
-            </span>
+            <div className="online-controls">
+              <span>
+                {s.view.viewerSeat === "PLAYER2" ? "玩家 2" : "玩家 1"} ·{" "}
+                {s.replay ? "只读回放" : s.lease ? "本窗口可操作" : "只读观察"}
+                {s.missing ? " · 缺少本地图源，使用文字显示" : ""}
+              </span>
+              {s.replay && s.nextCursor && (
+                <button disabled={s.busy} onClick={c.more}>
+                  加载更多回放
+                </button>
+              )}
+            </div>
           }
           onSubmit={s.lease && !s.replay && !s.pending ? c.submit : undefined}
           onRetry={s.pending ? c.recover : c.refresh}
@@ -75,6 +82,10 @@ function Connected({ controller: c }: { controller: OnlineController }) {
           onOpenReplay={c.replay}
           modeControls={
             <div className="online-controls">
+              <details>
+                <summary>对局编号</summary>
+                <code>{s.view.matchId}</code>
+              </details>
               {!s.view.done && (
                 <button
                   disabled={s.busy || s.pending || !!s.replay}
@@ -92,11 +103,6 @@ function Connected({ controller: c }: { controller: OnlineController }) {
                     核对已拒绝的操作
                   </button>
                 </>
-              )}
-              {s.replay && s.nextCursor && (
-                <button disabled={s.busy} onClick={c.more}>
-                  加载更多回放
-                </button>
               )}
             </div>
           }

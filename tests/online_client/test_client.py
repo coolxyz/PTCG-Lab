@@ -161,6 +161,32 @@ def test_private_file_permissions_profile_lock_and_server_isolation(ready):
     assert "atk_" not in public and "rtk_" not in public
 
 
+def test_late_http_snapshot_keeps_newer_validated_push_and_does_not_hide_identity_error(
+    ready,
+):
+    client, api, _ = ready
+    old = deepcopy(api.view)
+    newer = deepcopy(old)
+    newer["matchSeq"] += 1
+    newer["stateVersion"] += 1
+    newer["streamCursor"] = "b" * 32
+    request = api.request
+
+    def arriving_push(method, path, *args):
+        if method == "GET" and path == "/matches/" + MID:
+            client._snapshot(MID, newer)
+            return deepcopy(old)
+        return request(method, path, *args)
+
+    api.request = arriving_push
+    assert client.snapshot(MID) == newer
+    assert client.vault.state["snapshots"][MID] == newer
+    old["viewerSeat"] = "PLAYER2"
+    old["decision"] = None
+    with pytest.raises(ClientError, match="IDENTITY_MISMATCH"):
+        client.snapshot(MID)
+
+
 @pytest.mark.parametrize("drop", ["before", "after"])
 def test_lost_command_reply_survives_restart_and_reconciles_once(ready, drop):
     client, api, root = ready

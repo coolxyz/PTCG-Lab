@@ -21,6 +21,7 @@ def run(output, python, image=None, suite="server"):
         "client": ["tests/online_client"],
         "bridge": ["tests/online_client", "tests/desktop_bridge"],
         "gui": ["tests/online_client", "tests/desktop_bridge", "tests/desktop_host"],
+        "desktop": ["tests/desktop_host"],
     }[suite]
     output = Path(output).resolve()
     if not any(
@@ -33,10 +34,11 @@ def run(output, python, image=None, suite="server"):
             "var/p5a",
             "var/p5b",
             "var/p5c",
+            "var/p5d",
         )
     ):
         raise ValueError(
-            "Acceptance output must be below var/p4a, var/p4b, var/p4c, var/p4d, var/p5a, var/p5b or var/p5c"
+            "Acceptance output must be below var/p4a, var/p4b, var/p4c, var/p4d, var/p5a, var/p5b, var/p5c or var/p5d"
         )
     output.mkdir(parents=True, exist_ok=False)
     password = secrets.token_urlsafe(32)
@@ -146,7 +148,9 @@ if __name__ == "__main__":
         "--image", help="Optional freshly built API image for container acceptance"
     )
     parser.add_argument(
-        "--suite", choices=("server", "client", "bridge", "gui"), default="server"
+        "--suite",
+        choices=("server", "client", "bridge", "gui", "desktop"),
+        default="server",
     )
     args = parser.parse_args()
     # resolve() preserves the venv path; don't resolve the interpreter symlink.

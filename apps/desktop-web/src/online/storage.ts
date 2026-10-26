@@ -3,6 +3,7 @@ export interface Remembered {
   roomId?: string;
   matchId?: string;
   revision?: string;
+  rule?: string;
   job?: { operation: string; body: Record<string, unknown> };
 }
 export interface OnlineStorage {

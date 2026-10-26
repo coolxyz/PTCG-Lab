@@ -1,0 +1,24 @@
+{
+  "schema": 1,
+  "stage": "P5-D",
+  "status": "pending",
+  "physicalDevices": true,
+  "devices": [
+    {"label": "A", "os": "macOS", "runtime": "pending", "browser": "pending"},
+    {"label": "B", "os": "Windows", "runtime": "pending", "browser": "pending"}
+  ],
+  "checks": {
+    "localStartupBothDevices": "pending",
+    "inviteAndReady": "pending",
+    "naturalFinish": "pending",
+    "player2ControlsAndResult": "pending",
+    "privateReplayBothDevices": "pending",
+    "refreshAndNativeRestart": "pending",
+    "connectionLossAndRecovery": "pending",
+    "multiWindowControl": "pending",
+    "serverAddressIsolation": "pending",
+    "offlineImagesAndCache": "pending",
+    "practiceAndAIUnaffected": "pending"
+  },
+  "notes": "填写实际结果，不记录令牌、种子、手牌、房间码、私有卡组或凭据路径；保留在私有验收目录。"
+}

@@ -29,7 +29,7 @@
     "P5-A": "completed",
     "P5-B": "completed",
     "P5-C": "completed",
-    "P5-D": "planned"
+    "P5-D": "in_progress"
   },
   "p1BaselineCommit": "83e3fb2",
   "progressDocument": "docs/P2共享协议与规则核心实施记录.md",
@@ -58,5 +58,7 @@
   "p5aBaselineCommit": "b35174e",
   "p5bAcceptanceDocument": "docs/P5B本地网络桥接验收.md",
   "p5bBaselineCommit": "a61cbf3",
-  "p5cAcceptanceDocument": "docs/P5C本地网络窗口与资源缓存验收.md"
+  "p5cAcceptanceDocument": "docs/P5C本地网络窗口与资源缓存验收.md",
+  "p5cBaselineCommit": "897d6cb",
+  "p5dAcceptanceDocument": "docs/P5D完整对局与双设备验收.md"
 }

@@ -1,6 +1,6 @@
 {
   "schema": 1,
-  "phase": "P5-C",
+  "phase": "P5-D",
   "projects": [
     {
       "path": "apps/desktop-api",
@@ -37,7 +37,7 @@
         "webbrowser"
       ],
       "allowedRuntimeRequirements": [
-        "ptcg-online-client==0.5.0.dev2",
+        "ptcg-online-client==0.5.0.dev3",
         "starlette==0.46.2",
         "uvicorn==0.34.2"
       ]
@@ -232,7 +232,7 @@
       "distribution": "@ptcg/desktop-web",
       "module": "desktop-web",
       "language": "javascript",
-      "stage": "P5-C",
+      "stage": "P5-D",
       "implementationReady": false,
       "allowedInternalImports": [
         "@ptcg/battle-ui",

@@ -1,6 +1,6 @@
 # ptcg-online-client
 
-P5-A 原生 API v2 客户端，当前版本 `0.5.0.dev2`。由本地后台持有，提供能力协商、游客身份、卡组提交、房间邀请、控制权、对战命令、WSS 私有快照和本人回放。当前只完成客户端基础层，尚未接入本地 GUI。
+P5-D 验收阶段的原生 API v2 客户端，当前版本 `0.5.0.dev3`。由本地后台持有，提供能力协商、游客身份、卡组提交、房间邀请、控制权、对战命令、WSS 私有快照和本人回放。已由可选 desktop-api/desktop-web 网络窗口接入；完整物理双设备验收仍在进行中，默认产品入口未切换。
 
 运行需要 Python 3.14、`ptcg-battle-protocol==0.2.0.dev1`、`jsonschema==4.25.1`、`websockets==15.0.1`；完整外部依赖锁见 `requirements.lock`。不依赖服务端、规则引擎、AI、本地数据库或卡图。
 
@@ -28,3 +28,5 @@ with Client(server, Path.home() / ".ptcg-lab-online") as client:
 服务 envelope 的三个 schema 是服务端合同的逐字节副本，发布门禁检查同步；对战 DTO 直接复用共享协议包。详见 [P5 实施记录](../../docs/P5本地网络客户端实施记录.md)。
 
 P5-B 增加 `recovery_status()` 和 `recover_control(match_id)`：前者只返回待确认命令标识/动作及控制请求的期望 epoch，后者重试持久化的同一控制请求。二者不返回 token、controllerId 或原始 choice。
+
+P5-D 修复 HTTP 快照晚于新推送返回时的时序竞争：先验证身份，再保留持久化的较新快照，避免初始订阅因旧响应退出。原生客户端版本为 `0.5.0.dev3`，桥接依赖版本随之推进到 `0.5.0.dev4`，权限和命令幂等规则保持不变。

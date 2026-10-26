@@ -1,8 +1,8 @@
 # ptcg-desktop-api
 
-P5-C 可选本地网络宿主，版本 `0.5.0.dev3`。提供独立 GUI、可信启动和图片缓存，保留 P5-B 桥接 API。尚未挂载到现有产品入口，不启动人机、AI、SQLite、规则引擎或远程服务器。
+P5-C 可选本地网络宿主，版本 `0.5.0.dev4`。提供独立 GUI、可信启动和图片缓存，保留 P5-B 桥接 API。尚未挂载到现有产品入口，不启动人机、AI、SQLite、规则引擎或远程服务器。
 
-Python 3.14；依赖 `ptcg-online-client==0.5.0.dev2`、Starlette 和 Uvicorn，完整外部闭包见 `requirements.lock`。凭据存储继承原生客户端的 POSIX 权限文件限制，目前不支持 Windows 后端。
+Python 3.14；依赖 `ptcg-online-client==0.5.0.dev3`、Starlette 和 Uvicorn，完整外部闭包见 `requirements.lock`。凭据存储继承原生客户端的 POSIX 权限文件限制，目前不支持 Windows 后端。
 
 ```python
 from pathlib import Path
@@ -48,3 +48,5 @@ python -m ptcg_desktop_api.launch --config /absolute/path/online.json \
 私有 CA 使用 Server 的 `ca_file` 字段；浏览器只选择已配置的服务器。启动文件以 0600 保存，内含一次性 POST ticket，URL 中不携带秘密。后台将它兑换成 HttpOnly/SameSite=Strict 本机会话，再向同源页面签发只留在内存中的窗口 capability。页面刷新会轮换 capability，远程凭据始终在 Python 后台。P5-B 的纯 API 工厂仍可单独使用。
 
 显示资源清单通过配置 `manifests: [{"path":"/absolute/manifest.json","sha256":"完整 SHA-256"}]` 明确批准。清单严格包含 `catalogVersion`、`assetVersion`、`cards`；卡牌包含 `engineId`、`englishName`、`cnName`、`image`，image 为 null 或 `{sha256,url}`。`url` 为 null 时只读清单目录下的 `files/<sha256>`，也可明确配置 HTTPS 图源。不读取既有收藏或图片目录，不批量上传图片。详见 [P5-C 验收与运行说明](../../docs/P5C本地网络窗口与资源缓存验收.md)。
+
+P5-D 修复 HTTP 快照晚于新推送返回时的时序竞争：先验证身份，再保留持久化的较新快照，避免初始订阅因旧响应退出。原生客户端版本为 `0.5.0.dev3`，桥接依赖版本随之推进到 `0.5.0.dev4`，权限和命令幂等规则保持不变。

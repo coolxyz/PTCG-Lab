@@ -188,3 +188,34 @@ console.log("3 online controller recovery/isolation scenarios passed");
   c.dispose();
 }
 console.log("Initialization promotion gap scenario passed");
+
+{
+  const api = new API(),
+    store = new Store();
+  const original = api.call.bind(api);
+  let rules = ["rule", "second-rule"];
+  api.call = async <T>(p: string, op: string, body = {}): Promise<T> => {
+    const result = await original<any>(p, op, body);
+    if (op === "capabilities") result.ruleReleaseIds = rules;
+    return result;
+  };
+  const first = new OnlineController(api, store);
+  await first.start();
+  first.rule("second-rule");
+  await first.deck("[]");
+  first.dispose();
+  const restored = new OnlineController(api, store);
+  await restored.start();
+  assert.equal(restored.snapshot().rule, "second-rule");
+  assert.equal(restored.snapshot().remembered.revision, "revision");
+  restored.dispose();
+  rules = ["rule"];
+  const changed = new OnlineController(api, store);
+  await changed.start();
+  assert.equal(changed.snapshot().rule, "rule");
+  assert.equal(changed.snapshot().remembered.revision, undefined);
+  changed.dispose();
+}
+console.log(
+  "Rule-bound deck revision survives reload and clears on unavailable rule",
+);

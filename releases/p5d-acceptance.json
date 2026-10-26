@@ -1,0 +1,44 @@
+{
+  "schema": 1,
+  "stage": "P5-D",
+  "status": "awaiting_physical_device_acceptance",
+  "baselineCommit": "897d6cb",
+  "automatedTests": 73,
+  "physicalDeviceAcceptance": "pending",
+  "targetDevices": [
+    "macOS",
+    "Windows"
+  ],
+  "windowsRuntime": "WSL2 pending physical verification; native Windows unsupported",
+  "gui": {
+    "status": "passed",
+    "physicalDevices": false,
+    "nativeProcesses": 2,
+    "natural": true,
+    "reason": "deck_out",
+    "commands": 100,
+    "commandsBySeat": [
+      50,
+      50
+    ],
+    "privateReplayFrames": [
+      101,
+      101
+    ],
+    "lostReplyRestartRecovered": true,
+    "restartedSeat": 2,
+    "streamDisconnected": true,
+    "multiWindowFencing": true,
+    "offlineCacheWithBrowserCacheDisabled": true,
+    "browserRemoteRequests": 0,
+    "errors": 0,
+    "receipts": 100
+  },
+  "regressions": {
+    "coreProtocolMigration": 235,
+    "p3Browser": 30,
+    "controllerScenarios": 5,
+    "publicationGate": "passed",
+    "outsideCheckoutPackageConsumption": "passed"
+  }
+}

@@ -232,7 +232,13 @@ export class OnlineController {
     });
     await this.status();
     const caps = await this.call<Caps>("capabilities");
-    this.patch({ caps, rule: caps.ruleReleaseIds[0] || "", connected: true });
+    const rememberedRule = this.state.remembered.rule;
+    const rule =
+      rememberedRule && caps.ruleReleaseIds.includes(rememberedRule)
+        ? rememberedRule
+        : caps.ruleReleaseIds[0] || "";
+    if (rule !== rememberedRule) this.save({ rule, revision: undefined });
+    this.patch({ caps, rule, connected: true });
     try {
       const catalog = await this.api.catalog(
         caps.resources.displayCatalogVersion,
@@ -271,7 +277,7 @@ export class OnlineController {
       await this.status();
     });
   rule = (rule: string) => {
-    this.save({ revision: undefined });
+    this.save({ rule, revision: undefined });
     this.patch({ rule });
   };
   private async job(operation: string, body: Record<string, unknown>) {
@@ -306,7 +312,10 @@ export class OnlineController {
     // Preserve the original request until both result metadata and clearance are durable.
     const next: Partial<Remembered> =
       job.operation === "deck"
-        ? { revision: result.deckRevision }
+        ? {
+            revision: result.deckRevision,
+            rule: job.body.ruleReleaseId as string,
+          }
         : job.operation === "leave-room"
           ? { roomId: undefined, matchId: undefined }
           : { roomId: result.roomId, matchId: result.matchId || undefined };

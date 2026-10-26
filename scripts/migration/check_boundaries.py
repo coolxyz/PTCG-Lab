@@ -39,7 +39,7 @@ def check(root=ROOT):
         desktop = project["distribution"] == "ptcg-desktop-api"
         gui = project["distribution"] in {"@ptcg/battle-ui", "@ptcg/desktop-web"}
         expected_stage = (
-            ("P5-C" if project["distribution"] == "@ptcg/desktop-web" else "P3-B")
+            ("P5-D" if project["distribution"] == "@ptcg/desktop-web" else "P3-B")
             if gui
             else (
                 "P4-D"
