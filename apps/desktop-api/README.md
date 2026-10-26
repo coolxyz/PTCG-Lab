@@ -1,6 +1,6 @@
 # ptcg-desktop-api
 
-P5-C 可选本地网络宿主，版本 `0.5.0.dev4`。提供独立 GUI、可信启动和图片缓存，保留 P5-B 桥接 API。尚未挂载到现有产品入口，不启动人机、AI、SQLite、规则引擎或远程服务器。
+P5-C 可选本地网络宿主，版本 `0.5.0.dev5`。提供独立 GUI、可信启动和图片缓存，保留 P5-B 桥接 API。尚未挂载到现有产品入口，不启动人机、AI、SQLite、规则引擎或远程服务器。
 
 Python 3.14；依赖 `ptcg-online-client==0.5.0.dev3`、Starlette 和 Uvicorn，完整外部闭包见 `requirements.lock`。凭据存储继承原生客户端的 POSIX 权限文件限制，目前不支持 Windows 后端。
 
@@ -39,7 +39,7 @@ python -m ptcg_desktop_api.launch --config /absolute/path/online.json \
   --build /absolute/path/PTCG-Lab/var/p5c/web-dist
 ```
 
-默认使用随机回环端口并打开浏览器。`--no-browser` 仅输出一次性启动文件路径，用户可在两分钟内打开；`--port` 可选固定专用端口，拒绝占用既有 8765/8770/8443。不要直接打开根地址期待自动授权。示例配置（地址和 CA 必须由用户明确配置）：
+默认使用随机回环端口并打开浏览器。`--no-browser` 输出一次性启动文件路径和同浏览器重新打开的本机地址，用户须在两分钟内完成首次授权；`--port` 可选固定专用端口，拒绝占用既有 8765/8770/8443。不要直接打开根地址期待自动授权。示例配置（地址和 CA 必须由用户明确配置）：
 
 ```json
 {"servers":{"my-server":{"origin":"https://battle.example.org"}},"manifests":[]}
@@ -50,3 +50,5 @@ python -m ptcg_desktop_api.launch --config /absolute/path/online.json \
 显示资源清单通过配置 `manifests: [{"path":"/absolute/manifest.json","sha256":"完整 SHA-256"}]` 明确批准。清单严格包含 `catalogVersion`、`assetVersion`、`cards`；卡牌包含 `engineId`、`englishName`、`cnName`、`image`，image 为 null 或 `{sha256,url}`。`url` 为 null 时只读清单目录下的 `files/<sha256>`，也可明确配置 HTTPS 图源。不读取既有收藏或图片目录，不批量上传图片。详见 [P5-C 验收与运行说明](../../docs/P5C本地网络窗口与资源缓存验收.md)。
 
 P5-D 修复 HTTP 快照晚于新推送返回时的时序竞争：先验证身份，再保留持久化的较新快照，避免初始订阅因旧响应退出。原生客户端版本为 `0.5.0.dev3`，桥接依赖版本随之推进到 `0.5.0.dev4`，权限和命令幂等规则保持不变。
+
+P5-D 窗口重开修复（`0.5.0.dev5`）：关闭浏览器标签页后，若后台仍运行且本机会话有效，可在同一浏览器打开终端显示的本机地址。一次性 HTML 在使用后删除，不能重复使用；过期、清除浏览器数据或改用另一浏览器时，在交互式后台终端输入 `r` 并回车，生成新的两分钟授权 HTML，不重启后台、不重建远程游客身份。`--no-browser` 模式仍由用户手动打开；没有交互终端时可在有效会话中重开本机地址，授权失效后须用原 state-dir 重启自己的客户端后台。

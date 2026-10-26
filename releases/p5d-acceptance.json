@@ -1,15 +1,15 @@
 {
   "schema": 1,
   "stage": "P5-D",
-  "status": "awaiting_physical_device_acceptance",
+  "status": "accepted_with_deferred_display_fixes",
   "baselineCommit": "897d6cb",
   "automatedTests": 73,
-  "physicalDeviceAcceptance": "pending",
+  "physicalDeviceAcceptance": "user_reported_completed",
   "targetDevices": [
     "macOS",
     "Windows"
   ],
-  "windowsRuntime": "WSL2 pending physical verification; native Windows unsupported",
+  "windowsRuntime": "WSL2 backend + Windows browser acceptance reported by user; native Windows unsupported",
   "gui": {
     "status": "passed",
     "physicalDevices": false,
@@ -40,5 +40,6 @@
     "controllerScenarios": 5,
     "publicationGate": "passed",
     "outsideCheckoutPackageConsumption": "passed"
-  }
+  },
+  "userAcceptanceDocument": "releases/p5d-user-acceptance.json"
 }

@@ -53,7 +53,9 @@ def check(root=ROOT):
                         else (
                             "P2-D"
                             if (protocol or core)
-                            else "P2-B" if provider else "P1"
+                            else "P2-B"
+                            if provider
+                            else "P1"
                         )
                     )
                 )
@@ -273,7 +275,25 @@ def check(root=ROOT):
         )
     ):
         errors.append("P4 implementation misrepresented as complete")
-    if status["phases"].get("P5") != "in_progress":
+    try:
+        p5 = json.loads((root / "releases/p5d-acceptance.json").read_text())
+        manual = json.loads((root / "releases/p5d-user-acceptance.json").read_text())
+        p5_accepted = (
+            p5.get("status") == "accepted_with_deferred_display_fixes"
+            and p5.get("physicalDeviceAcceptance") == "user_reported_completed"
+            and p5.get("gui", {}).get("status") == "passed"
+            and manual.get("source") == "direct_user_report"
+            and manual.get("decision") == "accepted_with_deferred_display_fixes"
+            and manual.get("reportedResults")
+            == {"roomCreation": "passed", "gameplay": "passed"}
+            and manual.get("displayIssues", {}).get("target") == "after P5.5"
+            and status.get("subphases", {}).get("P5-D") == "completed"
+        )
+    except (OSError, ValueError):
+        p5_accepted = False
+    if status["phases"].get("P5") not in {"in_progress", "completed"} or (
+        status["phases"].get("P5") == "completed" and not p5_accepted
+    ):
         errors.append("P5 implementation misrepresented as complete")
     for filename in ("session", "lobby", "match"):
         name = filename + ".schema.json"

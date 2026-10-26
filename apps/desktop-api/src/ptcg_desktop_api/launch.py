@@ -4,14 +4,44 @@ import argparse
 import json
 from pathlib import Path
 import socket
+import sys
 from threading import Thread
 import time
 import webbrowser
 import uvicorn
 from ptcg_online_client.transport import Server
-from .bridge import Bridge
+from .bridge import Bridge, BridgeError
 from .host import Host, create_host_app
 from .resources import Resources
+
+
+def open_window(host, *, no_browser):
+    path = host.launch()
+    print("Local online window: " + str(path), flush=True)
+    print("首次授权 HTML 仅可使用一次，且须在两分钟内打开。", flush=True)
+    print("关闭窗口后，在同一浏览器重新打开：" + host.origin + "/", flush=True)
+    print("若授权已失效或更换浏览器，在此终端输入 r 并回车生成新 HTML。", flush=True)
+    if not no_browser:
+        webbrowser.open(path.resolve().as_uri())
+    return path
+
+
+def console_windows(host, runner, *, no_browser, stream):
+    """Only the local terminal may mint another one-use authorization file."""
+    try:
+        for line in stream:
+            if runner.should_exit:
+                return
+            if line.strip().lower() not in {"r", "reopen"}:
+                print("输入 r 并回车重新打开窗口；Ctrl-C 关闭本机后台。", flush=True)
+                continue
+            try:
+                open_window(host, no_browser=no_browser)
+            except BridgeError as error:
+                print("无法生成启动入口：" + error.code, flush=True)
+    except (EOFError, OSError):
+        # Detached launchers have no interactive input; the server remains alive.
+        return
 
 
 def main():
@@ -54,7 +84,6 @@ def main():
     origin = f"http://127.0.0.1:{sock.getsockname()[1]}"
     owner = Bridge(profiles, state / "credentials")
     host = Host(owner, origin, args.build, resources, state / "launch")
-    path = host.launch()
     runner = uvicorn.Server(
         uvicorn.Config(
             create_host_app(host),
@@ -66,16 +95,18 @@ def main():
         )
     )
 
-    def open_window():
+    def ready_window():
         for _ in range(200):
             if runner.started:
-                print("Local online window: " + str(path), flush=True)
-                if not args.no_browser:
-                    webbrowser.open(path.resolve().as_uri())
+                open_window(host, no_browser=args.no_browser)
+                if sys.stdin.isatty():
+                    console_windows(
+                        host, runner, no_browser=args.no_browser, stream=sys.stdin
+                    )
                 return
             time.sleep(0.1)
 
-    helper = Thread(target=open_window, daemon=True)
+    helper = Thread(target=ready_window, daemon=True)
     helper.start()
     try:
         runner.run(sockets=[sock])

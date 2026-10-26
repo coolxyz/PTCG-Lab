@@ -29,6 +29,7 @@
         "socket",
         "ssl",
         "starlette",
+        "sys",
         "threading",
         "time",
         "urllib",

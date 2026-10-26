@@ -31,6 +31,8 @@ def scaffold(tmp_path):
         "docs/P3C完整产品接入验收.md",
         "docs/P4D完整对局与故障恢复验收.md",
         "releases/p4d-acceptance.json",
+        "releases/p5d-acceptance.json",
+        "releases/p5d-user-acceptance.json",
     ]:
         p = tmp_path / name
         p.parent.mkdir(parents=True, exist_ok=True)
@@ -227,6 +229,7 @@ def test_native_client_foundation_cannot_claim_all_p5_complete(scaffold):
     path = scaffold / "releases/migration-status.json"
     data = json.loads(path.read_text())
     data["phases"]["P5"] = "completed"
+    (scaffold / "releases/p5d-user-acceptance.json").unlink()
     path.write_text(json.dumps(data))
     assert any("P5 implementation misrepresented" in e for e in check(scaffold))
 

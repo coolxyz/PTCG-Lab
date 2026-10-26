@@ -8,7 +8,8 @@
     "P2": "completed",
     "P3": "completed",
     "P4": "completed",
-    "P5": "in_progress",
+    "P5": "completed",
+    "P5.5": "planned",
     "P6": "planned",
     "P7": "planned",
     "P8": "planned"
@@ -29,7 +30,7 @@
     "P5-A": "completed",
     "P5-B": "completed",
     "P5-C": "completed",
-    "P5-D": "in_progress"
+    "P5-D": "completed"
   },
   "p1BaselineCommit": "83e3fb2",
   "progressDocument": "docs/P2共享协议与规则核心实施记录.md",
@@ -60,5 +61,7 @@
   "p5bBaselineCommit": "a61cbf3",
   "p5cAcceptanceDocument": "docs/P5C本地网络窗口与资源缓存验收.md",
   "p5cBaselineCommit": "897d6cb",
-  "p5dAcceptanceDocument": "docs/P5D完整对局与双设备验收.md"
+  "p5dAcceptanceDocument": "docs/P5D完整对局与双设备验收.md",
+  "productIntegrationPlanDocument": "docs/P5.5产品整合实施设计.md",
+  "p5dUserAcceptanceDocument": "releases/p5d-user-acceptance.json"
 }
