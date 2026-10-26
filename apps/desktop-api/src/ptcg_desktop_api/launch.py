@@ -44,15 +44,17 @@ def console_windows(host, runner, *, no_browser, stream):
         return
 
 
-def main():
+def main(*, local_factory=None, local_build=None):
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--config", type=Path, required=True)
     parser.add_argument("--state-dir", type=Path, required=True)
     parser.add_argument("--build", type=Path, required=True)
-    parser.add_argument("--port", type=int, default=0)
+    parser.add_argument("--port", type=int, default=8765 if local_factory else 0)
     parser.add_argument("--no-browser", action="store_true")
     args = parser.parse_args()
-    if args.port in (8765, 8770, 8443) or not 0 <= args.port <= 65535:
+    if (
+        not local_factory and args.port in (8765, 8770, 8443)
+    ) or not 0 <= args.port <= 65535:
         parser.error("Choose an isolated local port (0 selects a free port)")
     if args.config.stat().st_size > 65536:
         parser.error("Configuration exceeds limit")
@@ -79,14 +81,32 @@ def main():
     )
     if not (args.build / "online.html").is_file():
         parser.error("Build the online GUI first")
+    if local_build is not None:
+        # Different builds may legitimately share identical immutable assets.
+        # Refuse ambiguous names rather than silently serving the wrong bundle.
+        for file in (args.build / "assets").glob("*"):
+            other = Path(local_build) / "assets" / file.name
+            if other.is_file() and other.read_bytes() != file.read_bytes():
+                parser.error("Product/online static asset name conflict")
     sock = socket.socket()
     sock.bind(("127.0.0.1", args.port))
     origin = f"http://127.0.0.1:{sock.getsockname()[1]}"
     owner = Bridge(profiles, state / "credentials")
     host = Host(owner, origin, args.build, resources, state / "launch")
+    try:
+        if local_factory:
+            from .product import create_product_app
+
+            app = create_product_app(local_factory(), host)
+        else:
+            app = create_host_app(host)
+    except BaseException:
+        host.close()
+        sock.close()
+        raise
     runner = uvicorn.Server(
         uvicorn.Config(
-            create_host_app(host),
+            app,
             host="127.0.0.1",
             access_log=False,
             proxy_headers=False,
@@ -99,6 +119,9 @@ def main():
         for _ in range(200):
             if runner.started:
                 open_window(host, no_browser=args.no_browser)
+                if local_factory:
+                    print("Product: " + origin + "/", flush=True)
+                    print("Online: " + origin + "/online", flush=True)
                 if sys.stdin.isatty():
                     console_windows(
                         host, runner, no_browser=args.no_browser, stream=sys.stdin
@@ -110,6 +133,8 @@ def main():
     helper.start()
     try:
         runner.run(sockets=[sock])
+    except KeyboardInterrupt:
+        pass
     finally:
         host.close()
         sock.close()

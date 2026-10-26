@@ -1,13 +1,13 @@
 {
   "schema": 1,
-  "phase": "P5-D",
+  "phase": "P5.5",
   "projects": [
     {
       "path": "apps/desktop-api",
       "distribution": "ptcg-desktop-api",
       "module": "ptcg_desktop_api",
       "language": "python",
-      "stage": "P5-C",
+      "stage": "P5.5-A",
       "implementationReady": false,
       "allowedInternalImports": [
         "ptcg_online_client"

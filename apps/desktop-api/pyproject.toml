@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "ptcg-desktop-api"
-version = "0.5.0.dev5"
+version = "0.5.0.dev6"
 description = "P5-C local online host, bridge and versioned display cache"
 readme = "README.md"
 requires-python = ">=3.14"

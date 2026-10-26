@@ -261,3 +261,11 @@ def test_local_bridge_cannot_import_server_engine_ai_or_user_database(scaffold, 
 def test_online_transport_and_nonsecret_storage_remain_separate(scaffold, path, code):
     (scaffold / path).write_text(code)
     assert any("networking/storage" in e for e in check(scaffold))
+
+
+def test_product_integration_requires_completed_p5(scaffold):
+    path = scaffold / "releases/migration-status.json"
+    data = json.loads(path.read_text())
+    data["phases"]["P5"] = "in_progress"
+    path.write_text(json.dumps(data))
+    assert any("lacks accepted P5 baseline" in e for e in check(scaffold))

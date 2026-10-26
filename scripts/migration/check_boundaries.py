@@ -48,7 +48,7 @@ def check(root=ROOT):
                     "P5-A"
                     if client
                     else (
-                        "P5-C"
+                        "P5.5-A"
                         if desktop
                         else (
                             "P2-D"
@@ -234,7 +234,7 @@ def check(root=ROOT):
                 errors.append(name + ": metadata/license not exported")
     status = json.loads((root / "releases/migration-status.json").read_text())
     if (
-        status.get("currentPhase") != "P5"
+        status.get("currentPhase") not in {"P5", "P5.5"}
         or status.get("productionRoutingChanged") is not False
     ):
         errors.append("migration phase/routing marker drift")
@@ -295,6 +295,13 @@ def check(root=ROOT):
         status["phases"].get("P5") == "completed" and not p5_accepted
     ):
         errors.append("P5 implementation misrepresented as complete")
+    if status.get("currentPhase") == "P5.5" and (
+        status["phases"].get("P5") != "completed"
+        or not p5_accepted
+        or status["phases"].get("P5.5") != "in_progress"
+        or status.get("subphases", {}).get("P5.5-A") != "in_progress"
+    ):
+        errors.append("product integration phase lacks accepted P5 baseline")
     for filename in ("session", "lobby", "match"):
         name = filename + ".schema.json"
         if (
@@ -311,7 +318,10 @@ def check(root=ROOT):
             errors.append("future implementation misrepresented as complete")
     for name in ["docs/产品化重构设计.md", "docs/产品化重构分阶段实施.md"]:
         text = (root / name).read_text()
-        if "<!-- migration-phase: P5; production-routing: legacy -->" not in text:
+        if (
+            f"<!-- migration-phase: {status.get('currentPhase')}; production-routing: legacy -->"
+            not in text
+        ):
             errors.append(name + ": missing phase status")
     return sorted(set(errors))
 

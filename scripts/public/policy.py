@@ -40,6 +40,8 @@ FILES = (
     "releases/projects.json",
     "releases/migration-status.json",
     "releases/p4d-acceptance.json",
+    "releases/p5d-acceptance.json",
+    "releases/p5d-user-acceptance.json",
     "releases/source-candidates.json",
     "ops/online/Dockerfile.dockerignore",
 )
