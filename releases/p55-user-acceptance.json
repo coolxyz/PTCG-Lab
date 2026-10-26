@@ -1,0 +1,54 @@
+{
+  "schema": 1,
+  "stage": "P5.5",
+  "recordedAt": "2026-10-26",
+  "source": "direct_user_instruction",
+  "decision": "completed_with_followups",
+  "implementationCommit": "0acba12",
+  "userStatement": "commit 后将 5.5 标记完成",
+  "priorUserReport": "完整对局测试已完成，以下一些问题需要解决",
+  "reportedResults": {
+    "fullMatch": "user_reported_completed",
+    "postFixManualRetest": "not_individually_reported"
+  },
+  "automatedEvidence": {
+    "frontend": {
+      "passed": 52,
+      "scope": "46 existing cases plus 6 lobby cases; final lobby suite rerun after responsive layout fixes"
+    },
+    "nativeAndDesktop": {
+      "passed": 80,
+      "skipped": 3
+    },
+    "server": {
+      "passed": 100,
+      "report": "releases/p4d-acceptance.json"
+    },
+    "buildAndPublicationGates": "passed",
+    "closureChecks": {
+      "boundaryTestsPassed": 53,
+      "publicationTestsPassed": 35,
+      "migrationGate": "passed"
+    }
+  },
+  "physicalDeviceAcceptance": "not_individually_reported",
+  "followups": [
+    {
+      "item": "Mac and Windows WSL2 physical-device matrix, physical disconnection and platform-specific checks",
+      "status": "pending_platform_validation"
+    },
+    {
+      "item": "Upgrade and restore using an approved copy of a real user database",
+      "status": "pending_manual_validation"
+    },
+    {
+      "item": "Deploy updated API image and local application, and switch configured production entry points",
+      "status": "pending_release_rollout"
+    },
+    {
+      "item": "Remote per-card rejection diagnostics and additional core public-event coverage",
+      "status": "future_enhancements"
+    }
+  ],
+  "limitations": "Stage completion follows the explicit user instruction after the reported full-match test and implemented fixes. It does not assert that every physical-device checklist item, post-fix manual retest or production rollout has passed. Existing evidence and pending platform checks remain separate."
+}

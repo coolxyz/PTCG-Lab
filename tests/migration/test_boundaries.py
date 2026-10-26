@@ -33,6 +33,8 @@ def scaffold(tmp_path):
         "releases/p4d-acceptance.json",
         "releases/p5d-acceptance.json",
         "releases/p5d-user-acceptance.json",
+        "releases/p55-user-acceptance.json",
+        "docs/P5.5产品整合完成记录.md",
     ]:
         p = tmp_path / name
         p.parent.mkdir(parents=True, exist_ok=True)
@@ -269,3 +271,32 @@ def test_product_integration_requires_completed_p5(scaffold):
     data["phases"]["P5"] = "in_progress"
     path.write_text(json.dumps(data))
     assert any("lacks accepted P5 baseline" in e for e in check(scaffold))
+
+
+@pytest.mark.parametrize(
+    "missing",
+    ["record", "decision", "subphase", "document", "baseline", "physical", "followups"],
+)
+def test_p55_completion_preserves_user_scope_and_pending_validation(scaffold, missing):
+    status_path = scaffold / "releases/migration-status.json"
+    status = json.loads(status_path.read_text())
+    record_path = scaffold / "releases/p55-user-acceptance.json"
+    record = json.loads(record_path.read_text())
+    if missing == "record":
+        record_path.unlink()
+    elif missing == "decision":
+        record["decision"] = "pending"
+    elif missing == "subphase":
+        status["subphases"]["P5.5-D"] = "in_progress"
+    elif missing == "document":
+        (scaffold / "docs/P5.5产品整合完成记录.md").unlink()
+    elif missing == "baseline":
+        record["implementationCommit"] = "a" * 40
+    elif missing == "physical":
+        record["physicalDeviceAcceptance"] = "passed"
+    else:
+        record["followups"] = []
+    if missing != "record":
+        record_path.write_text(json.dumps(record))
+    status_path.write_text(json.dumps(status))
+    assert any("P5.5 completion lacks" in error for error in check(scaffold))

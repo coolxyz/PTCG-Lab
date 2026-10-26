@@ -300,10 +300,47 @@ def check(root=ROOT):
     if status.get("currentPhase") == "P5.5" and (
         status["phases"].get("P5") != "completed"
         or not p5_accepted
-        or status["phases"].get("P5.5") != "in_progress"
+        or status["phases"].get("P5.5") not in {"in_progress", "completed"}
         or status.get("subphases", {}).get("P5.5-A") not in {"in_progress", "completed"}
     ):
         errors.append("product integration phase lacks accepted P5 baseline")
+    if status["phases"].get("P5.5") == "completed":
+        try:
+            completion = json.loads(
+                (root / "releases/p55-user-acceptance.json").read_text()
+            )
+            p55_accepted = (
+                completion.get("schema") == 1
+                and completion.get("stage") == "P5.5"
+                and completion.get("source") == "direct_user_instruction"
+                and completion.get("decision") == "completed_with_followups"
+                and bool(completion.get("userStatement"))
+                and bool(completion.get("limitations"))
+                and completion.get("physicalDeviceAcceptance")
+                == "not_individually_reported"
+                and isinstance(completion.get("followups"), list)
+                and bool(completion["followups"])
+                and bool(
+                    re.fullmatch(
+                        r"[a-f0-9]{7,40}", completion.get("implementationCommit", "")
+                    )
+                )
+                and completion["implementationCommit"]
+                == status.get("p55ImplementationCommit")
+                and status.get("p55UserAcceptanceDocument")
+                == "releases/p55-user-acceptance.json"
+                and status.get("p55CompletionDocument")
+                == "docs/P5.5产品整合完成记录.md"
+                and (root / "docs/P5.5产品整合完成记录.md").is_file()
+                and all(
+                    status.get("subphases", {}).get(p) == "completed"
+                    for p in ("P5.5-A", "P5.5-B", "P5.5-C", "P5.5-D")
+                )
+            )
+        except (OSError, ValueError, TypeError, AttributeError):
+            p55_accepted = False
+        if not p55_accepted:
+            errors.append("P5.5 completion lacks user decision or follow-up scope")
     for filename in ("session", "lobby", "match"):
         name = filename + ".schema.json"
         if (

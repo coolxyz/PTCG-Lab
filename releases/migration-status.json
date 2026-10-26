@@ -9,7 +9,7 @@
     "P3": "completed",
     "P4": "completed",
     "P5": "completed",
-    "P5.5": "in_progress",
+    "P5.5": "completed",
     "P6": "planned",
     "P7": "planned",
     "P8": "planned"
@@ -34,7 +34,7 @@
     "P5.5-A": "completed",
     "P5.5-B": "completed",
     "P5.5-C": "completed",
-    "P5.5-D": "in_progress"
+    "P5.5-D": "completed"
   },
   "p1BaselineCommit": "83e3fb2",
   "progressDocument": "docs/P2共享协议与规则核心实施记录.md",
@@ -73,5 +73,8 @@
   "p55ABaselineCommit": "ee13120",
   "p55BCBaselineCommit": "515f995",
   "p55AcceptancePreparationDocument": "docs/P5.5完整产品双设备验收.md",
-  "p55FeedbackFixDocument": "docs/P5.5对局验收问题修复.md"
+  "p55FeedbackFixDocument": "docs/P5.5对局验收问题修复.md",
+  "p55ImplementationCommit": "0acba12",
+  "p55UserAcceptanceDocument": "releases/p55-user-acceptance.json",
+  "p55CompletionDocument": "docs/P5.5产品整合完成记录.md"
 }
