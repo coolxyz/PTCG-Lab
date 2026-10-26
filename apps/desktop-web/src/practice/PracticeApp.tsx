@@ -4,6 +4,7 @@ import { PracticeController } from "./controller";
 import { practiceAPI } from "./transport";
 import { browserPracticeStorage } from "./storage";
 import "./practice.css";
+import { browserAppearanceStorage } from "../appearance-storage";
 
 export function PracticeApp({
   active,
@@ -42,6 +43,7 @@ export function PracticeApp({
   if (state.view && state.showing)
     return (
       <BattleArena
+        appearanceStorage={browserAppearanceStorage}
         view={state.view}
         cards={names}
         viewerSeat="PLAYER1"

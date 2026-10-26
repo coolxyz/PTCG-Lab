@@ -6,7 +6,14 @@ import {
   type ReactNode,
 } from "react";
 import { createPortal } from "react-dom";
-import { Maximize, Minimize, RefreshCw, Swords } from "lucide-react";
+import { Maximize, Minimize, Palette, RefreshCw, Swords } from "lucide-react";
+import { AppearanceSettings } from "./AppearanceSettings";
+import {
+  DEFAULT_APPEARANCE,
+  appearanceStyle,
+  type Appearance,
+  type AppearanceStorage,
+} from "./appearance";
 import "./screen.css";
 
 /** A viewport of its own, independent of the library/practice navigation shell. */
@@ -14,14 +21,33 @@ export function BattleScreen({
   children,
   busy,
   onRefresh,
+  appearanceStorage,
 }: {
   children: ReactNode;
   busy: boolean;
   onRefresh: () => void;
+  appearanceStorage?: AppearanceStorage;
 }) {
   const screen = useRef<HTMLElement>(null);
   const [fullscreen, setFullscreen] = useState(false);
   const [displayError, setDisplayError] = useState("");
+  const [appearance, setAppearance] = useState(
+    () => appearanceStorage?.load() || DEFAULT_APPEARANCE,
+  );
+  const [settingsOpen, setSettingsOpen] = useState(false);
+  const [appearanceMessage, setAppearanceMessage] = useState("");
+  function saveAppearance(value: Appearance) {
+    setAppearance(value);
+    setSettingsOpen(false);
+    try {
+      appearanceStorage?.save(value);
+      setAppearanceMessage("");
+    } catch {
+      setAppearanceMessage(
+        "外观已应用到当前窗口，但浏览器未能保存设置；重新打开后可能恢复默认。请检查浏览器存储空间或隐私设置。",
+      );
+    }
+  }
 
   useLayoutEffect(() => {
     const focused = document.activeElement as HTMLElement | null;
@@ -63,6 +89,7 @@ export function BattleScreen({
       tabIndex={-1}
       className="battle-page battle-screen"
       aria-label="对战与回放"
+      style={appearanceStyle(appearance)}
     >
       <header className="battle-screen-header">
         <div className="battle-screen-brand">
@@ -73,6 +100,14 @@ export function BattleScreen({
           </div>
         </div>
         <div className="battle-screen-actions">
+          <button
+            className="secondary"
+            onClick={() => setSettingsOpen(true)}
+            aria-haspopup="dialog"
+          >
+            <Palette size={15} />
+            桌面外观
+          </button>
           <button className="secondary" disabled={busy} onClick={onRefresh}>
             <RefreshCw size={15} />
             刷新局面
@@ -92,7 +127,19 @@ export function BattleScreen({
           {displayError}
         </p>
       )}
+      {appearanceMessage && (
+        <p className="battle-display-message" role="status">
+          {appearanceMessage}
+        </p>
+      )}
       {children}
+      {settingsOpen && (
+        <AppearanceSettings
+          value={appearance}
+          onApply={saveAppearance}
+          onClose={() => setSettingsOpen(false)}
+        />
+      )}
     </main>,
     document.body,
   );

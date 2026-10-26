@@ -1,0 +1,203 @@
+.battle-screen .battle-information {
+  padding: 16px;
+  background: #fff;
+  color: #23342b;
+  border: 1px solid #bdcdc4;
+  border-radius: 14px;
+  min-width: 0;
+}
+.battle-screen .log-heading,
+.battle-screen .log-filters {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 10px;
+}
+.battle-screen .log-heading h3 {
+  font-size: 16px;
+  margin: 0;
+}
+.battle-screen .log-heading small {
+  display: block;
+  margin-top: 5px;
+  font-size: 10px;
+  color: #52675d;
+}
+.battle-screen .battle-information .secondary {
+  padding: 7px 9px;
+  font-size: 11px;
+  flex-shrink: 0;
+}
+.battle-screen .log-filters {
+  margin: 16px 0 8px;
+  align-items: flex-end;
+}
+.battle-screen .log-filters label {
+  display: grid;
+  gap: 5px;
+  font-size: 10px;
+  flex: 1;
+  min-width: 0;
+}
+.battle-screen .log-filters select {
+  width: 100%;
+  padding: 7px;
+}
+.battle-screen .log-notification {
+  min-height: 32px;
+  font-size: 11px;
+  color: #52675d;
+  padding: 7px 0;
+}
+.battle-screen .log-notification button {
+  width: 100%;
+  padding: 8px;
+  border-radius: 6px;
+  background: #e4eff7;
+  color: #174c72;
+  font-weight: 700;
+}
+.battle-screen .battle-information > ol {
+  max-height: 520px;
+  margin: 0;
+  padding: 2px;
+  overflow-y: auto;
+  overflow-x: hidden;
+  scrollbar-gutter: stable;
+  list-style: none;
+  overflow-anchor: none;
+}
+.battle-screen .battle-information > ol > li {
+  display: block;
+  border: 1px solid #d3e0d8;
+  border-left: 3px solid #397459;
+  background: #f8fbf9;
+  border-radius: 9px;
+  margin: 0 0 10px;
+  padding: 0;
+}
+.battle-screen .battle-information > ol > .log-opponent {
+  border-left-color: #ac5831;
+}
+.battle-screen .log-entry-toggle {
+  text-align: left;
+  display: grid;
+  gap: 7px;
+  width: 100%;
+  padding: 12px;
+  color: #23342b;
+}
+.battle-screen .log-entry-toggle strong {
+  font-size: 13px;
+  line-height: 1.6;
+  overflow-wrap: anywhere;
+}
+.battle-screen .log-entry-toggle small,
+.battle-screen .log-entry-hint {
+  font-size: 10px;
+  color: #52675d;
+}
+.battle-screen .log-entry-body {
+  border-top: 1px solid #dce6df;
+  padding: 10px;
+  font-size: 12px;
+  line-height: 1.65;
+}
+.battle-screen .log-entry-body > * + * {
+  margin-top: 12px;
+}
+.battle-screen .log-card-group > strong,
+.battle-screen .log-outcomes > strong {
+  font-size: 11px;
+  color: #52675d;
+  display: block;
+  margin-bottom: 7px;
+}
+.battle-screen .log-card-group > div {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 7px;
+}
+.battle-screen .log-card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 5px;
+  width: 76px;
+  padding: 5px;
+  border-radius: 6px;
+  border: 1px solid #c6d6cb;
+  background: #fff;
+  color: #244f3a;
+}
+.battle-screen .log-card img {
+  width: 64px;
+  height: 88px;
+  object-fit: contain;
+}
+.battle-screen .log-card span {
+  font-size: 11px;
+  line-height: 1.4;
+  overflow-wrap: anywhere;
+}
+.battle-screen .log-outcomes ul {
+  padding-left: 16px;
+  margin: 0;
+}
+.battle-screen .log-outcomes li {
+  border: none;
+  padding: 2px 0;
+  display: list-item;
+  font-size: 11px;
+}
+.battle-screen .log-coins {
+  color: #71451c;
+  background: #fcf0d9;
+  border-radius: 6px;
+  padding: 8px;
+  font-size: 11px;
+}
+.battle-screen .battle-information .log-note {
+  color: #6b756f;
+  font-size: 10px;
+  line-height: 1.6;
+  margin-top: 10px;
+}
+.battle-screen .log-empty {
+  padding: 18px 0;
+  font-size: 12px;
+}
+.battle-screen .log-card-dialog {
+  width: min(540px, calc(100vw - 24px));
+  max-height: calc(100dvh - 32px);
+  overflow: auto;
+  background: #fff;
+  color: #23342b;
+  padding: 22px;
+  border: 1px solid #b4c8bb;
+  border-radius: 16px;
+}
+.log-card-dialog::backdrop {
+  background: #071522aa;
+}
+.battle-screen .log-card-dialog header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+.battle-screen .log-card-dialog > img {
+  display: block;
+  max-width: 240px;
+  max-height: 340px;
+  margin: 20px auto;
+}
+.battle-screen .log-card-dialog > p {
+  margin: 14px 0;
+  font-size: 12px;
+}
+@media (min-width: 1300px) {
+  .battle-page.battle-screen:has(.arena) .battle-layout {
+    grid-template-columns: minmax(0, 1fr) 340px;
+  }
+}

@@ -61,6 +61,7 @@ class Vault:
                         for k in ("pending", "controllers", "snapshots")
                     )
                     or not isinstance(self.state.get("controlPending", {}), dict)
+                    or not isinstance(self.state.get("matchHistory", {}), dict)
                 ):
                     raise ClientError("INVALID_STORAGE")
             else:

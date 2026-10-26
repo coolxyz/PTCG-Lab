@@ -43,6 +43,14 @@ try {
     await page
       .getByRole("button", { name: "授权本机浏览器", exact: true })
       .click();
+    await expect(page.locator(".online-lobby")).toHaveCSS(
+      "color-scheme",
+      "light",
+    );
+    await expect(page.locator(".online-lobby")).toHaveCSS(
+      "color",
+      "rgb(35, 52, 43)",
+    );
     await page
       .getByRole("button", { name: "创建游客身份", exact: true })
       .click();
@@ -92,6 +100,31 @@ try {
     await page.getByRole("button", { name: "取得操作权", exact: true }).click();
     await expect(page.getByText(/本窗口可操作/)).toBeVisible();
   }
+  // Heartbeats must not toggle every control or discard a user's filter/selection.
+  const actorPage = pages[views.findIndex((v) => v?.decision)];
+  await actorPage.evaluate(() => {
+    window.__disabledChanges = 0;
+    window.__pollObserver = new MutationObserver((records) => {
+      window.__disabledChanges += records.length;
+    });
+    window.__pollObserver.observe(document.querySelector(".battle-screen"), {
+      subtree: true,
+      attributes: true,
+      attributeFilter: ["disabled"],
+    });
+  });
+  for (let i = 0; i < 2; i++)
+    await actorPage.waitForResponse((r) => r.url().endsWith("/events"));
+  expect(
+    await actorPage.evaluate(() => {
+      window.__pollObserver.disconnect();
+      return window.__disabledChanges;
+    }),
+  ).toBe(0);
+  await expect(actorPage.locator(".battle-screen")).toHaveCSS(
+    "color-scheme",
+    "light",
+  );
   for (let seq = 0; seq < 8; seq++) {
     await expect
       .poll(() => views.every((v) => v && v.matchSeq === seq), {
@@ -138,6 +171,8 @@ try {
       )
       .toBeGreaterThan(0);
   }
+  for (const page of pages)
+    await expect(page.locator(".battle-log li").first()).toBeVisible();
   // Actual approved artwork is served by the local product media service.
   const imageResponse = await contexts[0].request.get(
     input.devices[0].origin + input.devices[0].image,
@@ -182,6 +217,31 @@ try {
   await pages[0].getByRole("button", { name: "认输", exact: true }).click();
   await pages[0].getByRole("button", { name: "确认认输", exact: true }).click();
   await expect.poll(() => views[0]?.done, { timeout: 15000 }).toBe(true);
+  await pages[0].getByRole("button", { name: "逐步回放", exact: true }).click();
+  await expect(pages[0].getByText(/回放已完整加载/)).toBeVisible({
+    timeout: 45000,
+  });
+  const slider = pages[0].getByRole("slider", { name: "回放步数" });
+  await expect(slider).toHaveAttribute("max", String(views[0].matchSeq));
+  await slider.focus();
+  await slider.press("End");
+  await expect(
+    pages[0].getByText("历史决策（只读）", { exact: true }),
+  ).toBeVisible();
+  await expect(pages[0].locator(".battle-log li").first()).toContainText(
+    "对局结束",
+  );
+  await pages[0].getByRole("button", { name: "返回大厅", exact: true }).click();
+  await expect(
+    pages[0].getByRole("list", { name: "本机对局记录" }),
+  ).toBeVisible();
+  await pages[0]
+    .getByRole("button", { name: "观看回放", exact: true })
+    .first()
+    .click();
+  await expect(
+    pages[0].getByRole("slider", { name: "回放步数" }),
+  ).toBeVisible();
   expect(errors).toEqual([]);
   expect(
     requests.every((url) =>
@@ -199,6 +259,11 @@ try {
         commands: 8,
         existingAuthorizationNewWindow: true,
         realArtwork: true,
+        stablePollingControls: true,
+        lightTheme: true,
+        visibleProcessLog: true,
+        finishedReplayAllPages: true,
+        historyReopen: true,
         browserRemoteRequests: 0,
         physicalDevices: false,
         naturalEnd: false,

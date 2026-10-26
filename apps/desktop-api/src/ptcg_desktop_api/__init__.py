@@ -1,4 +1,4 @@
 """P5-C optional bridge. Importing the package starts no services."""
 
-__version__ = "0.5.0.dev7"
+__version__ = "0.5.0.dev9"
 IMPLEMENTATION_READY = False

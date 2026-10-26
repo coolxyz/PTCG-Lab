@@ -210,6 +210,8 @@ def check(root=ROOT):
                         )
                     )
                     audited_capabilities = {
+                        # Host-owned visual preferences; battle-ui stays storage-free.
+                        "apps/desktop-web/src/appearance-storage.ts": {"localStorage"},
                         "apps/desktop-web/src/online/transport.ts": {"fetch"},
                         "apps/desktop-web/src/online/storage.ts": {"sessionStorage"},
                         "apps/desktop-web/src/practice/transport.ts": {"fetch"},

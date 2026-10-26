@@ -27,6 +27,19 @@ class Client:
         self.transport = transport or Transport(server)
         self.vault = Vault(storage, server)
         self.stopped = Event()
+        # Backfill old installations before the bounded snapshot cache evicts any
+        # more matches. The index contains only metadata, never visible hands.
+        try:
+            with self.vault.transaction() as state:
+                if "matchHistory" not in state:
+                    state["matchHistory"] = {
+                        mid: self._match_summary(view)
+                        for mid, view in state["snapshots"].items()
+                    }
+                    self.vault.save()
+        except Exception:
+            self.vault.close()
+            raise
 
     def __enter__(self):
         return self
@@ -46,6 +59,23 @@ class Client:
                 "reauthenticationRequired": state["refreshPending"],
                 "pendingMatches": list(state["pending"]),
             }
+
+    def recent_matches(self):
+        """Member-scoped local index; never expose tokens, hands or controller data."""
+        with self.vault.transaction() as state:
+            if not state["credentials"]:
+                return []
+            return [
+                self._match_summary(item)
+                for item in reversed(list(state["matchHistory"].values()))
+            ]
+
+    @staticmethod
+    def _match_summary(view):
+        return {
+            key: view[key]
+            for key in ("matchId", "viewerSeat", "done", "winner", "matchSeq")
+        }
 
     def recovery_status(self):
         """Safe recovery metadata for a trusted local bridge, never raw requests/tokens."""
@@ -128,6 +158,7 @@ class Client:
                 refreshPending=False,
                 controllers={},
                 snapshots={},
+                matchHistory={},
                 pending={},
                 controlPending={},
             )
@@ -176,7 +207,7 @@ class Client:
         *,
         authenticated=True,
         controller=None,
-        retry_write=False
+        retry_write=False,
     ):
         token = self._access() if authenticated else None
         refreshed = False
@@ -255,7 +286,9 @@ class Client:
         extra = (
             {"ready": ready}
             if action == "ready"
-            else {"deckRevision": revision} if action == "deck" else {}
+            else {"deckRevision": revision}
+            if action == "deck"
+            else {}
         )
         return self._lobby(
             kinds[action],
@@ -285,6 +318,7 @@ class Client:
             ):
                 raise ClientError("STALE_STREAM")
             state["snapshots"][match_id] = deepcopy(view)
+            state["matchHistory"][match_id] = self._match_summary(view)
             while len(state["snapshots"]) > 8:
                 del state["snapshots"][
                     next(k for k in state["snapshots"] if k != match_id)

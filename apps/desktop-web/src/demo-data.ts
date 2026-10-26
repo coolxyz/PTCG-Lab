@@ -28,12 +28,93 @@ const unit = (id: string, name: string): CardIdentity => ({
 export const scenarios = [
   "options",
   "selection",
+  "board-selection",
+  "public-history",
+  "legacy-history",
+  "stadium-history",
   "prize",
   "non-turn",
   "waiting",
   "finished",
 ] as const;
 export type Scenario = (typeof scenarios)[number];
+export function demoPublicHistory(seat: Seat, count = 3): MatchSnapshot[] {
+  const first = demoSnapshot(seat);
+  first.matchSeq = 0;
+  first.events = [];
+  first.observation.viewer = seat === "PLAYER1" ? "player1" : "player2";
+  first.observation.turn = seat === "PLAYER1" ? "PLAYER2" : "PLAYER1";
+  first.decision = null;
+  const item = {
+    cardId: "demo-item",
+    name: "演示检索物品",
+    presentation: { name: "演示检索物品" },
+  };
+  const frames = [first];
+  for (let seq = 1; seq < count; seq++) {
+    const frame = structuredClone(frames.at(-1)!);
+    frame.matchSeq = seq;
+    frame.stateVersion = seq;
+    frame.events = [
+      {
+        seq,
+        actor: first.observation.turn,
+        kind: "action",
+        text:
+          seq === 1
+            ? "使用物品 · 演示检索物品"
+            : seq === 2
+              ? "使用招式 · 演示宝可梦乙 · 演示招式"
+              : "结束回合",
+        cards:
+          seq === 1
+            ? [item]
+            : seq === 2
+              ? [frame.observation.opponent.active[0].card]
+              : [],
+      },
+    ];
+    if (seq === 1) {
+      frame.publicReveals = [
+        {
+          kind: "search_reveal",
+          actor: first.observation.turn!,
+          cards: [{ id: "demo-hit", name: "演示公开宝可梦丙" }],
+        },
+      ];
+      frame.observation.opponent.discard = [item];
+      frame.observation.opponent.handCount = 2;
+      frame.observation.opponent.deckCount = 39;
+    } else if (seq === 2) {
+      frame.events[0].coins = ["heads", "tails"];
+      frame.observation.self.active[0].card.presentation!.hp = 30;
+      frame.observation.self.active[0].card.presentation!.poisoned = true;
+    } else {
+      frame.observation.turn = seat;
+      frame.observation.turnNumber = 3;
+    }
+    frames.push(frame);
+  }
+  return frames;
+}
+export function demoStadiumHistory(seat: Seat, count = 3): MatchSnapshot[] {
+  const stadium: CardIdentity = { cardId: "demo-stadium", name: "演示竞技场" };
+  return demoPublicHistory(seat, count).map((frame, seq) => {
+    const first = demoSnapshot(seat);
+    frame.observation = { ...structuredClone(first.observation),
+      viewer: seat === "PLAYER1" ? "player1" : "player2",
+      turn: seat === "PLAYER1" ? "PLAYER2" : "PLAYER1",
+      stadium: [{ ref: "demo-stadium-ref", card: stadium }],
+    };
+    frame.publicReveals = [];
+    frame.events = seq ? [{ seq, actor: frame.observation.turn, kind: "action",
+      text: seq === 1 ? "使用竞技场效果 · 演示竞技场" : "竞技场效果 · 演示竞技场 · 完成选牌",
+      cards: [stadium],
+    }] : [];
+    return frame;
+  });
+}
+
 export function demoSnapshot(
   seat: Seat = "PLAYER1",
   scenario: Scenario = "options",
@@ -91,7 +172,7 @@ export function demoSnapshot(
       },
     ],
   };
-  if (scenario === "selection")
+  if (scenario === "selection" || scenario === "board-selection")
     value.decision = {
       id: "demo-search",
       actor: seat,
@@ -114,6 +195,20 @@ export function demoSnapshot(
           { card: other, count: 1 },
         ],
       },
+    };
+  if (scenario === "board-selection")
+    value.decision = {
+      id: "demo-board-choice",
+      actor: seat,
+      kind: "selection",
+      min: 1,
+      max: 1,
+      hidden: false,
+      indexed: false,
+      instruction: "演示场上选牌：选择我方战斗宝可梦。",
+      candidates: [
+        { ref: "demo-choice-a", boardRef: "demo-active", card: visible },
+      ],
     };
   if (scenario === "prize") {
     value.observation.self.faceUpPrizes = [{ index: 2, card: visible }];

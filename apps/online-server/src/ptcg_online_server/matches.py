@@ -115,6 +115,10 @@ class Matches:
                 visual_effects=candidate["effects"][seat],
                 result=candidate["results"][seat],
             )
+            frame["events"] = [
+                {**event, "seq": match["match_seq"]}
+                for event in candidate.get("events", {}).get(seat, [])
+            ]
             frames[seat] = self._publish(
                 db,
                 member,
@@ -354,7 +358,16 @@ class Matches:
                 "winner": winner,
                 "decision": None,
                 "phase": reason,
-                "events": [],
+                "events": [
+                    {
+                        "seq": match["match_seq"],
+                        "actor": None,
+                        "kind": "result",
+                        "text": "对局因认输结束"
+                        if reason == "resigned"
+                        else "对局因技术原因终止",
+                    }
+                ],
                 "visualEffects": [],
                 "result": {"reason": reason, "conditions": [reason]},
             }

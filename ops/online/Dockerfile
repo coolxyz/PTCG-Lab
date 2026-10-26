@@ -16,7 +16,7 @@ FROM ${PYTHON_IMAGE}
 ENV PYTHONDONTWRITEBYTECODE=1 PYTHONUNBUFFERED=1 \
     PTCG_ONLINE_V2_BIND=0.0.0.0 PTCG_ONLINE_V2_PORT=8784
 COPY --from=wheels /wheels /wheels
-RUN python -m pip install --no-cache-dir --no-index --find-links=/wheels ptcg-online-server==0.4.0.dev4 \
+RUN python -m pip install --no-cache-dir --no-index --find-links=/wheels ptcg-online-server==0.4.0.dev6 \
  && rm -rf /wheels \
  && useradd --uid 10001 --create-home api
 USER 10001

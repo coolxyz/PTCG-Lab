@@ -1,5 +1,6 @@
 /* Standalone theme, scoped to the display boundary rather than host navigation. */
 .battle-screen {
+  color-scheme: light;
   font-family: -apple-system, BlinkMacSystemFont, "Noto Sans SC", sans-serif;
   color: #23342b;
   --green: #244f3a;

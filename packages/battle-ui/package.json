@@ -14,7 +14,11 @@
       "types": "./src/index.ts",
       "default": "./src/index.ts"
     },
-    "./styles.css": "./src/styles.css"
+    "./styles.css": "./src/styles.css",
+    "./presentation": {
+      "types": "./src/battle/presentation.ts",
+      "default": "./src/battle/presentation.ts"
+    }
   },
   "peerDependencies": {
     "react": "19.1.1",

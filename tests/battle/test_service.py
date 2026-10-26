@@ -420,3 +420,31 @@ def test_delete_revision_preserves_existing_match_and_can_restore(setup):
     assert s.revisions()[0]['playable']
     other = s.store.create_deck('其他卡组', deck['entries'])
     assert c.request('DELETE', f"/api/decks/{other['id']}/revisions/{req['revisionId']}", json={'expectedVersion': 1}).status_code == 404
+
+
+def test_public_action_cards_exclude_unplayed_hand_and_private_targets():
+    from tests.protocol.test_projection import original
+
+    view = original()
+    played = {"id": "SYN-ITEM", "name": "Played test card", "ref": "v0:self:hand:0"}
+    hidden = {"id": "SYN-SECRET", "name": "Hidden test card", "ref": "v0:self:hand:1"}
+    view["observation"]["self"]["hand"] = [played, hidden]
+    view["decision"]["options"] = [{
+        "id": "play", "actionType": "UseItemAction", "source": played["name"],
+        "sourceRef": played["ref"], "targetRef": hidden["ref"], "attack": None,
+    }]
+    command = {"choice": {"optionId": "play"}}
+    event = MatchService._event(view, command, ai=True)
+    assert event["cardGroups"] == [{
+        "label": "使用 / 涉及的卡牌",
+        "cards": [{"id": "SYN-ITEM", "name": "Played test card"}],
+    }]
+    assert "Hidden test card" not in json.dumps(event)
+    assert "self:hand" not in json.dumps(event)
+    view["phase"] = "bench"
+    assert "cardGroups" not in MatchService._event(view, command, ai=True)
+    view["phase"] = "playing"
+    view["decision"] = {"kind": "selection", "candidates": [hidden]}
+    assert "Hidden test card" not in json.dumps(MatchService._event(
+        view, {"choice": {"selectedRefs": [hidden["ref"]]}}, ai=True,
+    ))

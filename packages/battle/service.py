@@ -367,8 +367,18 @@ class MatchService:
                             changes.append(
                                 f"{label}{name}{i + 1} HP：{prior[i].get('hp')} → {card.get('hp')}"
                             )
+        groups = list(event.get("cardGroups", []))
+        previous_reveals = json.loads(previous[0]).get("publicReveals", []) if previous else []
+        reveals = v.get("publicReveals", [])
+        if reveals[:len(previous_reveals)] == previous_reveals:
+            for reveal in reveals[len(previous_reveals):]:
+                groups.append({
+                    "label": ("你" if reveal["actor"] == "PLAYER1" else "AI") + " · 按效果展示卡牌",
+                    "cards": reveal["cards"],
+                })
         event = {
             **event,
+            "cardGroups": groups,
             "coins": [
                 "heads" if message == "Coin flip: HEADS." else "tails"
                 for message in game.info.get("auto_executed", [])
@@ -380,7 +390,7 @@ class MatchService:
             ),
             "changes": changes,
             "seq": game.version,
-            "turn": v["observation"]["turn_number"],
+            "turn": json.loads(previous[0])["observation"]["turn_number"] if previous else v["observation"]["turn_number"],
         }
         db.execute(
             "INSERT INTO match_frames VALUES(?,?,?,?)",
@@ -458,6 +468,22 @@ class MatchService:
                 {},
             )
             structured["actionType"] = chosen.get("actionType")
+            if view["phase"] == "playing" and chosen.get("actionType") in labels:
+                public = [c for side in ("self", "opponent") for zone in ("active", "bench") for c in view["observation"][side][zone]] + view["observation"]["stadium"]
+                plays = {"PlayPokemonAction", "EvolvePokemonAction", "AttachEnergyAction", "UseSupporterAction", "UseItemAction", "UseToolAction", "PutStadiumAction"}
+                sources = public + (view["observation"]["self"].get("hand") or [] if chosen["actionType"] in plays else [])
+                shown_cards = []
+                for role in ("source", "active_pokemon", "target"):
+                    ref = chosen.get(role + "Ref")
+                    card = next((c for c in (public if role == "target" else sources) if ref and c.get("ref") == ref), None)
+                    if card and not any(c.get("id") == card.get("id") and c["name"] == card["name"] for c in shown_cards):
+                        shown_cards.append({k: card[k] for k in ("id", "name", "attacks", "abilities") if k in card})
+                if shown_cards:
+                    structured["cardGroups"] = [{"label": "使用 / 涉及的卡牌", "cards": shown_cards}]
+                if (chosen.get("attack") or {}).get("name"):
+                    text += " · " + chosen["attack"]["name"]
+                if chosen.get("ability"):
+                    text += " · " + chosen["ability"]
             for role in ("source", "target", "active_pokemon"):
                 ref = chosen.get(role + "Ref")
                 if ref:

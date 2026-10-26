@@ -7,7 +7,7 @@ import type {
   Side,
   PlayerSeat,
 } from "./battle/types";
-import { playerLabel } from "./battle/presentation";
+import { playerLabel, skillName } from "./battle/presentation";
 import "./tabletop.css";
 import "./arena.css";
 import { EventPlayback } from "./EventPlayback";
@@ -215,6 +215,7 @@ export function Tabletop({
         <button
           className={`tabletop-card ${canUse ? "usable" : ""} ${c && selected.includes(c.ref) ? "chosen" : ""}`}
           aria-label={`${name(card)}${card.hp !== undefined ? ` · HP ${Math.max(0, card.hp)}` : ""}`}
+          aria-pressed={c ? selected.includes(c.ref) : undefined}
           draggable={!locked && actions(card).length > 0}
           onDragStart={(e) => {
             setDrag(card.ref || null);
@@ -613,7 +614,8 @@ export function Tabletop({
                 focus.attacks?.map((a) => (
                   <p key={a.name}>
                     <strong>
-                      {a.name} · {a.damage || "效果"}
+                      {skillName(a.name, "attack", focus, cardInfo(focus))} ·{" "}
+                      {a.damage || "效果"}
                     </strong>
                     <br />
                     {a.text}

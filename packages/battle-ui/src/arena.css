@@ -305,7 +305,7 @@
 }
 @keyframes arena-impact {
   0% {
-    filter: brightness(2);
+    filter: brightness(1.08);
     transform: scale(1.1);
     box-shadow: 0 0 45px #ffb85c;
   }
@@ -821,4 +821,195 @@
     width: 50px;
     height: 50px;
   }
+}
+
+/* The board is customizable; controls and state panels keep opaque surfaces. */
+.battle-screen .arena::before {
+  background: none;
+}
+.battle-screen .arena {
+  background: var(--arena-background, #273444);
+  color: var(--arena-ink, #f3f7fa);
+  box-shadow:
+    0 8px 30px #244f3a14,
+    inset 0 0 0 1px #bccdc3;
+}
+.battle-screen
+  .arena
+  :is(
+    .arena-scoreboard small,
+    .tabletop-settings,
+    .tabletop-player header,
+    .arena-trainer small,
+    .tabletop-active > small,
+    .tabletop-bench > small,
+    .arena-stadium-label
+  ) {
+  color: var(--arena-muted, #d7e2e9);
+}
+.battle-screen .arena .arena-trainer {
+  color: var(--arena-ink, #f3f7fa);
+}
+.battle-screen .arena :is(.card-state-more, .arena-action-actor small) {
+  color: #52675d;
+}
+.battle-screen .arena .arena-action-actor {
+  color: #245d42;
+}
+.battle-screen .arena .arena-trainer > i {
+  color: white;
+}
+.battle-screen .arena-scoreboard b {
+  color: var(--arena-score-self, #9fe7ff);
+}
+.battle-screen .arena-scoreboard > span:first-child b {
+  color: var(--arena-score-other, #ffd1b9);
+}
+.battle-screen .arena-scoreboard {
+  border-color: var(--arena-line, #adc6d366);
+}
+.battle-screen .arena :is(.tabletop-bench, .tabletop-hand, .empty-slot) {
+  background: var(--arena-zone, #07152266);
+  border-color: var(--arena-line, #adc6d366);
+  color: var(--arena-muted, #d7e2e9);
+}
+.battle-screen
+  .arena
+  :is(
+    .card-state-panel,
+    .pile-cards,
+    .event-playback,
+    .tabletop-feedback,
+    .arena-action-banner,
+    .coin-results
+  ) {
+  background: #fff;
+  color: #23342b;
+  border-color: #b4c8bb;
+  box-shadow: none;
+}
+.battle-screen
+  .arena
+  :is(
+    .tabletop-settings button,
+    .tabletop-hand header button,
+    .tabletop-piles summary
+  ) {
+  background: #e3ece5;
+  color: #244f3a;
+  border-color: #b4c8bb;
+}
+.battle-screen .arena :is(.arena-action-effects span, .event-delta) {
+  background: #e4eee7;
+  color: #244f3a;
+}
+.battle-screen .arena .event-delta.hp {
+  background: #fae4d9;
+  color: #7b382b;
+}
+.battle-screen .arena .arena-action-banner.is-ai {
+  background: #fff5ed;
+  border-color: #d7ad93;
+}
+.battle-screen .arena .is-ai .arena-action-actor {
+  color: #93452f;
+}
+.battle-screen .arena .tabletop-active .tabletop-card {
+  box-shadow: 0 4px 10px #23342b25;
+}
+.battle-screen .arena .card-state-content .battle-hp,
+.battle-screen .tabletop-dialog .card-state-content .battle-hp {
+  color: #205333;
+  background: #e2f0dc;
+}
+.battle-screen .arena .card-state-content .tabletop-tool {
+  color: #24526d;
+  background: #dfedf6;
+}
+.battle-screen .arena .card-state-content .tabletop-condition {
+  color: #7b382b;
+  background: #fae4d9;
+}
+.battle-screen:has(.arena) .decision-panel {
+  background: #fff;
+  color: #23342b;
+  border-color: #b4c8bb;
+}
+.battle-screen:has(.arena) .decision-panel :is(p, small) {
+  color: #52675d;
+}
+.battle-screen:has(.arena) .decision-panel h2 {
+  color: #244f3a;
+}
+.battle-screen:has(.arena) .decision-options button {
+  background: #edf4ef;
+  color: #23342b;
+  border-color: #b4c8bb;
+}
+.battle-screen:has(.arena) .decision-options button:hover {
+  background: #dcebe1;
+}
+.battle-screen:has(.arena) .decision-panel input {
+  background: white;
+  color: #23342b;
+  border: 1px solid #b4c8bb;
+}
+.battle-screen .arena .deck-pile {
+  color: #fff;
+}
+
+/* Dark/light rings remain distinct over both artwork and any playmat color. */
+.battle-screen .arena .tabletop-card .card-fallback {
+  color: #fff;
+  text-shadow: 0 1px 3px #101d30;
+}
+.battle-screen .arena .tabletop-card.usable {
+  outline: none;
+  border-color: #101d30;
+  box-shadow: var(--card-usable-ring);
+}
+.battle-screen .arena .tabletop-card.chosen {
+  outline: none;
+  box-shadow: var(--card-chosen-ring);
+}
+.battle-screen .arena .tabletop-card.chosen::after {
+  content: "✓";
+  position: absolute;
+  z-index: 4;
+  left: -6px;
+  top: -8px;
+  width: 22px;
+  height: 22px;
+  display: grid;
+  place-items: center;
+  border-radius: 50%;
+  border: 2px solid white;
+  background: #a34406;
+  color: white;
+  font-size: 14px;
+  font-weight: 800;
+  pointer-events: none;
+}
+.battle-screen .arena .tabletop-card:focus-visible {
+  outline: 3px dashed #fff;
+  outline-offset: 8px;
+  box-shadow:
+    var(--card-usable-ring),
+    0 0 0 12px #101d30;
+}
+.battle-screen .arena .drop-ready {
+  outline: 3px dashed #fff !important;
+  outline-offset: 3px;
+  box-shadow:
+    0 0 0 3px #07516d,
+    0 0 0 8px #101d30;
+}
+.battle-screen .arena .settlement-target {
+  outline: 3px solid #a34406;
+  outline-offset: 2px;
+  box-shadow: var(--card-chosen-ring);
+}
+.battle-screen .arena .coin-results button {
+  color: #714b19;
+  border-color: #926d36;
 }

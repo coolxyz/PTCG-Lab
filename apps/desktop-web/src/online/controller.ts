@@ -26,6 +26,13 @@ type Status = {
   identity: { userId: string } | null;
   reauthenticationRequired: boolean;
   pendingMatches: string[];
+  recentMatches?: {
+    matchId: string;
+    viewerSeat: string;
+    done: boolean;
+    winner: string | null;
+    matchSeq: number;
+  }[];
   productPending?: {
     revisionId: string;
     ruleReleaseId: string;
@@ -56,6 +63,9 @@ export const errorText = (error: unknown) => {
     OUTCOME_UNKNOWN: "服务器尚未确认操作结果，请继续恢复，不能提交新操作。",
     INVALID_PAYLOAD:
       "服务器拒绝了所选卡组。请核对下方本地检查及服务器规则版本；当前 API 未返回逐卡拒绝明细，原卡组未被修改。",
+    REPLAY_EMPTY: "这场对局暂时没有可读回放帧，请刷新后重试。",
+    REPLAY_PAGE_LIMIT: "已达到本地回放加载上限。",
+    REPLAY_CURSOR_STALLED: "回放分页未推进，请重新打开回放。",
     RULE_RELEASE_UNAVAILABLE: "服务器没有所选规则版本。",
     STREAM_UNAVAILABLE: "推送已断开，请重新连接。",
   };
@@ -77,6 +87,7 @@ export type State = {
   showing: boolean;
   pending: boolean;
   remembered: Remembered;
+  history: (ReplayFrame | MatchSnapshot)[];
   replay: ReplayPage | null;
   frame: number;
   nextCursor: string | null;
@@ -101,6 +112,7 @@ export class OnlineController {
     showing: false,
     pending: false,
     remembered: { userId: "" },
+    history: [],
     replay: null,
     frame: 0,
     nextCursor: null,
@@ -113,6 +125,9 @@ export class OnlineController {
   private listeners = new Set<() => void>();
   private timer?: ReturnType<typeof setTimeout>;
   private disposed = false;
+  private polling?: Promise<void>;
+  private logCursor?: string;
+  private logThrough = -1;
   private initializingTries = 0;
   constructor(
     private api: OnlineAPI,
@@ -140,14 +155,34 @@ export class OnlineController {
     this.storage.write(this.state.profile, next);
     this.patch({ remembered: next });
   }
-  private call<T>(op: string, body: object = {}) {
-    return this.api.call<T>(this.state.profile, op, body);
+  private async call<T>(op: string, body: object = {}): Promise<T> {
+    // PROFILE_BUSY is a local rejection before dispatch, so retrying the same
+    // body is safe. Other failures retain their existing idempotency handling.
+    const profile = this.state.profile;
+    for (let attempt = 0; ; attempt++) {
+      try {
+        return await this.api.call<T>(profile, op, body);
+      } catch (error) {
+        if (
+          !(error instanceof OnlineError) ||
+          error.code !== "PROFILE_BUSY" ||
+          attempt >= 5 ||
+          this.disposed
+        )
+          throw error;
+        await new Promise((resolve) =>
+          setTimeout(resolve, 150 * (attempt + 1)),
+        );
+      }
+    }
   }
   private async run(fn: () => Promise<void>) {
     if (this.state.busy || this.disposed) return;
     clearTimeout(this.timer);
     this.patch({ busy: true, error: "" });
     try {
+      await this.polling;
+      if (this.disposed) return;
       await fn();
     } catch (e) {
       this.patch({ error: errorText(e), playing: false });
@@ -165,37 +200,81 @@ export class OnlineController {
     clearTimeout(this.timer);
     if (this.disposed || this.state.busy || this.state.error) return;
     const s = this.state;
-    if (s.replay && s.playing) {
+    if (s.replay && s.playing && s.frame + 1 < s.replay.frames.length) {
       this.timer = setTimeout(() => {
-        if (this.state.frame + 1 < this.state.replay!.frames.length) {
-          this.patch({ frame: this.state.frame + 1 });
-          this.schedule();
-        } else this.patch({ playing: false });
+        this.patch({ frame: this.state.frame + 1 });
+        this.schedule();
       }, 1000 / s.speed);
       return;
     }
+    if (s.replay && !s.nextCursor) {
+      if (s.playing) this.patch({ playing: false });
+      return;
+    }
     if (
-      (s.showing && s.view && !s.view.done) ||
+      s.replay ||
+      (s.showing &&
+        s.view &&
+        (!s.view.done || this.logThrough < s.view.matchSeq)) ||
       (!s.showing &&
         s.room &&
         ["waiting", "initializing", "initialized"].includes(s.room.status))
     )
       this.timer = setTimeout(
-        () =>
-          void this.run(async () => {
-            if (this.state.showing) {
-              const f = await this.call<{
-                event: { snapshot: MatchSnapshot } | null;
-                done: boolean;
-                error: { code: string } | null;
-              }>("events", { matchId: this.state.view!.matchId });
-              if (f.event) this.accept(f.event.snapshot);
-              if (f.done)
-                throw new OnlineError(f.error?.code || "STREAM_UNAVAILABLE");
-            } else await this.room();
-          }),
-        s.showing ? 600 : 1500,
+        () => this.background(),
+        s.replay ? 100 : s.showing ? 600 : 1500,
       );
+  }
+  private background() {
+    if (this.disposed || this.state.busy || this.polling) return;
+    this.polling = (async () => {
+      try {
+        if (this.state.replay) await this.fetchMore();
+        else if (this.state.showing && this.state.view) {
+          if (!this.state.view.done) {
+            const f = await this.call<{
+              event: { snapshot: MatchSnapshot } | null;
+              done: boolean;
+              error: { code: string } | null;
+            }>("events", { matchId: this.state.view.matchId });
+            if (this.disposed) return;
+            if (f.event) this.accept(f.event.snapshot);
+            if (f.done && !this.state.view.done)
+              throw new OnlineError(f.error?.code || "STREAM_UNAVAILABLE");
+          }
+          await this.syncHistory();
+        } else await this.room();
+      } catch (e) {
+        if (!(e instanceof OnlineError && e.code === "PROFILE_BUSY"))
+          this.patch({ error: errorText(e), playing: false });
+      } finally {
+        this.polling = undefined;
+        this.schedule();
+      }
+    })();
+  }
+  private mergeHistory(frames: (ReplayFrame | MatchSnapshot)[]) {
+    const rows = new Map(this.state.history.map((f) => [f.matchSeq, f]));
+    for (const f of frames) rows.set(f.matchSeq, f);
+    this.patch({
+      history: [...rows.values()]
+        .sort((a, b) => a.matchSeq - b.matchSeq)
+        .slice(-5000),
+    });
+  }
+  private async syncHistory() {
+    const view = this.state.view;
+    if (!view || this.logThrough >= view.matchSeq) return;
+    const page = await this.call<ReplayPage>("replay", {
+      matchId: view.matchId,
+      ...(this.logCursor ? { cursor: this.logCursor } : {}),
+    });
+    if (this.disposed || this.state.view?.matchId !== view.matchId) return;
+    if (page.matchId !== view.matchId || page.viewerSeat !== view.viewerSeat)
+      throw new OnlineError("IDENTITY_MISMATCH");
+    this.mergeHistory(page.frames);
+    this.logThrough = page.frames.at(-1)?.matchSeq ?? this.logThrough;
+    if (page.nextCursor) this.logCursor = page.nextCursor;
   }
   private accept(view: MatchSnapshot) {
     const old = this.state.view;
@@ -206,6 +285,18 @@ export class OnlineController {
         view.controllerEpoch < old.controllerEpoch)
     )
       return;
+    if (
+      old &&
+      old.matchId === view.matchId &&
+      JSON.stringify(old) === JSON.stringify(view)
+    )
+      return;
+    if (old?.matchId !== view.matchId) {
+      this.logCursor = undefined;
+      this.logThrough = -1;
+      this.patch({ history: [] });
+    }
+    this.mergeHistory([view]);
     this.patch({
       view,
       ...(old &&
@@ -234,6 +325,10 @@ export class OnlineController {
       await this.call("unwatch", { matchId: this.state.view.matchId }).catch(
         () => {},
       );
+    this.displayVersion = "";
+    this.displayRequest++;
+    this.logCursor = undefined;
+    this.logThrough = -1;
     this.storage.selected(profile);
     this.patch({
       profile,
@@ -248,6 +343,7 @@ export class OnlineController {
       showing: false,
       pending: false,
       connected: false,
+      history: [],
       remembered: { userId: "" },
     });
     await this.status();
@@ -275,18 +371,26 @@ export class OnlineController {
       const catalog = await this.api.catalog(catalogVersion, assetVersion);
       if (this.disposed || request !== this.displayRequest) return;
       this.patch({
-        cards: Object.fromEntries(
-          catalog.cards.flatMap((c) => [
-            [c.engineId, c],
-            [c.englishName, c],
-          ]),
-        ),
+        cards: this.cardIndex(catalog.cards),
         missing: !!catalog.missing || !catalog.cards.length,
       });
     } catch {
       if (request === this.displayRequest)
         this.patch({ cards: {}, missing: true });
     }
+  }
+  private cardIndex(cards: CardInfo[]) {
+    const result: Record<string, CardInfo> = Object.fromEntries(
+      cards.map((c) => [c.engineId, c]),
+    );
+    for (const c of [...cards].sort(
+      (a, b) =>
+        Number(a.engineId.startsWith("unverified:")) -
+        Number(b.engineId.startsWith("unverified:")),
+    ))
+      for (const alias of [c.englishName, ...(c.aliases || [])])
+        if (alias && !result[alias]) result[alias] = c;
+    return result;
   }
   private async status() {
     const status = await this.call<Status>("status");
@@ -488,6 +592,7 @@ export class OnlineController {
     this.accept(view);
     this.patch({ showing: true, replay: null, lease: "" });
     if (!view.done) await this.watch(matchId);
+    await this.syncHistory();
   }
   private async watch(matchId: string) {
     for (let attempt = 0; attempt < 10; attempt++) {
@@ -610,6 +715,7 @@ export class OnlineController {
     this.run(async () => {
       if (this.state.view)
         await this.call("unwatch", { matchId: this.state.view.matchId });
+      await this.status();
       this.patch({
         showing: false,
         room: null,
@@ -623,6 +729,7 @@ export class OnlineController {
       const page = await this.call<ReplayPage>("replay", {
         matchId: this.state.view!.matchId,
       });
+      if (!page.frames.length) throw new OnlineError("REPLAY_EMPTY");
       this.patch({
         replay: page,
         frame: 0,
@@ -630,31 +737,50 @@ export class OnlineController {
         playing: false,
       });
     });
-  more = () =>
+  more = () => this.run(() => this.fetchMore());
+  private async fetchMore() {
+    const s = this.state;
+    if (!s.nextCursor || !s.replay) return;
+    if (s.replay.frames.length >= 5000)
+      throw new OnlineError("REPLAY_PAGE_LIMIT");
+    const page = await this.call<ReplayPage>("replay", {
+      matchId: s.view!.matchId,
+      cursor: s.nextCursor,
+    });
+    if (this.disposed || this.state.replay !== s.replay) return;
+    if (
+      page.viewerSeat !== s.replay.viewerSeat ||
+      page.matchId !== s.replay.matchId ||
+      page.ruleReleaseId !== s.replay.ruleReleaseId
+    )
+      throw new OnlineError("IDENTITY_MISMATCH");
+    if (page.nextCursor === s.nextCursor)
+      throw new OnlineError("REPLAY_CURSOR_STALLED");
+    const frames = new Map(s.replay.frames.map((f) => [f.matchSeq, f]));
+    for (const frame of page.frames) frames.set(frame.matchSeq, frame);
+    this.patch({
+      replay: {
+        ...page,
+        frames: [...frames.values()].sort((a, b) => a.matchSeq - b.matchSeq),
+      },
+      nextCursor: page.nextCursor,
+    });
+  }
+  openReplay = (matchId: string) =>
     this.run(async () => {
-      const s = this.state;
-      if (!s.nextCursor || !s.replay) return;
-      if (s.replay.frames.length >= 300)
-        throw new OnlineError("REPLAY_PAGE_LIMIT");
-      const page = await this.call<ReplayPage>("replay", {
-        matchId: s.view!.matchId,
-        cursor: s.nextCursor,
-      });
-      if (
-        page.viewerSeat !== s.replay.viewerSeat ||
-        page.matchId !== s.replay.matchId
-      )
-        throw new OnlineError("IDENTITY_MISMATCH");
+      await this.openInner(matchId);
+      const page = await this.call<ReplayPage>("replay", { matchId });
+      if (!page.frames.length) throw new OnlineError("REPLAY_EMPTY");
       this.patch({
-        replay: {
-          ...page,
-          frames: [...s.replay.frames, ...page.frames] as ReplayFrame[],
-        },
+        replay: page,
+        frame: 0,
         nextCursor: page.nextCursor,
+        playing: false,
       });
     });
   seek = (frame: number) => {
-    this.patch({ frame, playing: false });
+    const end = (this.state.replay?.frames.length || 1) - 1;
+    this.patch({ frame: Math.max(0, Math.min(end, frame)), playing: false });
     this.schedule();
   };
   play = (playing: boolean) => {

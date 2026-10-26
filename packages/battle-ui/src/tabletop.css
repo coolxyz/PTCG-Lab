@@ -644,7 +644,7 @@
 }
 @keyframes settlement-impact {
   0% {
-    filter: brightness(1.8);
+    filter: brightness(1.08);
     transform: translateY(-3px);
   }
   100% {

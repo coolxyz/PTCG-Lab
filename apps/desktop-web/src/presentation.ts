@@ -19,7 +19,7 @@ import type {
  * This is not an authentication boundary or a JSON validator. P5 supplies those.
  * A detached result prevents display state from mutating a cached snapshot.
  */
-function card(value: CardIdentity): EngineCard {
+export function card(value: CardIdentity): EngineCard {
   const p = value.presentation;
   return {
     ...p,
@@ -133,6 +133,9 @@ function display(
     events: value.events.map((e) => ({
       ...e,
       actor: e.actor ?? "system",
+      cardGroups: e.cards?.length
+        ? [{ label: "公开卡牌", cards: e.cards.map(card) }]
+        : undefined,
       effects: e.seq === value.matchSeq ? value.visualEffects : undefined,
     })),
     visualEffects: value.visualEffects,

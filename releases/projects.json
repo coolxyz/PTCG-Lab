@@ -40,7 +40,7 @@
         "fcntl"
       ],
       "allowedRuntimeRequirements": [
-        "ptcg-online-client==0.5.0.dev3",
+        "ptcg-online-client==0.5.0.dev5",
         "starlette==0.46.2",
         "uvicorn==0.34.2"
       ]
@@ -60,6 +60,7 @@
       "allowedExternalImports": [
         "asyncio",
         "contextlib",
+        "copy",
         "dataclasses",
         "datetime",
         "fastapi",
@@ -239,7 +240,8 @@
       "implementationReady": false,
       "allowedInternalImports": [
         "@ptcg/battle-ui",
-        "@ptcg/battle-protocol"
+        "@ptcg/battle-protocol",
+        "@ptcg/battle-ui/presentation"
       ],
       "allowedExternalImports": [
         "react",

@@ -3,7 +3,9 @@ import { History, ChevronLeft, ChevronRight, Flag } from "lucide-react";
 import { Tabletop } from "../Tabletop";
 import { DeckBrowser } from "../DeckBrowser";
 import { BattleScreen } from "./BattleScreen";
-import { playerLabel } from "./presentation";
+import { BattleLog } from "./BattleLog";
+import type { AppearanceStorage } from "./appearance";
+import { playerLabel, skillName } from "./presentation";
 import type {
   BattleView,
   CardInfo,
@@ -29,6 +31,7 @@ export type ReplayDisplay = {
 };
 
 export type BattleArenaProps = {
+  appearanceStorage?: AppearanceStorage;
   view: BattleView;
   cards: Record<string, CardInfo>;
   viewerSeat?: PlayerSeat;
@@ -75,6 +78,7 @@ const phases: Record<string, string> = {
 };
 /** Shared display boundary: no API calls, storage, AI scheduling or game rules. */
 export function BattleArena({
+  appearanceStorage,
   view,
   cards: names,
   viewerSeat = "PLAYER1",
@@ -133,6 +137,20 @@ export function BattleArena({
     viewerSeat,
   ]);
   function optionText(o: Option) {
+    const visible = [
+      shown.observation.self,
+      shown.observation.opponent,
+    ].flatMap((s) => [...s.active, ...s.bench, ...(s.hand || [])]);
+    const source =
+      visible.find(
+        (c) => c.ref && c.ref === (o.sourceRef || o.active_pokemonRef),
+      ) || visible.find((c) => c.id === (o.sourceId || o.active_pokemonId));
+    const info =
+      (source?.id && names[source.id]) ||
+      (o.sourceId && names[o.sourceId]) ||
+      names[o.source || o.active_pokemon || ""];
+    const skill = (name: string, kind: "attack" | "ability") =>
+      skillName(name, kind, source, info || undefined);
     if (o.actionType === "ChooseCardAction") {
       const counts = new Map<string, number>();
       for (const name of o.chosen || [])
@@ -157,13 +175,17 @@ export function BattleArena({
         : pos?.endsWith("ACTIVE")
           ? "（战斗区）"
           : "";
-    return `${actionNames[o.actionType] || o.actionType}${o.source ? " · " + cn(o.source) + position(o.sourcePosition, o.sourceIndex) : ""}${o.target ? " → " + cn(o.target) + position(o.targetPosition, o.targetIndex) : ""}${o.attack ? " · " + o.attack.name + (o.attack.damage ? " / " + o.attack.damage : "") : ""}${o.ability ? " · " + o.ability : ""}${o.active_pokemon ? " · " + cn(o.active_pokemon) : ""}`;
+    return `${actionNames[o.actionType] || o.actionType}${o.source ? " · " + (names[o.sourceId || ""]?.cnName || cn(o.source)) + position(o.sourcePosition, o.sourceIndex) : ""}${o.target ? " → " + (names[o.targetId || ""]?.cnName || cn(o.target)) + position(o.targetPosition, o.targetIndex) : ""}${o.attack ? " · " + skill(o.attack.name, "attack") + (o.attack.damage ? " / " + o.attack.damage : "") : ""}${o.ability ? " · " + skill(o.ability, "ability") : ""}${o.active_pokemon ? " · " + cn(o.active_pokemon) : ""}`;
   }
   const previousTurn = timeline.filter((point) => point.seq < replaySeq).at(-1);
   const nextTurn = timeline.find((point) => point.seq > replaySeq);
   const currentTurn = timeline.filter((point) => point.seq <= replaySeq).at(-1);
   return (
-    <BattleScreen busy={busy} onRefresh={onRefresh}>
+    <BattleScreen
+      busy={busy}
+      onRefresh={onRefresh}
+      appearanceStorage={appearanceStorage}
+    >
       {error && (
         <div role="alert" className="error-banner">
           {error}
@@ -582,23 +604,14 @@ export function BattleArena({
               <p>当前等待{opponentLabel}操作，轮到你时会显示可选动作。</p>
             )}
           </section>
-          <section className="battle-log">
-            <h3>裁定记录</h3>
-            <ol>
-              {[...(shown.events || [])].reverse().map((e) => (
-                <li key={e.seq}>
-                  <small>
-                    #{e.seq} · {actorName(e.actor)}
-                  </small>
-                  <span>{e.text}</span>
-                  {e.changes?.map((change, i) => (
-                    <small key={i}>{change}</small>
-                  ))}
-                  {e.explanation && <small>{e.explanation}</small>}
-                </li>
-              ))}
-            </ol>
-          </section>
+          <BattleLog
+            key={`${shown.matchId}:${frame ? "replay" : "live"}`}
+            view={shown}
+            cards={names}
+            viewerSeat={viewerSeat}
+            opponentLabel={opponentLabel}
+            replay={!!frame}
+          />
         </aside>
       </div>
     </BattleScreen>

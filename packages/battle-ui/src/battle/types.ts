@@ -1,6 +1,8 @@
 import type { ChineseDetails } from "../CardDescription";
 
 export type CardInfo = {
+  aliases?: string[];
+  attacks?: { name: string }[];
   cnName: string;
   englishName: string;
   engineId: string;
@@ -61,6 +63,9 @@ export type Option = {
   kind?: string;
   value?: string | number | boolean;
   source?: string;
+  sourceId?: string;
+  targetId?: string;
+  active_pokemonId?: string;
   sourceRef?: string;
   targetRef?: string;
   active_pokemonRef?: string;
@@ -124,6 +129,9 @@ export type BattleView = {
     seq: number;
     actor: string;
     text: string;
+    turn?: number;
+    kind?: string;
+    cardGroups?: { label: string; cards: EngineCard[] }[];
     coins?: ("heads" | "tails")[];
     actionType?: string;
     sourceLocation?: string;

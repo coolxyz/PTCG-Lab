@@ -171,3 +171,37 @@ def test_source_cache_rejects_modified_image_bytes(tmp_path):
         )
     with pytest.raises(SyncError, match="缓存卡图校验失败"):
         images.get("c" * 40, "1")
+
+
+def test_resource_edits_issue_new_version_and_keep_old_snapshot(product):
+    from ptcg_desktop_api.resources import Resources
+    from PIL import Image
+    import io
+
+    store, adapter, _, revision, _ = product
+    resources = adapter.resources(Resources(Path(store.path).parent / "cache"))
+    before = resources.catalog(resources.version, "unavailable")
+    image = io.BytesIO()
+    Image.new("RGB", (10, 14), "green").save(image, "PNG")
+    adapter.media.upload(revision["entries"][0]["printingId"], image.getvalue())
+    after = resources.catalog(resources.version, "unavailable")
+    assert after["assetVersion"] != before["assetVersion"]
+    assert resources.catalog(resources.version, before["assetVersion"]) == before
+    assert resources.catalog(resources.version, after["assetVersion"]) == after
+
+
+def test_artwork_choice_preserves_english_aliases_and_chinese_skills(product):
+    from ptcg_desktop_api.resources import Resources
+
+    store, adapter, *_ = product
+    resources = adapter.resources(Resources(Path(store.path).parent / "cache"))
+    catalog = resources.catalog(resources.version, "unavailable")
+    arven = next(c for c in catalog["cards"] if c["engineId"] == "P4T-195A48AF3235")
+    assert arven["cnName"] == "派帕"
+    assert "Arven" in arven["aliases"] and arven["englishName"]
+    gholdengo = next(c for c in catalog["cards"] if c["engineId"] == "PAR-139")
+    assert gholdengo["attacks"] == [{"name": "淘金潮"}]
+    assert (
+        resources.fallback.root
+        / ("product-catalog-" + catalog["assetVersion"] + ".json")
+    ).stat().st_size < 16 * 1024 * 1024

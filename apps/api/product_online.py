@@ -201,6 +201,7 @@ class ProductResources:
         self.version = MemoryCatalog.from_catalog(RAW).catalog_version
         self.lock = RLock()
         self.saved = {}
+        self.current_signature = None
         for path in sorted(fallback.root.glob("product-catalog-*.json")):
             if path.is_symlink() or path.stat().st_size > 16 * 1024 * 1024:
                 continue
@@ -227,12 +228,59 @@ class ProductResources:
                     if archived:
                         return archived[-1]
                 return self.fallback.catalog(catalog_version, asset_version)
-            if (catalog_version, asset_version) in self.saved:
+            # Presentation edits do not change the rules catalog. Rebuild the current
+            # display snapshot when uploads or the approved details file change,
+            # while retaining every previously issued assetVersion for replays.
+            details = ROOT / "data/catalog/card-details.json"
+            stamp = (
+                (details.stat().st_mtime_ns, details.stat().st_size)
+                if details.exists()
+                else None
+            )
+            with self.media.store.db() as db:
+                uploads = list(
+                    db.execute(
+                        "SELECT printing_id,filename FROM card_images ORDER BY printing_id"
+                    )
+                )
+            signature = (
+                stamp,
+                tuple(
+                    (pid, name, (self.media.directory / name).exists())
+                    for pid, name in uploads
+                ),
+            )
+            if (
+                signature == self.current_signature
+                and (catalog_version, asset_version) in self.saved
+            ):
                 return self.saved[catalog_version, asset_version]
             rows = {}
             candidates = self.media.decorate(
                 [{**c, "image": select_image(c)} for c in RAW["cards"]]
             )
+            metadata = {}
+            for card in candidates:
+                engine = card.get("engineId")
+                group = metadata.setdefault(
+                    engine,
+                    {
+                        "aliases": set(),
+                        "englishName": "",
+                        "attacks": [],
+                        "chineseDetails": {},
+                    },
+                )
+                if card.get("englishName"):
+                    group["aliases"].add(card["englishName"])
+                    group["englishName"] = group["englishName"] or card["englishName"]
+                if card.get("attacks") and not group["attacks"]:
+                    group["attacks"] = card["attacks"]
+                details = card.get("chineseDetails", {})
+                if len(details.get("sections", [])) > len(
+                    group["chineseDetails"].get("sections", [])
+                ):
+                    group["chineseDetails"] = details
             for card in sorted(candidates, key=lambda c: c["printingId"]):
                 engine = card.get("engineId")
                 if not engine:
@@ -248,7 +296,11 @@ class ProductResources:
                         "reviewNote",
                     )
                 }
-                row["chineseDetails"] = card.get("chineseDetails", {})
+                group = metadata[engine]
+                row["englishName"] = group["englishName"]
+                row["aliases"] = sorted(group["aliases"])
+                row["attacks"] = [{"name": a["name"]} for a in group["attacks"]]
+                row["chineseDetails"] = group["chineseDetails"]
                 row.update(
                     printingId=card["printingId"],
                     image={"url": image, "label": "平台默认卡面（按效果映射）"},
@@ -272,6 +324,7 @@ class ProductResources:
                     )
             except BridgeError:
                 result["cacheFull"] = True
+            self.current_signature = signature
             self.saved[self.version, "unavailable"] = result
             self.saved[self.version, version] = result
             return result

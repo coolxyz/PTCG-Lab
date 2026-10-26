@@ -157,6 +157,7 @@ class Bridge:
             return {
                 **c.status(),
                 "recovery": c.recovery_status(),
+                "recentMatches": c.recent_matches(),
                 **({"productPending": self.product.pending(p)} if self.product else {}),
             }
         if action == "guest":

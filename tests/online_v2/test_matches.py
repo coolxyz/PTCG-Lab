@@ -152,6 +152,34 @@ def test_command_receipt_retry_conflict_and_private_replay(game):
         )
 
 
+def test_public_action_persists_for_both_seats_without_duplicate_receipt(
+    game, monkeypatch
+):
+    from ptcg_online_server.public_events import action_events
+
+    service, _, tokens, mid, controllers = game
+    worker = service.worker
+    original_command = worker.command
+
+    def execute(record, seat, command):
+        before = worker.project(record)["views"][seat]
+        candidate = original_command(record, seat, command)
+        events = action_events(before, seat, command["choice"])
+        candidate["events"] = {s: events for s in ("PLAYER1", "PLAYER2")}
+        return candidate
+
+    monkeypatch.setattr(worker, "command", execute)
+    request = command(service.get(tokens[0], mid))
+    first = service.command(tokens[0], mid, request, controllers[0])
+    assert service.command(tokens[0], mid, request, controllers[0]) == first
+    expected = [{"seq": 1, "actor": "PLAYER1", "kind": "action", "text": "结束回合"}]
+    for token in tokens:
+        assert service.get(token, mid)["events"] == expected
+        frame = service.frames(token, mid)["frames"][-1]
+        assert frame["events"] == expected
+        assert "private-" not in json.dumps(frame["events"])
+
+
 def test_control_cursor_is_independent_and_old_controller_cannot_commit(game):
     service, _, tokens, mid, controllers = game
     before = service.get(tokens[0], mid)

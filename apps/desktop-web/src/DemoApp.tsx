@@ -5,9 +5,13 @@ import {
   demoReplay,
   scenarios,
   type Scenario,
+  demoPublicHistory,
+  demoStadiumHistory,
 } from "./demo-data";
 import { snapshotView, replayView } from "./presentation";
 import "./demo.css";
+import { browserAppearanceStorage } from "./appearance-storage";
+import { visibleHistory } from "./online/history";
 
 export function DemoApp() {
   const [seat, setSeat] = useState<PlayerSeat>("PLAYER1");
@@ -18,6 +22,14 @@ export function DemoApp() {
   const [replaySeq, setReplaySeq] = useState<number | null>(null);
   const [playing, setPlaying] = useState(false);
   const [speed, setSpeed] = useState(1);
+  const [historyCount, setHistoryCount] = useState(3);
+  const history =
+    scenario === "stadium-history" ? demoStadiumHistory(seat, historyCount)
+      : scenario === "public-history" || scenario === "legacy-history"
+      ? demoPublicHistory(seat, historyCount).map((frame) =>
+          scenario === "legacy-history" ? { ...frame, events: [] } : frame,
+        )
+      : null;
   const page = demoReplay(seat);
   // Playback timing belongs to this mode host, never the shared display package.
   useEffect(() => {
@@ -43,6 +55,7 @@ export function DemoApp() {
     setLastChoice(null);
     setReplaySeq(null);
     setPlaying(false);
+    setHistoryCount(3);
   }
   return (
     <>
@@ -81,13 +94,25 @@ export function DemoApp() {
       )}
       {open && (
         <BattleArena
-          view={snapshotView(snapshot)}
+          appearanceStorage={browserAppearanceStorage}
+          view={
+            history
+              ? {
+                  ...snapshotView(history.at(-1)!),
+                  events: visibleHistory(history, {}),
+                }
+              : snapshotView(snapshot)
+          }
           cards={{}}
           viewerSeat={seat}
           opponentLabel="对手"
           statusLabel={<span role="status">合成演示 · 尚未连接服务器</span>}
           onSubmit={(choice) => setLastChoice(choice)}
-          onRefresh={() => setSnapshot((value) => structuredClone(value))}
+          onRefresh={() =>
+            history
+              ? setHistoryCount((n) => n + 1)
+              : setSnapshot((value) => structuredClone(value))
+          }
           onLeave={() => {
             setOpen(false);
             setPlaying(false);

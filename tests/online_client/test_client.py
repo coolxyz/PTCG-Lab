@@ -396,3 +396,52 @@ def test_http_snapshot_ahead_of_stream_resyncs_without_regression(ready):
     events = list(client.events(MID, stop))
     assert [e["snapshot"]["matchSeq"] for e in events] == [0, 2]
     assert sent[1]["streamCursor"] is None
+
+
+def test_recent_matches_are_private_metadata_and_survive_restart(ready):
+    client, api, root = ready
+    client.snapshot(MID)
+    history = client.recent_matches()
+    assert len(history) == 1
+    assert set(history[0]) == {"matchId", "viewerSeat", "done", "winner", "matchSeq"}
+    assert history[0]["matchId"] == MID
+    client.close()
+    with Client(SERVER, root, transport=api) as restored:
+        assert restored.recent_matches() == history
+    with Client(Server("https://elsewhere.test"), root, transport=api) as other:
+        assert other.recent_matches() == []
+
+
+def test_match_index_outlives_bounded_snapshot_cache_and_is_identity_scoped(ready):
+    client, api, root = ready
+    for i in range(14):
+        view = dict(api.view, matchId=f"{i:032x}")
+        client._snapshot(view["matchId"], view)
+    assert len(client.vault.state["snapshots"]) == 8
+    history = client.recent_matches()
+    assert len(history) == 15
+    assert history[-2]["matchId"] == "0" * 32
+    assert all(set(row) == {"matchId", "viewerSeat", "done", "winner", "matchSeq"}
+               for row in history)
+    client.close()
+    with Client(SERVER, root, transport=api) as restored:
+        assert restored.recent_matches() == history
+        # Reopening an old match updates, rather than duplicates, its summary.
+        view = dict(api.view, matchId="0" * 32, matchSeq=2, stateVersion=2)
+        restored._snapshot(view["matchId"], view)
+        assert len(restored.recent_matches()) == 15
+        assert restored.recent_matches()[-2]["matchSeq"] == 2
+        restored.forget_identity()
+        assert restored.recent_matches() == []
+        assert restored.vault.state["matchHistory"] == {}
+
+
+def test_old_vault_backfills_match_index_on_upgrade(ready):
+    client, api, root = ready
+    client.snapshot(MID)
+    del client.vault.state["matchHistory"]
+    client.vault.save()
+    client.close()
+    with Client(SERVER, root, transport=api) as restored:
+        assert restored.recent_matches()[0]["matchId"] == MID
+        assert MID in restored.vault.state["matchHistory"]

@@ -16,6 +16,7 @@ from ptcg_core.events import public_effects
 from ptcg_core.results import explain
 from ptcg_engine_provider.bundle import DirectoryEngineProvider
 from ptcg_engine_provider.values import canonical
+from .public_events import action_events, coin_results, selection_source_ref
 
 MAX_RESULT = 8 * 1024 * 1024
 
@@ -45,12 +46,30 @@ def execute(request):
     if request["operation"] in ("project", "command"):
         match = factory.restore_match(request["recovery"])
         before = {seat: match.project_view(seat) for seat in ("PLAYER1", "PLAYER2")}
+        selection_source = None
         if request["operation"] == "command":
+            selection_source = selection_source_ref(
+                match._adapter, before[request["seat"]]
+            )
             match.apply_command(request["seat"], request["command"])
+        # Internal adapter diagnostics are reduced to exact public coin outcomes;
+        # no arbitrary logs, private choices or recovery data enter these events.
+        events = (
+            action_events(
+                before[request["seat"]],
+                request["seat"],
+                request["command"]["choice"],
+                coin_results(match._adapter.info),
+                selection_source=selection_source,
+            )
+            if request["operation"] == "command"
+            else []
+        )
         views = {seat: match.project_view(seat) for seat in before}
         return {
             "recovery": match.export_recovery_record(),
             "views": views,
+            "events": {seat: events for seat in views},
             "effects": {
                 seat: (
                     public_effects(
