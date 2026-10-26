@@ -14,7 +14,7 @@ services:
       timeout: 3s
       retries: 20
   api:
-    image: ptcg-lab-online-api:p4d
+    image: ptcg-lab-online-api:p6a
     build:
       context: ../..
       dockerfile: ops/online/Dockerfile
@@ -22,6 +22,10 @@ services:
       PTCG_ONLINE_V2_SERVER_ID: ${PTCG_V2_SERVER_ID:?Set a unique deployment server ID}
       PTCG_ONLINE_V2_PUBLIC_ORIGIN: ${PTCG_V2_PUBLIC_ORIGIN:-http://127.0.0.1:8784}
       PTCG_ONLINE_V2_ALLOW_LOOPBACK_HTTP: ${PTCG_V2_ALLOW_LOOPBACK_HTTP:-1}
+      PTCG_ONLINE_V2_DB_POOL_ENABLED: ${PTCG_V2_DB_POOL_ENABLED:-1}
+      PTCG_ONLINE_V2_DB_POOL_SIZE: ${PTCG_V2_DB_POOL_SIZE:-4}
+      PTCG_ONLINE_V2_DB_POOL_WAITERS: ${PTCG_V2_DB_POOL_WAITERS:-16}
+      PTCG_ONLINE_V2_DB_POOL_TIMEOUT: ${PTCG_V2_DB_POOL_TIMEOUT:-1}
     env_file: ["${PTCG_V2_API_ENV_FILE:?Set the private API environment file}"]
     ports: ['127.0.0.1:8784:8784']
     depends_on:

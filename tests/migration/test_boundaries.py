@@ -34,7 +34,9 @@ def scaffold(tmp_path):
         "releases/p5d-acceptance.json",
         "releases/p5d-user-acceptance.json",
         "releases/p55-user-acceptance.json",
+        "releases/p6a-baseline.json",
         "docs/P5.5产品整合完成记录.md",
+        "docs/P6多局调度与性能实施记录.md",
     ]:
         p = tmp_path / name
         p.parent.mkdir(parents=True, exist_ok=True)
@@ -300,3 +302,31 @@ def test_p55_completion_preserves_user_scope_and_pending_validation(scaffold, mi
         record_path.write_text(json.dumps(record))
     status_path.write_text(json.dumps(status))
     assert any("P5.5 completion lacks" in error for error in check(scaffold))
+
+
+@pytest.mark.parametrize("missing", ["baseline", "document", "future"])
+def test_p6_start_requires_completed_product_and_explicit_scope(scaffold, missing):
+    path = scaffold / "releases/migration-status.json"
+    state = json.loads(path.read_text())
+    if missing == "baseline":
+        state["phases"]["P5.5"] = "in_progress"
+    elif missing == "document":
+        (scaffold / "docs/P6多局调度与性能实施记录.md").unlink()
+    else:
+        state["subphases"]["P6-D"] = "completed"
+    path.write_text(json.dumps(state))
+    assert any("P6 baseline" in error for error in check(scaffold))
+
+
+@pytest.mark.parametrize("kind", ["missing", "stale", "capacity"])
+def test_p6a_completion_requires_measured_scope(scaffold, kind):
+    path = scaffold / "releases/p6a-baseline.json"
+    if kind == "missing":
+        path.unlink()
+    else:
+        data = json.loads(path.read_text())
+        data["serverSourceSha256" if kind == "stale" else "capacityMeasured"] = (
+            "changed" if kind == "stale" else True
+        )
+        path.write_text(json.dumps(data))
+    assert any("P6-A completion lacks" in error for error in check(scaffold))

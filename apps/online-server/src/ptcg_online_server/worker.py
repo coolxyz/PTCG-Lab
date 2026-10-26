@@ -8,11 +8,13 @@ import sys
 from threading import Lock
 from ptcg_engine_provider.values import canonical
 from .errors import ServiceError
+from .metrics import Metrics
 
 
 class RuleWorker:
-    def __init__(self, settings):
+    def __init__(self, settings, *, metrics=None):
         self.settings = settings
+        self.metrics = metrics if metrics is not None else Metrics()
         self.available = False
         self.lock = Lock()
 
@@ -35,7 +37,14 @@ class RuleWorker:
         return self.available
 
     def call(self, operation, **payload):
+        if operation not in {"probe", "validate", "initialize", "project", "command"}:
+            raise ValueError("INVALID_WORKER_OPERATION")
+        with self.metrics.time("worker." + operation):
+            return self._call(operation, **payload)
+
+    def _call(self, operation, **payload):
         if not self.lock.acquire(blocking=False):
+            self.metrics.observe("worker.rejected")
             raise ServiceError("CAPACITY_EXCEEDED", 503, retryable=True)
         try:
             request = {
@@ -65,7 +74,13 @@ class RuleWorker:
             )
             if result.returncode or len(result.stdout) > 8 * 1024 * 1024:
                 raise ValueError("WORKER_FAILURE")
-            return json.loads(result.stdout)
+            value = json.loads(result.stdout)
+            timings = value.pop("_timings", {})
+            for name in ("rule.load", "rule.restore", "rule.compute"):
+                seconds = timings.get(name)
+                if type(seconds) in (int, float) and 0 <= seconds <= 30:
+                    self.metrics.observe(name, seconds)
+            return value
         except (OSError, ValueError, subprocess.TimeoutExpired):
             self.available = False
             raise ServiceError(

@@ -37,9 +37,10 @@ class Sessions:
         access_expiry = min(
             now + timedelta(seconds=self.settings.access_seconds), session["expires_at"]
         )
-        access, refresh = "atk_" + secrets.token_urlsafe(
-            32
-        ), "rtk_" + secrets.token_urlsafe(32)
+        access, refresh = (
+            "atk_" + secrets.token_urlsafe(32),
+            "rtk_" + secrets.token_urlsafe(32),
+        )
         db.execute(
             "DELETE FROM ptcg_v2.access_tokens WHERE session_id=%s", (session["id"],)
         )

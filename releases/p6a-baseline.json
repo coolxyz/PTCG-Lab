@@ -1,0 +1,123 @@
+{
+  "schema": 1,
+  "stage": "P6-A",
+  "status": "passed",
+  "tests": 120,
+  "serverSourceSha256": "ee9e40c64eacb535ad5e4dc874e51bbeeb10a9ba937def79e7f1d079db08ac02",
+  "baselineCommit": "b792e37",
+  "environment": {
+    "platform": "Darwin",
+    "architecture": "arm64",
+    "python": "3.14.8",
+    "database": "isolated PostgreSQL 17 container, 1 CPU / 512 MiB",
+    "apiQuota": "host process; not capped as a complete deployment"
+  },
+  "databaseBudget": {
+    "connections": 4,
+    "waiters": 16,
+    "waitSeconds": 1
+  },
+  "workload": {
+    "kind": "synthetic service/SQL; no HTTP/WSS timing",
+    "samplesPerMode": 3,
+    "matchesPerSample": 5,
+    "commandsPerMatch": 4,
+    "idlePollsPerMatch": 20,
+    "duplicateRetriesPerMatch": 4
+  },
+  "modes": {
+    "newConnection": {
+      "samples": [
+        {
+          "seconds": 3.6885178750380874,
+          "connections": 300,
+          "transactions": 300,
+          "explicitSql": 3040,
+          "idleSqlPer20Polls": 180
+        },
+        {
+          "seconds": 3.8111742082983255,
+          "connections": 300,
+          "transactions": 300,
+          "explicitSql": 3040,
+          "idleSqlPer20Polls": 180
+        },
+        {
+          "seconds": 3.774973291903734,
+          "connections": 300,
+          "transactions": 300,
+          "explicitSql": 3040,
+          "idleSqlPer20Polls": 180
+        }
+      ],
+      "medianSeconds": 3.774973291903734,
+      "commandWallSeconds": {
+        "count": 60,
+        "p50": 0.03451718692667782,
+        "p95": 0.041976249776780605,
+        "max": 0.04394329199567437
+      }
+    },
+    "pool": {
+      "samples": [
+        {
+          "seconds": 1.035573957953602,
+          "connections": 1,
+          "transactions": 300,
+          "explicitSql": 3040,
+          "idleSqlPer20Polls": 180
+        },
+        {
+          "seconds": 0.9888913328759372,
+          "connections": 1,
+          "transactions": 300,
+          "explicitSql": 3040,
+          "idleSqlPer20Polls": 180
+        },
+        {
+          "seconds": 1.0034685842692852,
+          "connections": 1,
+          "transactions": 300,
+          "explicitSql": 3040,
+          "idleSqlPer20Polls": 180
+        }
+      ],
+      "medianSeconds": 1.0034685842692852,
+      "commandWallSeconds": {
+        "count": 60,
+        "p50": 0.012139083351939917,
+        "p95": 0.013843500055372715,
+        "max": 0.01598900044336915
+      }
+    }
+  },
+  "coldRuleMetrics": {
+    "rule.load": {
+      "count": 18,
+      "seconds": 10.842403705697507,
+      "maxSeconds": 0.6224272497929633
+    },
+    "rule.restore": {
+      "count": 15,
+      "seconds": 0.5013511241413653,
+      "maxSeconds": 0.03766820812597871
+    },
+    "rule.compute": {
+      "count": 6,
+      "seconds": 0.03264424903318286,
+      "maxSeconds": 0.022295167203992605
+    },
+    "worker.command": {
+      "count": 5,
+      "seconds": 3.764509125147015,
+      "maxSeconds": 0.75501479068771
+    },
+    "worker.project": {
+      "count": 10,
+      "seconds": 7.5238714995794,
+      "maxSeconds": 0.7761725839227438
+    }
+  },
+  "capacityMeasured": false,
+  "productionRoutingChanged": false
+}

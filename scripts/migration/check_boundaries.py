@@ -42,7 +42,7 @@ def check(root=ROOT):
             ("P5.5-C" if project["distribution"] == "@ptcg/desktop-web" else "P3-B")
             if gui
             else (
-                "P4-D"
+                "P6-A"
                 if online
                 else (
                     "P5-A"
@@ -236,7 +236,7 @@ def check(root=ROOT):
                 errors.append(name + ": metadata/license not exported")
     status = json.loads((root / "releases/migration-status.json").read_text())
     if (
-        status.get("currentPhase") not in {"P5", "P5.5"}
+        status.get("currentPhase") not in {"P5", "P5.5", "P6"}
         or status.get("productionRoutingChanged") is not False
     ):
         errors.append("migration phase/routing marker drift")
@@ -297,7 +297,7 @@ def check(root=ROOT):
         status["phases"].get("P5") == "completed" and not p5_accepted
     ):
         errors.append("P5 implementation misrepresented as complete")
-    if status.get("currentPhase") == "P5.5" and (
+    if status.get("currentPhase") in {"P5.5", "P6"} and (
         status["phases"].get("P5") != "completed"
         or not p5_accepted
         or status["phases"].get("P5.5") not in {"in_progress", "completed"}
@@ -352,7 +352,38 @@ def check(root=ROOT):
             ).read_bytes()
         ):
             errors.append("native client/server envelope schema drift")
-    for phase in range(6, 9):
+    if status.get("currentPhase") == "P6" and (
+        status["phases"].get("P5.5") != "completed"
+        or status["phases"].get("P6") != "in_progress"
+        or status.get("subphases", {}).get("P6-A") not in {"in_progress", "completed"}
+        or any(
+            status.get("subphases", {}).get(p) != "planned"
+            for p in ("P6-B", "P6-C", "P6-D", "P6-E")
+        )
+        or status.get("p6ProgressDocument") != "docs/P6多局调度与性能实施记录.md"
+        or not (root / "docs/P6多局调度与性能实施记录.md").is_file()
+    ):
+        errors.append("P6 baseline or bounded implementation scope missing")
+    if status.get("subphases", {}).get("P6-A") == "completed":
+        try:
+            baseline = json.loads((root / "releases/p6a-baseline.json").read_text())
+            service = json.loads((root / "releases/p4d-acceptance.json").read_text())
+            p6a_valid = (
+                baseline.get("stage") == "P6-A"
+                and baseline.get("status") == "passed"
+                and baseline.get("serverSourceSha256")
+                == service.get("serverSourceSha256")
+                and baseline.get("capacityMeasured") is False
+                and baseline.get("productionRoutingChanged") is False
+                and baseline.get("workload", {}).get("samplesPerMode") == 3
+                and set(baseline.get("modes", {})) == {"newConnection", "pool"}
+                and status.get("p6aAcceptanceDocument") == "releases/p6a-baseline.json"
+            )
+        except (OSError, ValueError, TypeError, AttributeError):
+            p6a_valid = False
+        if not p6a_valid:
+            errors.append("P6-A completion lacks matching measured baseline")
+    for phase in range(7, 9):
         if status["phases"].get("P" + str(phase)) != "planned":
             errors.append("future implementation misrepresented as complete")
     for name in ["docs/产品化重构设计.md", "docs/产品化重构分阶段实施.md"]:

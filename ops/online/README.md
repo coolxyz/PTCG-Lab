@@ -47,3 +47,7 @@ TLS 网关需同时代理 HTTP 和 `/api/online/v2/stream` WebSocket，保留配
 实际镜像构建/运行状态见 [P4 验收记录](../../docs/P4纯API服务实施记录.md)，配置文件存在不代表已经完成 Docker 或外部部署验收。
 
 P4-C 必须显式应用新增 003 migration。已升级的数据库不能直接给旧 p4a/p4b 镜像使用；回退需升级前备份或专用新库。详细证据与范围见 [P4-C 验收](../../docs/P4C对局提交与私有推送验收.md)。P4-D 沿用 001—003，不新增 migration；版本为 0.4.0.dev4，测试故障工厂不进入 wheel 或镜像。结果见 [P4-D 验收](../../docs/P4D完整对局与故障恢复验收.md)。本次未启动长期 Compose 部署。
+
+## P6-A 连接池开关
+
+新建部署示例的镜像标签为 `ptcg-lab-online-api:p6a`。本次没有自动更新任何正在运行的服务。Compose 中 `PTCG_V2_DB_POOL_ENABLED/SIZE/WAITERS/TIMEOUT` 分别映射服务端 `PTCG_ONLINE_V2_DB_POOL_*`，默认 `1/4/16/1`。关闭 ENABLED 仅关闭复用，仍限制并发连接与等待者；恢复旧行为不等于取消鉴权或原子持久提交。重新启动本次部署才应用新值。范围和基线见 [P6 记录](../../docs/P6多局调度与性能实施记录.md)，不能据这些默认值推断可支持对局数。

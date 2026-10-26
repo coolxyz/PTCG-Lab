@@ -16,16 +16,19 @@ from ptcg_core.events import public_effects
 from ptcg_core.results import explain
 from ptcg_engine_provider.bundle import DirectoryEngineProvider
 from ptcg_engine_provider.values import canonical
+from .metrics import Metrics
 from .public_events import action_events, coin_results, selection_source_ref
 
 MAX_RESULT = 8 * 1024 * 1024
 
 
-def execute(request):
-    bundle = DirectoryEngineProvider(request["directory"], request["pin"]).load()
-    if execution_identity(bundle) != request["release"]:
-        raise ValueError("UNAPPROVED_RULE")
-    factory = CoreFactory(bundle)
+def execute(request, metrics=None):
+    metrics = metrics if metrics is not None else Metrics()
+    with metrics.time("rule.load"):
+        bundle = DirectoryEngineProvider(request["directory"], request["pin"]).load()
+        if execution_identity(bundle) != request["release"]:
+            raise ValueError("UNAPPROVED_RULE")
+        factory = CoreFactory(bundle)
     as_of = bundle.catalog.document.value["asOf"]
     if request["operation"] == "probe":
         return {"release": factory.rule_release_id, "asOf": as_of}
@@ -44,14 +47,16 @@ def execute(request):
             "asOf": as_of,
         }
     if request["operation"] in ("project", "command"):
-        match = factory.restore_match(request["recovery"])
+        with metrics.time("rule.restore"):
+            match = factory.restore_match(request["recovery"])
         before = {seat: match.project_view(seat) for seat in ("PLAYER1", "PLAYER2")}
         selection_source = None
         if request["operation"] == "command":
             selection_source = selection_source_ref(
                 match._adapter, before[request["seat"]]
             )
-            match.apply_command(request["seat"], request["command"])
+            with metrics.time("rule.compute"):
+                match.apply_command(request["seat"], request["command"])
         # Internal adapter diagnostics are reduced to exact public coin outcomes;
         # no arbitrary logs, private choices or recovery data enter these events.
         events = (
@@ -84,9 +89,10 @@ def execute(request):
         }
     if request["operation"] != "initialize" or request["as_of"] != as_of:
         raise ValueError("INVALID_WORKER_OPERATION")
-    match = factory.create_match(
-        request["deck1"], request["deck2"], seed=request["seed"], as_of=as_of
-    )
+    with metrics.time("rule.compute"):
+        match = factory.create_match(
+            request["deck1"], request["deck2"], seed=request["seed"], as_of=as_of
+        )
     return {"recovery": match.export_recovery_record()}
 
 
@@ -108,7 +114,12 @@ def main():
             Thread(target=watch_parent, args=(request["parent"],), daemon=True).start()
         # Rule logging/prints must never corrupt the private JSON transport.
         with redirect_stdout(sys.stderr):
-            result = execute(request)
+            metrics = Metrics()
+            result = execute(request, metrics)
+            result["_timings"] = {
+                name: row["seconds"]
+                for name, row in metrics.snapshot()["metrics"].items()
+            }
         encoded = canonical(result)
         if len(encoded) > MAX_RESULT:
             raise ValueError("RESULT_TOO_LARGE")

@@ -119,3 +119,63 @@ def test_two_real_http_clients_initialize_same_job_after_api_restart(real, tmp_p
         assert "seed" not in json.dumps(result) and "stateDigest" not in json.dumps(
             result
         )
+
+
+def test_real_worker_metrics_separate_restore_and_compute_without_private_data(real):
+    from ptcg_protocol.projection import snapshot, core_command
+    from tests.online_v2.test_real_matches import choose
+
+    settings, inputs = real
+    worker = RuleWorker(settings)
+    assert worker.probe()
+    as_of = worker.validate(inputs["deck1"])["asOf"]
+    job = {**inputs, "rule_release_id": inputs["release"], "as_of": as_of, "seed": 1341}
+    record = worker.initialize(job)
+    for step in range(5):
+        candidate = worker.project(record)
+        seat, own = next(
+            (seat, view)
+            for seat, view in candidate["views"].items()
+            if view.get("decision")
+        )
+        view = snapshot(
+            own,
+            match_id="a" * 32,
+            rule_release_id=inputs["release"],
+            viewer_seat=seat,
+            match_seq=step,
+            controller_epoch=1,
+            stream_cursor="b" * 32,
+        )
+        request = core_command(
+            choose(view, f"metric-step-{step}"),
+            trusted_view=view,
+            authenticated_seat=seat,
+        )
+        result = worker.command(record, seat, request)
+        record = result["recovery"]
+        restored = worker.project(record)
+        assert restored["views"] == result["views"]
+        assert "_timings" not in result and "_timings" not in record
+    metrics = worker.metrics.snapshot()
+    assert metrics["metrics"]["worker.command"]["count"] == 5
+    assert metrics["metrics"]["rule.restore"]["count"] == 15
+    assert metrics["metrics"]["rule.compute"]["count"] == 6
+    wire = json.dumps(metrics)
+    assert "printingId" not in wire and "seed" not in wire
+    output = os.environ.get("PTCG_V2_REPORT_DIRECTORY")
+    if output:
+        path = Path(output)
+        path.mkdir(parents=True, exist_ok=True)
+        (path / "p6a-rule-timings.json").write_text(
+            json.dumps(
+                {
+                    "workload": "approved-rule-cold-restore-v1",
+                    "commands": 5,
+                    "capacityMeasured": False,
+                    "metrics": metrics,
+                },
+                indent=2,
+            )
+            + "\n"
+        )

@@ -38,3 +38,5 @@ Python 依赖固定在 `apps/api/requirements.lock`，JavaScript 依赖固定在
 当前前端锁文件涉及 MIT、ISC、Apache-2.0、BSD-3-Clause 和 CC-BY-4.0 等许可；其中 React 为 MIT、lucide-react 为 ISC、构建依赖 caniuse-lite 为 CC-BY-4.0。发布构建产物时应以实际包含的组件为准保留所需版权、许可和署名，不能用根目录 MIT 代替全部依赖声明。
 
 PTCG Lab 是项目名称，不代表官方背书，也不表示已完成商标、域名或软件商店名称核验。本说明记录技术核查与授权边界，不构成完整法律审查。
+
+P6-A API 运行依赖新增 `psycopg-pool==3.2.8`，安装 wheel 元数据声明 `LGPL-3.0-only`。该包与现有 Psycopg 分开固定版本，未复制或改写其源码；独立 API 镜像保留安装包内的版权/许可证。源码与镜像依赖清单见 `apps/online-server/requirements.lock`，正式发行仍需汇总实际构建依赖声明。

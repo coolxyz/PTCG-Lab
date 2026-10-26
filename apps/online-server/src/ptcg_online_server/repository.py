@@ -1,11 +1,21 @@
 """PostgreSQL transactions; no implicit schema installation or legacy DB adapter."""
 
-from contextlib import contextmanager
+from contextlib import contextmanager, ExitStack
 from hashlib import sha256
 from importlib.resources import files
+import logging
 
 import psycopg
 from psycopg.rows import dict_row
+from psycopg_pool import (
+    ConnectionPool,
+    NullConnectionPool,
+    PoolClosed,
+    PoolTimeout,
+    TooManyRequests,
+)
+
+from .metrics import Metrics
 
 from .errors import ServiceError
 
@@ -30,22 +40,113 @@ def migrations():
     ]
 
 
+class PoolLogFilter(logging.Filter):
+    def filter(self, record):
+        # Driver/pool exceptions can contain server diagnostics. Aggregate metrics
+        # retain failure counts; ordinary logs must not expose DSNs or SQL values.
+        record.msg, record.args = "database_driver_event", ()
+        record.exc_info = record.exc_text = record.stack_info = None
+        return True
+
+
 class Repository:
     def __init__(self, settings):
         self.settings = settings
+        self.metrics = Metrics()
+        self.pool = None
+        self.closed = False
+        metrics = self.metrics
+
+        class ObservedConnection(psycopg.Connection):
+            @classmethod
+            def connect(cls, *args, **kwargs):
+                with metrics.time("db.connect"):
+                    return super().connect(*args, **kwargs)
+
+            def execute(self, *args, **kwargs):
+                with metrics.time("db.sql"):
+                    return super().execute(*args, **kwargs)
+
+        self.connection_class = ObservedConnection
+        self.connection_kwargs = {
+            "row_factory": dict_row,
+            "connect_timeout": 3,
+            "application_name": "ptcg-online-v2",
+            "options": "-c statement_timeout=5000 -c lock_timeout=2000 -c idle_in_transaction_session_timeout=5000",
+        }
+
+    def open(self):
+        """Explicit API/benchmark lifecycle; construction performs no DB I/O."""
+        if self.closed:
+            raise ServiceError("INTERNAL_ERROR", 503, retryable=True)
+        if self.pool is not None:
+            return
+        for name in ("psycopg", "psycopg.pool"):
+            logger = logging.getLogger(name)
+            if not any(isinstance(f, PoolLogFilter) for f in logger.filters):
+                logger.addFilter(PoolLogFilter())
+        factory = (
+            ConnectionPool if self.settings.db_pool_enabled else NullConnectionPool
+        )
+        self.pool = factory(
+            self.settings.database_url,
+            connection_class=self.connection_class,
+            kwargs=self.connection_kwargs,
+            min_size=0,
+            max_size=self.settings.db_pool_size,
+            max_waiting=self.settings.db_pool_waiters,
+            timeout=self.settings.db_pool_timeout,
+            max_idle=30,
+            reconnect_timeout=5,
+            num_workers=1,
+            name="ptcg-api",
+            open=False,
+        )
+        self.pool.open()
+
+    def close(self):
+        self.closed = True
+        if self.pool is not None:
+            self.pool.close()
+
+    def __enter__(self):
+        self.open()
+        return self
+
+    def __exit__(self, *_):
+        self.close()
+
+    def diagnostics(self):
+        # Fixed field names only. No connection string, query text or identities.
+        return {
+            **self.metrics.snapshot(),
+            "pool": self.pool.get_stats() if self.pool else {},
+        }
 
     @contextmanager
     def db(self):
+        if self.closed:
+            raise ServiceError("INTERNAL_ERROR", 503, retryable=True)
         try:
-            with psycopg.connect(
-                self.settings.database_url,
-                row_factory=dict_row,
-                connect_timeout=3,
-                application_name="ptcg-online-v2",
-                options="-c statement_timeout=5000 -c lock_timeout=2000 -c idle_in_transaction_session_timeout=5000",
-            ) as db:
-                yield db
-        except psycopg.Error:
+            with ExitStack() as stack:
+                with self.metrics.time("db.acquire"):
+                    db = stack.enter_context(
+                        self.pool.connection()
+                        if self.pool is not None
+                        else self.connection_class.connect(
+                            self.settings.database_url, **self.connection_kwargs
+                        )
+                    )
+                with self.metrics.time("db.transaction"):
+                    # Commit/rollback before returning the connection to the pool.
+                    # Rule computation and queue waits remain outside this scope.
+                    with db.transaction():
+                        yield db
+        except (PoolTimeout, TooManyRequests):
+            self.metrics.observe("db.rejected")
+            raise ServiceError("CAPACITY_EXCEEDED", 503, retryable=True) from None
+        except (psycopg.Error, PoolClosed):
+            self.metrics.observe("db.error")
             raise ServiceError("INTERNAL_ERROR", 503, retryable=True) from None
 
     def check_schema(self, db):

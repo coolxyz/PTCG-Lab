@@ -165,7 +165,7 @@ def create_app(settings=None, *, worker=None, background=True):
     settings = settings or Settings.from_env()
     repo = Repository(settings)
     sessions = Sessions(repo)
-    worker = worker or RuleWorker(settings)
+    worker = worker or RuleWorker(settings, metrics=repo.metrics)
     lobby = Lobby(repo, worker)
     initializer = Initializer(repo, worker)
     matches = Matches(repo, worker)
@@ -176,6 +176,7 @@ def create_app(settings=None, *, worker=None, background=True):
         app.state.rules = await run_in_threadpool(RuleStatus, settings)
         if app.state.rules.failure is None:
             await run_in_threadpool(worker.probe)
+        await run_in_threadpool(repo.open)
         stop = asyncio.Event()
 
         async def initialize_pending():
@@ -200,10 +201,14 @@ def create_app(settings=None, *, worker=None, background=True):
             yield
         finally:
             stop.set()
-            if task:
-                await task
+            try:
+                if task:
+                    await task
+            finally:
+                await run_in_threadpool(repo.close)
 
     app = FastAPI(docs_url=None, redoc_url=None, openapi_url=None, lifespan=lifespan)
+    app.state.repository = repo
     app.add_middleware(Boundary, settings=settings, repository=repo)
 
     @app.exception_handler(ServiceError)

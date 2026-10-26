@@ -1,6 +1,6 @@
 {
   "schema": 1,
-  "currentPhase": "P5.5",
+  "currentPhase": "P6",
   "productionRoutingChanged": false,
   "phases": {
     "P0": "documented",
@@ -10,7 +10,7 @@
     "P4": "completed",
     "P5": "completed",
     "P5.5": "completed",
-    "P6": "planned",
+    "P6": "in_progress",
     "P7": "planned",
     "P8": "planned"
   },
@@ -34,7 +34,12 @@
     "P5.5-A": "completed",
     "P5.5-B": "completed",
     "P5.5-C": "completed",
-    "P5.5-D": "completed"
+    "P5.5-D": "completed",
+    "P6-A": "completed",
+    "P6-B": "planned",
+    "P6-C": "planned",
+    "P6-D": "planned",
+    "P6-E": "planned"
   },
   "p1BaselineCommit": "83e3fb2",
   "progressDocument": "docs/P2共享协议与规则核心实施记录.md",
@@ -76,5 +81,8 @@
   "p55FeedbackFixDocument": "docs/P5.5对局验收问题修复.md",
   "p55ImplementationCommit": "0acba12",
   "p55UserAcceptanceDocument": "releases/p55-user-acceptance.json",
-  "p55CompletionDocument": "docs/P5.5产品整合完成记录.md"
+  "p55CompletionDocument": "docs/P5.5产品整合完成记录.md",
+  "p6BaselineCommit": "b792e37",
+  "p6ProgressDocument": "docs/P6多局调度与性能实施记录.md",
+  "p6aAcceptanceDocument": "releases/p6a-baseline.json"
 }
