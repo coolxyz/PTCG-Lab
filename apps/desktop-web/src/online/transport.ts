@@ -17,6 +17,20 @@ export interface OnlineAPI {
   ): Promise<{ cards: CardInfo[]; missing?: boolean }>;
   close(): Promise<void>;
 }
+export async function authorizeProduct(code: string): Promise<void> {
+  const r = await fetch("/authorize", {
+    method: "POST",
+    credentials: "same-origin",
+    redirect: "error",
+    cache: "no-store",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ code: code.trim() }),
+  });
+  if (!r.ok)
+    throw new OnlineError(
+      (await r.json()).error?.code || "LOCAL_AUTH_REQUIRED",
+    );
+}
 export async function connect(windowId: string): Promise<OnlineAPI> {
   async function request(
     path: string,

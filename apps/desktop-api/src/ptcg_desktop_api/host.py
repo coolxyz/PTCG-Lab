@@ -30,6 +30,18 @@ class Host:
         self.lock = RLock()
         self.image_slots = 0
         self.active = 0
+        self.product_mode = False
+        self.codes = {}
+
+    def activation_code(self):
+        """Native terminal only. HTTP can consume a code but cannot mint one."""
+        with self.lock:
+            self._prune()
+            if len(self.codes) >= 8:
+                raise BridgeError("LAUNCH_LIMIT", 429)
+            code = secrets.token_hex(16)
+            self.codes[code] = time.monotonic() + 300
+            return code
 
     def launch(self):
         with self.lock:
@@ -52,6 +64,7 @@ class Host:
 
     def _prune(self):
         now = time.monotonic()
+        self.codes = {k: t for k, t in self.codes.items() if t > now}
         for key, (expires, path) in list(self.tickets.items()):
             if expires < now:
                 path.unlink(missing_ok=True)
@@ -72,6 +85,7 @@ class Host:
                 path.unlink(missing_ok=True)
             self.tickets.clear()
             self.sessions.clear()
+            self.codes.clear()
         self.owner.close()
 
     def base(self, scope):
@@ -176,6 +190,38 @@ class Host:
                     max_age=8 * 3600,
                     path="/",
                 )
+            elif (
+                path == "/authorize" and scope["method"] == "POST" and self.product_mode
+            ):
+                if (
+                    headers.get(b"origin", b"").decode() != self.origin
+                    or headers.get(b"sec-fetch-site", b"same-origin") != b"same-origin"
+                    or headers.get(b"content-type") != b"application/json"
+                ):
+                    raise BridgeError("LOCAL_AUTH_REQUIRED", 403)
+                body = await asyncio.wait_for(self.api.read(receive), 5)
+                if set(body) != {"code"} or not isinstance(body["code"], str):
+                    raise BridgeError("INVALID_REQUEST")
+                with self.lock:
+                    self._prune()
+                    if len(self.sessions) >= 8:
+                        raise BridgeError("LOCAL_BUSY", 503)
+                    if self.codes.pop(body["code"], None) is None:
+                        raise BridgeError("LAUNCH_EXPIRED", 403)
+                    key = secrets.token_urlsafe(32)
+                    self.sessions[key] = {
+                        "expires": time.monotonic() + 8 * 3600,
+                        "windows": {},
+                    }
+                reply = response({"authorized": True})
+                reply.set_cookie(
+                    "ptcg-local",
+                    key,
+                    httponly=True,
+                    samesite="strict",
+                    max_age=8 * 3600,
+                    path="/",
+                )
             elif path == "/session" and scope["method"] == "POST":
                 if (
                     headers.get(b"origin", b"").decode() != self.origin
@@ -216,7 +262,11 @@ class Host:
                 ):
                     raise BridgeError("INVALID_REQUEST")
                 reply = response(
-                    self.resources.catalog(body["catalogVersion"], body["assetVersion"])
+                    await run_in_threadpool(
+                        self.resources.catalog,
+                        body["catalogVersion"],
+                        body["assetVersion"],
+                    )
                 )
             elif scope["method"] == "GET":
                 if headers.get(b"sec-fetch-site", b"none") not in (

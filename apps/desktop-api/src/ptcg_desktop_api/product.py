@@ -17,7 +17,14 @@ class ProductHost:
         self.local_app, self.online = local_app, online
 
     def online_route(self, path):
-        if path in {"/launch", "/session", "/catalog", "/online", "/online/"}:
+        if path in {
+            "/launch",
+            "/authorize",
+            "/session",
+            "/catalog",
+            "/online",
+            "/online/",
+        }:
             return True
         if path.startswith(PREFIX) or path.startswith("/resources/"):
             return True
@@ -97,6 +104,11 @@ def create_product_app(local_app, online):
         finally:
             await run_in_threadpool(online.close)
 
+    product = getattr(local_app.state, "online_product", None)
+    if product is not None:
+        online.owner.product = product
+        online.resources = product.resources(online.resources)
+    online.product_mode = True
     app = Starlette(lifespan=lifespan)
     app.state.local_app = local_app
     app.state.online = online

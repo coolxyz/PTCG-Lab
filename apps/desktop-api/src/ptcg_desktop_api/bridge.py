@@ -59,6 +59,7 @@ class Bridge:
         self.storage, self.factory = Path(storage), client_factory
         self.lock, self.closed = RLock(), False
         self.windows, self.feeds = {}, {}
+        self.product = None
         self.stopped = Event()
         self.reaper = Thread(target=self._reap, daemon=True)
         self.reaper.start()
@@ -121,6 +122,12 @@ class Bridge:
         profile = self.profiles.get(profile_id)
         if profile is None:
             raise BridgeError("UNKNOWN_PROFILE", 404)
+        if action in ("product-decks", "product-freeze", "product-check"):
+            if self.product is None:
+                raise BridgeError("PRODUCT_UNAVAILABLE", 404)
+            # Local SQLite work must not contend with the remote profile owner
+            # during initial status/capabilities loading or a slow remote request.
+            return self.product.call(profile, action, body)
         # Reject rather than enqueue unbounded remote calls on one owner.
         if not profile.lock.acquire(blocking=False):
             raise BridgeError("PROFILE_BUSY", 409)
@@ -134,11 +141,24 @@ class Bridge:
 
     def _dispatch(self, p, token, action, body):
         c = p.client
+        if action in (
+            "product-decks",
+            "product-deck",
+            "product-freeze",
+            "product-check",
+        ):
+            if self.product is None:
+                raise BridgeError("PRODUCT_UNAVAILABLE", 404)
+            return self.product.call(p, action, body)
         if action in ("status", "capabilities"):
             fields(body)
             if action == "capabilities":
                 return c.capabilities()
-            return {**c.status(), "recovery": c.recovery_status()}
+            return {
+                **c.status(),
+                "recovery": c.recovery_status(),
+                **({"productPending": self.product.pending(p)} if self.product else {}),
+            }
         if action == "guest":
             fields(body, optional=("name", "deviceName"))
             return c.create_guest(

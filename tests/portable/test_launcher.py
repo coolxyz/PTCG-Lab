@@ -113,3 +113,38 @@ def test_integrated_launcher_uses_one_process_and_explicit_state(monkeypatch, tm
     assert calls[0][3:5] == ["-m", "apps.api.product"]
     assert calls[0][calls[0].index("--state-dir") + 1] == str(project / "private")
     assert calls[0][-1] == "--no-browser"
+
+
+def test_setup_installs_native_packages_and_builds_complete_product(
+    monkeypatch, tmp_path
+):
+    setup = load("product_setup", "scripts/portable/setup.py")
+    python = tmp_path / ".venv/bin/python"
+    python.parent.mkdir(parents=True)
+    python.touch()
+    monkeypatch.setattr(setup, "ROOT", tmp_path)
+    monkeypatch.setattr(setup.sys, "version_info", (3, 14))
+    monkeypatch.setattr(setup.shutil, "which", lambda tool: tool)
+    calls = []
+    monkeypatch.setattr(
+        setup.subprocess,
+        "run",
+        lambda command, **options: calls.append((command, options)),
+    )
+    setup.main()
+    commands = [command for command, _ in calls]
+    assert any(
+        str(tmp_path / "apps/desktop-api/requirements.lock") in command
+        for command in commands
+    )
+    packages = next(c for c in commands if "--no-deps" in c)
+    assert all(
+        str(tmp_path / p) in packages
+        for p in [
+            "packages/battle-protocol",
+            "packages/engine-provider",
+            "packages/online-client",
+            "apps/desktop-api",
+        ]
+    )
+    assert ["npm", "run", "product:build"] in commands

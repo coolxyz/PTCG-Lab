@@ -7,7 +7,7 @@
       "distribution": "ptcg-desktop-api",
       "module": "ptcg_desktop_api",
       "language": "python",
-      "stage": "P5.5-A",
+      "stage": "P5.5-C",
       "implementationReady": false,
       "allowedInternalImports": [
         "ptcg_online_client"
@@ -35,7 +35,9 @@
         "urllib",
         "uuid",
         "uvicorn",
-        "webbrowser"
+        "webbrowser",
+        "stat",
+        "fcntl"
       ],
       "allowedRuntimeRequirements": [
         "ptcg-online-client==0.5.0.dev3",
@@ -233,7 +235,7 @@
       "distribution": "@ptcg/desktop-web",
       "module": "desktop-web",
       "language": "javascript",
-      "stage": "P5-D",
+      "stage": "P5.5-C",
       "implementationReady": false,
       "allowedInternalImports": [
         "@ptcg/battle-ui",

@@ -13,6 +13,15 @@ test("product navigation retains practice and refreshes saved construction versi
   page.on("pageerror", (e) => errors.push(e.message));
   await page.goto("/#battle");
   await expect(page.getByLabel("AI 策略", { exact: true })).toHaveValue("H2");
+  // Own the second revision fixture; do not depend on another test's database writes.
+  const bootstrap = await (
+    await page.request.post("/api/battle/session", { data: {} })
+  ).json();
+  const seeded = await page.request.post(
+    `/api/battle/presets/${bootstrap.presets[0].id}/revision`,
+    { data: {} },
+  );
+  expect(seeded.ok()).toBe(true);
   const mutations: string[] = [];
   page.on("request", (r) => {
     if (r.method() === "POST" && /\/api\/battle\/matches(?:$|\/)/.test(r.url()))
@@ -24,7 +33,7 @@ test("product navigation retains practice and refreshes saved construction versi
   await expect(page.locator(".save-state")).toHaveText("已保存");
   await page.getByRole("button", { name: "保存卡组版本", exact: true }).click();
   await page
-    .getByRole("button", { name: "使用此版本对战", exact: true })
+    .getByRole("button", { name: "使用此版本人机练习", exact: true })
     .click();
   await expect(
     page.getByLabel("对战卡组版本").locator("option:checked"),
@@ -45,7 +54,7 @@ test("product navigation retains practice and refreshes saved construction versi
   await page.getByRole("button", { name: "前往构筑并保存版本" }).click();
   await page.getByRole("button", { name: "版本记录", exact: true }).click();
   await page
-    .getByRole("button", { name: "使用此版本对战", exact: true })
+    .getByRole("button", { name: "使用此版本人机练习", exact: true })
     .click();
   await expect(page.getByLabel("对战卡组版本")).toHaveValue(revision);
   expect(mutations).toHaveLength(0);

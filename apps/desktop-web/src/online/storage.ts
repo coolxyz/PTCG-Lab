@@ -3,6 +3,7 @@ export interface Remembered {
   roomId?: string;
   matchId?: string;
   revision?: string;
+  localRevisionId?: string;
   rule?: string;
   job?: { operation: string; body: Record<string, unknown> };
 }
@@ -41,3 +42,6 @@ export const onlineStorage: OnlineStorage = {
     sessionStorage.setItem("ptcg-online-" + profile, JSON.stringify(value));
   },
 };
+
+export const preferredRevision = () =>
+  sessionStorage.getItem("ptcg-online-preferred-revision") || "";

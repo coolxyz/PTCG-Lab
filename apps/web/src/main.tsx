@@ -28,6 +28,7 @@ import {
 } from "lucide-react";
 import "./style.css";
 import { PracticeApp } from "./Practice";
+import { OnlineApp } from "@ptcg/desktop-web/online";
 import { Sync } from "./Sync";
 import { CardArtwork, CardDescription, type ChineseDetails } from "./CardArtwork";
 import { CardVariants } from './CardVariants';
@@ -120,7 +121,7 @@ function productPage() {
   const hash = window.location.hash.slice(1);
   if (hash === "practice" || hash === "battle") return "battle";
   if (hash === "build") return "decks";
-  return ["cards", "collection", "decks", "sync"].includes(hash) ? hash : "cards";
+  return ["cards", "collection", "decks", "sync", "online"].includes(hash) ? hash : "cards";
 }
 function App() {
   const [cardPage, setCardPage] = useState(0);
@@ -769,6 +770,7 @@ function App() {
             },
             { id: "decks", icon: Layers, label: "卡组构筑", n: decks.length },
             { id: "battle", icon: Swords, label: "人机练习", n: "AI" },
+            { id: "online", icon: Swords, label: "网络对战", n: "" },
             { id: "sync", icon: ArrowDownToLine, label: "数据与对战更新", n: "" },
           ].map((n) => (
             <button
@@ -821,7 +823,7 @@ function App() {
                   ? "数据与对战更新"
                 : page === "battle"
                   ? "人机练习"
-                  : "卡组构筑"}
+                  : page === "online" ? "网络对战" : "卡组构筑"}
           </span>
           <div>
             <span className="tiny-dot" /> 本地模式 <span className="vertical" />{" "}
@@ -1510,6 +1512,7 @@ function App() {
               </div>
             </>
           )}
+          {page === "online" && <OnlineApp product />}
           <PracticeApp
               active={page === "battle"}
               cards={cards}
@@ -1699,9 +1702,13 @@ function App() {
                     window.location.hash = "battle";
                   }}
                 >
-                  使用此版本对战
+                  使用此版本人机练习
                 </button>
               )}
+              <button onClick={() => {
+                sessionStorage.setItem("ptcg-online-preferred-revision", r.id);
+                setRevisions(null); setPage("online"); window.location.hash = "online";
+              }}>使用此版本网络对战</button>
               <code>{r.hash.slice(0, 20)}…</code>
               <p className="muted">
                 相对当前草稿：{revisionDiff(r.entries, draft?.entries || [])}{" "}

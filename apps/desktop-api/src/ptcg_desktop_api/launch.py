@@ -1,6 +1,7 @@
 """Opt-in local online window. Existing product services are never discovered or stopped."""
 
 import argparse
+from hashlib import sha256
 import json
 from pathlib import Path
 import socket
@@ -13,9 +14,23 @@ from ptcg_online_client.transport import Server
 from .bridge import Bridge, BridgeError
 from .host import Host, create_host_app
 from .resources import Resources
+from .reopen import ReopenServer, reopen
 
 
 def open_window(host, *, no_browser):
+    if host.product_mode:
+        print("PTCG 本地 APP：" + host.origin + "/", flush=True)
+        print(
+            "本机授权码（五分钟内有效，仅使用一次）：" + host.activation_code(),
+            flush=True,
+        )
+        print(
+            "在网络大厅输入此码；同一浏览器关闭重开无需再次输入。终端输入 r 可重新授权。",
+            flush=True,
+        )
+        if not no_browser:
+            webbrowser.open(host.origin + "/#online")
+        return None
     path = host.launch()
     print("Local online window: " + str(path), flush=True)
     print("首次授权 HTML 仅可使用一次，且须在两分钟内打开。", flush=True)
@@ -51,6 +66,11 @@ def main(*, local_factory=None, local_build=None):
     parser.add_argument("--build", type=Path, required=True)
     parser.add_argument("--port", type=int, default=8765 if local_factory else 0)
     parser.add_argument("--no-browser", action="store_true")
+    parser.add_argument(
+        "--reopen",
+        action="store_true",
+        help="Reauthorize an existing product instance through private native IPC",
+    )
     args = parser.parse_args()
     if (
         not local_factory and args.port in (8765, 8770, 8443)
@@ -58,7 +78,18 @@ def main(*, local_factory=None, local_build=None):
         parser.error("Choose an isolated local port (0 selects a free port)")
     if args.config.stat().st_size > 65536:
         parser.error("Configuration exceeds limit")
-    config = json.loads(args.config.read_text())
+    raw_config = args.config.read_bytes()
+    config_hash = sha256(raw_config).hexdigest()
+    if args.reopen:
+        if not local_factory:
+            parser.error("--reopen requires the integrated product host")
+        result = reopen(args.state_dir, config_hash)
+        print("PTCG 本地 APP：" + result["origin"] + "/", flush=True)
+        print("本机授权码（五分钟内有效，仅使用一次）：" + result["code"], flush=True)
+        if not args.no_browser:
+            webbrowser.open(result["origin"] + "/#online")
+        return
+    config = json.loads(raw_config)
     if set(config) - {"servers", "manifests"} or not isinstance(
         config.get("servers"), dict
     ):
@@ -93,14 +124,18 @@ def main(*, local_factory=None, local_build=None):
     origin = f"http://127.0.0.1:{sock.getsockname()[1]}"
     owner = Bridge(profiles, state / "credentials")
     host = Host(owner, origin, args.build, resources, state / "launch")
+    control = None
     try:
         if local_factory:
+            control = ReopenServer(state, host, config_hash)
             from .product import create_product_app
 
             app = create_product_app(local_factory(), host)
         else:
             app = create_host_app(host)
     except BaseException:
+        if control:
+            control.close()
         host.close()
         sock.close()
         raise
@@ -121,7 +156,7 @@ def main(*, local_factory=None, local_build=None):
                 open_window(host, no_browser=args.no_browser)
                 if local_factory:
                     print("Product: " + origin + "/", flush=True)
-                    print("Online: " + origin + "/online", flush=True)
+                    print("Online: " + origin + "/#online", flush=True)
                 if sys.stdin.isatty():
                     console_windows(
                         host, runner, no_browser=args.no_browser, stream=sys.stdin
@@ -136,6 +171,8 @@ def main(*, local_factory=None, local_build=None):
     except KeyboardInterrupt:
         pass
     finally:
+        if control:
+            control.close()
         host.close()
         sock.close()
 

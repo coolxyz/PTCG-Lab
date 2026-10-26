@@ -3,10 +3,13 @@
 from pathlib import Path
 from ptcg_desktop_api.launch import main
 from apps.api.main import create_app
+from apps.api.product_online import ProductOnline
 
 
 def product_factory():
-    return create_app()
+    app = create_app()
+    app.state.online_product = ProductOnline(app.state.store, app.state.card_media, app.state.sync.images)
+    return app
 
 
 if __name__ == "__main__":

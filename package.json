@@ -25,6 +25,7 @@
     "p3:test": "npm test --workspace @ptcg/desktop-web",
     "p3:product:build": "tsc --noEmit -p apps/web && tsc --noEmit -p apps/desktop-web && vite build --config scripts/migration/p3c_product.config.ts",
     "p3:product:test": "playwright test --config scripts/migration/p3c_playwright.config.ts",
-    "p5:build": "tsc --noEmit -p apps/desktop-web && vite build --config scripts/migration/p5c_web.config.ts"
+    "p5:build": "tsc --noEmit -p apps/desktop-web && vite build --config scripts/migration/p5c_web.config.ts",
+    "product:build": "tsc --noEmit -p apps/web && tsc --noEmit -p apps/desktop-web && vite build --config scripts/product/web.config.ts && vite build --config scripts/migration/p5c_web.config.ts --outDir ../../apps/desktop-web/dist"
   }
 }

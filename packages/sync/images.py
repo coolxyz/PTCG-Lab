@@ -31,7 +31,10 @@ class Images:
             with closing(sqlite3.connect(self.database)) as db:
                 row = db.execute("SELECT sha,mime FROM images WHERE commit_id=? AND card_id=?", (commit, card_id)).fetchone()
             if row and (self.directory / row[0]).is_file():
-                return self.directory / row[0], row[1]
+                cached = self.directory / row[0]
+                if cached.stat().st_size <= 8 * 1024 * 1024 and hashlib.sha256(cached.read_bytes()).hexdigest() == row[0]:
+                    return cached, row[1]
+                raise SyncError("IMAGE_HASH_MISMATCH", "缓存卡图校验失败，请重新同步资源")
             path = self.home / "snapshots" / commit / "image-index.json"
             if not path.exists():
                 raise SyncError("IMAGE_SNAPSHOT_MISSING", "该版本图片索引不存在", 404)

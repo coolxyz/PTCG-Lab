@@ -6,6 +6,12 @@ import type {
 import type { CardInfo, Command } from "@ptcg/battle-ui";
 import { OnlineError, type OnlineAPI } from "./transport";
 import type { OnlineStorage, Remembered } from "./storage";
+export type ProductDeck = {
+  id: string;
+  name: string;
+  version: number;
+  revisions: { id: string; number: number; count: number }[];
+};
 export type Room = {
   roomId: string;
   roomVersion: number;
@@ -20,6 +26,11 @@ type Status = {
   identity: { userId: string } | null;
   reauthenticationRequired: boolean;
   pendingMatches: string[];
+  productPending?: {
+    revisionId: string;
+    ruleReleaseId: string;
+    requestId: string;
+  }[];
   recovery: {
     commands: { matchId: string; commandId: string }[];
     controls: { matchId: string }[];
@@ -43,6 +54,8 @@ export const errorText = (error: unknown) => {
       "连接中断，操作结果可能尚未确认。请恢复原请求，勿重复创建。",
     NETWORK_UNAVAILABLE: "远程连接中断，请检查连接并恢复原请求。",
     OUTCOME_UNKNOWN: "服务器尚未确认操作结果，请继续恢复，不能提交新操作。",
+    INVALID_PAYLOAD:
+      "服务器拒绝了所选卡组。请核对下方本地检查及服务器规则版本；当前 API 未返回逐卡拒绝明细，原卡组未被修改。",
     RULE_RELEASE_UNAVAILABLE: "服务器没有所选规则版本。",
     STREAM_UNAVAILABLE: "推送已断开，请重新连接。",
   };
@@ -95,6 +108,8 @@ export class OnlineController {
     speed: 1,
     connected: false,
   };
+  private displayVersion = "";
+  private displayRequest = 0;
   private listeners = new Set<() => void>();
   private timer?: ReturnType<typeof setTimeout>;
   private disposed = false;
@@ -114,6 +129,11 @@ export class OnlineController {
   private patch(s: Partial<State>) {
     this.state = { ...this.state, ...s };
     this.listeners.forEach((f) => f());
+    const version =
+      this.state.replay?.frames[this.state.frame]?.catalogVersion ||
+      this.state.view?.catalogVersion;
+    if (version && version !== this.displayVersion)
+      void this.loadDisplay(version, "unavailable");
   }
   private save(s: Partial<Remembered>) {
     const next = { ...this.state.remembered, ...s };
@@ -239,11 +259,21 @@ export class OnlineController {
         : caps.ruleReleaseIds[0] || "";
     if (rule !== rememberedRule) this.save({ rule, revision: undefined });
     this.patch({ caps, rule, connected: true });
+    await this.loadDisplay(
+      caps.resources.displayCatalogVersion,
+      caps.resources.assetManifestVersion,
+    );
+    if (this.state.remembered.roomId) await this.room();
+    else if (this.state.remembered.matchId)
+      await this.openInner(this.state.remembered.matchId);
+  }
+  private async loadDisplay(catalogVersion: string, assetVersion: string) {
+    const request = ++this.displayRequest;
+    this.displayVersion = catalogVersion;
+    this.patch({ cards: {}, missing: true });
     try {
-      const catalog = await this.api.catalog(
-        caps.resources.displayCatalogVersion,
-        caps.resources.assetManifestVersion,
-      );
+      const catalog = await this.api.catalog(catalogVersion, assetVersion);
+      if (this.disposed || request !== this.displayRequest) return;
       this.patch({
         cards: Object.fromEntries(
           catalog.cards.flatMap((c) => [
@@ -254,11 +284,9 @@ export class OnlineController {
         missing: !!catalog.missing || !catalog.cards.length,
       });
     } catch {
-      this.patch({ missing: true });
+      if (request === this.displayRequest)
+        this.patch({ cards: {}, missing: true });
     }
-    if (this.state.remembered.roomId) await this.room();
-    else if (this.state.remembered.matchId)
-      await this.openInner(this.state.remembered.matchId);
   }
   private async status() {
     const status = await this.call<Status>("status");
@@ -300,32 +328,77 @@ export class OnlineController {
         fresh &&
         error instanceof OnlineError &&
         !error.retryable &&
-        [
-          "MATCH_VERSION_CONFLICT",
-          "INVALID_PAYLOAD",
-          "RULE_RELEASE_UNAVAILABLE",
-        ].includes(error.code)
+        (error.status === 400 ||
+          error.status === 422 ||
+          [
+            "MATCH_VERSION_CONFLICT",
+            "INVALID_PAYLOAD",
+            "REVISION_NOT_FOUND",
+            "REVISION_CORRUPT",
+            "RULE_RELEASE_UNAVAILABLE",
+          ].includes(error.code))
       )
         this.save({ job: undefined });
       throw error;
     }
     // Preserve the original request until both result metadata and clearance are durable.
-    const next: Partial<Remembered> =
-      job.operation === "deck"
-        ? {
-            revision: result.deckRevision,
-            rule: job.body.ruleReleaseId as string,
-          }
-        : job.operation === "leave-room"
-          ? { roomId: undefined, matchId: undefined }
-          : { roomId: result.roomId, matchId: result.matchId || undefined };
+    const next: Partial<Remembered> = ["deck", "product-deck"].includes(
+      job.operation,
+    )
+      ? {
+          revision: result.deckRevision,
+          localRevisionId:
+            job.operation === "product-deck"
+              ? (job.body.revisionId as string)
+              : undefined,
+          rule: job.body.ruleReleaseId as string,
+        }
+      : job.operation === "leave-room"
+        ? { roomId: undefined, matchId: undefined }
+        : { roomId: result.roomId, matchId: result.matchId || undefined };
     this.save({ ...next, job: undefined });
-    if (job.operation !== "deck") {
+    if (["deck", "product-deck"].includes(job.operation))
+      this.patch({ rule: job.body.ruleReleaseId as string });
+    if (job.operation === "product-deck") await this.status();
+    if (!["deck", "product-deck"].includes(job.operation)) {
       this.patch({ room: job.operation === "leave-room" ? null : result });
       if (result.matchId) await this.enterRoomMatch(result);
     }
   }
   retryLobby = () => this.run(() => this.executeJob());
+  recoverProduct = (body: {
+    revisionId: string;
+    ruleReleaseId: string;
+    requestId: string;
+  }) =>
+    this.run(async () => {
+      await this.job("product-deck", body);
+      await this.status();
+    });
+  checkRevision = (revisionId: string) =>
+    this.call<{
+      total: number;
+      issues: {
+        code: string;
+        explanation: string;
+        suggestedFix: string;
+        cardRefs: string[];
+      }[];
+    }>("product-check", { revisionId });
+  productDecks = () => this.call<{ decks: ProductDeck[] }>("product-decks");
+  freezeDeck = (deckId: string, expectedVersion: number) =>
+    this.call("product-freeze", { deckId, expectedVersion });
+  useRevision = (revisionId: string) =>
+    this.run(async () => {
+      if (this.state.remembered.job)
+        throw new OnlineError("PENDING_LOBBY_REQUEST");
+      this.save({ revision: undefined, localRevisionId: undefined });
+      await this.job("product-deck", {
+        revisionId,
+        ruleReleaseId: this.state.rule,
+        requestId: this.id(),
+      });
+    });
   deck = (text: string) =>
     this.run(async () => {
       let entries: unknown;

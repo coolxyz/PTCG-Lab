@@ -1,12 +1,14 @@
 import { useEffect, useState, useSyncExternalStore } from "react";
 import { BattleArena } from "@ptcg/battle-ui";
 import { snapshotView, replayView } from "../presentation";
-import { OnlineController, errorText } from "./controller";
-import { connect } from "./transport";
-import { onlineStorage } from "./storage";
+import { OnlineController, errorText, type ProductDeck } from "./controller";
+import { connect, authorizeProduct } from "./transport";
+import { onlineStorage, preferredRevision } from "./storage";
 import "./online.css";
 
-export function OnlineApp() {
+export function OnlineApp({ product = false }: { product?: boolean }) {
+  const [code, setCode] = useState("");
+  const [attempt, setAttempt] = useState(0);
   const [controller, setController] = useState<OnlineController | null>(null);
   const [error, setError] = useState("");
   useEffect(() => {
@@ -30,25 +32,68 @@ export function OnlineApp() {
       leave();
       window.removeEventListener("pagehide", leave);
     };
-  }, []);
+  }, [attempt]);
   if (!controller)
     return (
       <main className="online-lobby">
         <h1>网络对战</h1>
         <p role={error ? "alert" : "status"}>{error || "正在连接本地后台…"}</p>
-        {error && <p>请使用本地启动器打开窗口。刷新不会创建新的游客身份。</p>}
+        {error &&
+          (product ? (
+            <form
+              onSubmit={async (e) => {
+                e.preventDefault();
+                try {
+                  await authorizeProduct(code);
+                  setCode("");
+                  setError("");
+                  setAttempt((n) => n + 1);
+                } catch (e) {
+                  setError(errorText(e));
+                }
+              }}
+            >
+              <p>
+                首次使用请填入 APP
+                启动终端显示的本机授权码。授权过期时在终端输入 r
+                获取新码；无需打开 HTML 文件。
+              </p>
+              <label>
+                本机授权码
+                <input
+                  aria-label="本机授权码"
+                  type="password"
+                  autoComplete="off"
+                  value={code}
+                  onChange={(e) => setCode(e.target.value)}
+                />
+              </label>
+              <button disabled={!code.trim()}>授权本机浏览器</button>
+            </form>
+          ) : (
+            <p>请使用本地启动器打开窗口。刷新不会创建新的游客身份。</p>
+          ))}
       </main>
     );
-  return <Connected controller={controller} />;
+  return <Connected controller={controller} product={product} />;
 }
-function Connected({ controller: c }: { controller: OnlineController }) {
+function Connected({
+  controller: c,
+  product,
+}: {
+  controller: OnlineController;
+  product: boolean;
+}) {
   const s = useSyncExternalStore(c.subscribe, c.snapshot);
   const [name, setName] = useState("训练家"),
     [deck, setDeck] = useState(""),
     [invite, setInvite] = useState(""),
     [match, setMatch] = useState("");
   const locked =
-    s.busy || !!s.remembered.job || !!s.status?.reauthenticationRequired;
+    s.busy ||
+    !!s.remembered.job ||
+    !!s.status?.reauthenticationRequired ||
+    !!s.status?.productPending?.length;
   if (s.showing && s.view)
     return (
       <>
@@ -134,7 +179,11 @@ function Connected({ controller: c }: { controller: OnlineController }) {
           <h1>网络对战</h1>
           <p>邀请一位朋友，通过本地窗口开始对战。</p>
         </div>
-        <a href="/" target="_blank" rel="noopener noreferrer">
+        <a
+          href={product ? "/#online" : "/"}
+          target="_blank"
+          rel="noopener noreferrer"
+        >
           打开另一个窗口
         </a>
       </header>
@@ -202,29 +251,52 @@ function Connected({ controller: c }: { controller: OnlineController }) {
                 ))}
               </select>
             </label>
-            <label>
-              卡组清单
-              <textarea
-                aria-label="卡组清单"
-                rows={5}
-                value={deck}
-                disabled={locked || !!s.room}
-                onChange={(e) => setDeck(e.target.value)}
-                placeholder={'[{"printingId":"卡牌印刷编号","quantity":4}]'}
+            {product ? (
+              <SharedDeckPicker
+                controller={c}
+                disabled={locked || !!s.room || !s.rule}
               />
-            </label>
-            <p className="online-muted">
-              粘贴 printingId 与 quantity 的 JSON
-              数组，仅提交卡组清单，不上传收藏或图片。
-            </p>
-            <button
-              disabled={locked || !s.rule || !!s.room}
-              onClick={() => void c.deck(deck)}
-            >
-              校验并提交卡组
-            </button>
+            ) : (
+              <>
+                <label>
+                  卡组清单
+                  <textarea
+                    aria-label="卡组清单"
+                    rows={5}
+                    value={deck}
+                    disabled={locked || !!s.room}
+                    onChange={(e) => setDeck(e.target.value)}
+                    placeholder={'[{"printingId":"卡牌印刷编号","quantity":4}]'}
+                  />
+                </label>
+                <p className="online-muted">
+                  粘贴 printingId 与 quantity 的 JSON
+                  数组，仅提交卡组清单，不上传收藏或图片。
+                </p>
+                <button
+                  disabled={locked || !s.rule || !!s.room}
+                  onClick={() => void c.deck(deck)}
+                >
+                  校验并提交卡组
+                </button>
+              </>
+            )}
             {s.remembered.revision && <p role="status">卡组版本已就绪</p>}
           </section>
+          {!s.remembered.job &&
+            s.status?.productPending?.map((p) => (
+              <section key={p.requestId} role="status">
+                <p>
+                  后台保留了一次未确认的卡组提交；即使关闭浏览器或编辑原卡组，也会重试原版本。
+                </p>
+                <button
+                  disabled={s.busy}
+                  onClick={() => void c.recoverProduct(p)}
+                >
+                  恢复原卡组提交
+                </button>
+              </section>
+            ))}
           {s.remembered.job && (
             <section role="status">
               <p>上次大厅操作尚未确认，请重试原请求。</p>
@@ -361,5 +433,170 @@ function Connected({ controller: c }: { controller: OnlineController }) {
         </aside>
       )}
     </main>
+  );
+}
+
+function SharedDeckPicker({
+  controller: c,
+  disabled,
+}: {
+  controller: OnlineController;
+  disabled: boolean;
+}) {
+  const [decks, setDecks] = useState<ProductDeck[]>([]);
+  const [selected, setSelected] = useState("");
+  const [revision, setRevision] = useState("");
+  const [error, setError] = useState("");
+  const [busy, setBusy] = useState(false);
+  const refresh = async () => {
+    setBusy(true);
+    setError("");
+    try {
+      const rows = (await c.productDecks()).decks;
+      setDecks(rows);
+      const preferred = preferredRevision();
+      const chosen = rows.find((d) =>
+        d.revisions.some((r) => r.id === preferred),
+      );
+      if (!selected && chosen) {
+        setSelected(chosen.id);
+        setRevision(preferred);
+      }
+    } catch (e) {
+      setError(errorText(e));
+    } finally {
+      setBusy(false);
+    }
+  };
+  useEffect(() => {
+    void refresh();
+  }, [c]);
+  const [check, setCheck] = useState<Awaited<
+    ReturnType<OnlineController["checkRevision"]>
+  > | null>(null);
+  useEffect(() => {
+    let cancelled = false;
+    setCheck(null);
+    if (revision)
+      void c
+        .checkRevision(revision)
+        .then((value) => {
+          if (!cancelled) setCheck(value);
+        })
+        .catch((e) => {
+          if (!cancelled) setError(errorText(e));
+        });
+    return () => {
+      cancelled = true;
+    };
+  }, [c, revision]);
+  const deck = decks.find((d) => d.id === selected);
+  const activeRevision = c.snapshot().remembered.localRevisionId;
+  const activeDeck = decks.find((d) =>
+    d.revisions.some((r) => r.id === activeRevision),
+  );
+  const activeNumber = activeDeck?.revisions.find(
+    (r) => r.id === activeRevision,
+  )?.number;
+  return (
+    <div>
+      <label>
+        平台已有卡组
+        <select
+          aria-label="平台已有卡组"
+          value={selected}
+          disabled={disabled || busy}
+          onChange={(e) => {
+            setSelected(e.target.value);
+            setRevision("");
+          }}
+        >
+          <option value="">请选择已保存的卡组</option>
+          {decks.map((d) => (
+            <option key={d.id} value={d.id}>
+              {d.name}
+            </option>
+          ))}
+        </select>
+      </label>
+      <label>
+        冻结版本
+        <select
+          aria-label="冻结版本"
+          value={revision}
+          disabled={disabled || busy}
+          onChange={(e) => setRevision(e.target.value)}
+        >
+          <option value="">请选择不可变版本</option>
+          {deck?.revisions.map((r) => (
+            <option key={r.id} value={r.id}>
+              版本 {r.number} · {r.count} 张
+            </option>
+          ))}
+        </select>
+      </label>
+      <button
+        disabled={disabled || busy || !deck}
+        onClick={async () => {
+          if (!deck) return;
+          setBusy(true);
+          setError("");
+          try {
+            await c.freezeDeck(deck.id, deck.version);
+            await refresh();
+          } catch (e) {
+            setError(errorText(e));
+          } finally {
+            setBusy(false);
+          }
+        }}
+      >
+        冻结已保存卡表
+      </button>
+      <button
+        disabled={
+          disabled ||
+          busy ||
+          !revision ||
+          !deck?.revisions.some((r) => r.id === revision)
+        }
+        onClick={() => void c.useRevision(revision)}
+      >
+        校验并使用此版本
+      </button>
+      <button disabled={disabled || busy} onClick={() => void refresh()}>
+        刷新卡组列表
+      </button>
+      <p>
+        与人机练习共用平台卡组。草稿需先在构筑页保存；开局后编辑不会改变已选版本。服务器作最终准入检查。
+      </p>
+      {check && (
+        <div role="status">
+          <p>
+            本地检查：{check.total}{" "}
+            张。服务端规则可能与本机不同，以服务器准入结果为准。
+          </p>
+          <ul>
+            {check.issues.map((issue, i) => (
+              <li key={i}>
+                {issue.explanation}：{issue.cardRefs.join("、")}{" "}
+                {issue.suggestedFix}
+              </li>
+            ))}
+          </ul>
+        </div>
+      )}
+      {activeRevision && c.snapshot().remembered.revision && (
+        <p role="status">
+          当前已提交：
+          {activeDeck
+            ? `${activeDeck.name} · 版本 ${activeNumber}`
+            : "之前提交的冻结版本（本地已删除或未列出）"}
+          。更换选择后需点击“校验并使用此版本”才会替换。
+        </p>
+      )}
+      <a href="/#decks">前往卡组构筑</a>
+      {error && <p role="alert">{error}</p>}
+    </div>
   );
 }

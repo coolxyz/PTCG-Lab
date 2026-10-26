@@ -21,8 +21,14 @@ def main():
     if not python.exists():
         venv.EnvBuilder(with_pip=True).create(target)
     subprocess.run([str(python), '-m', 'pip', 'install', '-r', str(ROOT / 'apps/api/requirements.lock')], check=True, cwd=ROOT)
+    subprocess.run([str(python), '-m', 'pip', 'install', '-r', str(ROOT / 'apps/desktop-api/requirements.lock')], check=True, cwd=ROOT)
+    # Build/install all product-owned native packages together; no editable source dependencies.
+    subprocess.run([str(python), '-m', 'pip', 'install', '--no-deps',
+                    str(ROOT / 'packages/battle-protocol'), str(ROOT / 'packages/engine-provider'),
+                    str(ROOT / 'packages/online-client'), str(ROOT / 'apps/desktop-api')], check=True, cwd=ROOT)
+    subprocess.run([npm, 'ci'], check=True, cwd=ROOT)
     subprocess.run([npm, 'ci'], check=True, cwd=ROOT / 'apps/web')
-    subprocess.run([npm, 'run', 'build'], check=True, cwd=ROOT / 'apps/web')
+    subprocess.run([npm, 'run', 'product:build'], check=True, cwd=ROOT)
     subprocess.run([str(python), '-X', 'utf8', '-c', 'from packages.battle.service import runtime; print("Engine:", runtime().ENGINE_VERSION)'], check=True, cwd=ROOT)
     print('Ready. Run: python scripts/start.py')
 

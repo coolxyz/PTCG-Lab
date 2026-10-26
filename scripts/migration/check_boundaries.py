@@ -39,7 +39,7 @@ def check(root=ROOT):
         desktop = project["distribution"] == "ptcg-desktop-api"
         gui = project["distribution"] in {"@ptcg/battle-ui", "@ptcg/desktop-web"}
         expected_stage = (
-            ("P5-D" if project["distribution"] == "@ptcg/desktop-web" else "P3-B")
+            ("P5.5-C" if project["distribution"] == "@ptcg/desktop-web" else "P3-B")
             if gui
             else (
                 "P4-D"
@@ -48,7 +48,7 @@ def check(root=ROOT):
                     "P5-A"
                     if client
                     else (
-                        "P5.5-A"
+                        "P5.5-C"
                         if desktop
                         else (
                             "P2-D"
@@ -299,7 +299,7 @@ def check(root=ROOT):
         status["phases"].get("P5") != "completed"
         or not p5_accepted
         or status["phases"].get("P5.5") != "in_progress"
-        or status.get("subphases", {}).get("P5.5-A") != "in_progress"
+        or status.get("subphases", {}).get("P5.5-A") not in {"in_progress", "completed"}
     ):
         errors.append("product integration phase lacks accepted P5 baseline")
     for filename in ("session", "lobby", "match"):

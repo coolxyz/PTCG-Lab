@@ -86,7 +86,7 @@ test("search, condition inventory, deck autosave, immutable revision and export"
     revisions[0].entries.reduce((s: number, e: any) => s + e.quantity, 0),
   ).toBe(60);
   await page.getByRole("button", { name: "版本记录", exact: true }).click();
-  await page.getByRole("button", { name: "使用此版本对战", exact: true }).click();
+  await page.getByRole("button", { name: "使用此版本人机练习", exact: true }).click();
   await expect(page.getByLabel("对战卡组版本")).toHaveValue(revisions[0].id);
   expect(errors).toEqual([]);
 });

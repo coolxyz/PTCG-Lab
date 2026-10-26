@@ -33,11 +33,12 @@ def main():
         help="Directory containing the built online.html and assets",
     )
     parser.add_argument("--no-browser", action="store_true")
+    parser.add_argument("--reopen", action="store_true", help="Open the existing integrated APP; never stop an occupied port")
     args = parser.parse_args()
     if not 1 <= args.port <= 65535:
         parser.error("port must be between 1 and 65535")
     if not args.online_config and (
-        args.online_state or args.online_build or args.no_browser
+        args.online_state or args.online_build or args.no_browser or args.reopen
     ):
         parser.error("online options require --online-config")
     if args.online_config:
@@ -98,6 +99,8 @@ def main():
         ]
         if args.no_browser:
             command.append("--no-browser")
+        if args.reopen:
+            command.append("--reopen")
     else:
         print(f"PTCG: http://127.0.0.1:{args.port}/ (Ctrl+C to stop)", flush=True)
         command = [

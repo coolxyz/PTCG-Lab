@@ -31,9 +31,9 @@
     "P5-B": "completed",
     "P5-C": "completed",
     "P5-D": "completed",
-    "P5.5-A": "in_progress",
-    "P5.5-B": "planned",
-    "P5.5-C": "planned",
+    "P5.5-A": "completed",
+    "P5.5-B": "in_progress",
+    "P5.5-C": "in_progress",
     "P5.5-D": "planned"
   },
   "p1BaselineCommit": "83e3fb2",
@@ -69,5 +69,6 @@
   "productIntegrationPlanDocument": "docs/P5.5产品整合实施设计.md",
   "p5dUserAcceptanceDocument": "releases/p5d-user-acceptance.json",
   "p55BaselineCommit": "101b588",
-  "p55ProgressDocument": "docs/P5.5产品整合实施记录.md"
+  "p55ProgressDocument": "docs/P5.5产品整合实施记录.md",
+  "p55ABaselineCommit": "ee13120"
 }

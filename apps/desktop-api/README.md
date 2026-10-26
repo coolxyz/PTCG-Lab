@@ -27,7 +27,7 @@ window_capability = owner.issue_window()
 
 窗口取得 `control` 返回的本机 lease 后才能 `command/resign`；另一个窗口接管会废止旧 lease。`recover` 可核对并恢复原待确认请求，不允许构造新请求。`watch/events/unwatch` 共享后台 WSS，`events` 读取最新缓存，无远程轮询。每 60 秒必须有窗口续期，否则停止无人消费的流；离开页面不等于认输。
 
-ASGI lifespan 会关闭 owner。原生宿主也可调用 `owner.close()`：默认最多等待 20 秒，若仍有后台操作，返回 `SHUTDOWN_PENDING` 并保留相关凭据锁，待操作结束后重试关闭。不要绕过锁再启动另一个 owner。`IMPLEMENTATION_READY=False` 表示整个本地网络产品仍待 P5-D 两台设备完整验收。
+ASGI lifespan 会关闭 owner。原生宿主也可调用 `owner.close()`：默认最多等待 20 秒，若仍有后台操作，返回 `SHUTDOWN_PENDING` 并保留相关凭据锁，待操作结束后重试关闭。不要绕过锁再启动另一个 owner。`IMPLEMENTATION_READY=False` 表示完整产品整合与发布尚未完成；P5 独立窗口验收已由用户确认，P5.5 完整产品仍须单独验收。
 
 ## P5-C 本地网络窗口（0.5.0.dev3）
 
@@ -57,4 +57,9 @@ P5-D 窗口重开修复（`0.5.0.dev5`）：关闭浏览器标签页后，若后
 
 `create_product_app(local_app, online_host)` 在同一监听端口提供产品页面/API、`/online` 页面和原生网络桥接，并统一启动/退出生命周期。旧本地 API 的修改请求增加精确 Origin 校验；无 Origin 的写入不能通过宽松旧路由绕过。在线授权、远端令牌和窗口能力边界沿用原实现。
 
-本仓库通过 `apps/api/product.py` 装配现有产品应用；`scripts/start.py --online-config ... --online-state ... --online-build ...` 只启动一个 HTTP 进程。参见 [实施记录](../../docs/P5.5产品整合实施记录.md)。当前两种页面共用端口，但正式导航、共用卡组选择器和统一资源仍在后续阶段；独立测试包未自动升级。
+本仓库通过 `apps/api/product.py` 装配现有产品应用；`scripts/start.py --online-config ... --online-state ... --online-build ...` 只启动一个 HTTP 进程。参见 [实施记录](../../docs/P5.5产品整合实施记录.md)。统一产品现在通过 `/#online` 进入网络大厅，使用平台已有卡组及冻结版本、卡表和 CardMedia。desktop-api 版本为 `0.5.0.dev7`；独立测试包未自动升级。
+
+
+统一产品首次启动在终端显示五分钟、一次性的本机授权码，浏览器网络大厅输入后换取 HttpOnly 会话。不需要授权 HTML；授权码不写入 URL 或浏览器存储。后台终端 `r` 生成新码；同一浏览器会话有效时直接重开产品地址。也可以使用同一配置和状态目录，在启动命令后追加 `--reopen`，通过私有 Unix socket 请求已有实例重新打开；不会启动第二个 HTTP 服务。Mac/Linux/WSL2 支持该路径，原生 Windows 仍未支持。状态目录应使用较短的本机路径（Unix socket 路径长度受平台限制）。
+
+`bash start.sh --setup --online-config /absolute/online.json --port 18789` 一次安装产品与原生客户端依赖、构建两种前端，再启动一个 APP。`npm run product:build` 可单独构建产品与诊断页面。已有服务不会自动升级或重启。B/C 的剩余验收和迁移备份说明见实施记录。
