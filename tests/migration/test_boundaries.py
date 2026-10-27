@@ -39,12 +39,19 @@ def scaffold(tmp_path):
         "releases/p6c-scheduler.json",
         "releases/p6d-workers.json",
         "releases/p6e-budgets.json",
+        "releases/p7a-isolation.json",
         "docs/P5.5产品整合完成记录.md",
         "docs/P6多局调度与性能实施记录.md",
+        "docs/P7容量与故障验收实施记录.md",
     ]:
         p = tmp_path / name
         p.parent.mkdir(parents=True, exist_ok=True)
         shutil.copyfile(ROOT / name, p)
+    shutil.copytree(
+        ROOT / "benchmarks/online",
+        tmp_path / "benchmarks/online",
+        ignore=shutil.ignore_patterns("__pycache__"),
+    )
     acceptance = ROOT / "releases/p2d-acceptance.json"
     if acceptance.is_file():
         shutil.copyfile(acceptance, tmp_path / "releases/p2d-acceptance.json")
@@ -446,3 +453,49 @@ def test_p6_cannot_complete_with_unfinished_resource_budgets(scaffold):
     value["subphases"]["P6-E"] = "in_progress"
     path.write_text(json.dumps(value))
     assert any("P6 completion lacks" in error for error in check(scaffold))
+
+
+@pytest.mark.parametrize("missing", ["baseline", "document", "commit", "scope"])
+def test_p7_requires_an_accepted_baseline_and_dedicated_scope(scaffold, missing):
+    path = scaffold / "releases/migration-status.json"
+    value = json.loads(path.read_text())
+    if missing == "baseline":
+        value["phases"]["P6"] = "in_progress"
+    elif missing == "document":
+        (scaffold / "docs/P7容量与故障验收实施记录.md").unlink()
+    elif missing == "commit":
+        value["p7BaselineCommit"] = "changed"
+    else:
+        value["subphases"]["P7-A"] = "planned"
+    path.write_text(json.dumps(value))
+    assert any("P7 start lacks" in e for e in check(scaffold))
+
+
+def test_p7_pilot_cannot_close_capacity_acceptance(scaffold):
+    path = scaffold / "releases/migration-status.json"
+    value = json.loads(path.read_text())
+    value["phases"]["P7"] = "completed"
+    path.write_text(json.dumps(value))
+    assert any("future implementation" in e for e in check(scaffold))
+
+
+@pytest.mark.parametrize(
+    "field",
+    [
+        "capacityValidated",
+        "formalMatrixCompleted",
+        "serverSourceSha256",
+        "benchmarkToolsSha256",
+        "runtimeSourceSha256",
+        "pilots",
+        "faults",
+    ],
+)
+def test_p7a_completion_refuses_stale_or_overclaimed_evidence(scaffold, field):
+    path = scaffold / "releases/p7a-isolation.json"
+    value = json.loads(path.read_text())
+    value[field] = (
+        True if field in {"capacityValidated", "formalMatrixCompleted"} else None
+    )
+    path.write_text(json.dumps(value))
+    assert any("P7-A completion lacks" in e for e in check(scaffold))

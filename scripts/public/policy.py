@@ -48,8 +48,10 @@ FILES = (
     "releases/p6c-scheduler.json",
     "releases/p6d-workers.json",
     "releases/p6e-budgets.json",
+    "releases/p7a-isolation.json",
     "releases/source-candidates.json",
     "ops/online/Dockerfile.dockerignore",
+    "benchmarks/online/Dockerfile.dockerignore",
 )
 EXCLUDED = {
     ".git",

@@ -18,6 +18,7 @@ from scripts.migration.p6b_report import valid as p6b_valid
 from scripts.migration.p6c_report import valid as p6c_valid
 from scripts.migration.p6d_report import valid as p6d_valid
 from scripts.migration.p6e_report import valid as p6e_valid
+from scripts.migration.p7a_report import valid as p7a_valid
 
 
 def check(root=ROOT):
@@ -240,7 +241,7 @@ def check(root=ROOT):
                 errors.append(name + ": metadata/license not exported")
     status = json.loads((root / "releases/migration-status.json").read_text())
     if (
-        status.get("currentPhase") not in {"P5", "P5.5", "P6"}
+        status.get("currentPhase") not in {"P5", "P5.5", "P6", "P7"}
         or status.get("productionRoutingChanged") is not False
     ):
         errors.append("migration phase/routing marker drift")
@@ -301,7 +302,7 @@ def check(root=ROOT):
         status["phases"].get("P5") == "completed" and not p5_accepted
     ):
         errors.append("P5 implementation misrepresented as complete")
-    if status.get("currentPhase") in {"P5.5", "P6"} and (
+    if status.get("currentPhase") in {"P5.5", "P6", "P7"} and (
         status["phases"].get("P5") != "completed"
         or not p5_accepted
         or status["phases"].get("P5.5") not in {"in_progress", "completed"}
@@ -356,7 +357,7 @@ def check(root=ROOT):
             ).read_bytes()
         ):
             errors.append("native client/server envelope schema drift")
-    if status.get("currentPhase") == "P6" and (
+    if status.get("currentPhase") in {"P6", "P7"} and (
         status["phases"].get("P5.5") != "completed"
         or status["phases"].get("P6") not in {"in_progress", "completed"}
         or status.get("subphases", {}).get("P6-A") != "completed"
@@ -419,9 +420,36 @@ def check(root=ROOT):
         or not p6e_valid(root)
     ):
         errors.append("P6 completion lacks all bounded implementation stages")
-    for phase in range(7, 9):
-        if status["phases"].get("P" + str(phase)) != "planned":
-            errors.append("future implementation misrepresented as complete")
+    if status.get("currentPhase") == "P7" and (
+        status["phases"].get("P6") != "completed"
+        or status["phases"].get("P7") != "in_progress"
+        or status.get("p7BaselineCommit") != "41fe0f1"
+        or status.get("p7ProgressDocument") != "docs/P7容量与故障验收实施记录.md"
+        or not (root / "docs/P7容量与故障验收实施记录.md").is_file()
+        or status.get("subphases", {}).get("P7-A") not in {"in_progress", "completed"}
+        or not p6e_valid(root)
+    ):
+        errors.append("P7 start lacks accepted P6 baseline or bounded scope")
+    if status.get("subphases", {}).get("P7-A") == "completed" and (
+        not p7a_valid(root)
+        or status.get("p7aAcceptanceDocument") != "releases/p7a-isolation.json"
+    ):
+        errors.append("P7-A completion lacks current isolated pilot evidence")
+    if any(
+        status.get("subphases", {}).get("P7-" + p, "planned") != "planned"
+        for p in "BCD"
+    ):
+        errors.append("P7 formal matrix or soak misrepresented as complete")
+    # A pilot and a tooling milestone cannot close the full capacity matrix.
+    if (
+        status["phases"].get("P7") not in {"planned", "in_progress"}
+        or (
+            status["phases"].get("P7") == "in_progress"
+            and status.get("currentPhase") != "P7"
+        )
+        or status["phases"].get("P8") != "planned"
+    ):
+        errors.append("future implementation misrepresented as complete")
     for name in ["docs/产品化重构设计.md", "docs/产品化重构分阶段实施.md"]:
         text = (root / name).read_text()
         if (

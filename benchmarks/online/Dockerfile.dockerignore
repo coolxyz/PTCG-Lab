@@ -1,0 +1,11 @@
+**
+!benchmarks/
+!benchmarks/online/
+!benchmarks/online/*.py
+!packages/
+!packages/online-client/
+!packages/online-client/src/
+!packages/online-client/src/ptcg_online_client/
+!packages/online-client/src/ptcg_online_client/**
+**/__pycache__/
+**/*.pyc
