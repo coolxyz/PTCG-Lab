@@ -24,7 +24,7 @@
     "terminal",
     "visible-selection"
   ],
-  "ruleReleaseId": "rules-core-v2-716c950da3db3b95b2cda3801681fdda579ddeb3674eba9180a9bd3c2f3b7a1e",
+  "ruleReleaseId": "rules-core-v2-02573a1d785e84ec1361c05029a8ec02e637cb6296d86b8c82873c6a7dc9c4e7",
   "installed": [
     {
       "name": "attrs",
@@ -72,13 +72,11 @@
   "productionRoutingChanged": false,
   "workerSha256": "ce5091c983d0ea7b70eac168529f44bba39b4d9f21b005aa5d198d6b6243a4bf",
   "artifacts": {
-    "ptcg_battle_core-0.2.0.dev1-py3-none-any.whl": "9a25331131de41f86ac74a9cfb91722dcfa95a9c8f7fb78e4f1df5fec2e9e816",
-    "ptcg_engine_provider-0.2.0.dev0-py3-none-any.whl": "5206e146e5ec933b6917d2d4e9e1c9d5e1ff899f2e4cc0a25a0ef7da9edc4af5",
-    "ptcg_battle_protocol-0.2.0.dev1-py3-none-any.whl": "7e0f631f4e86cc59d9c271724bdd7ed7be2e8149120bc723ee21a9fad97f78c4"
+    "ptcg_battle_core-0.2.0.dev1-py3-none-any.whl": "1a3d55bf9e5272c677e10bf77d0076188aa0ca820e9f1c6b2d69c84078d5280e",
+    "ptcg_engine_provider-0.2.0.dev0-py3-none-any.whl": "3f36af2f41e98e2dd7bc79b63c50ee24db621c23f3ec4faa1ffc1f15cfa983f9",
+    "ptcg_battle_protocol-0.2.0.dev1-py3-none-any.whl": "508de0b93192a5a182ba6e48b44ca6e603e830bcfb3e006c8a33d10134d867b0"
   },
   "crossProcessResumeCount": 5,
-  "p2cCommit": "1a7cc47",
-  "privateEvidenceSha256": "7055701e20a66ff6108fd93e3e357329ab3425900e610447cd25dfb08b406fa2",
   "sourceHashes": {
     "packages/battle-core/pyproject.toml": "bcd09e75b6fbd3096a5f7695f0922ff6b8834c889830a0cf22c904986b391efb",
     "packages/battle-core/requirements.lock": "3ae76cada20a1a356e806e73d6bdd42b0d9545405254a728f87d83f002bcbffe",
@@ -125,7 +123,7 @@
     "packages/battle-core/src/ptcg_core/rules/energy_selection.py": "acce99a48916c60f02375c3f32237f8bb1eb66ea1d6e638aeafc7fd70455fc03",
     "packages/battle-core/src/ptcg_core/rules/energy_units.py": "5fa73f3b25a520e3b29ccca70f2a300d9c228d15efb936a3f83dae6f375983c3",
     "packages/battle-core/src/ptcg_core/rules/engine.py": "8d8fe798b8fad09e1917d0a2a6dacb13ea94668368663c08f0d68d8e369ef055",
-    "packages/battle-core/src/ptcg_core/rules/entry_effects.py": "8f3dffcaecd83a80b929bb8c0628c97e5dbeba456cf80a6d73a59bd4f8b97f2f",
+    "packages/battle-core/src/ptcg_core/rules/entry_effects.py": "4e4d95f0a66a9555acc4ad0bd6f0421582ae9295deb4a454235bddbdc8a219b7",
     "packages/battle-core/src/ptcg_core/rules/evolution_effects.py": "9ce7015233750f824940a50cfb82bab693b957dc5b947d758710b2a6631439d2",
     "packages/battle-core/src/ptcg_core/rules/expanded_entry.py": "19947da67abcc52debfa528a8b983184555a18ef46e0b6da32a2bfbd1b08607b",
     "packages/battle-core/src/ptcg_core/rules/expanded_operations.py": "9cfa14e8982f5f575e6176f9336d45d7c278f3c3c6c8e193a9de3ee58c9a216c",
@@ -136,7 +134,7 @@
     "packages/battle-core/src/ptcg_core/rules/field_effects.py": "027c1618895735c6a23c536797592d1f359a2597f5f8d833f449092090758a85",
     "packages/battle-core/src/ptcg_core/rules/field_events.py": "7276f5d59965fdd4a9e2522d07de8222faa6f3bb71a74bd71981d0672fe6588b",
     "packages/battle-core/src/ptcg_core/rules/field_moves.py": "447744234ff148d97589a643d6d63657fc07e35ff5aebc3ac1a91c19405304d1",
-    "packages/battle-core/src/ptcg_core/rules/final_trainers.py": "aac29590de72c058f5c56f61b11eb2feca39f50e7b832b86a66df36a296fd016",
+    "packages/battle-core/src/ptcg_core/rules/final_trainers.py": "481eb15515d66673363ddc5401ed0831d48a643ca20fcc76e449a7d961a29003",
     "packages/battle-core/src/ptcg_core/rules/hand_events.py": "d73cf65c951cb6cb775bb8d313059eaf521b2bd03d340092c63da6ce034e41c0",
     "packages/battle-core/src/ptcg_core/rules/hand_locks.py": "81e80ad0e01aebdae3762ad96d2bb23fc300869efea0e7d8d90cf4395cb1c315",
     "packages/battle-core/src/ptcg_core/rules/healing.py": "7c8f58cfd506d723994a66fc053665859d192540a3ca1d0323f7bba0954de258",
@@ -175,7 +173,7 @@
     "packages/battle-protocol/pyproject.toml": "a91e4296d1a8d152dd9cc08e0cae2384bde458ba9f7f18a43d2b1fa934766f9d",
     "packages/battle-protocol/requirements.lock": "0ed4b062f1ecc638bd87234eb5f0c42e6647cfb85ef3c8f119a86fb69060232c",
     "packages/battle-protocol/src/ptcg_protocol/__init__.py": "fef39dab79856079bb4c0f9943af79ef4c3b655bedaf1d2bd4f0e5cf3a9a874a",
-    "packages/battle-protocol/src/ptcg_protocol/projection.py": "d9b20f0b1d9579d6eed252d57fd9278d22b82fba503232251bf73414111ba7a4",
+    "packages/battle-protocol/src/ptcg_protocol/projection.py": "f2543d991db93d20030718dd3321c70ba7bc8cc138545f80ac0cad3e3cfcf3d1",
     "packages/battle-protocol/src/ptcg_protocol/scaffold.py": "36ae910c73f6cf01cefbc06de33c6336018ebdedcedde035e604aff27d7da770",
     "packages/battle-protocol/src/ptcg_protocol/schema/scaffold.schema.json": "86c693192611569e7dbb5db5b38ac4922dcad3d82a2df8e05a05185a04ae55e1",
     "packages/battle-protocol/src/ptcg_protocol/schema/v2.schema.json": "41eb0dcc9a16714064273ddca6ca1f3cfcafe47a9b922b502e252f7060707115",
@@ -196,39 +194,14 @@
     "tests/core/smoke.py": "673e9f71e40979abf1789370dd32a178386fb0b63c9129d00bf9e1aa7b3080fe",
     "tests/core/test_core_boundaries.py": "637d886f9daa6dffe81b1bdd561b053d86f3d52b692467a70617782ab63a776b",
     "tests/core/test_legacy_freeze.py": "44997a5ffc09656d7e8ef708f142b6e4685428abd272d1f083546682e2c2870b",
-    "tests/protocol/test_projection.py": "2abb209ff2421a1145fea56171172b044a0c6af495d535f47849de879f3a2093",
+    "tests/core/test_rare_candy.py": "2ae15d7f5b92dd961adff3041c1aead8a39bb03f8b85a13dfbd8153c721d3b9d",
+    "tests/protocol/test_projection.py": "6b6406fec86ad46d6dd6b77437990b19cb5613879a39f24bbc03ddb3a510e755",
     "tests/protocol/test_v2.py": "e5cce65c4ace061e8dc59cb8f67712033c980a351b112a7d73389dc489b9ac5b",
     "tests/protocol/types.ts": "15ba506e789ee495c0996ad9fb38ce374dd793661822a3423b8be81847835f0b"
   },
-  "legacyRegressionTests": 169,
+  "revalidatedFor": "main-integration-20261027",
+  "previousEvidenceSha256": "b71f93723e91995daebf47e186cc356020416c0871d8ea7f403280aa6487fa27",
+  "privateEvidenceSha256": "ef0d8f9e0e1654e9b6c64433ee921e5f413e482953a1784a919646bb7b8c8487",
   "coreRuleRegressionTests": 166,
-  "localOnly": true,
-  "publicContractTests": 199,
-  "finalWheelRuntimeEquivalence": {
-    "ptcg_battle_core-0.2.0.dev1-py3-none-any.whl": {
-      "runtimeMembersIdentical": true,
-      "sha256": "045369ac8383f53c2effe7833f048b8975065608d1138f65d5393783ddef8af9",
-      "acceptedWheelSha256": "9a25331131de41f86ac74a9cfb91722dcfa95a9c8f7fb78e4f1df5fec2e9e816"
-    },
-    "ptcg_battle_protocol-0.2.0.dev1-py3-none-any.whl": {
-      "runtimeMembersIdentical": true,
-      "sha256": "4666031d64b5129b285244343546ce3c08a8225dda8f874f43be9cf3b9096bc1",
-      "acceptedWheelSha256": "7e0f631f4e86cc59d9c271724bdd7ed7be2e8149120bc723ee21a9fad97f78c4"
-    },
-    "ptcg_engine_provider-0.2.0.dev0-py3-none-any.whl": {
-      "runtimeMembersIdentical": true,
-      "sha256": "e5304fab13e655e7d775f1b316595405287fd886015e8b0d78d600c7bdbb6f83",
-      "acceptedWheelSha256": "5206e146e5ec933b6917d2d4e9e1c9d5e1ff899f2e4cc0a25a0ef7da9edc4af5"
-    }
-  },
-  "finalBuildArtifactCount": 17,
-  "serviceHealth": {
-    "readOnly": true,
-    "httpStatus": [
-      200,
-      200,
-      200
-    ],
-    "existingProcessesAlive": 3
-  }
+  "localOnly": true
 }

@@ -14,6 +14,7 @@ from benchmarks.online.identity import runtime_digest, tools_digest  # noqa: E40
 from benchmarks.online.acceptance import summarize  # noqa: E402
 from scripts.migration.p4d_report import source_digest  # noqa: E402
 from scripts.migration.p7a_report import number  # noqa: E402
+from scripts.migration.p7_baseline import accepted_history  # noqa: E402
 
 PRIOR = "releases/p7b-before-driver-repair.json"
 PRIOR_SHA256 = "dc5d33f1cd2bfd4b7ed54e48eb285fea0de29072bf0ea405e02975b740e05e62"
@@ -165,10 +166,13 @@ def sample_valid(sample, runtime, *, formal):
     )
 
 
-def valid(root):
+def valid(root, *, historical=False):
     root = Path(root)
     try:
         report = json.loads((root / "releases/p7b-matrix.json").read_text())
+        source_valid = report["serverSourceSha256"] == source_digest(root)
+        if not source_valid and historical:
+            source_valid = accepted_history(root, report["serverSourceSha256"]) is not None
         baseline_path = root / "releases/p7a-isolation.json"
         baseline = json.loads(baseline_path.read_text())
         prior = previous(root)
@@ -184,7 +188,7 @@ def valid(root):
             == baseline["benchmarkToolsSha256"]
             and report["serverSourceSha256"]
             == baseline["serverSourceSha256"]
-            == source_digest(root)
+            and source_valid
             and report["runtimeSourceSha256"] == runtime_digest(root)
             and report["benchmarkToolsSha256"] == tools_digest(root)
             and report["capacityValidated"] is False

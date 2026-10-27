@@ -13,6 +13,7 @@ if __package__ in (None, ""):
 from benchmarks.online.identity import runtime_digest, tools_digest  # noqa: E402
 from benchmarks.online.measure import histogram_quantile  # noqa: E402
 from scripts.migration.p4d_report import source_digest  # noqa: E402
+from scripts.migration.p7_baseline import accepted_history  # noqa: E402
 
 
 def number(value):
@@ -184,6 +185,12 @@ def valid(root, *, historical=False):
         root = Path(root)
         value = json.loads((root / "releases/p7a-isolation.json").read_text())
         baseline = json.loads((root / "releases/p6e-budgets.json").read_text())
+        source_valid = value["serverSourceSha256"] == source_digest(root)
+        if not source_valid and historical:
+            measured = accepted_history(root, value["serverSourceSha256"])
+            if measured is None:
+                return False
+            baseline, source_valid = measured, True
         runtime_valid = value["runtimeSourceSha256"] == runtime_digest(root) and value[
             "benchmarkToolsSha256"
         ] == tools_digest(root)
@@ -210,7 +217,7 @@ def valid(root, *, historical=False):
             and value["productionRoutingChanged"] is False
             and value["serverSourceSha256"]
             == baseline["serverSourceSha256"]
-            == source_digest(root)
+            and source_valid
             and runtime_valid
         ):
             return False

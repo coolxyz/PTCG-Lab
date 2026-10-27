@@ -53,6 +53,7 @@ FILES = (
     "releases/p7a-isolation.json",
     "releases/p7b-matrix.json",
     "releases/p7b-before-driver-repair.json",
+    "releases/p7-measured-p6e-baseline.json",
     "releases/source-candidates.json",
     "ops/online/Dockerfile.dockerignore",
     "benchmarks/online/Dockerfile.dockerignore",

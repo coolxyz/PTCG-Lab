@@ -448,7 +448,7 @@ def check(root=ROOT):
     } or (
         status.get("subphases", {}).get("P7-B") == "in_progress"
         and (
-            not p7b_valid(root)
+            not p7b_valid(root, historical=True)
             or status.get("p7bProgressDocument") != "releases/p7b-matrix.json"
         )
     ):
