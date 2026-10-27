@@ -361,7 +361,7 @@ export class OnlineController {
     );
     if (this.state.remembered.roomId) await this.room();
     else if (this.state.remembered.matchId)
-      await this.openInner(this.state.remembered.matchId);
+      await this.openInner(this.state.remembered.matchId, true);
   }
   private async loadDisplay(catalogVersion: string, assetVersion: string) {
     const request = ++this.displayRequest;
@@ -571,8 +571,14 @@ export class OnlineController {
       room.status === "waiting"
     )
       return;
+    if (room.status === "closed") {
+      this.save({ roomId: undefined, matchId: undefined });
+      this.patch({ room: null });
+      await this.status();
+      return;
+    }
     try {
-      await this.openInner(room.matchId);
+      await this.openInner(room.matchId, true);
       this.initializingTries = 0;
     } catch (error) {
       // A room can be initialized just before its authoritative match is promoted.
@@ -586,8 +592,16 @@ export class OnlineController {
       throw error;
     }
   }
-  private async openInner(matchId: string) {
+  private async openInner(matchId: string, restoring = false) {
     const view = await this.call<MatchSnapshot>("snapshot", { matchId });
+    // Restore an ongoing game, while completed games remain an explicit history choice.
+    // Only clear navigation pointers; native credentials, history and pending requests remain.
+    if (restoring && view.done) {
+      this.save({ matchId: undefined, roomId: undefined });
+      this.patch({ room: null });
+      await this.status();
+      return;
+    }
     this.save({ matchId, roomId: undefined });
     this.accept(view);
     this.patch({ showing: true, replay: null, lease: "" });

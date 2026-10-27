@@ -1,0 +1,112 @@
+/* Shared page geometry for the product shell and standalone battle clients. */
+.workspace-page {
+  --workspace-green: var(--green, #244f3a);
+  --workspace-muted: var(--muted, #7a857b);
+  --workspace-line: var(--line, #e1e6dd);
+  color-scheme: light;
+  color: #23342b;
+  font-family: inherit;
+  box-sizing: border-box;
+  width: 100%;
+  min-width: 0;
+  max-width: 1680px;
+  margin: auto;
+  padding: 36px 38px 64px;
+}
+.workspace-page *,
+.workspace-page *::before,
+.workspace-page *::after {
+  box-sizing: border-box;
+}
+/* The product shell owns the one shared content gutter. */
+.main > main > .workspace-page {
+  max-width: none;
+  margin: 0;
+  padding: 0;
+}
+.workspace-page > .page-heading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 24px;
+  margin: 0 0 29px;
+}
+.workspace-page > .page-heading h1 {
+  margin: 0;
+  font-size: 30px;
+  font-weight: 600;
+  letter-spacing: 1px;
+  line-height: 1.5;
+}
+.workspace-page > .page-heading .eyebrow {
+  margin: 0 0 11px;
+  color: #84917f;
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 2px;
+}
+.workspace-page > .page-heading p {
+  margin: 9px 0 0;
+  color: var(--workspace-muted);
+  font-size: 12px;
+  line-height: 1.8;
+}
+.workspace-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 12px 17px;
+  border: 1px solid var(--workspace-green);
+  border-radius: 6px;
+  background: var(--workspace-green);
+  color: white;
+  font: inherit;
+  font-size: 12px;
+  font-weight: 500;
+  cursor: pointer;
+}
+.workspace-button.is-secondary {
+  background: white;
+  color: var(--workspace-green);
+  border-color: var(--workspace-line);
+}
+.workspace-button:hover:not(:disabled) {
+  filter: brightness(0.96);
+}
+.workspace-page :is(button, select, input, summary, a):focus-visible {
+  outline: 3px solid #669a77;
+  outline-offset: 3px;
+}
+.workspace-page button:disabled {
+  opacity: 0.48;
+  cursor: not-allowed;
+}
+@media (max-width: 1150px) {
+  .workspace-page {
+    padding: 28px 24px 50px;
+  }
+  .workspace-page > .page-heading h1 {
+    font-size: 26px;
+  }
+}
+@media (max-width: 800px) {
+  .workspace-page {
+    padding: 25px 18px 45px;
+  }
+  .workspace-page > .page-heading {
+    align-items: flex-start;
+    gap: 17px;
+    margin-bottom: 24px;
+  }
+  .workspace-page > .page-heading h1 {
+    font-size: 24px;
+  }
+  .workspace-page > .page-heading .eyebrow {
+    font-size: 8px;
+  }
+  .workspace-page > .page-heading p {
+    font-size: 11px;
+  }
+}

@@ -424,3 +424,92 @@ test("stadium declarations and follow-up context survive even with identical vis
   expect(unknown.text).not.toContain("竞技场"); // Do not attribute an unrelated reaction to the last source.
   expect(unknown.explanation).toContain("不能据此判断效果未发生");
 });
+
+for (const source of [
+  "match",
+  "closed-room",
+  "finished-initialized-room",
+] as const) {
+  test(`entering the lobby keeps a completed ${source} in history until replay is chosen`, async () => {
+    const view = {
+      ...demoSnapshot("PLAYER1"),
+      done: true,
+      status: "finished" as const,
+      decision: null,
+    };
+    let saved: Remembered = {
+      userId: "user",
+      matchId: view.matchId,
+      ...(source !== "match" ? { roomId: "old-room" } : {}),
+    };
+    const calls: string[] = [];
+    const storage: OnlineStorage = {
+      windowId: () => "w",
+      selected: () => "lan",
+      read: () => saved,
+      write: (_, value) => {
+        saved = value;
+      },
+    };
+    const api: OnlineAPI = {
+      profiles: async () => [{ id: "lan", origin: "https://example.test" }],
+      catalog: async () => ({ cards: [] }),
+      close: async () => {},
+      call: async <T>(_: string, op: string) => {
+        calls.push(op);
+        return (
+          {
+            status: {
+              identity: { userId: "user" },
+              pendingMatches: [view.matchId],
+              recentMatches: [
+                {
+                  matchId: view.matchId,
+                  done: true,
+                  viewerSeat: "PLAYER1",
+                  matchSeq: view.matchSeq,
+                  winner: null,
+                },
+              ],
+              recovery: { commands: [], controls: [] },
+            },
+            capabilities: {
+              ruleReleaseIds: ["rule"],
+              resources: {
+                displayCatalogVersion: "c",
+                assetManifestVersion: "a",
+              },
+            },
+            room: {
+              roomId: "old-room",
+              matchId: view.matchId,
+              status: source === "closed-room" ? "closed" : "initialized",
+            },
+            snapshot: view,
+            replay: demoReplay("PLAYER1"),
+            unwatch: {},
+          } as Record<string, unknown>
+        )[op] as T;
+      },
+    };
+    const c = new OnlineController(api, storage);
+    try {
+      await c.start();
+      expect(c.snapshot().showing).toBe(false);
+      expect(c.snapshot().room).toBeNull();
+      expect(c.snapshot().status?.recentMatches).toHaveLength(1);
+      expect(c.snapshot().status?.pendingMatches).toEqual([view.matchId]);
+      expect(saved.matchId).toBeUndefined();
+      expect(saved.roomId).toBeUndefined();
+      expect(calls).not.toContain("watch");
+      expect(calls).not.toContain("replay");
+      await c.refresh();
+      expect(c.snapshot().showing).toBe(false);
+      await c.openReplay(view.matchId);
+      expect(c.snapshot().showing).toBe(true);
+      expect(c.snapshot().replay?.frames.length).toBeGreaterThan(0);
+    } finally {
+      c.dispose();
+    }
+  });
+}

@@ -26,10 +26,10 @@ export function OnlineLobby({
   useEffect(() => setCopied(""), [room?.inviteCode]);
   const accepting = !!s.caps?.acceptingMatches;
   return (
-    <main className="online-lobby">
-      <header className="lobby-heading">
+    <section className="workspace-page online-lobby">
+      <header className="page-heading lobby-heading">
         <div>
-          <p className="online-eyebrow">PTCG LAB / PLAY TOGETHER</p>
+          <p className="eyebrow">PTCG LAB / PLAY TOGETHER</p>
           <h1>对战大厅</h1>
           <p className="online-muted">带上你的卡组，邀请朋友开启下一场对决。</p>
         </div>
@@ -382,6 +382,6 @@ export function OnlineLobby({
       <footer className="lobby-footer">
         离开界面不会认输 · 回放仅展示你可见的对局信息
       </footer>
-    </main>
+    </section>
   );
 }

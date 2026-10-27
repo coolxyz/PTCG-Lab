@@ -165,7 +165,7 @@ export class PracticeController {
       const id = this.storage.match();
       if (id) {
         try {
-          await this.load(id);
+          await this.load(id, true);
         } catch (e) {
           // A transient transport failure must not erase the resume pointer.
           if (e instanceof PracticeAPIError && [403, 404].includes(e.status))
@@ -175,12 +175,12 @@ export class PracticeController {
       }
       this.patch({ initialized: true });
     });
-  private async load(id: string) {
+  private async load(id: string, restoring = false) {
     const view = await this.api.view(id);
     const pending = this.storage.pending(id);
     this.patch({
       view,
-      showing: true,
+      showing: !restoring || !view.done,
       frame: null,
       pending,
       playing: false,
@@ -348,26 +348,32 @@ export class PracticeController {
         view: await this.api.resign(s.view.matchId, s.view.stateVersion),
       });
     });
-  seek = (seq: number, automatic = false) =>
+  openReplay = (id: string) =>
     this.run(async () => {
-      const s = this.state;
-      if (!s.view || s.pending) return;
-      if (!automatic) this.patch({ playing: false });
-      if (!s.frame) {
-        const index = await this.api.timeline(s.view.matchId);
-        this.patch({ end: index.lastSeq, timeline: index.checkpoints });
-      }
-      const frames = await this.api.replay(s.view.matchId, seq);
-      const entry = frames.frames[0];
-      if (!entry || entry.seq !== seq)
-        throw new Error("未找到该回放步骤，请刷新后重试");
-      this.patch({
-        frame: { ...entry.view, events: entry.event ? [entry.event] : [] },
-        seq,
-        animate: automatic,
-        playing: seq >= this.state.end ? false : this.state.playing,
-      });
+      await this.load(id);
+      await this.replayFrame(0);
     });
+  seek = (seq: number, automatic = false) =>
+    this.run(() => this.replayFrame(seq, automatic));
+  private async replayFrame(seq: number, automatic = false) {
+    const s = this.state;
+    if (!s.view || s.pending) return;
+    if (!automatic) this.patch({ playing: false });
+    if (!s.frame) {
+      const index = await this.api.timeline(s.view.matchId);
+      this.patch({ end: index.lastSeq, timeline: index.checkpoints });
+    }
+    const frames = await this.api.replay(s.view.matchId, seq);
+    const entry = frames.frames[0];
+    if (!entry || entry.seq !== seq)
+      throw new Error("未找到该回放步骤，请刷新后重试");
+    this.patch({
+      frame: { ...entry.view, events: entry.event ? [entry.event] : [] },
+      seq,
+      animate: automatic,
+      playing: seq >= this.state.end ? false : this.state.playing,
+    });
+  }
   play = (playing: boolean) => this.patch({ playing });
   speed = (speed: number) => {
     if ([1, 2, 4].includes(speed)) this.patch({ speed });

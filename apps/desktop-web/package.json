@@ -21,7 +21,8 @@
     "./online": {
       "types": "./src/online/index.ts",
       "default": "./src/online/index.ts"
-    }
+    },
+    "./workspace.css": "./src/workspace.css"
   },
   "scripts": {
     "dev": "vite --host 127.0.0.1",

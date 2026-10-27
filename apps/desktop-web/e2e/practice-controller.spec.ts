@@ -291,3 +291,24 @@ test("navigation keeps uncertain action errors and pending receipts visible", as
   expect(c.snapshot().error).toBe("lost reply");
   expect(c.snapshot().pending).not.toBeNull();
 });
+
+test("completed practice restores to the lobby and its history opens directly in replay", async () => {
+  const f = fixture();
+  f.storage.saveMatch("demo-match");
+  f.api.view = async () => ({
+    ...f.view(),
+    done: true,
+    status: "finished",
+    decision: null,
+  });
+  const c = f.make();
+  await ready(c);
+  expect(c.snapshot().showing).toBe(false);
+  expect(f.calls.advances).toBe(0);
+  await c.openReplay("demo-match");
+  expect(c.snapshot().showing).toBe(true);
+  expect(c.snapshot().frame).not.toBeNull();
+  expect(c.snapshot().seq).toBe(0);
+  expect(c.snapshot().playing).toBe(false);
+  expect(f.calls.advances).toBe(0);
+});

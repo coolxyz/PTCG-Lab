@@ -38,8 +38,14 @@ export function OnlineApp({ product = false }: { product?: boolean }) {
   }, [attempt]);
   if (!controller)
     return (
-      <main className="online-lobby">
-        <h1>网络对战</h1>
+      <section className="workspace-page online-lobby">
+        <header className="page-heading">
+          <div>
+            <div className="eyebrow">PLAY TOGETHER</div>
+            <h1>网络对战</h1>
+            <p>使用平台卡组，邀请朋友开始对战。</p>
+          </div>
+        </header>
         <p role={error ? "alert" : "status"}>{error || "正在连接本地后台…"}</p>
         {error &&
           (product ? (
@@ -76,7 +82,7 @@ export function OnlineApp({ product = false }: { product?: boolean }) {
           ) : (
             <p>请使用本地启动器打开窗口。刷新不会创建新的游客身份。</p>
           ))}
-      </main>
+      </section>
     );
   return <Connected controller={controller} product={product} />;
 }

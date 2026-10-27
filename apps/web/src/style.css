@@ -1,3 +1,9 @@
+@import "@ptcg/desktop-web/workspace.css";
+
+html {
+  scrollbar-gutter: stable;
+}
+
 :root {
   font-family:
     Manrope,

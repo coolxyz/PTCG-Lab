@@ -38,7 +38,7 @@ export function Sync({ onPublished }: { onPublished: () => void }) {
     try { await fn(); await refresh(); } catch (e) { setError((e as Error).message); } finally { setBusy(false); }
   }
   const running = busy || status?.jobs?.some((j: any) => ["queued", "running"].includes(j.state) || j.battleReleaseStatus === "testing");
-  return <section className="sync-page">
+  return <section className="workspace-page sync-page">
     <div className="page-heading"><div><div className="eyebrow">CATALOG & BATTLE UPDATES</div><h1>数据与对战更新</h1><p>跟踪你维护的卡库，保留收藏与卡组，逐项验证新卡的对战能力。</p></div></div>
     {error && <div className="error-banner" role="alert"><AlertCircle size={18} />{error}</div>}
     <div className="sync-source">
