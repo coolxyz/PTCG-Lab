@@ -15,6 +15,17 @@ NAMES = frozenset(
         "db.rejected",
         "worker.rejected",
         *(
+            "scheduler." + event
+            for event in (
+                "accepted",
+                "merged",
+                "rejected",
+                "wait",
+                "expired",
+                "cancelled",
+            )
+        ),
+        *(
             "worker." + op
             for op in ("probe", "validate", "initialize", "project", "command")
         ),

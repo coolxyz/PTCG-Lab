@@ -63,6 +63,12 @@ class Lobby:
         ):
             raise ServiceError("RULE_RELEASE_UNAVAILABLE", 503, retryable=True)
 
+    def deck_admission(self, token, body):
+        with self.repo.transaction() as db:
+            user = self._authorize(db, token)
+            digest, old = self._receipt(db, user, "deck", body)
+            return user, digest, old
+
     def submit_deck(self, token, body):
         # Completed retries work even if the rule process is temporarily unavailable.
         with self.repo.transaction() as db:

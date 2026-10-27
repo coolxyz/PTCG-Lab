@@ -2,6 +2,7 @@
 
 import asyncio
 from contextlib import asynccontextmanager
+from functools import partial
 import logging
 import re
 
@@ -22,6 +23,7 @@ from .lobby import Lobby
 from .initialization import Initializer
 from .matches import Matches
 from .stream import Streams
+from .scheduler import FairScheduler
 
 PREFIX = "/api/online/v2"
 MAX_BODY = 16384
@@ -170,6 +172,32 @@ def create_app(settings=None, *, worker=None, background=True):
     initializer = Initializer(repo, worker)
     matches = Matches(repo, worker)
     streams = Streams(settings, matches)
+    scheduler = FairScheduler(settings, repo.metrics)
+
+    async def maintenance(name, operation):
+        return await scheduler.submit(
+            "maintenance",
+            "system-maintenance",
+            name,
+            name,
+            lambda: run_in_threadpool(operation),
+        )
+
+    async def player_work(group, request_id, admission, operation):
+        if not settings.command_queue_enabled:
+            return await run_in_threadpool(operation)
+        user, digest, old = await run_in_threadpool(admission)
+        if old is not None:
+            return old
+        await scheduler.submit(
+            group, user, request_id, digest, lambda: run_in_threadpool(operation)
+        )
+        # A merged caller may have expired or been revoked while waiting. Never
+        # return another caller's cached result without its own current authority.
+        _, _, receipt = await run_in_threadpool(admission)
+        if receipt is None:
+            raise ServiceError("INTERNAL_ERROR", 503, retryable=True)
+        return receipt
 
     @asynccontextmanager
     async def lifespan(app):
@@ -179,16 +207,17 @@ def create_app(settings=None, *, worker=None, background=True):
         await run_in_threadpool(repo.open)
         if settings.stream_hub_enabled:
             streams.hub.start()
+        scheduler.start()
         stop = asyncio.Event()
 
         async def initialize_pending():
             while not stop.is_set():
                 try:
                     if app.state.rules.failure is None and not worker.available:
-                        await run_in_threadpool(worker.probe)
+                        await maintenance("probe", worker.probe)
                     if worker.available:
-                        await run_in_threadpool(initializer.tick)
-                        await run_in_threadpool(matches.promote_one)
+                        await maintenance("initialize", initializer.tick)
+                        await maintenance("project", matches.promote_one)
                 except Exception:
                     logging.getLogger("ptcg_online_server").error(
                         "initialization_unavailable"
@@ -208,13 +237,17 @@ def create_app(settings=None, *, worker=None, background=True):
                     await task
             finally:
                 try:
-                    await streams.hub.stop()
+                    await scheduler.stop()
                 finally:
-                    await run_in_threadpool(repo.close)
+                    try:
+                        await streams.hub.stop()
+                    finally:
+                        await run_in_threadpool(repo.close)
 
     app = FastAPI(docs_url=None, redoc_url=None, openapi_url=None, lifespan=lifespan)
     app.state.repository = repo
     app.state.streams = streams
+    app.state.scheduler = scheduler
     app.add_middleware(Boundary, settings=settings, repository=repo)
 
     @app.exception_handler(ServiceError)
@@ -297,9 +330,17 @@ def create_app(settings=None, *, worker=None, background=True):
     @app.post(PREFIX + "/decks", status_code=201)
     async def deck(request: Request):
         body = decode("DeckSubmission", await request.body())
+        token = bearer(request)
+        # Deck validation shares the rule lane; it cannot race an active command.
+        user = await run_in_threadpool(sessions.authenticate, token)
         return checked(
             "DeckAccepted",
-            await run_in_threadpool(lobby.submit_deck, bearer(request), body),
+            await player_work(
+                "deck:" + user["userId"],
+                body["requestId"],
+                partial(lobby.deck_admission, token, body),
+                partial(lobby.submit_deck, token, body),
+            ),
         )
 
     @app.post(PREFIX + "/rooms", status_code=201)
@@ -359,8 +400,12 @@ def create_app(settings=None, *, worker=None, background=True):
     @app.post(PREFIX + "/matches/{match_id}/commands")
     async def submit_command(match_id: str, request: Request):
         body = decode("Command", await request.body())
-        return await run_in_threadpool(
-            matches.command, bearer(request), match_id, body, controller(request)
+        token, control = bearer(request), controller(request)
+        return await player_work(
+            "match:" + match_id,
+            body["commandId"],
+            partial(matches.command_admission, token, match_id, body, control),
+            partial(matches.command, token, match_id, body, control),
         )
 
     @app.post(PREFIX + "/matches/{match_id}/resign")

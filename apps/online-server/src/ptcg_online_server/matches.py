@@ -250,6 +250,21 @@ class Matches:
         if match["state_version"] != body["expectedStateVersion"]:
             raise ServiceError("STALE_DECISION", 409)
 
+    def command_admission(self, token, match_id, body, controller):
+        # No recovery/frame read or match lock before queueing. Every caller,
+        # including merged retries, must authorize and check its durable receipt.
+        digest = self._digest("command", body, controller)
+        with self.repo.transaction() as db:
+            identity = self.sessions.authenticate_in(db, token)
+            member = db.execute(
+                "SELECT user_id FROM ptcg_v2.match_members WHERE match_id=%s AND user_id=%s",
+                (match_id, identity["userId"]),
+            ).fetchone()
+            if not member:
+                raise ServiceError("FORBIDDEN", 403)
+            old = self._old(db, {"id": match_id}, member, body["commandId"], digest)
+            return identity["userId"], digest, old
+
     def command(self, token, match_id, body, controller):
         digest = self._digest("command", body, controller)
         with self.repo.transaction() as db:

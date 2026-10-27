@@ -36,6 +36,7 @@ def scaffold(tmp_path):
         "releases/p55-user-acceptance.json",
         "releases/p6a-baseline.json",
         "releases/p6b-streams.json",
+        "releases/p6c-scheduler.json",
         "docs/P5.5产品整合完成记录.md",
         "docs/P6多局调度与性能实施记录.md",
     ]:
@@ -352,3 +353,33 @@ def test_p6b_completion_requires_current_and_chained_evidence(scaffold, kind):
             ] = True if kind == "capacity" else "changed"
         path.write_text(json.dumps(value))
     assert any("P6-B completion lacks" in error for error in check(scaffold))
+
+
+@pytest.mark.parametrize("kind", ["missing", "stale", "baseline", "capacity", "order"])
+def test_p6c_completion_requires_current_and_chained_evidence(scaffold, kind):
+    path = scaffold / "releases/p6c-scheduler.json"
+    if kind == "missing":
+        path.unlink()
+    else:
+        value = json.loads(path.read_text())
+        if kind == "order":
+            value["workload"]["order"].reverse()
+        else:
+            value[
+                {
+                    "stale": "serverSourceSha256",
+                    "baseline": "baselineServerSourceSha256",
+                    "capacity": "capacityMeasured",
+                }[kind]
+            ] = True if kind == "capacity" else "changed"
+        path.write_text(json.dumps(value))
+    assert any("P6-C completion lacks" in error for error in check(scaffold))
+
+
+@pytest.mark.parametrize("phase", ["P6-A", "P6-B"])
+def test_p6c_requires_completed_predecessors(scaffold, phase):
+    path = scaffold / "releases/migration-status.json"
+    value = json.loads(path.read_text())
+    value["subphases"][phase] = "in_progress"
+    path.write_text(json.dumps(value))
+    assert any("P6 baseline" in error for error in check(scaffold))

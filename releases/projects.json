@@ -50,7 +50,7 @@
       "distribution": "ptcg-online-server",
       "module": "ptcg_online_server",
       "language": "python",
-      "stage": "P6-B",
+      "stage": "P6-C",
       "implementationReady": false,
       "allowedInternalImports": [
         "ptcg_core",
@@ -84,7 +84,8 @@
         "uuid",
         "uvicorn",
         "math",
-        "psycopg_pool"
+        "psycopg_pool",
+        "collections"
       ],
       "allowedRuntimeRequirements": [
         "ptcg-battle-core==0.2.0.dev1",

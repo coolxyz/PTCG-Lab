@@ -55,3 +55,7 @@ P4-C 必须显式应用新增 003 migration。已升级的数据库不能直接�
 ## P6-B 集中推送开关
 
 新镜像标签 `ptcg-lab-online-api:p6b`，服务版本 `0.6.0.dev2`。Compose 的 `PTCG_V2_STREAM_HUB_ENABLED` 映射服务端 `PTCG_ONLINE_V2_STREAM_HUB_ENABLED`，默认 `1`；设 `0` 并重启本次部署恢复逐连接轮询。沿用 001—003 schema，无新数据库迁移，也不增加专用监听连接。仅本进程提交即时通知，其他写入由周期补漏发现。没有自动替换既有局域网服务。
+
+## P6-C 调度预算
+
+新镜像标签 `ptcg-lab-online-api:p6c`，服务版本 `0.6.0.dev3`。Compose 传递 `PTCG_V2_COMMAND_QUEUE_ENABLED/TOTAL/PER_MATCH/PER_USER/WAITERS/DUPLICATES/SECONDS`，默认 `1/32/2/4/64/4/2`；服务对应 `PTCG_ONLINE_V2_` 前缀。任务上限包含执行中任务，重试等待者单独计数，排队期限不取消已开始的规则计算。关闭 ENABLED 后重启该部署可回退原路径，无数据库迁移。单 API 部署限定未变；这些参数不是已验证的容量承诺。本轮镜像仅供隔离验收，未替换局域网服务。

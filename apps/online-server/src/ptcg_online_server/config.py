@@ -23,6 +23,13 @@ class Settings:
     body_timeout: float = 10
     max_streams: int = 32
     stream_hub_enabled: bool = True
+    command_queue_enabled: bool = True
+    command_queue_total: int = 32
+    command_queue_per_match: int = 2
+    command_queue_per_user: int = 4
+    command_queue_waiters: int = 64
+    command_queue_duplicates: int = 4
+    command_queue_seconds: float = 2.0
     db_pool_enabled: bool = True
     db_pool_size: int = 4
     db_pool_waiters: int = 16
@@ -79,6 +86,22 @@ class Settings:
         ):
             if type(value) is not int or value < 1:
                 raise ValueError("INVALID_DEPLOYMENT_LIMIT")
+        if (
+            type(self.command_queue_enabled) is not bool
+            or any(
+                type(value) is not int or not 1 <= value <= maximum
+                for value, maximum in (
+                    (self.command_queue_total, 256),
+                    (self.command_queue_per_match, 16),
+                    (self.command_queue_per_user, 32),
+                    (self.command_queue_waiters, 512),
+                    (self.command_queue_duplicates, 32),
+                )
+            )
+            or type(self.command_queue_seconds) not in (int, float)
+            or not 0 < self.command_queue_seconds <= 10
+        ):
+            raise ValueError("INVALID_COMMAND_QUEUE_BUDGET")
         if type(self.stream_hub_enabled) is not bool:
             raise ValueError("INVALID_STREAM_CONFIG")
         if (
@@ -124,6 +147,8 @@ class Settings:
                 raise ValueError("INVALID_DATABASE_BUDGET")
             if env("STREAM_HUB_ENABLED", "1") not in {"0", "1"}:
                 raise ValueError("INVALID_STREAM_CONFIG")
+            if env("COMMAND_QUEUE_ENABLED", "1") not in {"0", "1"}:
+                raise ValueError("INVALID_COMMAND_QUEUE_BUDGET")
             return cls(
                 database_url=dsn,
                 server_id=env("SERVER_ID", ""),
@@ -139,6 +164,13 @@ class Settings:
                 max_inflight=int(env("MAX_INFLIGHT", "32")),
                 max_streams=int(env("MAX_STREAMS", "32")),
                 stream_hub_enabled=env("STREAM_HUB_ENABLED", "1") == "1",
+                command_queue_enabled=env("COMMAND_QUEUE_ENABLED", "1") == "1",
+                command_queue_total=int(env("COMMAND_QUEUE_TOTAL", "32")),
+                command_queue_per_match=int(env("COMMAND_QUEUE_PER_MATCH", "2")),
+                command_queue_per_user=int(env("COMMAND_QUEUE_PER_USER", "4")),
+                command_queue_waiters=int(env("COMMAND_QUEUE_WAITERS", "64")),
+                command_queue_duplicates=int(env("COMMAND_QUEUE_DUPLICATES", "4")),
+                command_queue_seconds=float(env("COMMAND_QUEUE_SECONDS", "2")),
                 db_pool_enabled=env("DB_POOL_ENABLED", "1") == "1",
                 db_pool_size=int(env("DB_POOL_SIZE", "4")),
                 db_pool_waiters=int(env("DB_POOL_WAITERS", "16")),

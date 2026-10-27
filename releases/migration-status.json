@@ -37,7 +37,7 @@
     "P5.5-D": "completed",
     "P6-A": "completed",
     "P6-B": "completed",
-    "P6-C": "planned",
+    "P6-C": "completed",
     "P6-D": "planned",
     "P6-E": "planned"
   },
@@ -86,5 +86,7 @@
   "p6ProgressDocument": "docs/P6多局调度与性能实施记录.md",
   "p6aAcceptanceDocument": "releases/p6a-baseline.json",
   "p6aImplementationCommit": "5f1c16f",
-  "p6bAcceptanceDocument": "releases/p6b-streams.json"
+  "p6bAcceptanceDocument": "releases/p6b-streams.json",
+  "p6bImplementationCommit": "3ca9ca0",
+  "p6cAcceptanceDocument": "releases/p6c-scheduler.json"
 }

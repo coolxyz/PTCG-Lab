@@ -15,6 +15,7 @@ if __package__ in (None, ""):
 from scripts.public.policy import source_files, safe_file
 from scripts.migration.p4d_report import evidence_valid
 from scripts.migration.p6b_report import valid as p6b_valid
+from scripts.migration.p6c_report import valid as p6c_valid
 
 
 def check(root=ROOT):
@@ -43,7 +44,7 @@ def check(root=ROOT):
             ("P5.5-C" if project["distribution"] == "@ptcg/desktop-web" else "P3-B")
             if gui
             else (
-                "P6-B"
+                "P6-C"
                 if online
                 else (
                     "P5-A"
@@ -356,12 +357,13 @@ def check(root=ROOT):
     if status.get("currentPhase") == "P6" and (
         status["phases"].get("P5.5") != "completed"
         or status["phases"].get("P6") != "in_progress"
-        or status.get("subphases", {}).get("P6-A") not in {"in_progress", "completed"}
+        or status.get("subphases", {}).get("P6-A") != "completed"
         or any(
-            status.get("subphases", {}).get(p) != "planned"
-            for p in ("P6-C", "P6-D", "P6-E")
+            status.get("subphases", {}).get(p) != "planned" for p in ("P6-D", "P6-E")
         )
-        or status.get("subphases", {}).get("P6-B") not in {"in_progress", "completed"}
+        or status.get("subphases", {}).get("P6-B") != "completed"
+        or status.get("subphases", {}).get("P6-C") not in {"in_progress", "completed"}
+        or status.get("p6bImplementationCommit") != "3ca9ca0"
         or status.get("p6aImplementationCommit") != "5f1c16f"
         or status.get("p6ProgressDocument") != "docs/P6多局调度与性能实施记录.md"
         or not (root / "docs/P6多局调度与性能实施记录.md").is_file()
@@ -387,10 +389,15 @@ def check(root=ROOT):
         if not p6a_valid:
             errors.append("P6-A completion lacks matching measured baseline")
     if status.get("subphases", {}).get("P6-B") == "completed" and (
-        not p6b_valid(root)
+        not p6b_valid(root, historical=True)
         or status.get("p6bAcceptanceDocument") != "releases/p6b-streams.json"
     ):
         errors.append("P6-B completion lacks current stream acceptance")
+    if status.get("subphases", {}).get("P6-C") == "completed" and (
+        not p6c_valid(root)
+        or status.get("p6cAcceptanceDocument") != "releases/p6c-scheduler.json"
+    ):
+        errors.append("P6-C completion lacks current scheduler acceptance")
     for phase in range(7, 9):
         if status["phases"].get("P" + str(phase)) != "planned":
             errors.append("future implementation misrepresented as complete")
