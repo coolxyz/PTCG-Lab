@@ -6,6 +6,7 @@ All choices/search candidates and all setup placements remain private here.
 """
 
 from copy import deepcopy
+from ptcg_protocol.projection import card_identity
 
 PLAYS = {
     "PlayPokemonAction": "放置宝可梦",
@@ -72,7 +73,7 @@ def selection_source_ref(adapter, before):
 
 def printed_identity(card):
     return {
-        "cardId": card.get("id") or card["name"],
+        "cardId": card_identity(card),
         "name": card["name"],
         "presentation": {
             k: deepcopy(card[k])
@@ -143,11 +144,11 @@ def action_events(before, actor, choice, coins=(), *, selection_source=None):
                     ),
                     None,
                 )
-                if not card or any(
-                    c["cardId"] == card.get("id", card["name"]) for c in cards
-                ):
+                if not card:
                     continue
                 identity = printed_identity(card)
+                if any(c["cardId"] == identity["cardId"] for c in cards):
+                    continue
                 cards.append(identity)
                 event["text"] += (" → " if role == "target" else " · ") + card["name"]
             if kind == "AttackAction" and isinstance(option.get("attack"), dict):

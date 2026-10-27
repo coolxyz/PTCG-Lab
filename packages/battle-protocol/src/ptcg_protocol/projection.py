@@ -14,14 +14,22 @@ def _keys(value, allowed):
         raise ProtocolViolation("INVALID_PAYLOAD")
 
 
-def _card(card):
+def card_identity(card):
+    """Use one printing identity for board projections and public action records."""
     # Some public reveal/search cards lack an id, and attack choices are not cards.
-    identity = card.get("id") or (
+    return card.get("id") or (
         f"{card['set_name']}-{card['number']}"
         if "set_name" in card
         else "attack-choice"
     )
-    return {"cardId": identity, "name": card["name"], "presentation": deepcopy(card)}
+
+
+def _card(card):
+    return {
+        "cardId": card_identity(card),
+        "name": card["name"],
+        "presentation": deepcopy(card),
+    }
 
 
 def _uncard(card):
