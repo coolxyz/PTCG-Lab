@@ -201,12 +201,6 @@ def main():
         ):
             print(json.dumps({k: v for k, v in existing.items() if k != "reviews"}))
             return
-    history = ROOT / "data/cardpool/release-history"
-    history.mkdir(parents=True, exist_ok=True)
-    archived = history / (old_hash + ".json")
-    if archived.exists() and archived.read_bytes() != previous:
-        raise ValueError("ARCHIVE_COLLISION")
-    archived.write_bytes(previous)
     backup = ROOT / ".catalog/cardpool/pre-reprints"
     backup.mkdir(exist_ok=True)
     if not (backup / "catalog.json").exists():

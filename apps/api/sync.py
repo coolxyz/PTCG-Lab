@@ -52,6 +52,7 @@ def attach(app, store):
     home = os.getenv("PTCG_SYNC_HOME") or (ROOT / ".catalog/sync" if Path(store.path).resolve() == default_db else Path(store.path).with_suffix(".sync"))
     service = SyncService(home, store.path)
     app.state.sync = service
+    app.state.battles.release_id = service.releases.current
     api = APIRouter(prefix="/api/sync")
     from packages.sync.variants import Variants
     variants = Variants(service)
@@ -170,18 +171,16 @@ def attach(app, store):
         release_id = service.pool.route(path, body, request.cookies.get("ptcg_practice_session"))
         if not release_id:
             if path.startswith('/api/battle/matches/') and request.method not in ('GET', 'HEAD'):
-                retired = service.home / 'retired.json'
-                if retired.exists():
-                    # Authenticate ownership before exposing retirement status.
-                    from packages.collection.domain import DomainError
-                    try:
-                        owner = request.app.state.battles.owner(request.cookies.get('ptcg_practice_session'))
-                        mid = path.split('/')[4]
-                        view = request.app.state.battles.snapshot(owner, mid)
-                    except DomainError as exc:
-                        return JSONResponse({'code': exc.code, 'message': exc.message}, status_code=exc.status)
-                    if view.get('readOnly'):
-                        return JSONResponse({'code': 'RELEASE_RETIRED', 'message': view['readOnlyReason']}, status_code=409)
+                # Authenticate ownership before exposing retirement status.
+                from packages.collection.domain import DomainError
+                try:
+                    owner = request.app.state.battles.owner(request.cookies.get('ptcg_practice_session'))
+                    mid = path.split('/')[4]
+                    view = request.app.state.battles.snapshot(owner, mid)
+                except DomainError as exc:
+                    return JSONResponse({'code': exc.code, 'message': exc.message}, status_code=exc.status)
+                if view.get('readOnly'):
+                    return JSONResponse({'code': 'RULE_RELEASE_UNAVAILABLE', 'message': view['readOnlyReason']}, status_code=409)
             return await call_next(request)
         # The outer local-only middleware has validated this host. Preserve it so
         # the frozen worker can validate same-origin writes on custom local ports.

@@ -23,9 +23,9 @@ def segment(value, *, command=False):
 
 
 class Client:
-    def __init__(self, server, storage, *, transport=None):
+    def __init__(self, server, storage, *, transport=None, vault_factory=Vault):
         self.transport = transport or Transport(server)
-        self.vault = Vault(storage, server)
+        self.vault = vault_factory(storage, server)
         self.stopped = Event()
         # Backfill old installations before the bounded snapshot cache evicts any
         # more matches. The index contains only metadata, never visible hands.

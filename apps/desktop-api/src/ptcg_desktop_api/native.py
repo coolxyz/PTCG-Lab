@@ -20,6 +20,7 @@ from ptcg_online_client.transport import Server
 from .bridge import Bridge
 from .host import Host, create_host_app
 from .resources import Resources
+from .secure_storage import native_client
 
 LIMIT = 16384
 
@@ -123,7 +124,7 @@ def main(*, build, local_factory=None):
         sock = socket.socket()
         sock.bind(("127.0.0.1", 0))
         origin = f"http://127.0.0.1:{sock.getsockname()[1]}"
-        owner = Bridge(profiles, state / "credentials", allow_offline=True)
+        owner = Bridge(profiles, state / "credentials", allow_offline=True, client_factory=native_client)
         host = Host(owner, origin, build, resources, state / "launch")
         if local_factory:
             from .product import create_product_app

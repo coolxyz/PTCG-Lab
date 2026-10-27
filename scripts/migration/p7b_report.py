@@ -14,7 +14,7 @@ from benchmarks.online.identity import runtime_digest, tools_digest  # noqa: E40
 from benchmarks.online.acceptance import summarize  # noqa: E402
 from scripts.migration.p4d_report import source_digest  # noqa: E402
 from scripts.migration.p7a_report import number  # noqa: E402
-from scripts.migration.p7_baseline import accepted_history  # noqa: E402
+from scripts.migration.p7_baseline import accepted_history, accepted_runtime_history  # noqa: E402
 
 PRIOR = "releases/p7b-before-driver-repair.json"
 PRIOR_SHA256 = "dc5d33f1cd2bfd4b7ed54e48eb285fea0de29072bf0ea405e02975b740e05e62"
@@ -172,7 +172,9 @@ def valid(root, *, historical=False):
         report = json.loads((root / "releases/p7b-matrix.json").read_text())
         source_valid = report["serverSourceSha256"] == source_digest(root)
         if not source_valid and historical:
-            source_valid = accepted_history(root, report["serverSourceSha256"]) is not None
+            source_valid = (
+                accepted_history(root, report["serverSourceSha256"]) is not None
+            )
         baseline_path = root / "releases/p7a-isolation.json"
         baseline = json.loads(baseline_path.read_text())
         prior = previous(root)
@@ -186,10 +188,12 @@ def valid(root, *, historical=False):
             and report["baselineRuntimeSourceSha256"] == baseline["runtimeSourceSha256"]
             and report["baselineBenchmarkToolsSha256"]
             == baseline["benchmarkToolsSha256"]
-            and report["serverSourceSha256"]
-            == baseline["serverSourceSha256"]
+            and report["serverSourceSha256"] == baseline["serverSourceSha256"]
             and source_valid
-            and report["runtimeSourceSha256"] == runtime_digest(root)
+            and (
+                report["runtimeSourceSha256"] == runtime_digest(root)
+                or (historical and accepted_runtime_history(root, report))
+            )
             and report["benchmarkToolsSha256"] == tools_digest(root)
             and report["capacityValidated"] is False
             and report["formalMatrixCompleted"] is False

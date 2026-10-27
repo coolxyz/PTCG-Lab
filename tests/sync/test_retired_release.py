@@ -27,7 +27,7 @@ def test_retired_match_is_read_only_and_replay_still_requires_owner(tmp_path):
         replay=client.get('/api/battle/matches/'+mid+'/replay')
         assert replay.status_code==200 and replay.json()['frames']
         mutation=client.post('/api/battle/matches/'+mid+'/resign',json={'expectedStateVersion':0})
-        assert mutation.status_code==409 and mutation.json()['code']=='RELEASE_RETIRED'
+        assert mutation.status_code==409 and mutation.json()['code']=='RULE_RELEASE_UNAVAILABLE'
         with TestClient(create_app(tmp_path/'app.sqlite')) as stranger:
             assert stranger.get('/api/battle/matches/'+mid+'/replay').status_code==401
             assert stranger.post('/api/battle/matches/'+mid+'/resign',json={'expectedStateVersion':0}).status_code==401

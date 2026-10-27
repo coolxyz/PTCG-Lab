@@ -12,7 +12,7 @@ from packages.sync.runtime import RuntimePool
 from packages.sync.releases import Releases
 
 
-def test_old_and_new_matches_survive_release_restart_and_restore(tmp_path):
+def test_only_current_release_executes_and_old_frames_survive_restart(tmp_path):
     database = tmp_path / "user.sqlite"
     app = create_app(database)
     sync = app.state.sync
@@ -43,7 +43,7 @@ def test_old_and_new_matches_survive_release_restart_and_restore(tmp_path):
         with TestClient(create_app(database), base_url="http://127.0.0.1:8777") as local:
             assert local.post("/api/battle/session", json={}, headers={"Origin": "http://127.0.0.1:8777"}).status_code == 200
             assert local.post("/api/battle/session", json={}, headers={"Origin": "https://example.com"}).status_code == 403
-        assert client.get("/api/battle/matches/" + before_id).headers["x-ptcg-release"] == baseline
+        assert client.get("/api/battle/matches/" + before_id).json()["readOnly"] is True
         with TestClient(create_app(database)) as stranger:
             assert stranger.get("/api/battle/matches/" + before_id).status_code == 401
         duplicate = client.post("/api/battle/matches", json=request)
@@ -62,15 +62,19 @@ def test_old_and_new_matches_survive_release_restart_and_restore(tmp_path):
         sync.pool.close()
         assert client.get("/api/battle/matches/" + after_id).headers["x-ptcg-release"] == release
         sync.rollback(baseline, release)
-        assert client.get("/api/battle/matches/" + after_id).headers["x-ptcg-release"] == release
-        assert client.get("/api/battle/matches/" + before_id).headers["x-ptcg-release"] == baseline
+        assert client.get("/api/battle/matches/" + after_id).json()["readOnly"] is True
+        assert client.get("/api/battle/matches/" + before_id).json()["readOnly"] is True
         bundle = tmp_path / "backup.zip"
         export_bundle(sync, bundle)
     restored = restore_bundle(bundle, tmp_path / "restored")
     pool = RuntimePool(Releases(restored["home"]), restored["database"])
     try:
-        assert pool.route("/api/battle/matches/" + after_id) == release
-        assert pool.get(release).request("GET", "/api/meta")["status"] == 200
+        assert pool.route("/api/battle/matches/" + after_id) is None
+        import pytest
+        from packages.sync.common import SyncError
+        with pytest.raises(SyncError, match="仅当前规则"):
+            pool.get(release)
+        assert pool.get(baseline).request("GET", "/api/meta")["status"] == 200
     finally:
         pool.close()
 

@@ -94,9 +94,7 @@ HTTP 和 WSS 独立准入，传输总上限为 HTTP 槽数 + 流槽数 + `CONNEC
 
 2026-10-27 的神奇糖果修复补齐注册卡牌类的进化关系，并兼容没有编译 `spec` 的进化宝可梦。规则源码变化会产生新的执行身份；不能把新代码标成旧身份，也不能直接关闭恢复记录的版本检查。
 
-需要保留旧局时，可显式使用 Uvicorn factory `ptcg_online_server.multirelease:create_app`。镜像须保留更新前完整、原样的 `ptcg_core` 包，例如 `/opt/previous-core/ptcg_core`，并设置 `PTCG_ONLINE_V2_PREVIOUS_CORE_DIRECTORY=/opt/previous-core` 和该旧包原有的 `PTCG_ONLINE_V2_PREVIOUS_RULE_RELEASE_ID`。默认规则仍由原有目录、清单摘要与批准执行身份配置。启动分别探测两套实际身份；旧局按恢复记录中的身份进入独立、无凭据的一次性进程，新局只使用默认新版。跨版本计算串行执行，进入旧版前回收默认闲置进程。未列入配置的版本仍拒绝执行。
-
-迁移特定旧局必须另做明确维护：备份该局恢复记录和可见帧；在离线副本逐步核对全部历史状态，按动作内容校准可能变化的动作编号；事务更新该局执行身份和恢复记录，统一回放信封的版本元信息，并同步两端本局缓存。不能改变已发生的场面、事件、命令回执或对局步数。提交了新操作后，不得直接覆盖回迁旧备份。本次私有部署记录和回退脚本在忽略目录 `var/rare-candy-hotfix/`，不进入源码归档。
+当前部署只执行当前批准规则。启动使用 `ptcg_online_server.api:create_app`（Uvicorn factory），不包含旧核心副本，不设置 PREVIOUS_CORE_DIRECTORY 或 PREVIOUS_RULE_RELEASE_ID。规则更新后旧对局不可继续计算；已提交帧可作为只读回放数据读取。不要修改旧恢复记录的规则身份以强行续局。完整策略和本轮清点见 [单一当前规则](../../docs/单一当前规则与P8A验收.md)。
 
 糖果回归测试使用真实、已批准的本地规则包，在独立进程运行，避免与其他规则测试混合导入：
 

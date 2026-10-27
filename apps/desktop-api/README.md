@@ -63,3 +63,18 @@ P5-D 窗口重开修复（`0.5.0.dev5`）：关闭浏览器标签页后，若后
 统一产品首次启动在终端显示五分钟、一次性的本机授权码，浏览器网络大厅输入后换取 HttpOnly 会话。不需要授权 HTML；授权码不写入 URL 或浏览器存储。后台终端 `r` 生成新码；同一浏览器会话有效时直接重开产品地址。也可以使用同一配置和状态目录，在启动命令后追加 `--reopen`，通过私有 Unix socket 请求已有实例重新打开；不会启动第二个 HTTP 服务。Mac/Linux/WSL2 支持该路径，原生 Windows 仍未支持。状态目录应使用较短的本机路径（Unix socket 路径长度受平台限制）。
 
 `bash start.sh --setup --online-config /absolute/online.json --port 18789` 一次安装产品与原生客户端依赖、构建两种前端，再启动一个 APP。`npm run product:build` 可单独构建产品与诊断页面。已有服务不会自动升级或重启。B/C 的剩余验收和迁移备份说明见实施记录。
+
+
+## P8-A macOS 原生凭据
+
+原生入口通过私有父子管道授权 WebView，关闭重开获取新会话；八小时过期后需关闭并重新打开 APP。macOS 预览使用 Keychain 保存密钥，以 AES-GCM 加密整个远端凭据与待确认日志，不自动读取既有浏览器身份。
+
+若需迁移旧测试包身份，先关闭 APP、备份旧私有状态目录，并在目标 preview 的 `connection.json` 配置相同 HTTPS 地址和 CA。使用随包解释器显式运行（以下占位路径需要替换）：
+
+```sh
+"/absolute/PTCG Lab Preview.app/Contents/Resources/backend/python/bin/python3" -I -B \
+  -m ptcg_desktop_api.identity --source /absolute/old-state/credentials \
+  --state-dir /absolute/native-preview-state --profile my-server
+```
+
+源目录必须包含该服务器对应的原始 vault。导入只读取源文件、拒绝覆盖既有目标，并检查后台目录锁；输出只有结果码。不要把明文凭据放入卡组导出或资源包。Keychain 密钥与本机用户、目标目录和服务器信任身份绑定，不能直接复制密文到其他电脑当作迁移。此入口不允许旧规则继续执行，完整安装升级 UI 属于后续阶段。

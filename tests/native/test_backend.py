@@ -6,6 +6,7 @@ import select
 import socket
 import subprocess
 import sys
+import time
 from urllib.parse import urlsplit
 
 import httpx
@@ -150,6 +151,87 @@ def test_second_backend_cannot_mutate_a_running_profile(backend, tmp_path):
     assert result == {"schema": 1, "type": "error", "code": "NATIVE_START_FAILED"}
     assert second.wait(timeout=10) == 1 and first.poll() is None
     assert httpx.get(ready["origin"], trust_env=False).status_code == 200
+
+
+def test_killed_backend_releases_port_and_profile_without_touching_other_owner(backend):
+    first, ready = backend()
+    first.kill()
+    first.wait(timeout=10)
+    with socket.socket() as connection:
+        assert connection.connect_ex(("127.0.0.1", urlsplit(ready["origin"]).port)) != 0
+    second, reopened = backend()
+    assert second.poll() is None and reopened["cookie"] != ready["cookie"]
+
+
+def test_hard_killed_parent_closes_inherited_pipe_and_backend_exits(tmp_path):
+    build = tmp_path / "gui"
+    build.mkdir()
+    (build / "online.html").write_text("<h1>Synthetic GUI</h1>")
+    # The intermediate process owns the only writer, just as the native shell does.
+    script = """
+import json, subprocess, sys, time
+child = subprocess.Popen([sys.executable, '-I', '-B', '-c',
+    'from ptcg_desktop_api.native import main; import sys; raise SystemExit(main(build=sys.argv[1]))', sys.argv[1]],
+    stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.DEVNULL, text=True)
+child.stdin.write(sys.argv[2] + '\\n'); child.stdin.flush()
+ready = json.loads(child.stdout.readline())
+print(json.dumps({'pid': child.pid, 'origin': ready['origin']}), flush=True)
+time.sleep(60)
+"""
+    parent = subprocess.Popen(
+        [
+            sys.executable,
+            "-I",
+            "-B",
+            "-c",
+            script,
+            str(build),
+            json.dumps(start_value(tmp_path / "profile")),
+        ],
+        stdout=subprocess.PIPE,
+        stderr=subprocess.PIPE,
+        text=True,
+    )
+    child_pid = None
+    try:
+        ready = read(parent)
+        child_pid = ready["pid"]
+        parent.kill()
+        parent.wait(timeout=10)
+        port = urlsplit(ready["origin"]).port
+        for _ in range(100):
+            with socket.socket() as connection:
+                if connection.connect_ex(("127.0.0.1", port)) != 0:
+                    break
+            time.sleep(0.1)
+        else:
+            pytest.fail("orphan backend still listening")
+        # Listener closes before the shutdown finalizer releases the state lock.
+        for _ in range(100):
+            try:
+                lock = StateLock(tmp_path / "profile")
+                lock.close()
+                child_pid = None
+                break
+            except BlockingIOError:
+                time.sleep(0.1)
+        else:
+            pytest.fail("orphan backend retained profile lock")
+    finally:
+        if parent.poll() is None:
+            parent.kill()
+        parent.wait(timeout=10)
+        parent.stdout.close()
+        parent.stderr.close()
+        if child_pid:
+            # Only the synthetic owned child may be cleaned up after failure.
+            import os
+            import signal
+
+            try:
+                os.kill(child_pid, signal.SIGTERM)
+            except ProcessLookupError:
+                pass
 
 
 @pytest.mark.parametrize(

@@ -7,23 +7,28 @@ from pathlib import Path
 import stat
 from threading import RLock
 import uuid
+from copy import deepcopy
 from .contracts import ClientError, unpack
 
 MAX_VAULT = 8 * 1024 * 1024
 
 
 class Vault:
-    def __init__(self, root, server):
+    def __init__(self, root, server, *, codec_factory=None, initial_state=None):
         if os.name != "posix":
             raise ClientError("CREDENTIAL_BACKEND_UNAVAILABLE")
         import fcntl
 
         self.mutex, self.closed, self.failed = RLock(), False, False
+        self.codec = None
         self.directory = Path(root)
         if self.directory.is_symlink():
             raise ClientError("UNSAFE_STORAGE")
         self.directory.mkdir(mode=0o700, parents=True, exist_ok=True)
-        if stat.S_IMODE(self.directory.stat().st_mode) & 0o077:
+        if (
+            stat.S_IMODE(self.directory.stat().st_mode) & 0o077
+            or self.directory.stat().st_uid != os.getuid()
+        ):
             raise ClientError("UNSAFE_STORAGE")
         self.directory = self.directory.resolve()
         self.path = self.directory / (server.key + ".json")
@@ -33,22 +38,39 @@ class Vault:
             0o600,
         )
         try:
+            info = os.fstat(self.lock)
+            if (
+                not stat.S_ISREG(info.st_mode)
+                or info.st_nlink != 1
+                or info.st_uid != os.getuid()
+                or stat.S_IMODE(info.st_mode) & 0o077
+            ):
+                raise ClientError("UNSAFE_STORAGE")
             fcntl.flock(self.lock, fcntl.LOCK_EX | fcntl.LOCK_NB)
+        except ClientError:
+            os.close(self.lock)
+            raise
         except OSError:
             os.close(self.lock)
             raise ClientError("PROFILE_IN_USE") from None
         try:
             if self.path.exists() or self.path.is_symlink():
-                fd = os.open(self.path, os.O_RDONLY | os.O_NOFOLLOW)
+                fd = os.open(self.path, os.O_RDONLY | os.O_NOFOLLOW | os.O_NONBLOCK)
                 with os.fdopen(fd, "rb") as source:
                     info = os.fstat(source.fileno())
                     if (
                         not stat.S_ISREG(info.st_mode)
+                        or info.st_nlink != 1
+                        or info.st_uid != os.getuid()
                         or stat.S_IMODE(info.st_mode) & 0o077
-                        or info.st_size > MAX_VAULT
+                        or info.st_size > MAX_VAULT + (64 if codec_factory else 0)
                     ):
                         raise ClientError("UNSAFE_STORAGE")
-                    self.state = unpack(source.read(MAX_VAULT + 1))
+                    raw = source.read(MAX_VAULT + 65)
+                if codec_factory:
+                    self.codec = codec_factory(create=False, existing=raw)
+                    raw = self.codec.decode(raw)
+                self.state = unpack(raw)
                 if (
                     not isinstance(self.state, dict)
                     or self.state.get("schema") != 1
@@ -65,15 +87,26 @@ class Vault:
                 ):
                     raise ClientError("INVALID_STORAGE")
             else:
-                self.state = {
-                    "schema": 1,
-                    "profile": server.key,
-                    "credentials": None,
-                    "refreshPending": False,
-                    "pending": {},
-                    "controllers": {},
-                    "snapshots": {},
-                }
+                self.state = (
+                    deepcopy(initial_state)
+                    if initial_state is not None
+                    else {
+                        "schema": 1,
+                        "profile": server.key,
+                        "credentials": None,
+                        "refreshPending": False,
+                        "pending": {},
+                        "controllers": {},
+                        "snapshots": {},
+                    }
+                )
+                if (
+                    self.state.get("schema") != 1
+                    or self.state.get("profile") != server.key
+                ):
+                    raise ClientError("INVALID_STORAGE")
+                if codec_factory:
+                    self.codec = codec_factory(create=True, existing=None)
                 self.save()
         except Exception:
             os.close(self.lock)
@@ -93,6 +126,12 @@ class Vault:
         if len(data) > MAX_VAULT:
             self.failed = True
             raise ClientError("STORAGE_CAPACITY")
+        if self.codec:
+            try:
+                data = self.codec.encode(data)
+            except Exception:
+                self.failed = True
+                raise ClientError("STORAGE_UNAVAILABLE") from None
         temp = self.directory / ("." + uuid.uuid4().hex)
         try:
             fd = os.open(

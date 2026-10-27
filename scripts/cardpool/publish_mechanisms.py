@@ -198,8 +198,6 @@ def propose(catalog, release):
 
 def main():
     cp, rp = ROOT / "data/catalog/catalog.json", ROOT / "data/simulation/effects.json"
-    old_release = rp.read_bytes()
-    old_hash = hashlib.sha256(old_release).hexdigest()
     catalog, release, reviews = propose(read(cp), read(rp))
     report = {
         "schema": "p4-mechanism-release-v1",
@@ -229,9 +227,6 @@ def main():
         for path in (cp, rp, db):
             if not (backup / path.name).exists():
                 (backup / path.name).write_bytes(path.read_bytes())
-        (ROOT / "data/cardpool/release-history" / (old_hash + ".json")).write_bytes(
-            old_release
-        )
         stage = db.with_suffix(".mechanisms.sqlite")
         with (
             closing(sqlite3.connect(db)) as src,

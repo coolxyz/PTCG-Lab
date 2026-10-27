@@ -1,9 +1,7 @@
 import copy
-import hashlib
-import json
 
-from scripts.cardpool.reprints import ROOT, propose, read
-from packages.simulation.registry import additive_release, compatible_release, RELEASE
+from scripts.cardpool.reprints import propose
+from packages.simulation.registry import RELEASE
 
 
 def test_reprint_review_requires_exact_identity_and_blocks_conflicts():
@@ -18,7 +16,7 @@ def test_reprint_review_requires_exact_identity_and_blocks_conflicts():
     original['effects'][0]['printings'].append(anchor['printingId'])
     result, release, reviews = propose(inventory, catalog, baseline, original)
     assert len(reviews) == 1
-    assert additive_release(original, release)
+    assert len(release["effects"][0]["printings"]) == len(original["effects"][0]["printings"]) + 1
     pid = reviews[0]["printingId"]
     source = next(c for c in inventory["cards"] if c["printingId"] == pid)
     source["gaps"].append("PRINTING_IDENTITY_CONFLICT")
@@ -30,26 +28,8 @@ def test_reprint_review_requires_exact_identity_and_blocks_conflicts():
     assert pid not in {r["printingId"] for r in rejected}
 
 
-def test_compatibility_rejects_changed_semantics_removed_alias_and_engine():
-    new = copy.deepcopy(RELEASE)
-    new["effects"][0]["printings"].append("test:new-printing")
-    assert additive_release(RELEASE, new)
-    new["effects"][0]["semantics"]["hp"] = -1
-    assert not additive_release(RELEASE, new)
-    new = copy.deepcopy(RELEASE)
-    next(row for row in new["effects"] if row["printings"])["printings"].pop()
-    assert not additive_release(RELEASE, new)
-    new = copy.deepcopy(RELEASE)
-    new["engineVersion"] = "different-engine"
-    assert not additive_release(RELEASE, new)
-    assert not compatible_release("../effects")
-    assert not compatible_release("0" * 64)
+def test_historical_effect_alias_loader_has_been_removed():
+    from packages.simulation import registry
 
-
-def test_archived_release_is_hash_pinned_and_additive():
-    for path in (ROOT / "data/cardpool/release-history").glob("*.json"):
-        assert hashlib.sha256(path.read_bytes()).hexdigest() == path.stem
-        expected = additive_release(json.loads(path.read_bytes()), RELEASE)
-        assert compatible_release(path.stem) == expected
-        if json.loads(path.read_bytes())["engineVersion"] != RELEASE["engineVersion"]:
-            assert not expected
+    assert not hasattr(registry, "compatible_release")
+    assert not hasattr(registry, "additive_release")

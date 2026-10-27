@@ -51,7 +51,10 @@ type Caps = {
 export const errorText = (error: unknown) => {
   const code = error instanceof OnlineError ? error.code : "LOCAL_STATE_FAILED";
   const names: Record<string, string> = {
-    LOCAL_AUTH_REQUIRED: "本机窗口授权已失效，请从本地启动器重新打开。",
+    LOCAL_AUTH_REQUIRED: "本机窗口授权已过期，请关闭并重新打开 APP 或本地启动器。",
+    CREDENTIAL_BACKEND_UNAVAILABLE: "无法访问系统凭据存储，请允许访问后重新打开 APP。",
+    CREDENTIAL_KEY_UNAVAILABLE: "系统凭据密钥不可用，请保留本地数据并检查 Keychain 访问权限。",
+    NATIVE_IDENTITY_IMPORT_REQUIRED: "检测到旧版明文身份，请先关闭 APP 并按身份导入手顺迁移。",
     REAUTHENTICATION_REQUIRED:
       "身份需要重新认证。游客身份无法自动找回，请保留本地凭据和待确认记录。",
     LOCAL_CONTROL_REQUIRED: "另一个窗口已接管，请重新取得操作权。",

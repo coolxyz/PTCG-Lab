@@ -148,6 +148,66 @@ impl Drop for Instance {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use std::process::{Command, Stdio};
+
+    // Launched by the test below as a genuinely separate OS process.
+    #[test]
+    fn process_owner_helper() {
+        let Some(root) = std::env::var_os("PTCG_TEST_INSTANCE_ROOT") else {
+            return;
+        };
+        let root = PathBuf::from(root);
+        let mut owner = Instance::acquire(&root).unwrap().unwrap();
+        let focused = root.join("focused");
+        owner.listen(move || {
+            fs::write(&focused, b"focus").unwrap();
+        });
+        fs::write(root.join("ready"), b"ready").unwrap();
+        loop {
+            thread::sleep(Duration::from_millis(50));
+        }
+    }
+
+    #[test]
+    fn process_competition_and_killed_owner_recovery() {
+        let root = crate::tests::scratch("process");
+        let mut child = Command::new(std::env::current_exe().unwrap())
+            .args([
+                "--exact",
+                "instance::tests::process_owner_helper",
+                "--nocapture",
+            ])
+            .env("PTCG_TEST_INSTANCE_ROOT", &root)
+            .stdin(Stdio::null())
+            .stdout(Stdio::null())
+            .stderr(Stdio::null())
+            .spawn()
+            .unwrap();
+        let outcome = std::panic::catch_unwind(|| {
+            for _ in 0..100 {
+                if root.join("ready").exists() {
+                    break;
+                }
+                thread::sleep(Duration::from_millis(50));
+            }
+            assert!(root.join("ready").exists());
+            assert!(Instance::acquire(&root).unwrap().is_none());
+            for _ in 0..100 {
+                if root.join("focused").exists() {
+                    break;
+                }
+                thread::sleep(Duration::from_millis(50));
+            }
+            assert_eq!(fs::read(root.join("focused")).unwrap(), b"focus");
+        });
+        child.kill().unwrap();
+        child.wait().unwrap();
+        outcome.unwrap();
+        assert!(root.join("focus.sock").exists()); // SIGKILL skipped Drop.
+        drop(Instance::acquire(&root).unwrap().unwrap());
+        assert!(!root.join("focus.sock").exists());
+        fs::remove_dir_all(root).unwrap();
+    }
     #[test]
     fn private_singleton_focus_and_stale_socket_recovery() {
         let root = crate::tests::scratch("instance");

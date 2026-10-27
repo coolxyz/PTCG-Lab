@@ -33,3 +33,23 @@ def accepted_history(root, expected_source):
         return report
     except (OSError, ValueError, KeyError, TypeError):
         return None
+
+
+MATRIX_SNAPSHOT = "releases/p7-measured-matrix-baseline.json"
+MATRIX_SHA256 = "f67bb6ab15506a3c14d0c7db75cd48e5b8f9f6c75d273a7b983dcd943639528c"
+
+
+def accepted_runtime_history(root, report):
+    """Accept only this immutable, unfinished measurement; grant no current capacity."""
+    try:
+        root = Path(root)
+        raw = (root / MATRIX_SNAPSHOT).read_bytes()
+        return (
+            sha256(raw).hexdigest() == MATRIX_SHA256
+            and json.loads(raw) == report
+            and report["capacityValidated"] is False
+            and report["formalMatrixCompleted"] is False
+            and accepted_history(root, report["serverSourceSha256"]) is not None
+        )
+    except (OSError, ValueError, KeyError, TypeError):
+        return False

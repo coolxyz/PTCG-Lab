@@ -1,4 +1,4 @@
-"""One process per immutable release; requests never share mutable registries."""
+"""Only the currently activated release may execute; saved frames remain data."""
 from __future__ import annotations
 
 import base64
@@ -12,12 +12,15 @@ import sys
 import threading
 from contextlib import closing
 
-from .common import SyncError, read, write
+from .common import SyncError
+from .releases import RULE_POLICY
 
 
 class Worker:
     def __init__(self, releases, release_id, user_db):
-        releases.verify(release_id)
+        manifest = releases.verify(release_id)
+        if manifest.get("metadata", {}).get("rulePolicy") != RULE_POLICY:
+            raise SyncError("RULE_RELEASE_UNAVAILABLE", "旧规则发布不再执行，请重新发布当前规则", 409)
         self.lock = threading.Lock()
         self.executor = ThreadPoolExecutor(max_workers=1)
         log = releases.home / "logs" / (release_id + ".log")
@@ -60,27 +63,22 @@ class RuntimePool:
 
     def get(self, release_id):
         with self.lock:
+            if release_id is None or release_id != self.releases.current():
+                raise SyncError("RULE_RELEASE_UNAVAILABLE", "仅当前规则发布可执行，请开始新对局", 409)
+            for key in list(self.workers):
+                if key != release_id:
+                    self.workers.pop(key).close()
             old = self.workers.get(release_id)
             if old and old.process.poll() is not None:
                 old.close()
                 del self.workers[release_id]
             if release_id not in self.workers:
-                # Idle process eviction does not delete frozen runtime files.
-                if len(self.workers) >= 4:
-                    for key, worker in list(self.workers.items()):
-                        if worker.lock.acquire(blocking=False):
-                            try:
-                                worker.close()
-                                del self.workers[key]
-                            finally:
-                                worker.lock.release()
-                            break
                 self.workers[release_id] = Worker(self.releases, release_id, self.user_db)
             return self.workers[release_id]
 
     def route(self, path, body=b"", token=None):
         current = self.releases.current()
-        if not current and not (self.releases.home / "baseline.json").exists():
+        if not current:
             return None
         parts = path.split("?", 1)[0].split("/")
         mid = parts[4] if len(parts) >= 5 and parts[1:4] == ["api", "battle", "matches"] else None
@@ -88,35 +86,9 @@ class RuntimePool:
             with closing(sqlite3.connect(self.user_db)) as db:
                 row = db.execute("SELECT body FROM matches WHERE id=?", (mid,)).fetchone()
             if row:
-                return self.saved_release(json.loads(row[0]))
-        # An idempotent match creation retried after an upgrade must return the old
-        # match from its original runtime, never reinterpret its revision.
-        if path.split("?")[0] == "/api/battle/matches" and body and token:
-            import hashlib
-            try:
-                request_id = json.loads(body).get("requestId")
-                owner = hashlib.sha256(token.encode()).hexdigest()
-                with closing(sqlite3.connect(self.user_db)) as db:
-                    row = db.execute("SELECT body FROM matches WHERE owner=? AND request_id=?", (owner, request_id)).fetchone()
-                if row:
-                    return self.saved_release(json.loads(row[0]))
-            except (ValueError, sqlite3.OperationalError):
-                pass
+                pinned = json.loads(row[0]).get("config", {}).get("provenance", {}).get("syncReleaseId")
+                return current if pinned == current else None
         return current
-
-    def saved_release(self, record):
-        provenance = record.get("config", {}).get("provenance", {})
-        if provenance.get("syncReleaseId"):
-            release_id = provenance["syncReleaseId"]
-            retired = self.releases.home / 'retired.json'
-            if retired.exists() and release_id in read(retired):
-                return None
-            return release_id
-        for manifest in self.releases.list():
-            if manifest["catalogVersion"] == provenance.get("catalogVersion") and manifest["effectVersion"] == provenance.get("effectReleaseVersion"):
-                return manifest["releaseId"]
-        baseline = self.releases.home / "baseline.json"
-        return read(baseline)["releaseId"] if baseline.exists() else None
 
     def close(self):
         with self.lock:

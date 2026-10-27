@@ -123,6 +123,7 @@ def test_expired_ticket_and_unknown_secret_never_mint_session(local):
         ).status_code
         == 403
     )
+
     assert not path.exists() and not host.sessions
     assert (
         web.post(
@@ -130,6 +131,25 @@ def test_expired_ticket_and_unknown_secret_never_mint_session(local):
         ).status_code
         == 403
     )
+
+
+def test_native_eight_hour_expiry_revokes_page_and_reopen_renews_authority(local):
+    host, web = local
+    now = time.monotonic()
+    cookie = host.native_session()
+    web.cookies.set("ptcg-local", cookie, domain="127.0.0.1", path="/")
+    token = session(web).json()["capability"]
+    assert token in host.owner.windows
+    # Simulate elapsed time at the authorization boundary without an eight-hour wait.
+    assert 8 * 3600 - 2 < host.sessions[cookie]["expires"] - now < 8 * 3600 + 2
+    host.sessions[cookie]["expires"] = time.monotonic() - 1
+    assert session(web).status_code == 403
+    assert token not in host.owner.windows and cookie not in host.sessions
+    renewed = host.native_session()
+    assert renewed != cookie
+    web.cookies.set("ptcg-local", renewed, domain="127.0.0.1", path="/")
+    replacement = session(web).json()["capability"]
+    assert replacement != token and replacement in host.owner.windows
 
 
 def test_session_and_catalog_require_auth_no_arbitrary_file_or_remote_url(local):

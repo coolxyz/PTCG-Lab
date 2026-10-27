@@ -13,6 +13,8 @@ from contextlib import closing
 
 from .common import ROOT, SyncError, digest, read, write, now, inside
 
+RULE_POLICY = "current-only-v1"
+
 DATA_FILES = ["data/catalog/catalog.json", "data/catalog/card-details.json", "data/engine/catalog.json", "data/simulation/effects.json", "data/cardpool/plain-pokemon.json", "data/cardpool/battle-scope.json", "data/cardpool/source-exceptions.json", "rulesets/cn-standard-2026-09-16.json", "artifacts/engine/overlay-hashes.json", "scripts/engine/build_engine.py", "apps/api/requirements.lock"]
 
 
@@ -41,6 +43,7 @@ class Releases:
         return sorted([read(p) for p in self.directory.glob("*/manifest.json")], key=lambda r: r["createdAt"], reverse=True)
 
     def archive(self, catalog=None, details=None, effects=None, plain=None, metadata=None):
+        metadata = {**(metadata or {}), "rulePolicy": RULE_POLICY}
         stage = self.home / "staging" / ("release-" + uuid.uuid4().hex)
         stage.mkdir(parents=True)
         # Only first-party runtime code, checked overlay and fixed data dependencies.
@@ -55,9 +58,6 @@ class Releases:
         # releases without these optional records remain readable.
         if (self.root / 'data/sync').exists():
             shutil.copytree(self.root / 'data/sync', stage / 'data/sync')
-        old_history = self.root / "data/cardpool/release-history"
-        if old_history.exists():
-            shutil.copytree(old_history, stage / "data/cardpool/release-history")
         for name, value in (("catalog/catalog", catalog), ("catalog/card-details", details), ("simulation/effects", effects), ("cardpool/plain-pokemon", plain)):
             if value is not None:
                 write(stage / f"data/{name}.json", value)
@@ -110,7 +110,9 @@ class Releases:
         return manifest
 
     def activate(self, release_id, expected, database):
-        self.verify(release_id)
+        manifest = self.verify(release_id)
+        if manifest.get("metadata", {}).get("rulePolicy") != RULE_POLICY:
+            raise SyncError("RULE_RELEASE_UNAVAILABLE", "旧规则发布不再执行，请从当前源码重新生成发布", 409)
         # The same database lock is used for publish and rollback, even across processes.
         with closing(sqlite3.connect(database, timeout=30)) as db, db:
             db.execute("BEGIN IMMEDIATE")

@@ -81,6 +81,8 @@ def check(root=ROOT):
             )
             if metadata["project"]["name"] != project["distribution"]:
                 errors.append(project["path"] + ": distribution mismatch")
+            if metadata["project"].get("optional-dependencies", {}) != project.get("allowedOptionalRequirements", {}):
+                errors.append(project["path"] + ": optional requirements differ from contract")
             if (
                 metadata["project"].get("dependencies", [])
                 != project["allowedRuntimeRequirements"]
@@ -469,12 +471,16 @@ def check(root=ROOT):
         errors.append("future implementation misrepresented as complete")
     if status["phases"].get("P8") == "in_progress" and (
         status.get("parallelPhases") != ["P7", "P8"]
-        or status.get("subphases", {}).get("P8-A") != "in_progress"
+        or status.get("subphases", {}).get("P8-A") not in {"in_progress", "completed"}
         or status.get("p8ProgressDocument") != "docs/P8原生发布实施记录.md"
         or not (root / "docs/P8原生发布实施记录.md").is_file()
         or any(status.get("subphases", {}).get("P8-" + p) != "planned" for p in "BCDEFS")
     ):
         errors.append("P8 parallel development lacks bounded scope or pending acceptance")
+    if status.get("subphases", {}).get("P8-A") == "completed":
+        from scripts.native.acceptance import valid as native_acceptance_valid
+        if not native_acceptance_valid(root):
+            errors.append("P8-A completion lacks current macOS technical acceptance")
     if status["phases"].get("P8") == "in_progress":
         errors.extend(native_check(root))
     for name in ["docs/产品化重构设计.md", "docs/产品化重构分阶段实施.md"]:

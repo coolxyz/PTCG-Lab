@@ -27,6 +27,7 @@ FOLDERS = (
 )
 FILES = (
     "README.md",
+    "AGENTS.md",
     "LICENSE",
     "THIRD_PARTY_NOTICES.md",
     "SECURITY.md",
@@ -52,8 +53,10 @@ FILES = (
     "releases/p6e-budgets.json",
     "releases/p7a-isolation.json",
     "releases/p7b-matrix.json",
+    "releases/p8a-native.json",
     "releases/p7b-before-driver-repair.json",
     "releases/p7-measured-p6e-baseline.json",
+    "releases/p7-measured-matrix-baseline.json",
     "releases/source-candidates.json",
     "ops/online/Dockerfile.dockerignore",
     "benchmarks/online/Dockerfile.dockerignore",

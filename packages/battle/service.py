@@ -7,12 +7,13 @@ projection at every sequence acts as a durable replay/outbox for polling clients
 
 from packages.simulation.results import decorate
 from packages.simulation.events import public_effects
-from packages.simulation.registry import VERSION as RELEASE_VERSION, RELEASE, compatible_release
+from packages.simulation.registry import VERSION as RELEASE_VERSION, RELEASE
 
 from collections import OrderedDict
 from contextlib import contextmanager
 import hashlib
 import json
+import os
 import secrets
 import sqlite3
 import threading
@@ -56,6 +57,7 @@ class MatchService:
         self.path = store.path
         self.lock = threading.RLock()
         self.cache = OrderedDict()
+        self.release_id = lambda: os.environ.get("PTCG_RELEASE_ID")
         with self.db() as db:
             db.executescript("""
             CREATE TABLE IF NOT EXISTS battle_sessions(owner TEXT PRIMARY KEY,created_at TEXT NOT NULL);
@@ -121,13 +123,25 @@ class MatchService:
 
     def list(self, owner):
         with self.db() as db:
-            return [
-                {**dict(r), 'status': r['status'] if r['engine_version'] == runtime().ENGINE_VERSION else 'archived'}
-                for r in db.execute(
-                    "SELECT id,revision_id AS revisionId,opponent,status,seq,engine_version,created_at AS createdAt,updated_at AS updatedAt FROM matches WHERE owner=? ORDER BY updated_at DESC LIMIT 100",
-                    (owner,),
-                )
-            ]
+            result = []
+            for row in db.execute(
+                "SELECT id,revision_id AS revisionId,opponent,status,seq,engine_version,body,created_at AS createdAt,updated_at AS updatedAt FROM matches WHERE owner=? ORDER BY updated_at DESC LIMIT 100",
+                (owner,),
+            ):
+                item = dict(row)
+                item.pop("body")
+                if not self._current_rules(row):
+                    item["status"] = "archived"
+                result.append(item)
+            return result
+
+    def _current_rules(self, row):
+        provenance = json.loads(row["body"]).get("config", {}).get("provenance", {})
+        return (
+            row["engine_version"] == runtime().ENGINE_VERSION
+            and provenance.get("effectReleaseVersion") == RELEASE_VERSION
+            and provenance.get("syncReleaseId") == self.release_id()
+        )
 
     def revisions(self):
         result = []
@@ -295,11 +309,15 @@ class MatchService:
             409,
         )
         require(
-            compatible_release(
-                record["config"].get("provenance", {}).get("effectReleaseVersion")
-            ),
+            record["config"].get("provenance", {}).get("effectReleaseVersion") == RELEASE_VERSION,
             "EFFECT_RELEASE_MISMATCH",
             "效果发布版本已变化，本局仅可查看已保存回放",
+            409,
+        )
+        require(
+            record["config"].get("provenance", {}).get("syncReleaseId") == self.release_id(),
+            "RULE_RELEASE_UNAVAILABLE",
+            "规则发布已更新，本局仅可查看已保存回放，请开始新对局",
             409,
         )
         if record["config"].get("provenance", {}).get("aiVersion") == h2.VERSION:
@@ -411,7 +429,7 @@ class MatchService:
                 (row["id"],),
             )
         ][::-1]
-        if row['engine_version'] != runtime().ENGINE_VERSION:
+        if not self._current_rules(row):
             view.update(readOnly=True, readOnlyReason='旧引擎版本已停用，此对局仅供回放。请重新保存卡组后开始新对局。', done=True, decision=None, status='archived')
         return decorate(view)
 

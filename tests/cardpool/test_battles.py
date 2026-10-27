@@ -89,8 +89,9 @@ def test_reprint_decks_finish_a1_game_and_survive_service_restart(
     assert view["result"]["reason"] in ("prizes_taken", "no_pokemon", "deck_out")
 
 
-def test_old_engine_effect_release_is_not_resumed_under_new_rules(
-    tmp_path, monkeypatch
+@pytest.mark.parametrize("engine_drift", [False, True])
+def test_old_effect_release_is_not_resumed_under_new_rules(
+    tmp_path, monkeypatch, engine_drift
 ):
     from packages.battle import runtime
     from packages.battle.agent import VERSION as AI_VERSION
@@ -100,7 +101,8 @@ def test_old_engine_effect_release_is_not_resumed_under_new_rules(
     from packages.simulation import registry as releases
     import hashlib
     historical=copy.deepcopy(releases.RELEASE)
-    historical['engineVersion']='historical-engine-fixture'
+    historical['engineVersion']='historical-engine-fixture' if engine_drift else runtime.ENGINE_VERSION
+    historical['additiveLegacyAliasFixture'] = True
     raw=json.dumps(historical).encode()
     old=hashlib.sha256(raw).hexdigest()
     archive=tmp_path/'data/cardpool/release-history'
@@ -108,10 +110,7 @@ def test_old_engine_effect_release_is_not_resumed_under_new_rules(
     (archive/(old+'.json')).write_bytes(raw)
     monkeypatch.setattr(releases,'PATH',tmp_path/'data/simulation/effects.json')
     assert old != VERSION
-    assert (
-        read(archive / (old + ".json"))["engineVersion"]
-        != runtime.ENGINE_VERSION
-    )
+    assert (read(archive / (old + ".json"))["engineVersion"] != runtime.ENGINE_VERSION) == engine_drift
     app = create_app(tmp_path / "historical.sqlite")
     game = runtime.Adapter(
         7,
