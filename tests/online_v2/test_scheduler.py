@@ -218,3 +218,44 @@ def test_scheduler_environment_has_explicit_rollback(monkeypatch):
     monkeypatch.setenv("PTCG_ONLINE_V2_COMMAND_QUEUE_ENABLED", "maybe")
     with pytest.raises(ValueError):
         Settings.from_env()
+
+
+def test_two_worker_lanes_run_independently_but_each_match_stays_serial():
+    from ptcg_online_server.lanes import current_lane, lane_for
+
+    async def run():
+        queue = FairScheduler(config(worker_count=2), Metrics())
+        queue.start()
+        groups = [
+            next(str(i) for i in range(100) if lane_for(str(i), 2) == n) for n in (0, 1)
+        ]
+        gate = asyncio.Event()
+        order = []
+
+        async def op(name, blocked=False):
+            order.append((name, current_lane.get()))
+            if blocked:
+                await gate.wait()
+            return name
+
+        first = asyncio.create_task(
+            queue.submit(groups[0], "a", "0", "0", lambda: op("A0", True))
+        )
+        try:
+            await until(lambda: len(order) == 1)
+            second = asyncio.create_task(
+                queue.submit(groups[0], "a", "1", "1", lambda: op("A1"))
+            )
+            other = asyncio.create_task(
+                queue.submit(groups[1], "b", "0", "0", lambda: op("B0"))
+            )
+            assert await asyncio.wait_for(other, 1) == "B0"
+            assert order == [("A0", 0), ("B0", 1)] and not second.done()
+            gate.set()
+            await asyncio.gather(first, second)
+            assert order[-1] == ("A1", 0)
+        finally:
+            gate.set()
+            await queue.stop()
+
+    asyncio.run(run())

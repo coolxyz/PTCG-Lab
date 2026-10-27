@@ -38,7 +38,7 @@
     "P6-A": "completed",
     "P6-B": "completed",
     "P6-C": "completed",
-    "P6-D": "planned",
+    "P6-D": "completed",
     "P6-E": "planned"
   },
   "p1BaselineCommit": "83e3fb2",
@@ -88,5 +88,7 @@
   "p6aImplementationCommit": "5f1c16f",
   "p6bAcceptanceDocument": "releases/p6b-streams.json",
   "p6bImplementationCommit": "3ca9ca0",
-  "p6cAcceptanceDocument": "releases/p6c-scheduler.json"
+  "p6cAcceptanceDocument": "releases/p6c-scheduler.json",
+  "p6cImplementationCommit": "691fc0a",
+  "p6dAcceptanceDocument": "releases/p6d-workers.json"
 }

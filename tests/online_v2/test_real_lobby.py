@@ -126,7 +126,7 @@ def test_real_worker_metrics_separate_restore_and_compute_without_private_data(r
     from tests.online_v2.test_real_matches import choose
 
     settings, inputs = real
-    worker = RuleWorker(settings)
+    worker = RuleWorker(replace(settings, worker_persistent=False))
     assert worker.probe()
     as_of = worker.validate(inputs["deck1"])["asOf"]
     job = {**inputs, "rule_release_id": inputs["release"], "as_of": as_of, "seed": 1341}

@@ -10,6 +10,7 @@ import ssl
 from urllib.parse import urlsplit
 from websockets.sync.client import connect
 from .contracts import ClientError, unpack, checked
+from .websocket import OrderedHandshakeConnection
 
 PREFIX = "/api/online/v2"
 MAX_RESPONSE = 2 * 1024 * 1024
@@ -140,6 +141,7 @@ class Transport:
         )
         return connect(
             uri,
+            create_connection=OrderedHandshakeConnection,
             ssl=self.context if uri.startswith("wss:") else None,
             proxy=None,
             compression=None,

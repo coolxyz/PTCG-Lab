@@ -40,7 +40,7 @@
         "fcntl"
       ],
       "allowedRuntimeRequirements": [
-        "ptcg-online-client==0.5.0.dev5",
+        "ptcg-online-client==0.5.0.dev6",
         "starlette==0.46.2",
         "uvicorn==0.34.2"
       ]
@@ -50,7 +50,7 @@
       "distribution": "ptcg-online-server",
       "module": "ptcg_online_server",
       "language": "python",
-      "stage": "P6-C",
+      "stage": "P6-D",
       "implementationReady": false,
       "allowedInternalImports": [
         "ptcg_core",
@@ -85,7 +85,12 @@
         "uvicorn",
         "math",
         "psycopg_pool",
-        "collections"
+        "collections",
+        "contextvars",
+        "selectors",
+        "resource",
+        "signal",
+        "select"
       ],
       "allowedRuntimeRequirements": [
         "ptcg-battle-core==0.2.0.dev1",

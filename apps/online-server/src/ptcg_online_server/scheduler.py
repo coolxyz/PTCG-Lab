@@ -10,6 +10,7 @@ from dataclasses import dataclass, field
 import logging
 
 from .errors import ServiceError
+from .lanes import current_lane, lane_for
 
 
 @dataclass(eq=False)
@@ -29,21 +30,30 @@ class FairScheduler:
         self.settings, self.metrics = settings, metrics
         self.jobs, self.queues, self.users, self.groups = {}, {}, {}, {}
         self.ready = deque()
-        self.running_group = None
+        self.running_groups = set()
+        self.lanes = settings.worker_count if settings.worker_persistent else 1
         self.waiters = 0
-        self.wakeup = asyncio.Event()
+        self.wakeups = [asyncio.Event() for _ in range(self.lanes)]
         self.task = None
         self.closed = False
 
     def start(self):
         if self.settings.command_queue_enabled:
-            self.task = asyncio.create_task(self.run())
+            self.task = asyncio.gather(*(self.run(lane) for lane in range(self.lanes)))
+
+    @property
+    def running_group(self):
+        return next(iter(self.running_groups), None)
+
+    def ready_group(self, group):
+        self.ready.append(group)
+        self.wakeups[lane_for(group, self.lanes)].set()
 
     def diagnostics(self):
         return dict(
             jobs=len(self.jobs),
             queued=sum(map(len, self.queues.values())),
-            running=int(self.running_group is not None),
+            running=len(self.running_groups),
             waiters=self.waiters,
             groups=len(self.groups),
             users=len(self.users),
@@ -87,14 +97,14 @@ class FairScheduler:
             self.users[user] = self.users.get(user, 0) + 1
             self.groups[group] = self.groups.get(group, 0) + 1
             queue = self.queues.setdefault(group, deque())
-            if not queue and self.running_group != group:
-                self.ready.append(group)
+            if not queue and group not in self.running_groups:
+                self.ready_group(group)
             queue.append(job)
             job.timer = loop.call_later(
                 self.settings.command_queue_seconds, self.expire, job
             )
             self.metrics.observe("scheduler.accepted")
-            self.wakeup.set()
+
         self.waiters += 1
         job.waiters += 1
         try:
@@ -135,13 +145,16 @@ class FairScheduler:
                 ServiceError("CAPACITY_EXCEEDED", 503, retryable=True)
             )
 
-    async def run(self):
+    async def run(self, lane):
         while not self.closed:
-            await self.wakeup.wait()
-            if not self.ready:
-                self.wakeup.clear()
+            await self.wakeups[lane].wait()
+            group = next(
+                (g for g in self.ready if lane_for(g, self.lanes) == lane), None
+            )
+            if group is None:
+                self.wakeups[lane].clear()
                 continue
-            group = self.ready.popleft()
+            self.ready.remove(group)
             job = self.queues[group].popleft()
             if not self.queues[group]:
                 del self.queues[group]
@@ -156,9 +169,10 @@ class FairScheduler:
                     ServiceError("CAPACITY_EXCEEDED", 503, retryable=True)
                 )
                 if group in self.queues:
-                    self.ready.append(group)
+                    self.ready_group(group)
                 continue
-            self.running_group = group
+            self.running_groups.add(group)
+            context = current_lane.set(lane)
             job.running = True
             job.timer.cancel()
             self.metrics.observe(
@@ -179,10 +193,11 @@ class FairScheduler:
                 job.future.set_result(value)
             finally:
                 self.release(job)
-                self.running_group = None
+                self.running_groups.remove(group)
+                current_lane.reset(context)
                 # A busy match rejoins at the back, after already-ready matches.
                 if group in self.queues:
-                    self.ready.append(group)
+                    self.ready_group(group)
 
     async def stop(self):
         self.closed = True
@@ -192,7 +207,8 @@ class FairScheduler:
                 job.future.set_exception(
                     ServiceError("CAPACITY_EXCEEDED", 503, retryable=True)
                 )
-        self.wakeup.set()
+        for wakeup in self.wakeups:
+            wakeup.set()
         if self.task:
             # Drain the one bounded rule operation; never release its lane early.
             await asyncio.shield(self.task)

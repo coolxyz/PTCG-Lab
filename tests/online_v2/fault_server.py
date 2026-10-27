@@ -10,11 +10,17 @@ from ptcg_online_server import worker
 def create_app():
     directory = Path(os.environ["PTCG_TEST_FAULT_DIRECTORY"])
     if os.environ["PTCG_TEST_FAULT_MODE"] == "compute":
-        original = worker.subprocess.run
+        original_run = worker.subprocess.run
+        original_popen = worker.subprocess.Popen
 
-        def run(args, **kwargs):
-            if args[-1] == "ptcg_online_server.rule_worker":
-                args = [*args[:-1], "tests.online_v2.fault_worker"]
+        def rewrite(args, kwargs):
+            if "ptcg_online_server.rule_worker" in args:
+                args = [
+                    "tests.online_v2.fault_worker"
+                    if a == "ptcg_online_server.rule_worker"
+                    else a
+                    for a in args
+                ]
                 kwargs["env"] = {
                     **kwargs["env"],
                     "PYTHONPATH": os.pathsep.join(
@@ -25,9 +31,18 @@ def create_app():
                     ),
                     "PTCG_TEST_FAULT_DIRECTORY": str(directory),
                 }
-            return original(args, **kwargs)
+            return args, kwargs
+
+        def run(args, **kwargs):
+            args, kwargs = rewrite(args, kwargs)
+            return original_run(args, **kwargs)
+
+        def popen(args, **kwargs):
+            args, kwargs = rewrite(args, kwargs)
+            return original_popen(args, **kwargs)
 
         worker.subprocess.run = run
+        worker.subprocess.Popen = popen
     app = production_app()
 
     async def barrier(scope, receive, send):

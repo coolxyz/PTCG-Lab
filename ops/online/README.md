@@ -59,3 +59,11 @@ P4-C 必须显式应用新增 003 migration。已升级的数据库不能直接�
 ## P6-C 调度预算
 
 新镜像标签 `ptcg-lab-online-api:p6c`，服务版本 `0.6.0.dev3`。Compose 传递 `PTCG_V2_COMMAND_QUEUE_ENABLED/TOTAL/PER_MATCH/PER_USER/WAITERS/DUPLICATES/SECONDS`，默认 `1/32/2/4/64/4/2`；服务对应 `PTCG_ONLINE_V2_` 前缀。任务上限包含执行中任务，重试等待者单独计数，排队期限不取消已开始的规则计算。关闭 ENABLED 后重启该部署可回退原路径，无数据库迁移。单 API 部署限定未变；这些参数不是已验证的容量承诺。本轮镜像仅供隔离验收，未替换局域网服务。
+
+## P6-D 常驻 worker 与缓存
+
+隔离验收镜像 `ptcg-lab-online-api:p6d`，服务版本 `0.6.0.dev4`。默认单 API、单常驻规则进程；`PTCG_V2_WORKER_COUNT=2` 才开启第二个串行通道。各对局稳定分配通道，不支持跨 API 副本共享缓存。`PTCG_V2_WORKER_COLD_LIMIT=1` 限制同时冷恢复，满额返回可重试错误；带权冷热队列留到 P6-E。
+
+默认每 worker 最多 8 个缓存、8 MiB 序列化记录、60 秒闲置期，峰值 RSS 达 256 MiB 后回收进程。记录大小不等于引擎对象占用，RSS 水位不代替容器硬限制。冷恢复／计算预算分别 10／5 秒，管道操作另有 20 秒截止时间。恢复超时只能恢复已提交状态，不能重开对局。
+
+`PTCG_V2_WORKER_CACHE_ENTRIES=0` 关闭缓存但继续复用规则进程；`PTCG_V2_WORKER_PERSISTENT=0` 回退一次性子进程。参数修改后重启本次部署生效，沿用原 schema。全部参数范围、提交确认和代次隔离见 [P6-D 实施记录](../../docs/P6多局调度与性能实施记录.md)。本轮没有更新正在运行的 LAN API，不将固定短局测试当作可承载对局数。

@@ -217,7 +217,19 @@ def create_app(settings=None, *, worker=None, background=True):
                         await maintenance("probe", worker.probe)
                     if worker.available:
                         await maintenance("initialize", initializer.tick)
-                        await maintenance("project", matches.promote_one)
+                        pending_match = await run_in_threadpool(
+                            matches.pending_promotion
+                        )
+                        if pending_match:
+                            await scheduler.submit(
+                                "match:" + pending_match,
+                                "system-maintenance",
+                                "project",
+                                "project",
+                                lambda: run_in_threadpool(
+                                    matches.promote_one, pending_match
+                                ),
+                            )
                 except Exception:
                     logging.getLogger("ptcg_online_server").error(
                         "initialization_unavailable"
@@ -242,7 +254,11 @@ def create_app(settings=None, *, worker=None, background=True):
                     try:
                         await streams.hub.stop()
                     finally:
-                        await run_in_threadpool(repo.close)
+                        try:
+                            if hasattr(worker, "close"):
+                                await run_in_threadpool(worker.close)
+                        finally:
+                            await run_in_threadpool(repo.close)
 
     app = FastAPI(docs_url=None, redoc_url=None, openapi_url=None, lifespan=lifespan)
     app.state.repository = repo

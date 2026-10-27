@@ -1,0 +1,26 @@
+{
+  "schema": 1,
+  "stage": "P6-D",
+  "status": "passed",
+  "tests": 182,
+  "serverSourceSha256": "ac1f1457152cb9caf6b9c66a8cf864367da773f1056ea49d87d64e69cb76f900",
+  "clientTransportSha256": "3f4370dd4a94da33264c8b0be00c8e0274acd3eadb1510fbafa7cae9583134d5",
+  "baselineCommit": "691fc0a",
+  "baselineServerSourceSha256": "9f59a3a51627d26d78a2dea42cc4959ef8588fa5a7b3a7c9ec5af657dfb412dc",
+  "workload": {
+    "workload": "persistent-interleaved-v1",
+    "workers": 2,
+    "matches": 3,
+    "commandsPerMatch": 5,
+    "comparedViews": 30,
+    "hotLoads": 2,
+    "hotRestores": 3,
+    "coldRestores": 30,
+    "sameSeedEquivalent": true,
+    "uncommittedCandidateDiscarded": true,
+    "capacityMeasured": false
+  },
+  "capacityMeasured": false,
+  "productionRoutingChanged": false,
+  "scope": "Three real-rule matches interleaved over two persistent workers; cold/hot equivalence, bounded cache and generation failures. Full HTTPS/WSS regression; no capacity or latency SLA."
+}

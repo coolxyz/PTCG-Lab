@@ -30,3 +30,6 @@ with Client(server, Path.home() / ".ptcg-lab-online") as client:
 P5-B 增加 `recovery_status()` 和 `recover_control(match_id)`：前者只返回待确认命令标识/动作及控制请求的期望 epoch，后者重试持久化的同一控制请求。二者不返回 token、controllerId 或原始 choice。
 
 P5-D 修复 HTTP 快照晚于新推送返回时的时序竞争：先验证身份，再保留持久化的较新快照，避免初始订阅因旧响应退出。原生客户端版本为 `0.5.0.dev3`，桥接依赖版本随之推进到 `0.5.0.dev4`，权限和命令幂等规则保持不变。
+
+
+P6-D 验收补充：`0.5.0.dev6` 对同步 WSS 的首次 Upgrade 写入与接收线程启动作顺序约束，避免在已复现的 macOS TLS 环境中偶发握手停顿。证书校验、15 秒握手上限及双向帧处理保持原合同；握手失败会解除接收线程等待。正式客户端与服务器验收工具共用该兼容类，详见 [P6 实施记录](../../docs/P6多局调度与性能实施记录.md)。

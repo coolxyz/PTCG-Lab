@@ -14,8 +14,8 @@ from ptcg_online_server import rule_worker
 def main():
     execute = rule_worker.execute
 
-    def paused(request, metrics=None):
-        result = execute(request, metrics)
+    def paused(request, metrics=None, runtime=None):
+        result = execute(request, metrics, runtime)
         if request["operation"] == "command":
             directory = Path(os.environ["PTCG_TEST_FAULT_DIRECTORY"])
             (directory / "worker-pid").write_text(

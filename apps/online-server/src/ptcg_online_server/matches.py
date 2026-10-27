@@ -129,17 +129,31 @@ class Matches:
             )
         return frames
 
-    def promote_one(self):
+    def pending_promotion(self):
+        with self.repo.transaction() as db:
+            row = db.execute(
+                """SELECT i.match_id FROM ptcg_v2.initializations i LEFT JOIN ptcg_v2.matches m ON m.id=i.match_id
+                WHERE i.status='initialized' AND m.id IS NULL AND i.rule_release_id=%s ORDER BY i.created_at LIMIT 1""",
+                (self.repo.settings.approved_rule_release_id,),
+            ).fetchone()
+            return row["match_id"] if row else None
+
+    def promote_one(self, match_id=None):
         # Also promotes P4-B initial records without drawing a new initial hand.
         with self.repo.transaction() as db:
             job = db.execute(
                 """SELECT i.* FROM ptcg_v2.initializations i LEFT JOIN ptcg_v2.matches m ON m.id=i.match_id
-                WHERE i.status='initialized' AND m.id IS NULL AND i.rule_release_id=%s ORDER BY i.created_at LIMIT 1""",
-                (self.repo.settings.approved_rule_release_id,),
+                WHERE i.status='initialized' AND m.id IS NULL AND i.rule_release_id=%s
+                AND (%s::text IS NULL OR i.match_id=%s) ORDER BY i.created_at LIMIT 1""",
+                (self.repo.settings.approved_rule_release_id, match_id, match_id),
             ).fetchone()
         if not job or not self.worker.available:
             return False
-        candidate = self.worker.project(job["recovery"])
+        candidate = (
+            self.worker.project_for_match(job["recovery"], job["match_id"])
+            if hasattr(self.worker, "project_for_match")
+            else self.worker.project(job["recovery"])
+        )
         self._candidate(candidate, job["rule_release_id"], expected_version=0)
         with self.repo.transaction() as db:
             match = db.execute(
@@ -288,31 +302,47 @@ class Matches:
         command["commandId"] = (
             member["seat"] + ":" + sha256(body["commandId"].encode()).hexdigest()
         )
-        candidate = self.worker.command(match["recovery"], member["seat"], command)
-        self._candidate(candidate, match["rule_release_id"], match["state_version"] + 1)
-        with self.repo.transaction() as db:
-            identity, current, own = self._authorized(db, token, match_id)
-            old = self._old(db, current, own, body["commandId"], digest)
-            if old is not None:
-                return old
-            # Revocation, takeover or another commit during computation fences this candidate.
-            self._preconditions(identity, current, own, body, controller)
-            current = db.execute(
-                """UPDATE ptcg_v2.matches SET match_seq=match_seq+1,state_version=state_version+1,
-                recovery=%s,status=%s WHERE id=%s RETURNING *""",
-                (
-                    Jsonb(candidate["recovery"]),
-                    "finished" if candidate["views"]["PLAYER1"]["done"] else "playing",
-                    match_id,
-                ),
-            ).fetchone()
-            frames = self._frames(db, current, candidate)
-            receipt = self._remember(
-                db, current, own, body["commandId"], digest, frames[own["seat"]]
+        candidate = (
+            self.worker.command_for_match(
+                match["recovery"], member["seat"], command, match_id
             )
-            if current["status"] != "playing":
-                self._release_room(db, current)
+            if hasattr(self.worker, "command_for_match")
+            else self.worker.command(match["recovery"], member["seat"], command)
+        )
+        committed = False
+        try:
+            self._candidate(
+                candidate, match["rule_release_id"], match["state_version"] + 1
+            )
+            with self.repo.transaction() as db:
+                identity, current, own = self._authorized(db, token, match_id)
+                old = self._old(db, current, own, body["commandId"], digest)
+                if old is not None:
+                    return old
+                # Revocation, takeover or another commit during computation fences this candidate.
+                self._preconditions(identity, current, own, body, controller)
+                current = db.execute(
+                    """UPDATE ptcg_v2.matches SET match_seq=match_seq+1,state_version=state_version+1,
+                    recovery=%s,status=%s WHERE id=%s RETURNING *""",
+                    (
+                        Jsonb(candidate["recovery"]),
+                        "finished"
+                        if candidate["views"]["PLAYER1"]["done"]
+                        else "playing",
+                        match_id,
+                    ),
+                ).fetchone()
+                frames = self._frames(db, current, candidate)
+                receipt = self._remember(
+                    db, current, own, body["commandId"], digest, frames[own["seat"]]
+                )
+                if current["status"] != "playing":
+                    self._release_room(db, current)
+            committed = True
             return receipt
+        finally:
+            if hasattr(self.worker, "finish_candidate"):
+                self.worker.finish_candidate(match_id, candidate, committed)
 
     def _remember(self, db, match, own, command_id, digest, frame):
         receipt = {

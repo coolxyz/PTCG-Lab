@@ -39,26 +39,37 @@ def summarize(value):
     return {k: value[k] for k in expected}
 
 
-def valid(root):
+def valid(root, *, historical=False):
     try:
         root = Path(root)
         report = json.loads((root / "releases/p6c-scheduler.json").read_text())
         baseline = json.loads((root / "releases/p6b-streams.json").read_text())
         service = json.loads((root / "releases/p4d-acceptance.json").read_text())
         summarize(report["workload"])
+        if historical:
+            successor = json.loads((root / "releases/p6d-workers.json").read_text())
+            source_valid = (
+                successor["baselineCommit"] == "691fc0a"
+                and report["serverSourceSha256"]
+                == successor["baselineServerSourceSha256"]
+            )
+        else:
+            source_valid = (
+                report["serverSourceSha256"]
+                == service["serverSourceSha256"]
+                == source_digest(root)
+                and report["tests"] == service["tests"]
+                and evidence_valid(root)
+            )
         return (
             report["stage"] == "P6-C"
             and report["status"] == "passed"
             and report["baselineCommit"] == "3ca9ca0"
             and report["baselineServerSourceSha256"] == baseline["serverSourceSha256"]
-            and report["serverSourceSha256"]
-            == service["serverSourceSha256"]
-            == source_digest(root)
-            and report["tests"] == service["tests"]
+            and source_valid
             and report["tests"] >= 157
             and report["capacityMeasured"] is False
             and report["productionRoutingChanged"] is False
-            and evidence_valid(root)
         )
     except (OSError, ValueError, KeyError, TypeError):
         return False

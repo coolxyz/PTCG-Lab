@@ -14,6 +14,12 @@ NAMES = frozenset(
         "db.error",
         "db.rejected",
         "worker.rejected",
+        "worker.failed",
+        "worker.recycled",
+        "worker.cold_rejected",
+        "cache.hit",
+        "cache.miss",
+        "cache.evicted",
         *(
             "scheduler." + event
             for event in (

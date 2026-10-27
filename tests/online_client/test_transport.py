@@ -96,3 +96,22 @@ def test_tls_rejects_untrusted_certificate_and_freezes_selected_trust(tmp_path):
         tls[0].write_text("changed-after-configuration")
         assert profile.key == key
         assert Transport(profile).request("GET", "/capabilities") == {}
+
+
+def test_failed_upgrade_unblocks_receiver_before_join(monkeypatch):
+    from threading import Event
+    from websockets.sync.client import ClientConnection
+    from ptcg_online_client.websocket import OrderedHandshakeConnection
+
+    entered = Event()
+    monkeypatch.setattr(ClientConnection, "recv_events", lambda self: entered.set())
+    monkeypatch.setattr(ClientConnection, "close_socket", lambda self: None)
+    connection = OrderedHandshakeConnection.__new__(OrderedHandshakeConnection)
+    connection._upgrade_sent = Event()
+    receiver = Thread(target=connection.recv_events, daemon=True)
+    receiver.start()
+    assert not entered.wait(0.02)
+    # connect() calls close_socket on malformed headers, before the first send.
+    connection.close_socket()
+    receiver.join(timeout=1)
+    assert entered.is_set() and not receiver.is_alive()

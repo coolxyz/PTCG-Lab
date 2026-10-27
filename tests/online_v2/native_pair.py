@@ -7,6 +7,7 @@ import time
 from urllib.error import HTTPError
 import uuid
 from websockets.sync.client import connect
+from ptcg_online_client.websocket import OrderedHandshakeConnection
 from tests.online_v2.test_process import call
 from tests.online_v2.test_lobby import body
 
@@ -30,7 +31,7 @@ class NativePair:
                 "/decks",
                 access=self.access[i],
                 body=body(
-                    ruleReleaseId=inputs["release"], entries=inputs[f"deck{i+1}"]
+                    ruleReleaseId=inputs["release"], entries=inputs[f"deck{i + 1}"]
                 ),
             )["deckRevision"]
             for i in range(2)
@@ -84,6 +85,7 @@ class NativePair:
         started = time.monotonic()
         ws = connect(
             self.origin.replace("https:", "wss:") + "/api/online/v2/stream",
+            create_connection=OrderedHandshakeConnection,
             ssl=self.context,
             proxy=None,
             compression=None,

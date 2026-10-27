@@ -23,6 +23,15 @@ class Settings:
     body_timeout: float = 10
     max_streams: int = 32
     stream_hub_enabled: bool = True
+    worker_persistent: bool = True
+    worker_count: int = 1
+    worker_cold_limit: int = 1
+    worker_cache_entries: int = 8
+    worker_cache_record_bytes: int = 8 * 1024 * 1024
+    worker_cache_idle: float = 60
+    worker_rss_mb: int = 256
+    worker_restore_seconds: float = 10
+    worker_compute_seconds: float = 5
     command_queue_enabled: bool = True
     command_queue_total: int = 32
     command_queue_per_match: int = 2
@@ -87,6 +96,28 @@ class Settings:
             if type(value) is not int or value < 1:
                 raise ValueError("INVALID_DEPLOYMENT_LIMIT")
         if (
+            type(self.worker_persistent) is not bool
+            or type(self.worker_count) is not int
+            or not 1 <= self.worker_count <= 2
+            or type(self.worker_cold_limit) is not int
+            or not 1 <= self.worker_cold_limit <= self.worker_count
+            or type(self.worker_cache_entries) is not int
+            or not 0 <= self.worker_cache_entries <= 64
+            or type(self.worker_cache_record_bytes) is not int
+            or not 1024 <= self.worker_cache_record_bytes <= 64 * 1024 * 1024
+            or type(self.worker_rss_mb) is not int
+            or not 64 <= self.worker_rss_mb <= 1024
+            or any(
+                type(v) not in (int, float) or not 0 < v <= maximum
+                for v, maximum in (
+                    (self.worker_cache_idle, 600),
+                    (self.worker_restore_seconds, 20),
+                    (self.worker_compute_seconds, 20),
+                )
+            )
+        ):
+            raise ValueError("INVALID_WORKER_BUDGET")
+        if (
             type(self.command_queue_enabled) is not bool
             or any(
                 type(value) is not int or not 1 <= value <= maximum
@@ -149,6 +180,8 @@ class Settings:
                 raise ValueError("INVALID_STREAM_CONFIG")
             if env("COMMAND_QUEUE_ENABLED", "1") not in {"0", "1"}:
                 raise ValueError("INVALID_COMMAND_QUEUE_BUDGET")
+            if env("WORKER_PERSISTENT", "1") not in {"0", "1"}:
+                raise ValueError("INVALID_WORKER_BUDGET")
             return cls(
                 database_url=dsn,
                 server_id=env("SERVER_ID", ""),
@@ -164,6 +197,17 @@ class Settings:
                 max_inflight=int(env("MAX_INFLIGHT", "32")),
                 max_streams=int(env("MAX_STREAMS", "32")),
                 stream_hub_enabled=env("STREAM_HUB_ENABLED", "1") == "1",
+                worker_persistent=env("WORKER_PERSISTENT", "1") == "1",
+                worker_count=int(env("WORKER_COUNT", "1")),
+                worker_cold_limit=int(env("WORKER_COLD_LIMIT", "1")),
+                worker_cache_entries=int(env("WORKER_CACHE_ENTRIES", "8")),
+                worker_cache_record_bytes=int(
+                    env("WORKER_CACHE_RECORD_BYTES", "8388608")
+                ),
+                worker_cache_idle=float(env("WORKER_CACHE_IDLE", "60")),
+                worker_rss_mb=int(env("WORKER_RSS_MB", "256")),
+                worker_restore_seconds=float(env("WORKER_RESTORE_SECONDS", "10")),
+                worker_compute_seconds=float(env("WORKER_COMPUTE_SECONDS", "5")),
                 command_queue_enabled=env("COMMAND_QUEUE_ENABLED", "1") == "1",
                 command_queue_total=int(env("COMMAND_QUEUE_TOTAL", "32")),
                 command_queue_per_match=int(env("COMMAND_QUEUE_PER_MATCH", "2")),
