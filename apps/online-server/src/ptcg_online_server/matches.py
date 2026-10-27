@@ -8,6 +8,7 @@ from ptcg_protocol.projection import snapshot, core_command, replay_page
 from ptcg_protocol.validation import validate, ProtocolViolation
 from .auth import Sessions
 from .errors import ServiceError
+from .budgets import StreamPage, page_keys, wire_size
 
 SEATS = ("PLAYER1", "PLAYER2")
 
@@ -17,10 +18,15 @@ class Matches:
         self.repo, self.worker = repo, worker
         self.sessions = Sessions(repo)
 
-    def _authorized(self, db, token, match_id):
+    def _authorized(self, db, token, match_id, *, recovery=True):
         identity = self.sessions.authenticate_in(db, token)
+        fields = (
+            "*"
+            if recovery
+            else "id,room_id,rule_release_id,match_seq,state_version,status"
+        )
         match = db.execute(
-            "SELECT * FROM ptcg_v2.matches WHERE id=%s FOR UPDATE", (match_id,)
+            f"SELECT {fields} FROM ptcg_v2.matches WHERE id=%s FOR UPDATE", (match_id,)
         ).fetchone()
         member = db.execute(
             "SELECT * FROM ptcg_v2.match_members WHERE match_id=%s AND user_id=%s",
@@ -30,11 +36,13 @@ class Matches:
             raise ServiceError("FORBIDDEN", 403)
         return identity, match, member
 
-    def _current(self, db, match, member):
+    def _current(self, db, match, member, *, max_bytes=None):
         frame = db.execute(
-            "SELECT snapshot FROM ptcg_v2.match_frames WHERE match_id=%s AND user_id=%s AND match_seq=%s",
-            (match["id"], member["user_id"], match["match_seq"]),
+            "SELECT CASE WHEN %s::int IS NULL OR octet_length(snapshot::text)<=%s THEN snapshot END AS snapshot FROM ptcg_v2.match_frames WHERE match_id=%s AND user_id=%s AND match_seq=%s",
+            (max_bytes, max_bytes, match["id"], member["user_id"], match["match_seq"]),
         ).fetchone()["snapshot"]
+        if frame is None:
+            raise ServiceError("CAPACITY_EXCEEDED", 503, retryable=True)
         return validate(
             "MatchSnapshot",
             {
@@ -46,7 +54,7 @@ class Matches:
 
     def get(self, token, match_id):
         with self.repo.transaction() as db:
-            _, match, member = self._authorized(db, token, match_id)
+            _, match, member = self._authorized(db, token, match_id, recovery=False)
             return self._current(db, match, member)
 
     def _publish(self, db, member, frame, kind, *, persist_frame):
@@ -444,7 +452,7 @@ class Matches:
 
     def receipt(self, token, match_id, command_id):
         with self.repo.transaction() as db:
-            _, match, own = self._authorized(db, token, match_id)
+            _, match, own = self._authorized(db, token, match_id, recovery=False)
             row = db.execute(
                 "SELECT receipt FROM ptcg_v2.match_receipts WHERE match_id=%s AND user_id=%s AND command_id=%s",
                 (match_id, own["user_id"], command_id),
@@ -455,7 +463,7 @@ class Matches:
 
     def frames(self, token, match_id, cursor=None):
         with self.repo.transaction() as db:
-            _, match, own = self._authorized(db, token, match_id)
+            _, match, own = self._authorized(db, token, match_id, recovery=False)
             seq = -1
             if cursor:
                 row = db.execute(
@@ -465,15 +473,25 @@ class Matches:
                 if not row:
                     raise ServiceError("RESYNC_REQUIRED", 409)
                 seq = row["match_seq"]
-            rows = db.execute(
-                "SELECT snapshot,cursor FROM ptcg_v2.match_frames WHERE match_id=%s AND user_id=%s AND match_seq>%s ORDER BY match_seq LIMIT 4",
+            metadata = db.execute(
+                "SELECT cursor,octet_length(snapshot::text) AS bytes FROM ptcg_v2.match_frames WHERE match_id=%s AND user_id=%s AND match_seq>%s ORDER BY match_seq LIMIT 4",
                 (match_id, own["user_id"], seq),
             ).fetchall()
-            if rows:
-                return replay_page(
-                    [r["snapshot"] for r in rows[:3]],
-                    next_cursor=rows[2]["cursor"] if len(rows) > 3 else None,
+            if metadata:
+                keys, more = page_keys(
+                    metadata, 3, self.repo.settings.replay_page_bytes
                 )
+                rows = db.execute(
+                    "SELECT snapshot FROM ptcg_v2.match_frames WHERE match_id=%s AND user_id=%s AND cursor=ANY(%s) ORDER BY match_seq",
+                    (match_id, own["user_id"], keys),
+                ).fetchall()
+                page = replay_page(
+                    [r["snapshot"] for r in rows],
+                    next_cursor=keys[-1] if more else None,
+                )
+                if wire_size(page) > self.repo.settings.replay_page_bytes:
+                    raise ServiceError("CAPACITY_EXCEEDED", 503, retryable=True)
+                return page
             return validate(
                 "ReplayPage",
                 {
@@ -489,19 +507,42 @@ class Matches:
 
     def stream(self, token, match_id, cursor=None):
         with self.repo.transaction() as db:
-            _, match, own = self._authorized(db, token, match_id)
+            _, match, own = self._authorized(db, token, match_id, recovery=False)
             if cursor is None:
-                return [{"kind": "snapshot", "snapshot": self._current(db, match, own)}]
+                result = [
+                    {
+                        "kind": "snapshot",
+                        "snapshot": self._current(
+                            db,
+                            match,
+                            own,
+                            max_bytes=self.repo.settings.stream_page_bytes - 256,
+                        ),
+                    }
+                ]
+                if wire_size(result) > self.repo.settings.stream_page_bytes:
+                    raise ServiceError("CAPACITY_EXCEEDED", 503, retryable=True)
+                return StreamPage(result)
             row = db.execute(
                 "SELECT stream_seq FROM ptcg_v2.match_outbox WHERE match_id=%s AND user_id=%s AND cursor=%s",
                 (match_id, own["user_id"], cursor),
             ).fetchone()
             if not row:
                 raise ServiceError("RESYNC_REQUIRED", 409)
-            return db.execute(
-                "SELECT kind,snapshot FROM ptcg_v2.match_outbox WHERE match_id=%s AND user_id=%s AND stream_seq>%s ORDER BY stream_seq LIMIT 8",
+            metadata = db.execute(
+                "SELECT cursor,octet_length(snapshot::text) AS bytes FROM ptcg_v2.match_outbox WHERE match_id=%s AND user_id=%s AND stream_seq>%s ORDER BY stream_seq LIMIT 9",
                 (match_id, own["user_id"], row["stream_seq"]),
             ).fetchall()
+            if not metadata:
+                return StreamPage()
+            keys, more = page_keys(metadata, 8, self.repo.settings.stream_page_bytes)
+            rows = db.execute(
+                "SELECT kind,snapshot FROM ptcg_v2.match_outbox WHERE match_id=%s AND user_id=%s AND cursor=ANY(%s) ORDER BY stream_seq",
+                (match_id, own["user_id"], keys),
+            ).fetchall()
+            if wire_size(rows) > self.repo.settings.stream_page_bytes:
+                raise ServiceError("CAPACITY_EXCEEDED", 503, retryable=True)
+            return StreamPage(rows, more=more)
 
     def stream_heads(self, subscriptions):
         """One bounded metadata query; never load snapshots or authoritative state.

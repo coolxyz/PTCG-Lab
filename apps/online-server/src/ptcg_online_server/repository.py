@@ -243,7 +243,7 @@ class Repository:
                 )
             self.check_schema(db)
 
-    def rate(self, peer, *, creating=False, joining=False):
+    def rate(self, peer, *, creating=False, joining=False, replaying=False):
         """Durable, bounded fixed windows; forwarded addresses are not trusted."""
         settings = self.settings
         digest = sha256((settings.server_id + ":" + peer).encode()).hexdigest()
@@ -251,6 +251,11 @@ class Repository:
             ("global", settings.global_per_minute),
             ("peer:" + digest, settings.requests_per_minute),
         ]
+        if replaying:
+            limits = [
+                ("replay:" + digest, settings.replay_per_minute),
+                ("replay-global", settings.replay_global_per_minute),
+            ] + limits
         if creating:
             limits.append(("create:" + digest, settings.create_per_minute))
         if joining:
@@ -258,22 +263,27 @@ class Repository:
         denied = False
         with self.transaction() as db:
             db.execute("SELECT pg_advisory_xact_lock(%s)", (RATE_LOCK,))
-            db.execute("DELETE FROM ptcg_v2.rate_buckets WHERE reset_at <= now()")
+            db.execute(
+                "DELETE FROM ptcg_v2.rate_buckets WHERE key IN (SELECT key FROM ptcg_v2.rate_buckets WHERE reset_at<=now() ORDER BY reset_at,key LIMIT %s)",
+                (settings.maintenance_batch,),
+            )
             size = db.execute(
                 "SELECT count(*) AS n FROM ptcg_v2.rate_buckets"
             ).fetchone()["n"]
             for key, limit in limits:
                 row = db.execute(
-                    "SELECT count FROM ptcg_v2.rate_buckets WHERE key=%s", (key,)
+                    "SELECT count,reset_at>clock_timestamp() AS alive FROM ptcg_v2.rate_buckets WHERE key=%s FOR UPDATE",
+                    (key,),
                 ).fetchone()
-                if (row and row["count"] >= limit) or (
+                if (row and row["alive"] and row["count"] >= limit) or (
                     not row and size >= settings.max_rate_keys
                 ):
                     denied = True
                     break
                 if row:
                     db.execute(
-                        "UPDATE ptcg_v2.rate_buckets SET count=count+1 WHERE key=%s",
+                        """UPDATE ptcg_v2.rate_buckets SET count=CASE WHEN reset_at>clock_timestamp() THEN count+1 ELSE 1 END,
+                        reset_at=CASE WHEN reset_at>clock_timestamp() THEN reset_at ELSE now()+interval '60 seconds' END WHERE key=%s""",
                         (key,),
                     )
                 else:
@@ -284,3 +294,31 @@ class Repository:
                     size += 1
         if denied:
             raise ServiceError("CAPACITY_EXCEEDED", 429, retryable=True)
+
+    def maintain(self):
+        """One bounded cleanup pass; keep accepted commands and replay history."""
+        with self.metrics.time("maintenance.run"), self.transaction() as db:
+            db.execute(
+                "SELECT set_config('statement_timeout',%s,true)",
+                (str(max(1, int(self.settings.maintenance_sql_seconds * 1000))),),
+            )
+            limit = (self.settings.maintenance_batch,)
+            db.execute(
+                """DELETE FROM ptcg_v2.rate_buckets WHERE key IN (
+                SELECT key FROM ptcg_v2.rate_buckets WHERE reset_at<=now()
+                ORDER BY reset_at,key FOR UPDATE SKIP LOCKED LIMIT %s)""",
+                limit,
+            )
+            db.execute(
+                """DELETE FROM ptcg_v2.access_tokens WHERE digest IN (
+                SELECT digest FROM ptcg_v2.access_tokens WHERE expires_at<=now()
+                ORDER BY expires_at,digest FOR UPDATE SKIP LOCKED LIMIT %s)""",
+                limit,
+            )
+            db.execute(
+                """UPDATE ptcg_v2.rooms SET status='closed',version=version+1
+                WHERE id IN (SELECT id FROM ptcg_v2.rooms
+                WHERE status='waiting' AND expires_at<=now()
+                ORDER BY expires_at,id FOR UPDATE SKIP LOCKED LIMIT %s)""",
+                limit,
+            )

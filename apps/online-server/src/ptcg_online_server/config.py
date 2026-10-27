@@ -23,6 +23,23 @@ class Settings:
     body_timeout: float = 10
     max_streams: int = 32
     stream_hub_enabled: bool = True
+    connection_reserve: int = 8
+    stream_handshakes: int = 8
+    stream_message_bytes: int = 1024 * 1024
+    stream_page_bytes: int = 2 * 1024 * 1024
+    stream_bytes_per_second: int = 1024 * 1024
+    stream_burst_bytes: int = 2 * 1024 * 1024
+    stream_budget_wait: float = 1.0
+    replay_inflight: int = 2
+    replay_page_bytes: int = 1024 * 1024
+    replay_per_minute: int = 120
+    replay_global_per_minute: int = 360
+    maintenance_batch: int = 64
+    maintenance_interval: float = 10.0
+    maintenance_sql_seconds: float = 1.0
+    maintenance_queue: int = 2
+    worker_weighted_enabled: bool = True
+    worker_hot_weight: int = 2
     worker_persistent: bool = True
     worker_count: int = 1
     worker_cold_limit: int = 1
@@ -133,6 +150,38 @@ class Settings:
             or not 0 < self.command_queue_seconds <= 10
         ):
             raise ValueError("INVALID_COMMAND_QUEUE_BUDGET")
+        if (
+            type(self.worker_weighted_enabled) is not bool
+            or any(
+                type(v) is not int or not low <= v <= high
+                for v, low, high in (
+                    (self.connection_reserve, 1, 64),
+                    (self.stream_handshakes, 1, 64),
+                    (self.stream_message_bytes, 4096, 2 * 1024 * 1024),
+                    (self.stream_page_bytes, 4096, 8 * 1024 * 1024),
+                    (self.stream_bytes_per_second, 1024, 16 * 1024 * 1024),
+                    (self.stream_burst_bytes, 4096, 16 * 1024 * 1024),
+                    (self.replay_inflight, 1, 16),
+                    (self.replay_page_bytes, 4096, 2 * 1024 * 1024),
+                    (self.replay_per_minute, 1, 10000),
+                    (self.replay_global_per_minute, 1, 10000),
+                    (self.maintenance_batch, 1, 256),
+                    (self.maintenance_queue, 1, 8),
+                    (self.worker_hot_weight, 1, 8),
+                )
+            )
+            or self.stream_message_bytes > self.stream_burst_bytes
+            or self.stream_message_bytes > self.stream_page_bytes
+            or any(
+                type(v) not in (int, float) or not 0 < v <= high
+                for v, high in (
+                    (self.stream_budget_wait, 3),
+                    (self.maintenance_interval, 300),
+                    (self.maintenance_sql_seconds, 5),
+                )
+            )
+        ):
+            raise ValueError("INVALID_RESOURCE_BUDGET")
         if type(self.stream_hub_enabled) is not bool:
             raise ValueError("INVALID_STREAM_CONFIG")
         if (
@@ -182,6 +231,8 @@ class Settings:
                 raise ValueError("INVALID_COMMAND_QUEUE_BUDGET")
             if env("WORKER_PERSISTENT", "1") not in {"0", "1"}:
                 raise ValueError("INVALID_WORKER_BUDGET")
+            if env("WORKER_WEIGHTED_ENABLED", "1") not in {"0", "1"}:
+                raise ValueError("INVALID_RESOURCE_BUDGET")
             return cls(
                 database_url=dsn,
                 server_id=env("SERVER_ID", ""),
@@ -197,6 +248,23 @@ class Settings:
                 max_inflight=int(env("MAX_INFLIGHT", "32")),
                 max_streams=int(env("MAX_STREAMS", "32")),
                 stream_hub_enabled=env("STREAM_HUB_ENABLED", "1") == "1",
+                connection_reserve=int(env("CONNECTION_RESERVE", "8")),
+                stream_handshakes=int(env("STREAM_HANDSHAKES", "8")),
+                stream_message_bytes=int(env("STREAM_MESSAGE_BYTES", "1048576")),
+                stream_page_bytes=int(env("STREAM_PAGE_BYTES", "2097152")),
+                stream_bytes_per_second=int(env("STREAM_BYTES_PER_SECOND", "1048576")),
+                stream_burst_bytes=int(env("STREAM_BURST_BYTES", "2097152")),
+                replay_inflight=int(env("REPLAY_INFLIGHT", "2")),
+                replay_page_bytes=int(env("REPLAY_PAGE_BYTES", "1048576")),
+                replay_per_minute=int(env("REPLAY_PER_MINUTE", "120")),
+                replay_global_per_minute=int(env("REPLAY_GLOBAL_PER_MINUTE", "360")),
+                maintenance_batch=int(env("MAINTENANCE_BATCH", "64")),
+                maintenance_queue=int(env("MAINTENANCE_QUEUE", "2")),
+                worker_hot_weight=int(env("WORKER_HOT_WEIGHT", "2")),
+                stream_budget_wait=float(env("STREAM_BUDGET_WAIT", "1")),
+                maintenance_interval=float(env("MAINTENANCE_INTERVAL", "10")),
+                maintenance_sql_seconds=float(env("MAINTENANCE_SQL_SECONDS", "1")),
+                worker_weighted_enabled=env("WORKER_WEIGHTED_ENABLED", "1") == "1",
                 worker_persistent=env("WORKER_PERSISTENT", "1") == "1",
                 worker_count=int(env("WORKER_COUNT", "1")),
                 worker_cold_limit=int(env("WORKER_COLD_LIMIT", "1")),

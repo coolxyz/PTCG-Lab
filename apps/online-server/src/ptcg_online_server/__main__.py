@@ -28,7 +28,11 @@ def main():
         proxy_headers=False,
         access_log=False,
         server_header=False,
-        limit_concurrency=settings.max_inflight,
+        # Transport ceiling includes long-lived streams and idle keep-alives.
+        # ASGI enforces HTTP and WSS budgets independently below this ceiling.
+        limit_concurrency=(
+            settings.max_inflight + settings.max_streams + settings.connection_reserve
+        ),
         timeout_keep_alive=5,
         ws="websockets",
         ws_max_size=16384,

@@ -2,9 +2,11 @@
 
 import asyncio
 from contextlib import suppress
+from functools import partial
 from fastapi import WebSocketDisconnect
 from starlette.concurrency import run_in_threadpool
 from .contracts import decode
+from .budgets import SendBudget, wire_size
 from .errors import ServiceError
 from .stream_hub import StreamHub
 
@@ -13,16 +15,39 @@ class Streams:
     def __init__(self, settings, matches):
         self.settings, self.matches = settings, matches
         self.active = 0
+        self.opening = 0
+        self.budgets = {}
         self.hub = StreamHub(matches)
 
     async def send(self, ws, value):
-        # A slow consumer gets disconnected and resumes from its last cursor.
+        size = wire_size(value)
+        budget = self.budgets.get(id(ws))
+        if size > self.settings.stream_message_bytes:
+            self.matches.repo.metrics.observe("stream.rejected")
+            raise ServiceError("CAPACITY_EXCEEDED", 503, retryable=True)
+        # Small errors/heartbeats retain a control allowance so budget exhaustion
+        # can be reported. Large control snapshots use the normal data budget.
+        if budget and ("snapshot" in value or size > 4096):
+            try:
+                delay = budget.delay(size, self.settings.stream_budget_wait)
+            except ServiceError:
+                self.matches.repo.metrics.observe("stream.rejected")
+                raise
+            if delay:
+                self.matches.repo.metrics.observe("stream.budget_wait", delay)
+                await asyncio.sleep(delay)
+                if budget.authorize:
+                    await run_in_threadpool(budget.authorize)
+            entry = self.hub.entries.get(budget.subscription)
+            if entry and entry.error:
+                raise entry.error
+        # A slow consumer resumes from the last successfully sent durable cursor.
         await asyncio.wait_for(ws.send_json(value), timeout=3)
 
     async def close(self, ws, code):
         try:
-            await ws.close(code=code)
-        except (RuntimeError, WebSocketDisconnect):
+            await asyncio.wait_for(ws.close(code=code), timeout=3)
+        except (TimeoutError, RuntimeError, WebSocketDisconnect):
             # The peer may disappear between a failed send and our close frame.
             pass
 
@@ -36,9 +61,19 @@ class Streams:
         return decode(kind, text.encode("utf-8"))
 
     async def serve(self, ws):
-        if self.active >= self.settings.max_streams:
+        if (
+            self.active >= self.settings.max_streams
+            or self.opening >= self.settings.stream_handshakes
+        ):
             return await self.close(ws, 1013)
         self.active += 1
+        self.opening += 1
+        opening = True
+        budget = SendBudget(
+            self.settings.stream_bytes_per_second, self.settings.stream_burst_bytes
+        )
+        budget.subscription = None
+        self.budgets[id(ws)] = budget
         accepted = False
         try:
             items = ws.scope.get("headers", [])
@@ -63,9 +98,12 @@ class Streams:
                 self.matches.repo.rate, (ws.scope.get("client") or ("unknown",))[0]
             )
             await run_in_threadpool(self.matches.sessions.authenticate, token)
+            budget.authorize = partial(self.matches.sessions.authenticate, token)
             await ws.accept()
             accepted = True
             subscription = await self.request(ws, "MatchSubscribe", 10)
+            self.opening -= 1
+            opening = False
             if self.settings.stream_hub_enabled:
                 await self.centralized(ws, token, subscription)
             else:
@@ -74,12 +112,14 @@ class Streams:
             if accepted:
                 try:
                     await self.send(ws, error.payload())
-                except (TimeoutError, RuntimeError, WebSocketDisconnect):
+                except (TimeoutError, RuntimeError, WebSocketDisconnect, ServiceError):
                     pass
             await self.close(ws, 1008 if error.status < 500 else 1013)
         except (TimeoutError, RuntimeError, WebSocketDisconnect):
             await self.close(ws, 1013)
         finally:
+            self.budgets.pop(id(ws), None)
+            self.opening -= int(opening)
             self.active -= 1
 
     async def polling(self, ws, token, subscription):
@@ -120,6 +160,10 @@ class Streams:
         entry = self.hub.add(
             token, subscription["matchId"], subscription["streamCursor"]
         )
+
+        budget = self.budgets.get(id(ws))
+        if budget:
+            budget.subscription = entry.key
 
         async def receive_pings():
             while True:
@@ -169,7 +213,7 @@ class Streams:
                         )
                         entry.cursor = event["snapshot"]["streamCursor"]
                     # Drain bounded pages promptly, without an unbounded queue.
-                    if len(updates) == 8:
+                    if getattr(updates, "more", len(updates) == 8):
                         entry.changed.set()
                 if asyncio.get_running_loop().time() >= heartbeat:
                     await self.send(

@@ -10,7 +10,7 @@
     "P4": "completed",
     "P5": "completed",
     "P5.5": "completed",
-    "P6": "in_progress",
+    "P6": "completed",
     "P7": "planned",
     "P8": "planned"
   },
@@ -39,7 +39,7 @@
     "P6-B": "completed",
     "P6-C": "completed",
     "P6-D": "completed",
-    "P6-E": "planned"
+    "P6-E": "completed"
   },
   "p1BaselineCommit": "83e3fb2",
   "progressDocument": "docs/P2共享协议与规则核心实施记录.md",
@@ -90,5 +90,7 @@
   "p6bImplementationCommit": "3ca9ca0",
   "p6cAcceptanceDocument": "releases/p6c-scheduler.json",
   "p6cImplementationCommit": "691fc0a",
-  "p6dAcceptanceDocument": "releases/p6d-workers.json"
+  "p6dAcceptanceDocument": "releases/p6d-workers.json",
+  "p6dImplementationCommit": "f7ce35d",
+  "p6eAcceptanceDocument": "releases/p6e-budgets.json"
 }

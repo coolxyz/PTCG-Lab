@@ -2,21 +2,21 @@
   "schema": 1,
   "stage": "P4-D",
   "status": "passed",
-  "tests": 182,
+  "tests": 218,
   "baselineCommit": "6801d38",
-  "serverSourceSha256": "ac1f1457152cb9caf6b9c66a8cf864367da773f1056ea49d87d64e69cb76f900",
+  "serverSourceSha256": "3ede175f331ad238b5ee49965ff6f73c32edc92db8f122c9c50977eb814ce180",
   "naturalMatch": {
-    "acceptedCommands": 97,
+    "acceptedCommands": 100,
     "commandsBySeat": [
-      48,
+      51,
       49
     ],
-    "visibleFramesCompared": 196,
+    "visibleFramesCompared": 202,
     "reason": "deck_out",
     "transport": "HTTPS/WSS",
     "privateReplays": 2,
     "natural": true,
-    "maxHandshakeSeconds": 0.023
+    "maxHandshakeSeconds": 0.014
   },
   "processFailures": {
     "api-before-commit": {

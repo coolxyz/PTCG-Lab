@@ -17,12 +17,20 @@ NAMES = frozenset(
         "worker.failed",
         "worker.recycled",
         "worker.cold_rejected",
+        "maintenance.run",
+        "maintenance.failed",
+        "stream.budget_wait",
+        "stream.rejected",
+        "replay.rejected",
         "cache.hit",
         "cache.miss",
         "cache.evicted",
         *(
             "scheduler." + event
             for event in (
+                "hot",
+                "cold",
+                "maintenance",
                 "accepted",
                 "merged",
                 "rejected",

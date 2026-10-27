@@ -1,4 +1,4 @@
-"""Single-process bounded FIFO mailboxes, round-robin groups, one rule lane.
+"""Single-process bounded FIFO mailboxes, round-robin groups, bounded rule lanes.
 
 No database handles or rule state live here. The operation reauthorizes, reads
 its committed baseline and fences the commit. PostgreSQL owns idempotency.
@@ -22,11 +22,12 @@ class Job:
     created: float
     waiters: int = 0
     running: bool = False
+    maintenance: bool = False
     timer: object = None
 
 
 class FairScheduler:
-    def __init__(self, settings, metrics):
+    def __init__(self, settings, metrics, *, classifier=None):
         self.settings, self.metrics = settings, metrics
         self.jobs, self.queues, self.users, self.groups = {}, {}, {}, {}
         self.ready = deque()
@@ -36,6 +37,12 @@ class FairScheduler:
         self.wakeups = [asyncio.Event() for _ in range(self.lanes)]
         self.task = None
         self.closed = False
+        self.classifier = classifier
+        self.weighted = settings.worker_weighted_enabled and classifier is not None
+        self.cold_running = 0
+        self.maintenance_jobs = 0
+        self.wheel = ["hot"] * settings.worker_hot_weight + ["cold", "maintenance"]
+        self.turns = [0] * self.lanes
 
     def start(self):
         if self.settings.command_queue_enabled:
@@ -63,7 +70,9 @@ class FairScheduler:
         self.metrics.observe("scheduler.rejected")
         raise ServiceError("CAPACITY_EXCEEDED", 503, retryable=True)
 
-    async def submit(self, group, user, request_id, digest, operation):
+    async def submit(
+        self, group, user, request_id, digest, operation, *, maintenance=False
+    ):
         if self.closed:
             self.reject()
         if not self.settings.command_queue_enabled:
@@ -82,13 +91,25 @@ class FairScheduler:
             self.metrics.observe("scheduler.merged")
         else:
             if (
-                len(self.jobs) >= self.settings.command_queue_total
+                (
+                    maintenance
+                    and self.maintenance_jobs >= self.settings.maintenance_queue
+                )
+                or len(self.jobs) >= self.settings.command_queue_total
                 or self.groups.get(group, 0) >= self.settings.command_queue_per_match
                 or self.users.get(user, 0) >= self.settings.command_queue_per_user
             ):
                 self.reject()
             loop = asyncio.get_running_loop()
-            job = Job(key, digest, operation, loop.create_future(), loop.time())
+            job = Job(
+                key,
+                digest,
+                operation,
+                loop.create_future(),
+                loop.time(),
+                maintenance=maintenance,
+            )
+            self.maintenance_jobs += int(maintenance)
             # A disconnected last caller must not leave an unobserved exception.
             job.future.add_done_callback(
                 lambda f: None if f.cancelled() else f.exception()
@@ -120,6 +141,7 @@ class FairScheduler:
 
     def release(self, job):
         self.jobs.pop(job.key)
+        self.maintenance_jobs -= int(job.maintenance)
         group, user, _ = job.key
         for counts, key in ((self.groups, group), (self.users, user)):
             counts[key] -= 1
@@ -136,6 +158,8 @@ class FairScheduler:
             if group in self.ready:
                 self.ready.remove(group)
         self.release(job)
+        for wakeup in self.wakeups:
+            wakeup.set()
 
     def expire(self, job):
         if self.jobs.get(job.key) is job and not job.running:
@@ -145,12 +169,46 @@ class FairScheduler:
                 ServiceError("CAPACITY_EXCEEDED", 503, retryable=True)
             )
 
+    def classification(self, group):
+        job = self.queues[group][0]
+        cold = self.classifier(group) == "cold" if self.classifier else False
+        return ("maintenance" if job.maintenance else "cold" if cold else "hot"), cold
+
+    def choose(self, lane):
+        if not self.weighted:
+            return next(
+                (g for g in self.ready if lane_for(g, self.lanes) == lane), None
+            ), False
+        busy_lanes = {lane_for(g, self.lanes) for g in self.running_groups}
+        classified = {g: self.classification(g) for g in self.ready}
+        # Global FIFO cold admission across idle lanes; a busy lane cannot reserve
+        # the permit. Classification is only a hint; the worker verifies the record.
+        cold_ready = [
+            g
+            for g in self.ready
+            if classified[g][1] and lane_for(g, self.lanes) not in busy_lanes
+        ]
+        available = max(0, self.settings.worker_cold_limit - self.cold_running)
+        eligible = [
+            g
+            for g in self.ready
+            if lane_for(g, self.lanes) == lane
+            and (not classified[g][1] or g in cold_ready[:available])
+        ]
+        for offset in range(len(self.wheel)):
+            index = (self.turns[lane] + offset) % len(self.wheel)
+            group = next(
+                (g for g in eligible if classified[g][0] == self.wheel[index]), None
+            )
+            if group is not None:
+                self.turns[lane] = (index + 1) % len(self.wheel)
+                return group, classified[group][1]
+        return None, False
+
     async def run(self, lane):
         while not self.closed:
             await self.wakeups[lane].wait()
-            group = next(
-                (g for g in self.ready if lane_for(g, self.lanes) == lane), None
-            )
+            group, cold = self.choose(lane)
             if group is None:
                 self.wakeups[lane].clear()
                 continue
@@ -170,8 +228,16 @@ class FairScheduler:
                 )
                 if group in self.queues:
                     self.ready_group(group)
+                for wakeup in self.wakeups:
+                    wakeup.set()
                 continue
             self.running_groups.add(group)
+            self.cold_running += int(cold)
+            if self.weighted:
+                self.metrics.observe(
+                    "scheduler."
+                    + ("maintenance" if job.maintenance else "cold" if cold else "hot")
+                )
             context = current_lane.set(lane)
             job.running = True
             job.timer.cancel()
@@ -194,6 +260,9 @@ class FairScheduler:
             finally:
                 self.release(job)
                 self.running_groups.remove(group)
+                self.cold_running -= int(cold)
+                for wakeup in self.wakeups:
+                    wakeup.set()
                 current_lane.reset(context)
                 # A busy match rejoins at the back, after already-ready matches.
                 if group in self.queues:
@@ -210,5 +279,5 @@ class FairScheduler:
         for wakeup in self.wakeups:
             wakeup.set()
         if self.task:
-            # Drain the one bounded rule operation; never release its lane early.
+            # Drain bounded rule operations; never release their lanes early.
             await asyncio.shield(self.task)

@@ -47,6 +47,7 @@ FILES = (
     "releases/p6b-streams.json",
     "releases/p6c-scheduler.json",
     "releases/p6d-workers.json",
+    "releases/p6e-budgets.json",
     "releases/source-candidates.json",
     "ops/online/Dockerfile.dockerignore",
 )

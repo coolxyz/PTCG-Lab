@@ -44,6 +44,7 @@ class Boundary:
     def __init__(self, app, settings, repository):
         self.app, self.settings, self.repo = app, settings, repository
         self.inflight = 0
+        self.replays = 0
 
     async def __call__(self, scope, receive, send):
         if scope["type"] == "websocket":
@@ -65,11 +66,24 @@ class Boundary:
                 message = {**message, "headers": headers}
             await send(message)
 
-        if self.inflight >= self.settings.max_inflight:
+        replay = bool(
+            re.fullmatch(
+                PREFIX + r"/matches/[^/]+/(frames|timeline)(/[^/]+)?", scope["path"]
+            )
+        )
+        replay_limit = min(
+            self.settings.replay_inflight, max(1, self.settings.max_inflight - 1)
+        )
+        if self.inflight >= self.settings.max_inflight or (
+            replay and self.replays >= replay_limit
+        ):
+            if replay:
+                self.repo.metrics.observe("replay.rejected")
             return await response(
                 ServiceError("CAPACITY_EXCEEDED", 503, retryable=True)
             )(scope, receive, safe_send)
         self.inflight += 1
+        self.replays += int(replay)
         try:
             items = scope.get("headers", [])
             headers = dict(items)
@@ -104,6 +118,7 @@ class Boundary:
                     (scope.get("client") or ("unknown",))[0],
                     creating=scope["path"] == PREFIX + "/sessions"
                     and scope["method"] == "POST",
+                    replaying=replay,
                     joining=scope["path"] == PREFIX + "/rooms/join"
                     and scope["method"] == "POST",
                 )
@@ -153,6 +168,7 @@ class Boundary:
                 )
         finally:
             self.inflight -= 1
+            self.replays -= int(replay)
 
 
 def bearer(request):
@@ -172,7 +188,9 @@ def create_app(settings=None, *, worker=None, background=True):
     initializer = Initializer(repo, worker)
     matches = Matches(repo, worker)
     streams = Streams(settings, matches)
-    scheduler = FairScheduler(settings, repo.metrics)
+    scheduler = FairScheduler(
+        settings, repo.metrics, classifier=getattr(worker, "work_class", None)
+    )
 
     async def maintenance(name, operation):
         return await scheduler.submit(
@@ -181,6 +199,7 @@ def create_app(settings=None, *, worker=None, background=True):
             name,
             name,
             lambda: run_in_threadpool(operation),
+            maintenance=True,
         )
 
     async def player_work(group, request_id, admission, operation):
@@ -229,6 +248,7 @@ def create_app(settings=None, *, worker=None, background=True):
                                 lambda: run_in_threadpool(
                                     matches.promote_one, pending_match
                                 ),
+                                maintenance=True,
                             )
                 except Exception:
                     logging.getLogger("ptcg_online_server").error(
@@ -239,7 +259,24 @@ def create_app(settings=None, *, worker=None, background=True):
                 except TimeoutError:
                     pass
 
+        async def cleanup_pending():
+            while not stop.is_set():
+                try:
+                    await run_in_threadpool(repo.maintain)
+                except Exception:
+                    repo.metrics.observe("maintenance.failed")
+                    logging.getLogger("ptcg_online_server").error(
+                        "maintenance_unavailable"
+                    )
+                try:
+                    await asyncio.wait_for(
+                        stop.wait(), timeout=settings.maintenance_interval
+                    )
+                except TimeoutError:
+                    pass
+
         task = asyncio.create_task(initialize_pending()) if background else None
+        cleanup = asyncio.create_task(cleanup_pending()) if background else None
         try:
             yield
         finally:
@@ -247,6 +284,8 @@ def create_app(settings=None, *, worker=None, background=True):
             try:
                 if task:
                     await task
+                if cleanup:
+                    await cleanup
             finally:
                 try:
                     await scheduler.stop()

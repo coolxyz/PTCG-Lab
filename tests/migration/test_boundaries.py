@@ -38,6 +38,7 @@ def scaffold(tmp_path):
         "releases/p6b-streams.json",
         "releases/p6c-scheduler.json",
         "releases/p6d-workers.json",
+        "releases/p6e-budgets.json",
         "docs/P5.5产品整合完成记录.md",
         "docs/P6多局调度与性能实施记录.md",
     ]:
@@ -316,7 +317,7 @@ def test_p6_start_requires_completed_product_and_explicit_scope(scaffold, missin
     elif missing == "document":
         (scaffold / "docs/P6多局调度与性能实施记录.md").unlink()
     else:
-        state["subphases"]["P6-E"] = "completed"
+        state["subphases"]["P6-D"] = "in_progress"
     path.write_text(json.dumps(state))
     assert any("P6 baseline" in error for error in check(scaffold))
 
@@ -377,8 +378,8 @@ def test_p6c_completion_requires_current_and_chained_evidence(scaffold, kind):
     assert any("P6-C completion lacks" in error for error in check(scaffold))
 
 
-@pytest.mark.parametrize("phase", ["P6-A", "P6-B", "P6-C"])
-def test_p6d_requires_completed_predecessors(scaffold, phase):
+@pytest.mark.parametrize("phase", ["P6-A", "P6-B", "P6-C", "P6-D"])
+def test_p6e_requires_completed_predecessors(scaffold, phase):
     path = scaffold / "releases/migration-status.json"
     value = json.loads(path.read_text())
     value["subphases"][phase] = "in_progress"
@@ -409,3 +410,39 @@ def test_p6d_completion_requires_current_and_chained_evidence(scaffold, kind):
             ] = True if kind == "capacity" else "changed"
         path.write_text(json.dumps(value))
     assert any("P6-D completion lacks" in error for error in check(scaffold))
+
+
+@pytest.mark.parametrize(
+    "kind",
+    ["missing", "stale", "baseline", "client", "capacity", "order", "tests", "routing"],
+)
+def test_p6e_completion_requires_current_and_chained_evidence(scaffold, kind):
+    path = scaffold / "releases/p6e-budgets.json"
+    if kind == "missing":
+        path.unlink()
+    else:
+        value = json.loads(path.read_text())
+        if kind == "order":
+            value["workload"]["order"].reverse()
+        else:
+            field = {
+                "stale": "serverSourceSha256",
+                "baseline": "baselineServerSourceSha256",
+                "client": "clientTransportSha256",
+                "capacity": "capacityMeasured",
+                "tests": "tests",
+                "routing": "productionRoutingChanged",
+            }[kind]
+            value[field] = True if kind in {"capacity", "routing"} else "changed"
+        path.write_text(json.dumps(value))
+    errors = check(scaffold)
+    assert any("P6-E completion lacks" in error for error in errors)
+    assert any("P6 completion lacks" in error for error in errors)
+
+
+def test_p6_cannot_complete_with_unfinished_resource_budgets(scaffold):
+    path = scaffold / "releases/migration-status.json"
+    value = json.loads(path.read_text())
+    value["subphases"]["P6-E"] = "in_progress"
+    path.write_text(json.dumps(value))
+    assert any("P6 completion lacks" in error for error in check(scaffold))

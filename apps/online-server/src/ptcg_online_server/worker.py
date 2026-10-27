@@ -1,5 +1,7 @@
-"""Bounded subprocess adapter; baseline isolation before P6 worker pooling."""
+"""Bounded rule workers with advisory cache hints and post-commit confirmation."""
 
+from collections import OrderedDict
+import time
 import json
 import os
 from pathlib import Path
@@ -26,6 +28,8 @@ class RuleWorker:
         self.available = False
         self.lock = Lock()
         self.closed = False
+        self.hint_lock = Lock()
+        self.hints = [OrderedDict() for _ in range(settings.worker_count)]
         self.cold = BoundedSemaphore(settings.worker_cold_limit)
         self.slots = [
             WorkerSlot(
@@ -63,6 +67,35 @@ class RuleWorker:
                 self.close()
         except Exception:
             pass
+
+    def work_class(self, group):
+        if not group.startswith("match:"):
+            return "hot"  # Ordinary foreground work shares the hot class.
+        lane = lane_for(group, self.settings.worker_count)
+        with self.hint_lock:
+            hint = self.hints[lane].get(group[6:])
+            hot = (
+                self.settings.worker_persistent
+                and hint
+                and hint[0] == self.slots[lane].generation
+                and time.monotonic() - hint[1] < self.settings.worker_cache_idle
+            )
+        return "hot" if hot else "cold"
+
+    def cache_hint(self, lane, match_id, *, present):
+        if not match_id:
+            return
+        with self.hint_lock:
+            hints = self.hints[lane]
+            hints.pop(match_id, None)
+            if (
+                present
+                and self.slots[lane].generation
+                and self.settings.worker_cache_entries
+            ):
+                hints[match_id] = (self.slots[lane].generation, time.monotonic())
+                while len(hints) > self.settings.worker_cache_entries:
+                    hints.popitem(last=False)
 
     def request(self, operation, payload):
         return {
@@ -121,10 +154,14 @@ class RuleWorker:
                     raise ValueError("INVALID_CACHE_HINT")
                 request["require_cached"] = inspected["cached"]
                 if not inspected["cached"]:
+                    # A stale advisory hit must not keep bypassing cold scheduling.
+                    self.cache_hint(lane, payload.get("match_id"), present=False)
                     cold = self.cold.acquire(blocking=False)
                     if not cold:
                         self.metrics.observe("worker.cold_rejected")
                         raise ServiceError("CAPACITY_EXCEEDED", 503, retryable=True)
+            if operation in {"command", "project"}:
+                self.cache_hint(lane, payload.get("match_id"), present=False)
             value = self.observe(slot.exchange(request, 20))
             ticket = value.pop("_cacheTicket", None)
             result = Candidate(value)
@@ -138,6 +175,12 @@ class RuleWorker:
             if result.pop("_recycle", False):
                 self.metrics.observe("worker.recycled")
                 slot.close()
+            if operation == "project":
+                self.cache_hint(
+                    lane,
+                    payload.get("match_id"),
+                    present=not result["views"]["PLAYER1"]["done"],
+                )
             return result
         except (
             OSError,
@@ -175,7 +218,13 @@ class RuleWorker:
             result = self.observe(slot.exchange(request, 1))
             if result.pop("_recycle", False):
                 slot.close()
-            return result.get("confirmed", False)
+            confirmed = result.get("confirmed", False)
+            self.cache_hint(
+                lane,
+                match_id,
+                present=confirmed and not candidate["views"]["PLAYER1"]["done"],
+            )
+            return confirmed
         except (
             OSError,
             ValueError,

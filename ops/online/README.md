@@ -1,4 +1,4 @@
-# 独立在线 API 部署入口（P4-D）
+# 独立在线 API 部署入口（P6）
 
 此目录对应新 `ptcg-online-server`，不复用旧网页 v1 镜像、数据库、CA 或服务。P4-C 已支持认证、卡组、房间、权威命令、控制权、私有推送/回放和重启恢复；P4-D 已通过完整自然终局及故障矩阵的本地验收。外部发布、正式镜像摘要锁定及完整运维验收属于 P8。
 
@@ -7,7 +7,7 @@
 在仓库根目录构建：
 
 ```sh
-docker build -f ops/online/Dockerfile -t ptcg-lab-online-api:p4d .
+docker build -f ops/online/Dockerfile -t ptcg-lab-online-api:p6e .
 ```
 
 Dockerfile 专属 ignore 采用白名单，只允许三个共享 Python 包与 online-server 的源码和包元数据进入构建上下文。运行层安装 wheel，不安装 React、图片、Pillow、AI/训练包，也不复制真实规则或用户数据。`PYTHON_IMAGE` 默认已固定本次构建使用的 Python 3.14 slim 摘要，可由部署方显式覆盖为其他已批准摘要；执行身份包含 Python patch 版本，因此应针对最终镜像确认 ruleReleaseId。
@@ -67,3 +67,25 @@ P4-C 必须显式应用新增 003 migration。已升级的数据库不能直接�
 默认每 worker 最多 8 个缓存、8 MiB 序列化记录、60 秒闲置期，峰值 RSS 达 256 MiB 后回收进程。记录大小不等于引擎对象占用，RSS 水位不代替容器硬限制。冷恢复／计算预算分别 10／5 秒，管道操作另有 20 秒截止时间。恢复超时只能恢复已提交状态，不能重开对局。
 
 `PTCG_V2_WORKER_CACHE_ENTRIES=0` 关闭缓存但继续复用规则进程；`PTCG_V2_WORKER_PERSISTENT=0` 回退一次性子进程。参数修改后重启本次部署生效，沿用原 schema。全部参数范围、提交确认和代次隔离见 [P6-D 实施记录](../../docs/P6多局调度与性能实施记录.md)。本轮没有更新正在运行的 LAN API，不将固定短局测试当作可承载对局数。
+
+
+## P6-E 资源预算与回退
+
+隔离镜像 `ptcg-lab-online-api:p6e`，服务 `0.6.0.dev5`。没有自动替换既有 LAN 服务。新增 Compose 参数均以 `PTCG_V2_` 开头，对应服务端 `PTCG_ONLINE_V2_`；完整默认值、范围与验证见 [P6-E 实施记录](../../docs/P6多局调度与性能实施记录.md#p6-e带权调度与资源预算)。
+
+默认冷热维护权重 2:1:1，维护规则任务最多 2 个。`WORKER_WEIGHTED_ENABLED=0` 重启后回退原跨局轮转，`WORKER_CACHE_ENTRIES=0` 关闭缓存，`WORKER_PERSISTENT=0` 回退一次性进程，`STREAM_HUB_ENABLED=0` 回退逐连接轮询；以上开关均保留鉴权、幂等、原子提交与字节预算。无需新增数据库 migration。
+
+HTTP 和 WSS 独立准入，传输总上限为 HTTP 槽数 + 流槽数 + `CONNECTION_RESERVE`（默认 8）。`STREAM_HANDSHAKES=8` 限未完成订阅数。发送默认每条 WSS 1 MiB/s、2 MiB 突发，单消息 1 MiB、读取页 2 MiB，等令牌最多 1 秒；这是 JSON 载荷预算，不包含 TLS/TCP 开销。小错误／心跳不占数据字节桶。慢消费者断开后按持久游标恢复，超大帧不会静默丢弃。
+
+回放默认并发 2、页 1 MiB、对端地址摘要每分钟 120 次、全局 360 次，同时受普通 HTTP 预算约束。后台每轮每类清理最多 64 条，轮后等待 10 秒，清理 SQL 各 1 秒超时；保留对局／回放与刷新令牌检测记录。速率计数更新持有行锁，清理跳过竞争行。调大连接数时须同步评估帧、数据库和规则进程预算；P7 整部署 2 vCPU／2 GiB 压测尚未运行，当前参数不能作为并发局数承诺。
+
+
+## 当前 P6 局域网部署（2026-10-27）
+
+按用户要求，现有专用 API v2 局域网部署已升级为 `ptcg-online-server==0.6.0.dev5`。镜像摘要 `sha256:29ad6123c04a878e0d60c000436187adc38fcabadaa9f99ae6916e9eac462d43`，保留原 HTTPS 地址、CA、服务器身份、规则制品、数据库容器与数据卷；没有新增 migration。上文 P6-A—E 的“未替换”描述对应各阶段隔离验收时点。
+
+基础 Compose 默认镜像更新为 `ptcg-lab-online-api:p6e`，可用 `PTCG_V2_API_IMAGE` 显式指定已验证摘要。该次私有部署继续采用原生 Uvicorn TLS 启动命令，传输并发上限同步从 32 调为 `32 HTTP + 32 WSS + 8 余量 = 72`；API 内部各预算独立执行。保持单 worker、API 1 CPU／768 MiB 与数据库 0.5 CPU／256 MiB，不能据此宣称已完成 P7 容量压测。
+
+替换前保存私有 Compose 配置和可读取目录的 PostgreSQL 自定义格式备份；仅停止／重建 API，数据库未重建。配置的停机宽限为 60 秒，重启后通过 `/readyz`、原会话、原规则身份和既有对局／帧／回执摘要校验。备份、回退配置与原始报告位于忽略目录 `var/p6e/lan-upgrade-20261027/`，其中含受限部署资料，不进入源码归档。
+
+回退时使用该目录的 `before-compose.json`，指定同一 Compose 项目与原项目目录，仅对 `api` 执行 `up -d --no-deps`，保留现有数据库与新增对局。P6 没有 schema 变更，通常无需恢复数据库；恢复备份会丢失备份后提交，只有明确决定恢复数据时才执行。部署功能验证范围与结果见 [P6 实施记录](../../docs/P6多局调度与性能实施记录.md)。

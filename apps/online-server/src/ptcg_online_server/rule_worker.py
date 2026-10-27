@@ -1,7 +1,7 @@
-"""One approved rule execution in a disposable process, with no DB credentials.
+"""Serial approved rule execution in an isolated process, with no DB credentials.
 
 The parent enforces time and concurrency bounds. No network endpoint accepts this
-private request format. Each invocation activates exactly one immutable bundle.
+private request format. Each process activates exactly one immutable bundle.
 """
 
 from contextlib import redirect_stdout

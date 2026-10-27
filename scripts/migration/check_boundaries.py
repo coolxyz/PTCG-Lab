@@ -17,6 +17,7 @@ from scripts.migration.p4d_report import evidence_valid
 from scripts.migration.p6b_report import valid as p6b_valid
 from scripts.migration.p6c_report import valid as p6c_valid
 from scripts.migration.p6d_report import valid as p6d_valid
+from scripts.migration.p6e_report import valid as p6e_valid
 
 
 def check(root=ROOT):
@@ -45,7 +46,7 @@ def check(root=ROOT):
             ("P5.5-C" if project["distribution"] == "@ptcg/desktop-web" else "P3-B")
             if gui
             else (
-                "P6-D"
+                "P6-E"
                 if online
                 else (
                     "P5-A"
@@ -357,10 +358,11 @@ def check(root=ROOT):
             errors.append("native client/server envelope schema drift")
     if status.get("currentPhase") == "P6" and (
         status["phases"].get("P5.5") != "completed"
-        or status["phases"].get("P6") != "in_progress"
+        or status["phases"].get("P6") not in {"in_progress", "completed"}
         or status.get("subphases", {}).get("P6-A") != "completed"
-        or status.get("subphases", {}).get("P6-E") != "planned"
-        or status.get("subphases", {}).get("P6-D") not in {"in_progress", "completed"}
+        or status.get("subphases", {}).get("P6-E") not in {"in_progress", "completed"}
+        or status.get("subphases", {}).get("P6-D") != "completed"
+        or status.get("p6dImplementationCommit") != "f7ce35d"
         or status.get("subphases", {}).get("P6-B") != "completed"
         or status.get("subphases", {}).get("P6-C") != "completed"
         or status.get("p6cImplementationCommit") != "691fc0a"
@@ -400,10 +402,23 @@ def check(root=ROOT):
     ):
         errors.append("P6-C completion lacks current scheduler acceptance")
     if status.get("subphases", {}).get("P6-D") == "completed" and (
-        not p6d_valid(root)
+        not p6d_valid(root, historical=True)
         or status.get("p6dAcceptanceDocument") != "releases/p6d-workers.json"
     ):
         errors.append("P6-D completion lacks current worker acceptance")
+    if status.get("subphases", {}).get("P6-E") == "completed" and (
+        not p6e_valid(root)
+        or status.get("p6eAcceptanceDocument") != "releases/p6e-budgets.json"
+    ):
+        errors.append("P6-E completion lacks current budget acceptance")
+    if status["phases"].get("P6") == "completed" and (
+        any(
+            status.get("subphases", {}).get("P6-" + part) != "completed"
+            for part in "ABCDE"
+        )
+        or not p6e_valid(root)
+    ):
+        errors.append("P6 completion lacks all bounded implementation stages")
     for phase in range(7, 9):
         if status["phases"].get("P" + str(phase)) != "planned":
             errors.append("future implementation misrepresented as complete")

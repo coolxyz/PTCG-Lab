@@ -50,7 +50,7 @@
       "distribution": "ptcg-online-server",
       "module": "ptcg_online_server",
       "language": "python",
-      "stage": "P6-D",
+      "stage": "P6-E",
       "implementationReady": false,
       "allowedInternalImports": [
         "ptcg_core",
