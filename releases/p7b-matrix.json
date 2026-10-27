@@ -228,7 +228,267 @@
       "evidenceSha256": "83e1c1ad65d98ff51fd5265ce7fe7d1a642950e55f67c02091a3cc2474b69e7b"
     }
   ],
-  "samples": [],
+  "samples": [
+    {
+      "schema": 1,
+      "formalSample": true,
+      "capacityValidated": false,
+      "status": "passed",
+      "targets": {
+        "latencyP95": true,
+        "latencyP99": true,
+        "averageCpu": true,
+        "driverHeadroom": true
+      },
+      "workers": 1,
+      "repeat": 1,
+      "matches": 10,
+      "players": 20,
+      "warmupSeconds": 300,
+      "steadySeconds": 1200,
+      "measuredSteadySeconds": 1200.0244551350042,
+      "elapsedSeconds": 1500.103538594005,
+      "acceptedCommands": 1456,
+      "steadyAccepted": 1160,
+      "firstAttemptErrors": 0,
+      "privateReplayVerified": true,
+      "durableHistoryVerified": true,
+      "protectedServicesUnchanged": true,
+      "imageId": "sha256:c4c16b3c700d71b87e66f17d02aefcb5684946e4413cf53be8192c7874db76d1",
+      "runtimeSourceSha256": "d8ec749f4cf6c945ff075899528389c06c0cd9749f98cce4031146fa3d1847b1",
+      "initialFixtureSha256": "a8efb5378e7b00e676b5fd54fd41cd276ef2caca016bdd4e451e5c7dbad7a64c",
+      "fixtureVersion": "p7-fixture-v1",
+      "cacheEntriesTotal": 16,
+      "ruleReleaseId": "rules-core-v2-5ea088e0fd1f4d6f6a351dea7521f83688db72f3ecd7a2c54a366761f90107c4",
+      "targetVcpus": 2,
+      "targetMemoryBytes": 2147483648,
+      "swapBytes": 0,
+      "oomKills": 0,
+      "groupPeakMemoryBytes": 340840448,
+      "steadyAverageCpuPercentOfTwoVcpus": 8.133185837044147,
+      "asgiP95UpperSeconds": 0.3,
+      "asgiP99UpperSeconds": 1,
+      "clientHttp": {
+        "count": 1160,
+        "p50": 0.12800334399798885,
+        "p95": 0.274147725009243,
+        "p99": 0.8433921149990056,
+        "maximum": 2.291781415013247
+      },
+      "replayReadConcurrency": 2,
+      "replayQueueWaitSeconds": {
+        "count": 996,
+        "p50": 2.792003215290606e-06,
+        "p95": 0.04557994700735435,
+        "p99": 0.07827706400712486,
+        "maximum": 0.11748097199597396
+      },
+      "requestOperations": {
+        "setup": {
+          "session": {
+            "attempts": 20,
+            "successes": 20,
+            "pending": 0,
+            "errors": 0
+          },
+          "deck": {
+            "attempts": 20,
+            "successes": 20,
+            "pending": 0,
+            "errors": 0
+          },
+          "room_create": {
+            "attempts": 10,
+            "successes": 10,
+            "pending": 0,
+            "errors": 0
+          },
+          "room_join": {
+            "attempts": 10,
+            "successes": 10,
+            "pending": 0,
+            "errors": 0
+          },
+          "room_ready": {
+            "attempts": 20,
+            "successes": 20,
+            "pending": 0,
+            "errors": 0
+          },
+          "initialization_wait": {
+            "attempts": 69,
+            "successes": 10,
+            "pending": 59,
+            "errors": 0
+          },
+          "control": {
+            "attempts": 20,
+            "successes": 20,
+            "pending": 0,
+            "errors": 0
+          }
+        },
+        "warmup": {
+          "command": {
+            "attempts": 296,
+            "successes": 296,
+            "pending": 0,
+            "errors": 0
+          }
+        },
+        "steady": {
+          "command": {
+            "attempts": 1160,
+            "successes": 1160,
+            "pending": 0,
+            "errors": 0
+          },
+          "refresh": {
+            "attempts": 40,
+            "successes": 40,
+            "pending": 0,
+            "errors": 0
+          },
+          "replay": {
+            "attempts": 678,
+            "successes": 678,
+            "pending": 0,
+            "errors": 0
+          },
+          "room_create": {
+            "attempts": 10,
+            "successes": 10,
+            "pending": 0,
+            "errors": 0
+          },
+          "room_join": {
+            "attempts": 10,
+            "successes": 10,
+            "pending": 0,
+            "errors": 0
+          },
+          "room_ready": {
+            "attempts": 20,
+            "successes": 20,
+            "pending": 0,
+            "errors": 0
+          },
+          "initialization_wait": {
+            "attempts": 64,
+            "successes": 10,
+            "pending": 54,
+            "errors": 0
+          },
+          "control": {
+            "attempts": 20,
+            "successes": 20,
+            "pending": 0,
+            "errors": 0
+          }
+        },
+        "fault": {},
+        "cleanup": {
+          "replay": {
+            "attempts": 318,
+            "successes": 318,
+            "pending": 0,
+            "errors": 0
+          }
+        }
+      },
+      "bothVisible": {
+        "count": 1160,
+        "p50": 0.14225767999596428,
+        "p95": 0.2927939709916245,
+        "p99": 0.8492096089903498,
+        "maximum": 2.3130956010136288
+      },
+      "commandSpans": {
+        "db.acquire": {
+          "p95UpperSeconds": 0.001,
+          "maximumSeconds": 0.015014453980256803
+        },
+        "db.sql": {
+          "p95UpperSeconds": 0.05,
+          "maximumSeconds": 0.9024442179652397
+        },
+        "sql.read": {
+          "p95UpperSeconds": 0.02,
+          "maximumSeconds": 0.11035925903706811
+        },
+        "sql.advisory": {
+          "p95UpperSeconds": 0.01,
+          "maximumSeconds": 0.790298754000105
+        },
+        "sql.write": {
+          "p95UpperSeconds": 0.01,
+          "maximumSeconds": 0.04943053002352826
+        },
+        "sql.locked_read": {
+          "p95UpperSeconds": 0.005,
+          "maximumSeconds": 0.09585085100843571
+        },
+        "db.commit_exit": {
+          "p95UpperSeconds": 0.1,
+          "maximumSeconds": 2.136444705000031
+        },
+        "db.transaction": {
+          "p95UpperSeconds": 0.2,
+          "maximumSeconds": 2.2739488459774293
+        },
+        "scheduler.accepted": {
+          "p95UpperSeconds": 0.001,
+          "maximumSeconds": 0.0
+        },
+        "rule.compute": {
+          "p95UpperSeconds": 0.005,
+          "maximumSeconds": 0.00689366199367214
+        },
+        "cache.hit": {
+          "p95UpperSeconds": 0.001,
+          "maximumSeconds": 0.0
+        },
+        "worker.command": {
+          "p95UpperSeconds": 0.02,
+          "maximumSeconds": 0.04998975800117478
+        },
+        "scheduled.queue": {
+          "p95UpperSeconds": 0.05,
+          "maximumSeconds": 0.16797515701910015
+        }
+      },
+      "eventLoopLagMaximumSeconds": 0.6253273119946243,
+      "apiCpuStat": {
+        "usage_usec": 194429650,
+        "user_usec": 182994789,
+        "system_usec": 11434861,
+        "nice_usec": 0,
+        "nr_periods": 12774,
+        "nr_throttled": 66,
+        "throttled_usec": 2128646,
+        "nr_bursts": 0,
+        "burst_usec": 0
+      },
+      "driverAverageCpuPercentOfOneVcpu": 4.928315944930834,
+      "driverMaxRssKiB": 67276,
+      "databaseGrowthBytes": 45907968,
+      "walDelta": {
+        "wal_bytes": 74193796.0,
+        "wal_write": 13485.0,
+        "wal_sync": 13464.0,
+        "wal_write_time": 204.269,
+        "wal_sync_time": 110585.875
+      },
+      "databaseWaitSampling": null,
+      "sql": {
+        "matches": 20,
+        "seq": 1456,
+        "receipts": 1456,
+        "frames": 2952
+      },
+      "evidenceSha256": "6af787864fe5c3a85c553dda3e0f0f9f9576a0feb0c946ba3e9e0bbf57629c64"
+    }
+  ],
   "capacityValidated": false,
   "formalMatrixCompleted": false,
   "soakCompleted": false,
