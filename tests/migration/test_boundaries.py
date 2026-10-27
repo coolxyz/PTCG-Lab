@@ -45,6 +45,8 @@ def scaffold(tmp_path):
         "docs/P5.5产品整合完成记录.md",
         "docs/P6多局调度与性能实施记录.md",
         "docs/P7容量与故障验收实施记录.md",
+        "docs/P8原生发布实施记录.md",
+        "scripts/native/runtime-lock.json",
     ]:
         p = tmp_path / name
         p.parent.mkdir(parents=True, exist_ok=True)

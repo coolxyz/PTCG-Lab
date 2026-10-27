@@ -48,8 +48,8 @@ class Feed:
 class Bridge:
     """A single trusted native owner shared by authorized browser windows."""
 
-    def __init__(self, profiles, storage, *, client_factory=Client):
-        if not 1 <= len(profiles) <= 8 or any(
+    def __init__(self, profiles, storage, *, client_factory=Client, allow_offline=False):
+        if not (0 if allow_offline else 1) <= len(profiles) <= 8 or any(
             not re.fullmatch(r"[a-z0-9-]{1,32}", key) for key in profiles
         ):
             raise ValueError("Invalid native profile configuration")

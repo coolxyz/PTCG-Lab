@@ -1,0 +1,22 @@
+[package]
+name = "ptcg-native-shell"
+version = "0.8.0"
+edition = "2021"
+rust-version = "1.90"
+license = "MIT"
+publish = false
+
+[build-dependencies]
+tauri-build = { version = "=2.7.4", features = [] }
+
+[dependencies]
+tauri = { version = "=2.12.5", features = [] }
+libc = "=0.2.191"
+serde = { version = "=1.0.228", features = ["derive"] }
+serde_json = "=1.0.145"
+sha2 = "=0.10.9"
+getrandom = "=0.3.4"
+
+[profile.release]
+codegen-units = 1
+strip = true

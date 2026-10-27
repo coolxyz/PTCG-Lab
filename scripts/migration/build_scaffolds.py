@@ -52,6 +52,12 @@ def build(output, root=ROOT, wheelhouse=None):
                 and not any(part.endswith(".egg-info") for part in p.parts)
                 and p.suffix != ".pyc"
             ]
+            if project["distribution"] == "@ptcg/native-shell":
+                from scripts.public.policy import source_files
+
+                prefix = project["path"] + "/"
+                names += [n.removeprefix(prefix) for n in source_files(root)
+                          if n.startswith(prefix + "src-tauri/") or n.startswith(prefix + "ui/")]
             for name in names:
                 data = safe_file(root, project["path"] + "/" + name).read_bytes()
                 issues = inspect(project["path"] + "/" + name, data)

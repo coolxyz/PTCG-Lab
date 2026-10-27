@@ -4,6 +4,8 @@
   "private": true,
   "type": "module",
   "workspaces": [
+    "apps/native-shell",
+    "packages/platform-services",
     "apps/desktop-web",
     "packages/battle-ui",
     "packages/battle-protocol/ts"

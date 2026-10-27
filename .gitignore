@@ -53,3 +53,5 @@ packages/*/dist/
 packages/*/ts/dist/
 **/*.egg-info/
 **/build/
+**/target/
+apps/native-shell/src-tauri/gen/

@@ -43,6 +43,19 @@ class Host:
             self.codes[code] = time.monotonic() + 300
             return code
 
+    def native_session(self):
+        """Private parent pipe only; there is deliberately no HTTP minting route."""
+        with self.lock:
+            self._prune()
+            if len(self.sessions) >= 8:
+                raise BridgeError("LOCAL_BUSY", 503)
+            key = secrets.token_urlsafe(32)
+            self.sessions[key] = {
+                "expires": time.monotonic() + 8 * 3600,
+                "windows": {},
+            }
+            return key
+
     def launch(self):
         with self.lock:
             self._prune()

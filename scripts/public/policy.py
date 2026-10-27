@@ -12,6 +12,7 @@ FOLDERS = (
     "apps/desktop-api",
     "apps/desktop-web",
     "apps/online-server",
+    "apps/native-shell",
     "packages",
     "scripts",
     "tests",
@@ -37,6 +38,7 @@ FILES = (
     "RELEASE.json",
     "package.json",
     "package-lock.json",
+    "apps/native-shell/src-tauri/icons/icon.png",
     "releases/projects.json",
     "releases/migration-status.json",
     "releases/p4d-acceptance.json",
@@ -76,6 +78,8 @@ EXCLUDED = {
     "exports",
     "dist",
     "build",
+    "target",
+    "gen",
     "secrets",
     "credentials",
     "private",
@@ -102,6 +106,7 @@ ALLOWED = {
     ".yaml",
     ".yml",
     ".sql",
+    ".rs",
 }
 SYNTHETIC_JSON = frozenset({"tests/synthetic/protocol/scaffold.json", "tests/synthetic/protocol/v2.json"})
 PATTERNS = {
