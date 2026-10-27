@@ -12,7 +12,7 @@
     "P5.5": "completed",
     "P6": "completed",
     "P7": "in_progress",
-    "P8": "planned"
+    "P8": "in_progress"
   },
   "acceptanceDocument": "docs/P1迁移基线与发布门禁验收.md",
   "subphases": {
@@ -43,7 +43,14 @@
     "P7-A": "completed",
     "P7-B": "in_progress",
     "P7-C": "planned",
-    "P7-D": "planned"
+    "P7-D": "planned",
+    "P8-A": "in_progress",
+    "P8-B": "planned",
+    "P8-C": "planned",
+    "P8-D": "planned",
+    "P8-E": "planned",
+    "P8-F": "planned",
+    "P8-S": "planned"
   },
   "p1BaselineCommit": "83e3fb2",
   "progressDocument": "docs/P2共享协议与规则核心实施记录.md",
@@ -100,5 +107,10 @@
   "p7BaselineCommit": "41fe0f1",
   "p7ProgressDocument": "docs/P7容量与故障验收实施记录.md",
   "p7aAcceptanceDocument": "releases/p7a-isolation.json",
-  "p7bProgressDocument": "releases/p7b-matrix.json"
+  "p7bProgressDocument": "releases/p7b-matrix.json",
+  "parallelPhases": [
+    "P7",
+    "P8"
+  ],
+  "p8ProgressDocument": "docs/P8原生发布实施记录.md"
 }

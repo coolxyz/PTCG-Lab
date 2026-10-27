@@ -1,13 +1,13 @@
 {
   "schema": 1,
-  "phase": "P5.5",
+  "phase": "P8",
   "projects": [
     {
       "path": "apps/desktop-api",
       "distribution": "ptcg-desktop-api",
       "module": "ptcg_desktop_api",
       "language": "python",
-      "stage": "P5.5-C",
+      "stage": "P8-A",
       "implementationReady": false,
       "allowedInternalImports": [
         "ptcg_online_client"
@@ -268,7 +268,8 @@
         "dev": "vite --host 127.0.0.1",
         "build": "tsc --noEmit && vite build",
         "test": "playwright test"
-      }
+      },
+      "allowedDevDependencies": {}
     },
     {
       "path": "packages/battle-ui",
@@ -291,7 +292,8 @@
         "react": "19.1.1",
         "react-dom": "19.1.1"
       },
-      "allowedScripts": {}
+      "allowedScripts": {},
+      "allowedDevDependencies": {}
     },
     {
       "path": "packages/battle-protocol/ts",
@@ -302,7 +304,42 @@
       "implementationReady": false,
       "allowedInternalImports": [],
       "allowedExternalImports": [],
-      "allowedRuntimeRequirements": []
+      "allowedRuntimeRequirements": [],
+      "allowedDevDependencies": {}
+    },
+    {
+      "path": "packages/platform-services",
+      "distribution": "@ptcg/platform-services",
+      "module": "platform-services",
+      "language": "javascript",
+      "stage": "P8-A",
+      "implementationReady": false,
+      "allowedInternalImports": [],
+      "allowedExternalImports": [],
+      "allowedRuntimeRequirements": [],
+      "allowedPackageDependencies": {},
+      "allowedPeerDependencies": {},
+      "allowedDevDependencies": {},
+      "allowedScripts": {}
+    },
+    {
+      "path": "apps/native-shell",
+      "distribution": "@ptcg/native-shell",
+      "module": "native-shell",
+      "language": "javascript",
+      "stage": "P8-A",
+      "implementationReady": false,
+      "allowedInternalImports": [],
+      "allowedExternalImports": [],
+      "allowedRuntimeRequirements": [],
+      "allowedPackageDependencies": {},
+      "allowedPeerDependencies": {},
+      "allowedDevDependencies": {
+        "@tauri-apps/cli": "2.12.4"
+      },
+      "allowedScripts": {
+        "tauri": "tauri"
+      }
     }
   ]
 }

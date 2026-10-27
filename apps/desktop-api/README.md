@@ -1,8 +1,8 @@
 # ptcg-desktop-api
 
-P5.5-A 本地宿主，版本 `0.5.0.dev6`。支持独立网络窗口及接收产品 ASGI 应用的单端口组合宿主。包本身不导入 SQLite、规则或人机模块，由产品装配入口显式注入；根启动器通过可选参数接入，尚未切换默认产品路由。
+P8-A 本地宿主，版本 `0.8.0.dev0`。支持独立网络窗口、产品 ASGI 单端口组合宿主及继承管道控制的原生后台。包本身不导入 SQLite、规则或人机模块，由产品装配入口显式注入；原浏览器启动流程保持兼容。
 
-Python 3.14；依赖 `ptcg-online-client==0.5.0.dev3`、Starlette 和 Uvicorn，完整外部闭包见 `requirements.lock`。凭据存储继承原生客户端的 POSIX 权限文件限制，目前不支持 Windows 后端。
+Python 3.14；依赖 `ptcg-online-client==0.5.0.dev6`、Starlette 和 Uvicorn，完整外部闭包见 `requirements.lock`。P8 macOS 验证另锁定随包闭包。凭据存储仍继承原生客户端的 POSIX 权限文件限制，Keychain 和 Windows 后端尚待实现，不能据此标记 P8-A 或跨平台发布完成。
 
 ```python
 from pathlib import Path

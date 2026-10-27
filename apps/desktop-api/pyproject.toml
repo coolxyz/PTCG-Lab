@@ -4,8 +4,8 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "ptcg-desktop-api"
-version = "0.5.0.dev9"
-description = "P5-C local online host, bridge and versioned display cache"
+version = "0.8.0.dev0"
+description = "P8-A product host, native pipe lifecycle and same-origin bridge"
 readme = "README.md"
 requires-python = ">=3.14"
 license = "MIT"

@@ -20,6 +20,7 @@ from scripts.migration.p6d_report import valid as p6d_valid
 from scripts.migration.p6e_report import valid as p6e_valid
 from scripts.migration.p7a_report import valid as p7a_valid
 from scripts.migration.p7b_report import valid as p7b_valid
+from scripts.native.contracts import check as native_check
 
 
 def check(root=ROOT):
@@ -54,7 +55,7 @@ def check(root=ROOT):
                     "P5-A"
                     if client
                     else (
-                        "P5.5-C"
+                        "P8-A"
                         if desktop
                         else (
                             "P2-D"
@@ -67,6 +68,8 @@ def check(root=ROOT):
                 )
             )
         )
+        if project["distribution"] in {"@ptcg/platform-services", "@ptcg/native-shell"}:
+            expected_stage = "P8-A"
         if (
             project["stage"] != expected_stage
             or project["implementationReady"] is not False
@@ -180,6 +183,7 @@ def check(root=ROOT):
                 ("dependencies", "allowedPackageDependencies"),
                 ("peerDependencies", "allowedPeerDependencies"),
                 ("scripts", "allowedScripts"),
+                ("devDependencies", "allowedDevDependencies"),
             ):
                 if metadata.get(field, {}) != project.get(contract, {}):
                     errors.append(
@@ -460,9 +464,19 @@ def check(root=ROOT):
             status["phases"].get("P7") == "in_progress"
             and status.get("currentPhase") != "P7"
         )
-        or status["phases"].get("P8") != "planned"
+        or status["phases"].get("P8") not in {"planned", "in_progress"}
     ):
         errors.append("future implementation misrepresented as complete")
+    if status["phases"].get("P8") == "in_progress" and (
+        status.get("parallelPhases") != ["P7", "P8"]
+        or status.get("subphases", {}).get("P8-A") != "in_progress"
+        or status.get("p8ProgressDocument") != "docs/P8原生发布实施记录.md"
+        or not (root / "docs/P8原生发布实施记录.md").is_file()
+        or any(status.get("subphases", {}).get("P8-" + p) != "planned" for p in "BCDEFS")
+    ):
+        errors.append("P8 parallel development lacks bounded scope or pending acceptance")
+    if status["phases"].get("P8") == "in_progress":
+        errors.extend(native_check(root))
     for name in ["docs/产品化重构设计.md", "docs/产品化重构分阶段实施.md"]:
         text = (root / name).read_text()
         if (

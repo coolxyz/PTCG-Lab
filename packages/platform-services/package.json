@@ -1,0 +1,9 @@
+{
+  "name": "@ptcg/platform-services",
+  "version": "0.8.0-p8a",
+  "private": true,
+  "type": "module",
+  "license": "MIT",
+  "files": ["src", "LICENSE", "README.md"],
+  "exports": {".": {"types": "./src/index.ts", "default": "./src/index.ts"}}
+}
