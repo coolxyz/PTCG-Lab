@@ -7,6 +7,17 @@ from ptcg_protocol.projection import snapshot, legacy_view, replay_page, core_co
 from ptcg_protocol.validation import validate, ProtocolViolation
 
 
+@pytest.mark.parametrize("identity", [{}, {"id": None}, {"id": ""}])
+def test_missing_card_id_keeps_printing_identity_in_projection(identity):
+    from ptcg_protocol.projection import card_identity
+
+    card = dict(
+        name="Synthetic card with spaces", set_name="SYN", number="042", **identity
+    )
+    assert card_identity(card) == "SYN-042"
+    assert card_identity({**card, "id": "EXPLICIT-001"}) == "EXPLICIT-001"
+
+
 def original():
     card = {
         "id": "SYN-001",

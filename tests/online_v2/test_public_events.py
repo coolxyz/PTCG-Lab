@@ -259,3 +259,82 @@ def test_numeric_effect_options_do_not_publish_arbitrary_labels_or_values():
     )
     event = action_events(view, "PLAYER1", {"optionId": "option"})[0]
     assert event == {"actor": "PLAYER1", "kind": "action", "text": "完成效果选项选择"}
+
+
+@pytest.mark.parametrize(
+    "kind",
+    ["UseStadiumAction", "DiscardStadiumAction", "UseAbilityAction", "UseItemAction"],
+)
+def test_public_record_without_explicit_id_uses_the_board_printing_identity(kind):
+    view = original()
+    card = dict(
+        name="Synthetic public card with spaces",
+        set_name="SYN",
+        number="042",
+        ref="v0:stadium:0",
+        privateDiagnostic="never-export",
+    )
+    zone = (
+        view["observation"]["stadium"]
+        if "Stadium" in kind
+        else view["observation"]["self"]["active"]
+    )
+    zone[:] = [card]
+    view["decision"]["options"] = [
+        dict(
+            id="use",
+            actionType=kind,
+            sourceRef=card["ref"],
+            active_pokemonRef=card["ref"],
+        )
+    ]
+    event = action_events(view, "PLAYER1", {"optionId": "use"})[0]
+    assert [c["cardId"] for c in event["cards"]] == ["SYN-042"]
+    assert event["cards"][0]["name"] == card["name"]
+    assert "never-export" not in json.dumps(event)
+    # Private diagnostics are excluded from the event. They are not part of the
+    # independent, schema-valid board projection used to compare its identity.
+    del card["privateDiagnostic"]
+    for seat in ("PLAYER1", "PLAYER2"):
+        scoped = deepcopy(view)
+        if seat == "PLAYER2":
+            scoped["observation"]["viewer"] = "player2"
+            scoped["observation"]["self"]["id"] = "player2"
+            scoped["observation"]["opponent"]["id"] = "player1"
+            scoped["decision"] = None
+        frame = snapshot(
+            scoped,
+            match_id="synthetic",
+            rule_release_id="rules",
+            viewer_seat=seat,
+            match_seq=1,
+            controller_epoch=0,
+            stream_cursor="cursor",
+        )
+        frame["events"] = [{**event, "seq": 1}]
+        validate("MatchSnapshot", frame)
+
+
+def test_selection_and_same_name_printings_keep_distinct_valid_ids():
+    view = original()
+    source = dict(
+        name="Same synthetic name", set_name="SYN", number="001", ref="v0:stadium:0"
+    )
+    target = {**source, "number": "002", "ref": "v0:self:active:0"}
+    view["observation"]["stadium"] = [source]
+    view["observation"]["self"]["active"] = [target]
+    view["decision"]["options"] = [
+        dict(
+            id="use",
+            actionType="UseStadiumAction",
+            sourceRef=source["ref"],
+            targetRef=target["ref"],
+        )
+    ]
+    event = action_events(view, "PLAYER1", {"optionId": "use"})[0]
+    assert [c["cardId"] for c in event["cards"]] == ["SYN-001", "SYN-002"]
+    validate_event(event, 1)
+    view["decision"] = dict(kind="selection", actor="PLAYER1")
+    event = action_events(view, "PLAYER1", {}, selection_source=source["ref"])[0]
+    assert event["cards"][0]["cardId"] == "SYN-001"
+    validate_event(event, 2)
