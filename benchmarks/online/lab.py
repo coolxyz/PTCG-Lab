@@ -101,7 +101,7 @@ def cgroup(path, value, action):
     )
 
 
-def prepare(directory, inputs_path, workers):
+def prepare(directory, inputs_path, workers, fixture_seed=None):
     path = Path(directory).resolve()
     if not path.is_relative_to(ROOT / "var/p7") or workers not in (1, 2):
         raise ValueError("DEDICATED_P7_DIRECTORY_REQUIRED")
@@ -170,7 +170,7 @@ def prepare(directory, inputs_path, workers):
         CONNECTION_RESERVE=8,
         WORKER_COUNT=workers,
         WORKER_COLD_LIMIT=1,
-        WORKER_CACHE_ENTRIES=8,
+        WORKER_CACHE_ENTRIES=16 // workers,
         WORKER_RSS_MB=256,
         CREATE_PER_MINUTE=1000,
         JOIN_PER_MINUTE=1000,
@@ -183,6 +183,8 @@ def prepare(directory, inputs_path, workers):
         MAX_LOBBY_RECEIPTS=20000,
     )
     envs = {"PTCG_ONLINE_V2_" + k: str(v) for k, v in settings.items()}
+    if fixture_seed is not None:
+        envs["PTCG_P7_FIXTURE_SEED"] = str(fixture_seed)
     common = dict(
         labels={LABEL: project},
         cgroup_parent="/" + project,
@@ -193,6 +195,13 @@ def prepare(directory, inputs_path, workers):
     database = {
         **common,
         "image": "postgres:17",
+        "command": [
+            "postgres",
+            "-c",
+            "track_wal_io_timing=on",
+            "-c",
+            "track_io_timing=on",
+        ],
         "env_file": [str(path / "database.env")],
         "volumes": ["database:/var/lib/postgresql/data"],
         "mem_limit": "512m",
@@ -239,6 +248,7 @@ def prepare(directory, inputs_path, workers):
     }
     driver = {
         "image": image,
+        "healthcheck": {"disable": True},
         "labels": {LABEL: project},
         "networks": ["test"],
         "mem_limit": "512m",
@@ -265,6 +275,7 @@ def prepare(directory, inputs_path, workers):
         workers=workers,
         created=datetime.now(timezone.utc).isoformat(),
         settings=settings,
+        fixtureSeed=fixture_seed,
         resourceBudget=dict(
             vcpus=2,
             memoryBytes=2 * 1024**3,
@@ -428,6 +439,7 @@ def run_driver(path, value, mode, extra):
         for identity in ids:
             docker(["stop", "--time", "3", identity])
 
+    database_stats(path, value, "before")
     with Guard(path, protected, lambda: cgroup(path, value, "sample"), stop_driver):
         compose(
             path,
@@ -443,8 +455,38 @@ def run_driver(path, value, mode, extra):
             *extra,
         )
     result = json.loads((path / "results" / filename).read_text())
+    database_stats(path, value, "after", result.get("matches", 1))
     print(json.dumps(dict(status=result["status"], mode=mode, result=filename)))
     return result
+
+
+def database_stats(path, value, label, matches=1):
+    name, _ = inspect_owned(value, "database")
+    assert type(matches) is int and matches in (1, 10, 25, 50, 100)
+    query = """SELECT json_build_object(
+        'wal', (SELECT row_to_json(w) FROM pg_stat_wal w),
+        'databaseBytes', pg_database_size(current_database()),
+        'proof', (SELECT json_build_object('matches',count(*),'seq',coalesce(sum(match_seq),0),
+          'receipts',(SELECT count(*) FROM ptcg_v2.match_receipts),
+          'frames',(SELECT count(*) FROM ptcg_v2.match_frames)) FROM ptcg_v2.matches),
+        'version', current_setting('server_version'),
+        'fsync', current_setting('fsync'),
+        'synchronousCommit', current_setting('synchronous_commit'),
+        'trackWalIoTiming', current_setting('track_wal_io_timing'),
+        'initialFixtureSha256', (SELECT encode(sha256(convert_to(
+          coalesce(string_agg(match_id||':'||seed::text,',' ORDER BY created_at),''),'UTF8')),'hex')
+          FROM (SELECT match_id,seed,created_at FROM ptcg_v2.initializations ORDER BY created_at LIMIT MATCH_LIMIT) f),
+        'database', (SELECT row_to_json(d) FROM
+          (SELECT xact_commit,xact_rollback,blks_read,blks_hit,blk_read_time,blk_write_time
+           FROM pg_stat_database WHERE datname=current_database()) d))"""
+    query = query.replace("MATCH_LIMIT", str(matches))
+    output = docker(
+        ["exec", name, "psql", "-U", "ptcg_p7", "-d", "ptcg_p7", "-Atc", query],
+        capture=True,
+    )
+    (path / ("database-" + label + ".json")).write_text(
+        json.dumps(json.loads(output), indent=2) + "\n"
+    )
 
 
 def fault(path, value):
@@ -540,6 +582,30 @@ def stop(path, value):
     print(json.dumps(dict(status="removed", project=value["project"])))
 
 
+def cleanup_failed_start(path, value):
+    """Remove partial startup resources only after verifying every project container."""
+    ids = docker(
+        [
+            "ps",
+            "-aq",
+            "--filter",
+            "label=com.docker.compose.project=" + value["project"],
+        ],
+        capture=True,
+    ).split()
+    if ids:
+        objects = json.loads(docker(["inspect", *ids], capture=True))
+        for item in objects:
+            labels = item["Config"]["Labels"]
+            if labels.get(LABEL) != value["project"] or labels.get(
+                "com.docker.compose.service"
+            ) not in {"api", "database", "driver"}:
+                raise ValueError("UNOWNED_PARTIAL_START_CONTAINER")
+        compose(path, value, "down", "--volumes", "--timeout", "45")
+    if (path / "resource-budget.json").exists():
+        cgroup(path, value, "remove")
+
+
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument(
@@ -548,10 +614,11 @@ def main():
     parser.add_argument("--directory", required=True)
     parser.add_argument("--inputs")
     parser.add_argument("--workers", type=int, default=1)
+    parser.add_argument("--fixture-seed", type=int)
     args, extra = parser.parse_known_args()
     try:
         if args.action == "prepare":
-            return prepare(args.directory, args.inputs, args.workers)
+            return prepare(args.directory, args.inputs, args.workers, args.fixture_seed)
         path, value = metadata(args.directory)
         if args.action == "start":
             start(path, value)

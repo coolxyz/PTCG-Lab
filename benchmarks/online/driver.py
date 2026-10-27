@@ -7,6 +7,8 @@ from hashlib import sha256
 import json
 from pathlib import Path
 import random
+import re
+import resource
 import threading
 import time
 import uuid
@@ -30,6 +32,69 @@ METRICS = {
     for p in ("warmup", "steady", "fault")
 }
 RECONNECT = []
+REPLAY_SLOTS = threading.BoundedSemaphore(2)
+OPERATIONS = (
+    "session",
+    "refresh",
+    "deck",
+    "room_create",
+    "room_join",
+    "room_ready",
+    "snapshot",
+    "initialization_wait",
+    "control",
+    "command",
+    "receipt",
+    "replay",
+    "other",
+)
+REQUESTS = {p: {} for p in ("setup", "warmup", "steady", "fault", "cleanup")}
+REPLAY_WAITS = []
+
+
+def operation(path):
+    fixed = {
+        "/sessions": "session",
+        "/sessions/refresh": "refresh",
+        "/decks": "deck",
+        "/rooms": "room_create",
+        "/rooms/join": "room_join",
+    }
+    if path in fixed:
+        return fixed[path]
+    for suffix, name in (
+        ("ready", "room_ready"),
+        ("control", "control"),
+        ("commands", "command"),
+    ):
+        if path.endswith("/" + suffix):
+            return name
+    if re.fullmatch(r"/matches/[^/]+/frames(?:/[^/]+)?", path):
+        return "replay"
+    if "/receipts/" in path:
+        return "receipt"
+    return "snapshot" if re.fullmatch(r"/matches/[^/]+", path) else "other"
+
+
+def failure(error, stage):
+    """Never stringify an exception or retain URLs, request data or credentials."""
+    value = dict(
+        type=type(error).__name__,
+        operation=stage
+        if stage in (*OPERATIONS, "stream_connect", "replay_verify")
+        else "other",
+    )
+    if isinstance(error, ClientError):
+        value.update(
+            code=error.code
+            if isinstance(error.code, str) and re.fullmatch(r"[A-Z_]{1,64}", error.code)
+            else "REMOTE_FAILED",
+            status=error.status
+            if type(error.status) is int and 0 <= error.status <= 599
+            else 0,
+            retryable=error.retryable is True,
+        )
+    return value
 
 
 def body(**kwargs):
@@ -91,15 +156,61 @@ class Game:
         self.tokens, self.revisions, self.sockets, self.views = [], [], [], []
         self.hashes, self.last, self.pending = [{}, {}], None, None
         self.commands, self.duplicates, self.completed = 0, 0, 0
+        self.current_operation = "other"
 
-    def request(self, path, *, i=None, data=None, controller=False):
-        return self.transport.request(
-            "POST" if data is not None else "GET",
-            path,
-            data,
-            token=self.tokens[i]["accessToken"] if i is not None else None,
-            controller=self.controllers[i] if controller else None,
-        )
+    def request(self, path, *, i=None, data=None, controller=False, initializing=False):
+        name, phase = operation(path), PHASE
+        if initializing:
+            if name != "snapshot":
+                raise ValueError("INITIALIZATION_POLL_REQUIRES_SNAPSHOT")
+            name = "initialization_wait"
+        self.current_operation = name
+        started = time.perf_counter()
+        if name == "replay":
+            REPLAY_SLOTS.acquire()
+            with LOCK:
+                REPLAY_WAITS.append(time.perf_counter() - started)
+        error, pending = None, False
+        try:
+            return self.transport.request(
+                "POST" if data is not None else "GET",
+                path,
+                data,
+                token=self.tokens[i]["accessToken"] if i is not None else None,
+                controller=self.controllers[i] if controller else None,
+            )
+        except Exception as caught:
+            error = failure(caught, name)
+            pending = (
+                name == "initialization_wait"
+                and isinstance(caught, ClientError)
+                and caught.status == 403
+                and caught.code == "FORBIDDEN"
+            )
+            raise
+        finally:
+            if name == "replay":
+                REPLAY_SLOTS.release()
+            with LOCK:
+                row = REQUESTS[phase].setdefault(
+                    name,
+                    dict(
+                        attempts=0,
+                        successes=0,
+                        pending=0,
+                        errors=0,
+                        firstAttemptErrors=[],
+                    ),
+                )
+                row["attempts"] += 1
+                row["successes"] += error is None
+                row["pending"] += pending
+                if error is not None and not pending:
+                    row["errors"] += 1
+                    # The run stops on the first failure; keep a bounded ledger.
+                    row["firstAttemptErrors"] = (row["firstAttemptErrors"] + [error])[
+                        :32
+                    ]
 
     def setup(self):
         self.tokens = [
@@ -148,7 +259,7 @@ class Game:
         until = time.monotonic() + 60
         while True:
             try:
-                self.request(self.route, i=0)
+                self.request(self.route, i=0, initializing=True)
                 break
             except ClientError as e:
                 if e.code != "FORBIDDEN" or time.monotonic() >= until:
@@ -170,6 +281,7 @@ class Game:
         self.sockets = []
 
     def connect(self):
+        self.current_operation = "stream_connect"
         self.close()
         views = []
         for i in range(2):
@@ -339,9 +451,11 @@ class Game:
         self.save()
 
     def verify_replay(self):
+        self.current_operation = "replay_verify"
         for i in range(2):
             cursor = None
             seen = {}
+            cursors = set()
             while True:
                 page = self.request(
                     self.route + "/frames" + ("/" + cursor if cursor else ""), i=i
@@ -350,6 +464,7 @@ class Game:
                     page["viewerSeat"] == f"PLAYER{i + 1}"
                     and page["matchId"] == self.mid
                 )
+                validate("ReplayPage", page)
                 for f in page["frames"]:
                     seen[str(f["matchSeq"])] = sha256(
                         json.dumps(f, sort_keys=True, separators=(",", ":")).encode()
@@ -357,6 +472,11 @@ class Game:
                 cursor = page["nextCursor"]
                 if cursor is None:
                     break
+                if cursor in cursors or not page["frames"]:
+                    raise ValueError("REPLAY_CURSOR_STALLED")
+                cursors.add(cursor)
+                if len(cursors) > len(self.hashes[i]) + 1:
+                    raise ValueError("REPLAY_PAGE_LIMIT")
             assert seen == self.hashes[i], "PRIVATE_REPLAY_DIFFERS_FROM_VISIBLE_HISTORY"
 
 
@@ -389,10 +509,14 @@ def load(args, inputs):
     for game in games:
         game.setup()
         game.save()
-    warm_end = time.monotonic() + args.warmup
+    started_wall = time.time()
+    started = time.monotonic()
+    cpu_started = time.process_time()
+    warm_end = started + args.warmup
     end = warm_end + args.steady
     phase("warmup" if args.warmup else "steady")
     failures = []
+    steady_started = started if not args.warmup else None
 
     def play(game):
         rng = random.Random(args.seed + game.index)
@@ -403,7 +527,7 @@ def load(args, inputs):
                 STOP.wait(rng.uniform(args.think_min, args.think_max))
         except Exception as e:
             with LOCK:
-                failures.append(type(e).__name__)
+                failures.append(failure(e, game.current_operation))
             STOP.set()
 
     try:
@@ -412,14 +536,21 @@ def load(args, inputs):
             while time.monotonic() < end and not STOP.is_set():
                 if PHASE == "warmup" and time.monotonic() >= warm_end:
                     phase("steady")
+                    steady_started = time.monotonic()
+                    end = steady_started + args.steady
                 time.sleep(0.1)
             STOP.set()
             for job in jobs:
                 job.result()
+        stopped = time.monotonic()
         phase("cleanup")
         if not failures:
             for game in games:
-                game.verify_replay()
+                try:
+                    game.verify_replay()
+                except Exception as e:
+                    failures.append(failure(e, game.current_operation))
+                    break
         result = dict(
             schema=1,
             workload="real-wire-think-v1",
@@ -430,6 +561,13 @@ def load(args, inputs):
             players=2 * args.matches,
             warmupSeconds=args.warmup,
             steadySeconds=args.steady,
+            startedUnix=started_wall,
+            elapsedSeconds=stopped - started,
+            measuredSteadySeconds=0
+            if steady_started is None
+            else stopped - steady_started,
+            driverCpuSeconds=time.process_time() - cpu_started,
+            driverMaxRssKiB=resource.getrusage(resource.RUSAGE_SELF).ru_maxrss,
             jitterSeed=args.seed,
             thinkSeconds=[args.think_min, args.think_max],
             status="passed" if not failures else "failed",
@@ -438,6 +576,9 @@ def load(args, inputs):
             completedMatches=sum(g.completed for g in games),
             perGameCommands=[g.commands for g in games],
             reconnectSeconds=latency(RECONNECT),
+            replayReadConcurrency=2,
+            replayQueueWaitSeconds=latency(REPLAY_WAITS),
+            requestOperations=REQUESTS,
             phases={
                 p: dict(
                     accepted=m["accepted"],

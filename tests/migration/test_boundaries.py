@@ -40,6 +40,8 @@ def scaffold(tmp_path):
         "releases/p6d-workers.json",
         "releases/p6e-budgets.json",
         "releases/p7a-isolation.json",
+        "releases/p7b-matrix.json",
+        "releases/p7b-before-driver-repair.json",
         "docs/P5.5产品整合完成记录.md",
         "docs/P6多局调度与性能实施记录.md",
         "docs/P7容量与故障验收实施记录.md",
@@ -499,3 +501,53 @@ def test_p7a_completion_refuses_stale_or_overclaimed_evidence(scaffold, field):
     )
     path.write_text(json.dumps(value))
     assert any("P7-A completion lacks" in e for e in check(scaffold))
+
+
+@pytest.mark.parametrize(
+    "field",
+    [
+        "baselineReportSha256",
+        "baselineRuntimeSourceSha256",
+        "benchmarkToolsSha256",
+        "runtimeSourceSha256",
+        "capacityValidated",
+        "formalMatrixCompleted",
+        "samples",
+    ],
+)
+def test_p7b_progress_refuses_changed_baseline_or_unproven_capacity(scaffold, field):
+    path = scaffold / "releases/p7b-matrix.json"
+    value = json.loads(path.read_text())
+    value[field] = (
+        True if field in {"capacityValidated", "formalMatrixCompleted"} else None
+    )
+    path.write_text(json.dumps(value))
+    assert any("P7-B progress lacks" in e for e in check(scaffold))
+
+
+def test_p7b_cannot_complete_from_diagnostics_or_a_partial_matrix(scaffold):
+    path = scaffold / "releases/migration-status.json"
+    value = json.loads(path.read_text())
+    value["subphases"]["P7-B"] = "completed"
+    path.write_text(json.dumps(value))
+    assert any("P7-B progress lacks" in e for e in check(scaffold))
+
+
+def test_p7b_driver_repair_cannot_rewrite_the_old_measurement(scaffold):
+    path = scaffold / "releases/p7b-before-driver-repair.json"
+    value = json.loads(path.read_text())
+    value["lastAttempt"]["acceptedAsFormalSample"] = True
+    path.write_text(json.dumps(value))
+    assert any("P7-B progress lacks" in e for e in check(scaffold))
+
+
+@pytest.mark.parametrize(
+    "field",
+    ["noAutomaticRetries", "serverLimitsUnchanged", "protectedServicesUnchanged"],
+)
+def test_p7b_repair_cannot_silently_retry_or_relax_server_admission(scaffold, field):
+    path = scaffold / "releases/p7b-matrix.json"
+    value = json.loads(path.read_text())
+    value["driverRepair"][field] = False
+    path.write_text(json.dumps(value))
+    assert any("P7-B progress lacks" in e for e in check(scaffold))

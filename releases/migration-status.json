@@ -41,7 +41,7 @@
     "P6-D": "completed",
     "P6-E": "completed",
     "P7-A": "completed",
-    "P7-B": "planned",
+    "P7-B": "in_progress",
     "P7-C": "planned",
     "P7-D": "planned"
   },
@@ -99,5 +99,6 @@
   "p6eAcceptanceDocument": "releases/p6e-budgets.json",
   "p7BaselineCommit": "41fe0f1",
   "p7ProgressDocument": "docs/P7容量与故障验收实施记录.md",
-  "p7aAcceptanceDocument": "releases/p7a-isolation.json"
+  "p7aAcceptanceDocument": "releases/p7a-isolation.json",
+  "p7bProgressDocument": "releases/p7b-matrix.json"
 }

@@ -1,6 +1,7 @@
 """The exact invented browser DTOs must satisfy the P2-D wire/visibility contract."""
 
 import json
+from collections import Counter
 from pathlib import Path
 import subprocess
 from ptcg_protocol.validation import validate
@@ -17,6 +18,10 @@ def test_browser_scenarios_follow_authoritative_protocol():
         text=True,
     )
     cases = json.loads(result.stdout)
-    assert len(cases) == 14
+    # Ten public-result scenarios for both seats, plus each seat's replay.
+    assert Counter(case["kind"] for case in cases) == {
+        "MatchSnapshot": 20,
+        "ReplayPage": 2,
+    }
     for case in cases:
         assert validate(case["kind"], case["value"]) == case["value"]

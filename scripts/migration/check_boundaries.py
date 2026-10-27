@@ -19,6 +19,7 @@ from scripts.migration.p6c_report import valid as p6c_valid
 from scripts.migration.p6d_report import valid as p6d_valid
 from scripts.migration.p6e_report import valid as p6e_valid
 from scripts.migration.p7a_report import valid as p7a_valid
+from scripts.migration.p7b_report import valid as p7b_valid
 
 
 def check(root=ROOT):
@@ -431,13 +432,25 @@ def check(root=ROOT):
     ):
         errors.append("P7 start lacks accepted P6 baseline or bounded scope")
     if status.get("subphases", {}).get("P7-A") == "completed" and (
-        not p7a_valid(root)
+        not p7a_valid(
+            root, historical=status.get("subphases", {}).get("P7-B") != "planned"
+        )
         or status.get("p7aAcceptanceDocument") != "releases/p7a-isolation.json"
     ):
         errors.append("P7-A completion lacks current isolated pilot evidence")
+    if status.get("subphases", {}).get("P7-B", "planned") not in {
+        "planned",
+        "in_progress",
+    } or (
+        status.get("subphases", {}).get("P7-B") == "in_progress"
+        and (
+            not p7b_valid(root)
+            or status.get("p7bProgressDocument") != "releases/p7b-matrix.json"
+        )
+    ):
+        errors.append("P7-B progress lacks current formal matrix evidence")
     if any(
-        status.get("subphases", {}).get("P7-" + p, "planned") != "planned"
-        for p in "BCD"
+        status.get("subphases", {}).get("P7-" + p, "planned") != "planned" for p in "CD"
     ):
         errors.append("P7 formal matrix or soak misrepresented as complete")
     # A pilot and a tooling milestone cannot close the full capacity matrix.

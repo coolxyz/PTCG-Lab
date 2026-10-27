@@ -2,6 +2,7 @@
 
 import argparse
 import json
+from hashlib import sha256
 from math import isfinite
 from pathlib import Path
 import sys
@@ -178,11 +179,27 @@ def fault(path):
     )
 
 
-def valid(root):
+def valid(root, *, historical=False):
     try:
         root = Path(root)
         value = json.loads((root / "releases/p7a-isolation.json").read_text())
         baseline = json.loads((root / "releases/p6e-budgets.json").read_text())
+        runtime_valid = value["runtimeSourceSha256"] == runtime_digest(root) and value[
+            "benchmarkToolsSha256"
+        ] == tools_digest(root)
+        if historical:
+            successor = json.loads((root / "releases/p7b-matrix.json").read_text())
+            runtime_valid = (
+                successor["baselineCommit"] == "0738d0c"
+                and successor["baselineReportSha256"]
+                == sha256(
+                    (root / "releases/p7a-isolation.json").read_bytes()
+                ).hexdigest()
+                and successor["baselineRuntimeSourceSha256"]
+                == value["runtimeSourceSha256"]
+                and successor["baselineBenchmarkToolsSha256"]
+                == value["benchmarkToolsSha256"]
+            )
         if not (
             value["stage"] == "P7-A"
             and value["status"] == "passed"
@@ -194,8 +211,7 @@ def valid(root):
             and value["serverSourceSha256"]
             == baseline["serverSourceSha256"]
             == source_digest(root)
-            and value["runtimeSourceSha256"] == runtime_digest(root)
-            and value["benchmarkToolsSha256"] == tools_digest(root)
+            and runtime_valid
         ):
             return False
         if len(value["pilots"]) != 2 or [p["workers"] for p in value["pilots"]] != [

@@ -19,7 +19,10 @@ def runtime_digest(root):
     else:
         base = root / "benchmarks/online"
         client = root / "packages/online-client/src/ptcg_online_client"
-    items = [(name, base / name) for name in ("driver.py", "observe.py", "measure.py")]
+    items = [
+        (name, base / name)
+        for name in ("driver.py", "observe.py", "measure.py", "fixture.py")
+    ]
     items += [
         ("ptcg_online_client/" + p.relative_to(client).as_posix(), p)
         for p in client.rglob("*")

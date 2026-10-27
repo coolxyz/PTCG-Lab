@@ -49,6 +49,8 @@ FILES = (
     "releases/p6d-workers.json",
     "releases/p6e-budgets.json",
     "releases/p7a-isolation.json",
+    "releases/p7b-matrix.json",
+    "releases/p7b-before-driver-repair.json",
     "releases/source-candidates.json",
     "ops/online/Dockerfile.dockerignore",
     "benchmarks/online/Dockerfile.dockerignore",

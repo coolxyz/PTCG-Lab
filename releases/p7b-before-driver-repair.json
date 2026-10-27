@@ -1,0 +1,461 @@
+{
+  "schema": 1,
+  "stage": "P7-B",
+  "status": "in_progress",
+  "baselineCommit": "0738d0c",
+  "baselineReportSha256": "a5e2f08bd184edcb1eb72e6be1fe75b36489f23d13e8144f2407784c56194afd",
+  "baselineRuntimeSourceSha256": "ce224adf13d9fde5d819b2221e609647aaa2e2953c22b823490fd2b526c5dc0a",
+  "baselineBenchmarkToolsSha256": "0a72724fac0f63ded5b4101c7fc8b10739bc8708437c96f260720dad53672eae",
+  "serverSourceSha256": "3ede175f331ad238b5ee49965ff6f73c32edc92db8f122c9c50977eb814ce180",
+  "runtimeSourceSha256": "e33eeb1062e07cbd162a78bfc1f08540d5012b5e193ea2c5b81349c82e8b9265",
+  "benchmarkToolsSha256": "19debc320bd1b1bdc781b761af892dbb01805ffcc9fedc268518b904a096f38a",
+  "diagnostics": [
+    {
+      "schema": 1,
+      "formalSample": false,
+      "capacityValidated": false,
+      "status": "passed",
+      "targets": {
+        "latencyP95": true,
+        "latencyP99": true,
+        "averageCpu": true,
+        "driverHeadroom": true
+      },
+      "workers": 1,
+      "repeat": null,
+      "matches": 10,
+      "players": 20,
+      "warmupSeconds": 30,
+      "steadySeconds": 120,
+      "measuredSteadySeconds": 120.03001716001017,
+      "elapsedSeconds": 150.13235299100052,
+      "acceptedCommands": 148,
+      "steadyAccepted": 113,
+      "firstAttemptErrors": 0,
+      "privateReplayVerified": true,
+      "durableHistoryVerified": true,
+      "protectedServicesUnchanged": true,
+      "imageId": "sha256:b55506b92e3e815fd0a8111b20fc6396061a48b76506cfae7ed8c1f0265fa90f",
+      "runtimeSourceSha256": "e33eeb1062e07cbd162a78bfc1f08540d5012b5e193ea2c5b81349c82e8b9265",
+      "initialFixtureSha256": "4d4ccf17840b6de451a4ccd8586694622f4a8eac8980d7262346754374563ced",
+      "fixtureVersion": "p7-fixture-v1",
+      "cacheEntriesTotal": 16,
+      "ruleReleaseId": "rules-core-v2-5ea088e0fd1f4d6f6a351dea7521f83688db72f3ecd7a2c54a366761f90107c4",
+      "targetVcpus": 2,
+      "targetMemoryBytes": 2147483648,
+      "swapBytes": 0,
+      "oomKills": 0,
+      "groupPeakMemoryBytes": 374304768,
+      "steadyAverageCpuPercentOfTwoVcpus": 5.9407350603524,
+      "asgiP95UpperSeconds": 0.2,
+      "asgiP99UpperSeconds": 0.2,
+      "clientHttp": {
+        "count": 113,
+        "p50": 0.10758130899921525,
+        "p95": 0.13125195298925973,
+        "p99": 0.13992710001184605,
+        "maximum": 0.14228172499861103
+      },
+      "bothVisible": {
+        "count": 113,
+        "p50": 0.12021175799600314,
+        "p95": 0.15030901800491847,
+        "p99": 0.17538406199309975,
+        "maximum": 0.19203273100720253
+      },
+      "commandSpans": {
+        "db.acquire": {
+          "p95UpperSeconds": 0.001,
+          "maximumSeconds": 0.0002569170028436929
+        },
+        "db.sql": {
+          "p95UpperSeconds": 0.02,
+          "maximumSeconds": 0.026143568917177618
+        },
+        "sql.read": {
+          "p95UpperSeconds": 0.02,
+          "maximumSeconds": 0.01817804906750098
+        },
+        "sql.advisory": {
+          "p95UpperSeconds": 0.001,
+          "maximumSeconds": 0.0018976720020873472
+        },
+        "sql.write": {
+          "p95UpperSeconds": 0.01,
+          "maximumSeconds": 0.0071775859978515655
+        },
+        "sql.locked_read": {
+          "p95UpperSeconds": 0.005,
+          "maximumSeconds": 0.004410292982356623
+        },
+        "db.commit_exit": {
+          "p95UpperSeconds": 0.05,
+          "maximumSeconds": 0.057244684008765034
+        },
+        "db.transaction": {
+          "p95UpperSeconds": 0.1,
+          "maximumSeconds": 0.10761293000541627
+        },
+        "scheduler.accepted": {
+          "p95UpperSeconds": 0.001,
+          "maximumSeconds": 0.0
+        },
+        "rule.compute": {
+          "p95UpperSeconds": 0.005,
+          "maximumSeconds": 0.0037370509962784126
+        },
+        "cache.hit": {
+          "p95UpperSeconds": 0.001,
+          "maximumSeconds": 0.0
+        },
+        "worker.command": {
+          "p95UpperSeconds": 0.02,
+          "maximumSeconds": 0.019936836004490033
+        },
+        "scheduled.queue": {
+          "p95UpperSeconds": 0.001,
+          "maximumSeconds": 0.03299920698918868
+        }
+      },
+      "eventLoopLagMaximumSeconds": 0.07597822400566656,
+      "apiCpuStat": {
+        "usage_usec": 21649546,
+        "user_usec": 20036491,
+        "system_usec": 1613055,
+        "nice_usec": 0,
+        "nr_periods": 1582,
+        "nr_throttled": 8,
+        "throttled_usec": 445311,
+        "nr_bursts": 0,
+        "burst_usec": 0
+      },
+      "driverAverageCpuPercentOfOneVcpu": 2.779447476088073,
+      "driverMaxRssKiB": 49116,
+      "databaseGrowthBytes": 4669440,
+      "walDelta": {
+        "wal_bytes": 4758559.0,
+        "wal_write": 1765.0,
+        "wal_sync": 1762.0,
+        "wal_write_time": 33.565,
+        "wal_sync_time": 10802.637999999999
+      },
+      "databaseWaitSampling": null,
+      "sql": {
+        "matches": 10,
+        "seq": 148,
+        "receipts": 148,
+        "frames": 316
+      },
+      "evidenceSha256": "c733bd743e5eb571ffae1b28d4c2641098610e4d91572c99206fe65afacfac7e"
+    },
+    {
+      "schema": 1,
+      "formalSample": false,
+      "capacityValidated": false,
+      "status": "passed",
+      "targets": {
+        "latencyP95": true,
+        "latencyP99": true,
+        "averageCpu": true,
+        "driverHeadroom": true
+      },
+      "workers": 2,
+      "repeat": null,
+      "matches": 10,
+      "players": 20,
+      "warmupSeconds": 30,
+      "steadySeconds": 120,
+      "measuredSteadySeconds": 120.0332262449956,
+      "elapsedSeconds": 150.09789224600536,
+      "acceptedCommands": 148,
+      "steadyAccepted": 113,
+      "firstAttemptErrors": 0,
+      "privateReplayVerified": true,
+      "durableHistoryVerified": true,
+      "protectedServicesUnchanged": true,
+      "imageId": "sha256:57ab341b7d4e8972ac479d743e00d1986fda4687e61bdcee3c32d650aa795e26",
+      "runtimeSourceSha256": "e33eeb1062e07cbd162a78bfc1f08540d5012b5e193ea2c5b81349c82e8b9265",
+      "initialFixtureSha256": "4d4ccf17840b6de451a4ccd8586694622f4a8eac8980d7262346754374563ced",
+      "fixtureVersion": "p7-fixture-v1",
+      "cacheEntriesTotal": 16,
+      "ruleReleaseId": "rules-core-v2-5ea088e0fd1f4d6f6a351dea7521f83688db72f3ecd7a2c54a366761f90107c4",
+      "targetVcpus": 2,
+      "targetMemoryBytes": 2147483648,
+      "swapBytes": 0,
+      "oomKills": 0,
+      "groupPeakMemoryBytes": 455020544,
+      "steadyAverageCpuPercentOfTwoVcpus": 5.508646338273003,
+      "asgiP95UpperSeconds": 0.4,
+      "asgiP99UpperSeconds": 0.75,
+      "clientHttp": {
+        "count": 113,
+        "p50": 0.10023748800449539,
+        "p95": 0.35383435898984317,
+        "p99": 0.6168487579998327,
+        "maximum": 0.7773850069934269
+      },
+      "bothVisible": {
+        "count": 113,
+        "p50": 0.11392737399728503,
+        "p95": 0.38781815599941183,
+        "p99": 0.6198012640088564,
+        "maximum": 0.8046786959894234
+      },
+      "commandSpans": {
+        "db.acquire": {
+          "p95UpperSeconds": 0.001,
+          "maximumSeconds": 0.020353910003905185
+        },
+        "db.sql": {
+          "p95UpperSeconds": 0.05,
+          "maximumSeconds": 0.2392336849879939
+        },
+        "sql.read": {
+          "p95UpperSeconds": 0.02,
+          "maximumSeconds": 0.07251106806506868
+        },
+        "sql.advisory": {
+          "p95UpperSeconds": 0.01,
+          "maximumSeconds": 0.2277029550023144
+        },
+        "sql.write": {
+          "p95UpperSeconds": 0.01,
+          "maximumSeconds": 0.1023272549646208
+        },
+        "sql.locked_read": {
+          "p95UpperSeconds": 0.005,
+          "maximumSeconds": 0.005525964981643483
+        },
+        "db.commit_exit": {
+          "p95UpperSeconds": 0.2,
+          "maximumSeconds": 0.70946424799331
+        },
+        "db.transaction": {
+          "p95UpperSeconds": 0.3,
+          "maximumSeconds": 0.7472948130161967
+        },
+        "scheduler.accepted": {
+          "p95UpperSeconds": 0.001,
+          "maximumSeconds": 0.0
+        },
+        "rule.compute": {
+          "p95UpperSeconds": 0.005,
+          "maximumSeconds": 0.031009491998702288
+        },
+        "cache.hit": {
+          "p95UpperSeconds": 0.001,
+          "maximumSeconds": 0.0
+        },
+        "worker.command": {
+          "p95UpperSeconds": 0.05,
+          "maximumSeconds": 0.0837893610005267
+        },
+        "scheduled.queue": {
+          "p95UpperSeconds": 0.005,
+          "maximumSeconds": 0.023553629012894817
+        }
+      },
+      "eventLoopLagMaximumSeconds": 0.06053936399985105,
+      "apiCpuStat": {
+        "usage_usec": 22366491,
+        "user_usec": 20675090,
+        "system_usec": 1691400,
+        "nice_usec": 0,
+        "nr_periods": 1617,
+        "nr_throttled": 15,
+        "throttled_usec": 904961,
+        "nr_bursts": 0,
+        "burst_usec": 0
+      },
+      "driverAverageCpuPercentOfOneVcpu": 3.00676244847143,
+      "driverMaxRssKiB": 49816,
+      "databaseGrowthBytes": 4513792,
+      "walDelta": {
+        "wal_bytes": 4733666.0,
+        "wal_write": 1727.0,
+        "wal_sync": 1726.0,
+        "wal_write_time": 28.623,
+        "wal_sync_time": 13719.037
+      },
+      "databaseWaitSampling": null,
+      "sql": {
+        "matches": 10,
+        "seq": 148,
+        "receipts": 148,
+        "frames": 316
+      },
+      "evidenceSha256": "f855e5c9bf19b454d765a45283c7affb533c64b809d87920b78fa9450a2d021f"
+    },
+    {
+      "schema": 1,
+      "formalSample": false,
+      "capacityValidated": false,
+      "status": "passed",
+      "targets": {
+        "latencyP95": true,
+        "latencyP99": true,
+        "averageCpu": true,
+        "driverHeadroom": true
+      },
+      "workers": 2,
+      "repeat": null,
+      "matches": 10,
+      "players": 20,
+      "warmupSeconds": 10,
+      "steadySeconds": 60,
+      "measuredSteadySeconds": 60.05220801800897,
+      "elapsedSeconds": 70.12376863100508,
+      "acceptedCommands": 72,
+      "steadyAccepted": 58,
+      "firstAttemptErrors": 0,
+      "privateReplayVerified": true,
+      "durableHistoryVerified": true,
+      "protectedServicesUnchanged": true,
+      "imageId": "sha256:d8a799e7b67c3f3cfe224c64a2c7aba761d2e00da4db4209a977049a4ed6acaf",
+      "runtimeSourceSha256": "e33eeb1062e07cbd162a78bfc1f08540d5012b5e193ea2c5b81349c82e8b9265",
+      "initialFixtureSha256": "4d4ccf17840b6de451a4ccd8586694622f4a8eac8980d7262346754374563ced",
+      "fixtureVersion": "p7-fixture-v1",
+      "cacheEntriesTotal": 16,
+      "ruleReleaseId": "rules-core-v2-5ea088e0fd1f4d6f6a351dea7521f83688db72f3ecd7a2c54a366761f90107c4",
+      "targetVcpus": 2,
+      "targetMemoryBytes": 2147483648,
+      "swapBytes": 0,
+      "oomKills": 0,
+      "groupPeakMemoryBytes": 491745280,
+      "steadyAverageCpuPercentOfTwoVcpus": 5.741792813620337,
+      "asgiP95UpperSeconds": 0.2,
+      "asgiP99UpperSeconds": 0.2,
+      "clientHttp": {
+        "count": 58,
+        "p50": 0.0950665420095902,
+        "p95": 0.13987327100767288,
+        "p99": 0.17103895200125407,
+        "maximum": 0.17103895200125407
+      },
+      "bothVisible": {
+        "count": 58,
+        "p50": 0.10578967200126499,
+        "p95": 0.15613694400235545,
+        "p99": 0.1907846270041773,
+        "maximum": 0.1907846270041773
+      },
+      "commandSpans": {
+        "db.acquire": {
+          "p95UpperSeconds": 0.001,
+          "maximumSeconds": 0.00035616599780041724
+        },
+        "db.sql": {
+          "p95UpperSeconds": 0.02,
+          "maximumSeconds": 0.023267341952305287
+        },
+        "sql.read": {
+          "p95UpperSeconds": 0.02,
+          "maximumSeconds": 0.01950584101723507
+        },
+        "sql.advisory": {
+          "p95UpperSeconds": 0.001,
+          "maximumSeconds": 0.00597533599648159
+        },
+        "sql.write": {
+          "p95UpperSeconds": 0.01,
+          "maximumSeconds": 0.010301793008693494
+        },
+        "sql.locked_read": {
+          "p95UpperSeconds": 0.005,
+          "maximumSeconds": 0.0067772949987556785
+        },
+        "db.commit_exit": {
+          "p95UpperSeconds": 0.1,
+          "maximumSeconds": 0.0990989609999815
+        },
+        "db.transaction": {
+          "p95UpperSeconds": 0.2,
+          "maximumSeconds": 0.1440522740012966
+        },
+        "scheduler.accepted": {
+          "p95UpperSeconds": 0.001,
+          "maximumSeconds": 0.0
+        },
+        "rule.compute": {
+          "p95UpperSeconds": 0.005,
+          "maximumSeconds": 0.00860083800216671
+        },
+        "cache.hit": {
+          "p95UpperSeconds": 0.001,
+          "maximumSeconds": 0.0
+        },
+        "worker.command": {
+          "p95UpperSeconds": 0.02,
+          "maximumSeconds": 0.02906134600925725
+        },
+        "scheduled.queue": {
+          "p95UpperSeconds": 0.001,
+          "maximumSeconds": 0.018197507990407757
+        }
+      },
+      "eventLoopLagMaximumSeconds": 0.030024801002582535,
+      "apiCpuStat": {
+        "usage_usec": 16420723,
+        "user_usec": 14826579,
+        "system_usec": 1594143,
+        "nice_usec": 0,
+        "nr_periods": 1334,
+        "nr_throttled": 11,
+        "throttled_usec": 601053,
+        "nr_bursts": 0,
+        "burst_usec": 0
+      },
+      "driverAverageCpuPercentOfOneVcpu": 2.4091827963350947,
+      "driverMaxRssKiB": 47560,
+      "databaseGrowthBytes": 2686976,
+      "walDelta": {
+        "wal_bytes": 2378457.0,
+        "wal_write": 1121.0,
+        "wal_sync": 1120.0,
+        "wal_write_time": 23.064,
+        "wal_sync_time": 6850.807000000001
+      },
+      "databaseWaitSampling": {
+        "schema": 1,
+        "diagnosticOnly": true,
+        "intervalSeconds": 0.05,
+        "queries": 2259,
+        "elapsedSeconds": 120.0193242969981,
+        "activeBackendWaitSamples": {
+          "IO/WalSync": 115,
+          "Client/ClientRead": 2,
+          "LWLock/WALWrite": 9,
+          "running": 5,
+          "Lock/transactionid": 10,
+          "Lock/advisory": 1
+        }
+      },
+      "sql": {
+        "matches": 10,
+        "seq": 72,
+        "receipts": 72,
+        "frames": 164
+      },
+      "evidenceSha256": "79907280c0acfb7360b4ae0276119c891ddff5f9f5a6641ad34b3c0653edf949"
+    }
+  ],
+  "samples": [],
+  "capacityValidated": false,
+  "formalMatrixCompleted": false,
+  "soakCompleted": false,
+  "productionRoutingChanged": false,
+  "lastAttempt": {
+    "status": "aborted",
+    "sample": "m10-w1-r1",
+    "reason": "ClientError outside command submission",
+    "warmupSeconds": 300,
+    "configuredSteadySeconds": 1200,
+    "measuredSteadySeconds": 764.7002254249965,
+    "elapsedSeconds": 1064.7623819680011,
+    "privateReplayVerified": false,
+    "protectedServiceGuard": "passed",
+    "acceptedAsFormalSample": false,
+    "privateBackupRetained": true,
+    "occurredBeforeLanHotfix": true
+  }
+}
