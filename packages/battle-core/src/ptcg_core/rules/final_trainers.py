@@ -14,9 +14,19 @@ OPERATIONS = {"rare_candy", "ogre_mask", "dusk_ball", "super_potion", "prize_tic
 @lru_cache(maxsize=1)
 def evolution_links():
     from ptcg_core.rules.plain import SPECS
+    from ptcg.core.card_registry import registry
+
     links = {}
     for spec in SPECS:
         links.setdefault(spec["name"], set()).update(spec["evolvesFrom"])
+    # Some Stage 1 cards (including Drakloak) use registered engine classes
+    # instead of compiled specs. Include their printed immediate predecessors.
+    for card_id in registry.list_all():
+        cls = registry.get(card_id)
+        if issubclass(cls, PokemonCard):
+            card = cls()
+            if card.stage == Stage.STAGE_1:
+                links.setdefault(card.name, set()).update(card.evolveFrom[:1])
     return links
 
 
