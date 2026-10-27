@@ -297,7 +297,9 @@ class Matches:
             self._preconditions(identity, match, member, body, controller)
             if match["match_seq"] >= self.repo.settings.max_match_commands:
                 raise ServiceError("CAPACITY_EXCEEDED", 503)
-            if match["rule_release_id"] != self.repo.settings.approved_rule_release_id:
+            supported = getattr(self.worker, "supports_release", None)
+            if not (supported(match["rule_release_id"]) if supported else
+                    match["rule_release_id"] == self.repo.settings.approved_rule_release_id):
                 raise ServiceError("RULE_RELEASE_UNAVAILABLE", 503)
             try:
                 command = core_command(

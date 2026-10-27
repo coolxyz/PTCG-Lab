@@ -22,8 +22,10 @@ class Candidate(dict):
 
 
 class RuleWorker:
-    def __init__(self, settings, *, metrics=None):
+    def __init__(self, settings, *, metrics=None, pythonpath=None):
         self.settings = settings
+        self.pythonpath = str(pythonpath or Path(__file__).resolve().parents[1])
+        self.cwd = Path(self.pythonpath)
         self.metrics = metrics if metrics is not None else Metrics()
         self.available = False
         self.lock = Lock()
@@ -40,7 +42,7 @@ class RuleWorker:
                     "--persistent",
                 ],
                 dict(
-                    cwd=Path(__file__).resolve().parents[1],
+                    cwd=self.cwd,
                     env={
                         **{
                             k: os.environ[k]
@@ -48,7 +50,7 @@ class RuleWorker:
                             if k in os.environ
                         },
                         "PYTHONDONTWRITEBYTECODE": "1",
-                        "PYTHONPATH": str(Path(__file__).resolve().parents[1]),
+                        "PYTHONPATH": self.pythonpath,
                     },
                 ),
             )
@@ -308,7 +310,7 @@ class RuleWorker:
                 stdout=subprocess.PIPE,
                 stderr=subprocess.DEVNULL,
                 timeout=20,
-                cwd=Path(__file__).resolve().parents[1],
+                cwd=self.cwd,
                 env={
                     **{
                         k: os.environ[k]
@@ -316,7 +318,7 @@ class RuleWorker:
                         if k in os.environ
                     },
                     "PYTHONDONTWRITEBYTECODE": "1",
-                    "PYTHONPATH": str(Path(__file__).resolve().parents[1]),
+                    "PYTHONPATH": self.pythonpath,
                 },
             )
             if result.returncode or len(result.stdout) > 8 * 1024 * 1024:

@@ -66,7 +66,7 @@ def resolve(source, trigger, state):
     if not enabled(source, state):
         return
     p = current_player(state)
-    for ability in source.spec.get("abilities", []):
+    for ability in (getattr(source, "spec", None) or {}).get("abilities", []):
         if ability.get("kind") != "on_entry" or ability["trigger"] != trigger:
             continue
         if ability.get("requiresTrait") and not any(c.pokemonRule.name == ability["requiresTrait"] for c in p.active + p.bench):
