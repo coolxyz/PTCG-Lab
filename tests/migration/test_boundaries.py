@@ -35,6 +35,7 @@ def scaffold(tmp_path):
         "releases/p5d-user-acceptance.json",
         "releases/p55-user-acceptance.json",
         "releases/p6a-baseline.json",
+        "releases/p6b-streams.json",
         "docs/P5.5产品整合完成记录.md",
         "docs/P6多局调度与性能实施记录.md",
     ]:
@@ -330,3 +331,24 @@ def test_p6a_completion_requires_measured_scope(scaffold, kind):
         )
         path.write_text(json.dumps(data))
     assert any("P6-A completion lacks" in error for error in check(scaffold))
+
+
+@pytest.mark.parametrize("kind", ["missing", "stale", "baseline", "capacity", "sql"])
+def test_p6b_completion_requires_current_and_chained_evidence(scaffold, kind):
+    path = scaffold / "releases/p6b-streams.json"
+    if kind == "missing":
+        path.unlink()
+    else:
+        value = json.loads(path.read_text())
+        if kind == "sql":
+            value["workload"]["samples"][0]["centralizedSql"] = 0
+        else:
+            value[
+                {
+                    "stale": "serverSourceSha256",
+                    "baseline": "baselineServerSourceSha256",
+                    "capacity": "capacityMeasured",
+                }[kind]
+            ] = True if kind == "capacity" else "changed"
+        path.write_text(json.dumps(value))
+    assert any("P6-B completion lacks" in error for error in check(scaffold))

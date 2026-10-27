@@ -177,6 +177,8 @@ def create_app(settings=None, *, worker=None, background=True):
         if app.state.rules.failure is None:
             await run_in_threadpool(worker.probe)
         await run_in_threadpool(repo.open)
+        if settings.stream_hub_enabled:
+            streams.hub.start()
         stop = asyncio.Event()
 
         async def initialize_pending():
@@ -205,10 +207,14 @@ def create_app(settings=None, *, worker=None, background=True):
                 if task:
                     await task
             finally:
-                await run_in_threadpool(repo.close)
+                try:
+                    await streams.hub.stop()
+                finally:
+                    await run_in_threadpool(repo.close)
 
     app = FastAPI(docs_url=None, redoc_url=None, openapi_url=None, lifespan=lifespan)
     app.state.repository = repo
+    app.state.streams = streams
     app.add_middleware(Boundary, settings=settings, repository=repo)
 
     @app.exception_handler(ServiceError)

@@ -94,6 +94,7 @@ class Matches:
                 sequence - self.repo.settings.outbox_retention,
             ),
         )
+        db.stream_changed = True
         return frame
 
     def _frames(self, db, match, candidate):
@@ -455,4 +456,31 @@ class Matches:
             return db.execute(
                 "SELECT kind,snapshot FROM ptcg_v2.match_outbox WHERE match_id=%s AND user_id=%s AND stream_seq>%s ORDER BY stream_seq LIMIT 8",
                 (match_id, own["user_id"], row["stream_seq"]),
+            ).fetchall()
+
+    def stream_heads(self, subscriptions):
+        """One bounded metadata query; never load snapshots or authoritative state.
+
+        Heads are per recipient, not a global sequence allocated before commit.
+        Every scan rechecks token/session validity. This is only a wakeup hint;
+        stream() still authorizes and validates the cursor before reading frames.
+        """
+        if not subscriptions:
+            return []
+        if len(subscriptions) > self.repo.settings.max_streams:
+            raise ServiceError("CAPACITY_EXCEEDED", 503, retryable=True)
+        with self.repo.transaction() as db:
+            return db.execute(
+                """SELECT q.key,
+                CASE WHEN s.id IS NULL THEN 'UNAUTHORIZED'
+                     WHEN m.user_id IS NULL THEN 'FORBIDDEN' END AS error,
+                m.stream_cursor AS cursor
+                FROM jsonb_to_recordset(%s) AS q(key text, digest text, match_id text)
+                LEFT JOIN ptcg_v2.access_tokens a ON a.digest=q.digest
+                    AND a.expires_at>clock_timestamp()
+                LEFT JOIN ptcg_v2.sessions s ON s.id=a.session_id
+                    AND s.expires_at>clock_timestamp() AND s.revoked_at IS NULL
+                LEFT JOIN ptcg_v2.match_members m ON m.match_id=q.match_id
+                    AND m.user_id=s.user_id""",
+                (Jsonb(subscriptions),),
             ).fetchall()

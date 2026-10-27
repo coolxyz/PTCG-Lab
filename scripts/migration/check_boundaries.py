@@ -14,6 +14,7 @@ if __package__ in (None, ""):
     sys.path.insert(0, str(ROOT))
 from scripts.public.policy import source_files, safe_file
 from scripts.migration.p4d_report import evidence_valid
+from scripts.migration.p6b_report import valid as p6b_valid
 
 
 def check(root=ROOT):
@@ -42,7 +43,7 @@ def check(root=ROOT):
             ("P5.5-C" if project["distribution"] == "@ptcg/desktop-web" else "P3-B")
             if gui
             else (
-                "P6-A"
+                "P6-B"
                 if online
                 else (
                     "P5-A"
@@ -358,8 +359,10 @@ def check(root=ROOT):
         or status.get("subphases", {}).get("P6-A") not in {"in_progress", "completed"}
         or any(
             status.get("subphases", {}).get(p) != "planned"
-            for p in ("P6-B", "P6-C", "P6-D", "P6-E")
+            for p in ("P6-C", "P6-D", "P6-E")
         )
+        or status.get("subphases", {}).get("P6-B") not in {"in_progress", "completed"}
+        or status.get("p6aImplementationCommit") != "5f1c16f"
         or status.get("p6ProgressDocument") != "docs/P6多局调度与性能实施记录.md"
         or not (root / "docs/P6多局调度与性能实施记录.md").is_file()
     ):
@@ -367,12 +370,12 @@ def check(root=ROOT):
     if status.get("subphases", {}).get("P6-A") == "completed":
         try:
             baseline = json.loads((root / "releases/p6a-baseline.json").read_text())
-            service = json.loads((root / "releases/p4d-acceptance.json").read_text())
+            service = json.loads((root / "releases/p6b-streams.json").read_text())
             p6a_valid = (
                 baseline.get("stage") == "P6-A"
                 and baseline.get("status") == "passed"
                 and baseline.get("serverSourceSha256")
-                == service.get("serverSourceSha256")
+                == service.get("baselineServerSourceSha256")
                 and baseline.get("capacityMeasured") is False
                 and baseline.get("productionRoutingChanged") is False
                 and baseline.get("workload", {}).get("samplesPerMode") == 3
@@ -383,6 +386,11 @@ def check(root=ROOT):
             p6a_valid = False
         if not p6a_valid:
             errors.append("P6-A completion lacks matching measured baseline")
+    if status.get("subphases", {}).get("P6-B") == "completed" and (
+        not p6b_valid(root)
+        or status.get("p6bAcceptanceDocument") != "releases/p6b-streams.json"
+    ):
+        errors.append("P6-B completion lacks current stream acceptance")
     for phase in range(7, 9):
         if status["phases"].get("P" + str(phase)) != "planned":
             errors.append("future implementation misrepresented as complete")

@@ -52,6 +52,7 @@ class Sessions:
             "INSERT INTO ptcg_v2.refresh_tokens(digest,session_id,expires_at) VALUES(%s,%s,%s)",
             (token_digest(refresh, "rtk"), session["id"], session["expires_at"]),
         )
+        db.stream_changed = True
         return {
             **identity(session, self.settings.server_id),
             "tokenType": "Bearer",
@@ -133,6 +134,7 @@ class Sessions:
             if not session["valid"] or session["revoked_at"] or not row["valid"]:
                 raise ServiceError("UNAUTHORIZED", 401)
             if row["used_at"] is not None:
+                db.stream_changed = True
                 # Commit revocation before returning 401. Raising inside this transaction
                 # would roll back reuse detection and leave the stolen family usable.
                 db.execute(
@@ -172,4 +174,5 @@ class Sessions:
                 "UPDATE ptcg_v2.sessions SET revoked_at=COALESCE(revoked_at,now()) WHERE id=%s",
                 (ref["session_id"],),
             )
+            db.stream_changed = True
         return {"protocolVersion": "2.0", "revoked": True}

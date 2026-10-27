@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "ptcg-online-server"
-version = "0.6.0.dev1"
+version = "0.6.0.dev2"
 description = "P6-A bounded database pooling and aggregate performance baseline"
 readme = "README.md"
 requires-python = ">=3.14"

@@ -22,6 +22,7 @@ class Settings:
     max_inflight: int = 32
     body_timeout: float = 10
     max_streams: int = 32
+    stream_hub_enabled: bool = True
     db_pool_enabled: bool = True
     db_pool_size: int = 4
     db_pool_waiters: int = 16
@@ -78,6 +79,8 @@ class Settings:
         ):
             if type(value) is not int or value < 1:
                 raise ValueError("INVALID_DEPLOYMENT_LIMIT")
+        if type(self.stream_hub_enabled) is not bool:
+            raise ValueError("INVALID_STREAM_CONFIG")
         if (
             type(self.db_pool_enabled) is not bool
             or type(self.db_pool_size) is not int
@@ -119,6 +122,8 @@ class Settings:
         try:
             if env("DB_POOL_ENABLED", "1") not in {"0", "1"}:
                 raise ValueError("INVALID_DATABASE_BUDGET")
+            if env("STREAM_HUB_ENABLED", "1") not in {"0", "1"}:
+                raise ValueError("INVALID_STREAM_CONFIG")
             return cls(
                 database_url=dsn,
                 server_id=env("SERVER_ID", ""),
@@ -133,6 +138,7 @@ class Settings:
                 max_rate_keys=int(env("MAX_RATE_KEYS", "4096")),
                 max_inflight=int(env("MAX_INFLIGHT", "32")),
                 max_streams=int(env("MAX_STREAMS", "32")),
+                stream_hub_enabled=env("STREAM_HUB_ENABLED", "1") == "1",
                 db_pool_enabled=env("DB_POOL_ENABLED", "1") == "1",
                 db_pool_size=int(env("DB_POOL_SIZE", "4")),
                 db_pool_waiters=int(env("DB_POOL_WAITERS", "16")),

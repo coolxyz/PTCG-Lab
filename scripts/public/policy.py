@@ -44,6 +44,7 @@ FILES = (
     "releases/p5d-user-acceptance.json",
     "releases/p55-user-acceptance.json",
     "releases/p6a-baseline.json",
+    "releases/p6b-streams.json",
     "releases/source-candidates.json",
     "ops/online/Dockerfile.dockerignore",
 )

@@ -55,6 +55,7 @@ class Repository:
         self.metrics = Metrics()
         self.pool = None
         self.closed = False
+        self.stream_wakeup = None
         metrics = self.metrics
 
         class ObservedConnection(psycopg.Connection):
@@ -140,8 +141,17 @@ class Repository:
                 with self.metrics.time("db.transaction"):
                     # Commit/rollback before returning the connection to the pool.
                     # Rule computation and queue waits remain outside this scope.
-                    with db.transaction():
-                        yield db
+                    db.stream_changed = False
+                    try:
+                        with db.transaction():
+                            yield db
+                        changed = db.stream_changed
+                    finally:
+                        db.stream_changed = False
+            # Only after a successful commit and connection release. A lost hint
+            # is harmless: the stream hub periodically checks durable heads.
+            if changed and self.stream_wakeup is not None:
+                self.stream_wakeup()
         except (PoolTimeout, TooManyRequests):
             self.metrics.observe("db.rejected")
             raise ServiceError("CAPACITY_EXCEEDED", 503, retryable=True) from None
