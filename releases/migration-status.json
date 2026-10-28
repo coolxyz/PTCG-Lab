@@ -44,7 +44,7 @@
     "P7-B": "in_progress",
     "P7-C": "planned",
     "P7-D": "planned",
-    "P8-A": "in_progress",
+    "P8-A": "completed",
     "P8-B": "planned",
     "P8-C": "planned",
     "P8-D": "planned",
@@ -112,5 +112,6 @@
     "P7",
     "P8"
   ],
-  "p8ProgressDocument": "docs/P8原生发布实施记录.md"
+  "p8ProgressDocument": "docs/P8原生发布实施记录.md",
+  "p8aAcceptanceDocument": "releases/p8a-native.json"
 }

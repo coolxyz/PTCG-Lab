@@ -132,7 +132,8 @@ docs/             项目文档
 - [P5.5 完成记录与后续跟进](docs/P5.5产品整合完成记录.md)
 - [P6 多局调度与性能实施记录](docs/P6多局调度与性能实施记录.md)
 - [P7 容量与故障验收实施记录](docs/P7容量与故障验收实施记录.md)
-- [Tauri 2 跨平台打包与实施方案](docs/Tauri2跨平台打包与实施方案.md)与 [P8 实施记录](docs/P8原生发布实施记录.md)：P8-A 与 P7 并行开发，优先 macOS／原生 Windows 完整版；iOS／iPadOS 不包含人机练习。
+- [Tauri 2 跨平台打包与实施方案](docs/Tauri2跨平台打包与实施方案.md)与 [P8 实施记录](docs/P8原生发布实施记录.md)：P8-A macOS 技术验收已完成，P8 与 P7 继续并行；优先 macOS／原生 Windows 完整版，iOS／iPadOS 不包含人机练习。
+- [人工测试预览包与打包脚本](docs/人工测试预览包与打包脚本.md)：生成 `release/` 下的 macOS APP／ZIP 与包含规则、镜像归档、TLS 和独立数据库配置的 API Compose 环境。
 - [main 整合与复验记录](docs/main整合与复验记录.md)：汇总已验证分支、合并后完整回归、P7 历史证据与 LAN 代码一致性。
 - [P2-D 等价与隔离验收](docs/P2D等价与隔离验收.md)
 - [P2-C 核心提取与兼容层验收](docs/P2C核心提取与兼容层验收.md)

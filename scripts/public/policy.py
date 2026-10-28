@@ -136,7 +136,8 @@ def private_name(name):
         return True
     p = PurePosixPath(name)
     return (
-        bool(EXCLUDED.intersection(part.lower() for part in p.parts))
+        (bool(p.parts) and p.parts[0].lower() == "release")
+        or bool(EXCLUDED.intersection(part.lower() for part in p.parts))
         or any(part.endswith(".egg-info") for part in p.parts)
         or (p.name.startswith(".env") and p.name not in {".env.example", ".env.sample"})
         or p.suffix.lower()

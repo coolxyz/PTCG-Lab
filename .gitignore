@@ -28,6 +28,9 @@ venv/
 # Generated transfer archives
 exports/
 
+# Private, generated manual-test/release candidates (apps, images, TLS and secrets)
+/release/
+
 # Per-run test scratch data; keep logs and reports, not fixture databases.
 artifacts/cardpool/checks/*/pytest-temp/
 artifacts/cardpool/checks/*/pytest-cache/
