@@ -1,0 +1,37 @@
+name: Native Windows storage and shell components
+on:
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  windows-storage:
+    runs-on: windows-2022
+    timeout-minutes: 60
+    env:
+      PTCG_WINDOWS_NATIVE_TEST: "1"
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.14.10"
+          architecture: x64
+      - run: python -m pip install setuptools==80.9.0 pytest==8.3.5
+      - run: python -m pip install --require-hashes --only-binary=:all: -r scripts/native/windows-requirements.lock
+      - run: python -m pip install -r apps/desktop-api/requirements.lock
+      - run: python -m pip install --no-build-isolation ./packages/battle-protocol ./packages/online-client ./apps/desktop-api
+      - run: python -m pytest tests/native/test_windows_native.py -q --junitxml=var/windows-validation/windows-native.xml
+      - run: python scripts/native/windows_report.py --junit var/windows-validation/windows-native.xml --output var/windows-validation/windows-components.json
+      - uses: dtolnay/rust-toolchain@1.90.0
+      - run: python scripts/native/windows_shell_check.py --output var/windows-validation/windows-shell-components.json
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: windows-native-components
+          path: |
+            var/windows-validation/windows-native.xml
+            var/windows-validation/windows-components.json
+            var/windows-validation/windows-shell-components.json
+            var/windows-validation/windows-shell-components.log
+            apps/native-shell/src-tauri/target/release/ptcg-native-shell.exe

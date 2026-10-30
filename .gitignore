@@ -4,7 +4,7 @@ __pycache__/
 .pytest_cache/
 *.pyc
 var/
-node_modules/
+node_modules
 apps/web/dist/
 test-results/
 playwright-report/

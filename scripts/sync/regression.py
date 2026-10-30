@@ -8,6 +8,7 @@ import subprocess
 import sys
 import uuid
 import xml.etree.ElementTree as ET
+from concurrent.futures import ThreadPoolExecutor
 
 ROOT = Path(__file__).resolve().parents[2]
 sys.path.insert(0, str(ROOT))
@@ -18,11 +19,11 @@ def main():
     output = ROOT / "artifacts/sync"
     output.mkdir(parents=True, exist_ok=True)
     files = {}
-    for folder in ("packages", "apps/api", "apps/web/src", "apps/web/e2e", "tests", "scripts/sync", "scripts/simulation", "rulesets", "data/sync"):
+    for folder in ("packages", "apps/api", "apps/web/src", "apps/web/e2e", "tests", "scripts/sync", "scripts/simulation", "scripts/battle", "scripts/product", "rulesets", "data/sync"):
         for p in (ROOT / folder).rglob("*"):
             if p.is_file() and "__pycache__" not in p.parts and p.suffix not in (".pyc", ".tsbuildinfo"):
                 files[p.relative_to(ROOT).as_posix()] = hashlib.sha256(p.read_bytes()).hexdigest()
-    for name in ("data/catalog/catalog.json", "data/catalog/card-details.json", "data/simulation/effects.json", "data/cardpool/plain-pokemon.json", "data/cardpool/battle-scope.json", "data/cardpool/source-exceptions.json", "apps/web/package-lock.json", "apps/web/playwright.config.ts", "artifacts/engine/overlay-hashes.json"):
+    for name in ("data/catalog/catalog.json", "data/catalog/card-details.json", "data/simulation/effects.json", "data/cardpool/plain-pokemon.json", "data/cardpool/battle-scope.json", "data/cardpool/source-exceptions.json", "package-lock.json", "apps/web/playwright.config.ts", "apps/web/vite.config.ts", "resources/artwork/builtin-index.json", "artifacts/engine/overlay-hashes.json"):
         files[name] = hashlib.sha256((ROOT / name).read_bytes()).hexdigest()
     p3 = sorted(p.relative_to(ROOT).as_posix() for p in (ROOT / "tests/simulation").glob("test_*.py"))
     expensive = [p for p in p3 if Path(p).name in ("test_a2.py", "test_a2_service.py", "test_information.py")]
@@ -32,28 +33,56 @@ def main():
     shard_start = len(groups)
     shard_count = 4
     groups.extend([[matrix] for _ in range(shard_count)])
-    write(output / "regression-input.json", {"createdAt": now(), "files": files, "testPartitions": groups})
-    env = {**os.environ, "PYTHONPATH": os.pathsep.join(str(ROOT / p) for p in (".", "tests/rules", "runtime/engine"))}
+    simulation_image = os.environ.get("PTCG_REGRESSION_SIMULATION_IMAGE")
+    if simulation_image:
+        # Pin an already prepared local image; no implicit pull or production
+        # container is used. Darwin does not implement the RLIMIT_AS contract.
+        simulation_image = subprocess.check_output(
+            ["docker", "image", "inspect", "--format={{.Id}}", simulation_image], text=True
+        ).strip()
+        if not simulation_image.startswith("sha256:") or len(simulation_image) != 71:
+            raise ValueError("Invalid local validation image identity")
+    write(output / "regression-input.json", {
+        "createdAt": now(), "files": files, "testPartitions": groups,
+        "simulationPlatform": {"imageId": simulation_image, "partitions": [1, 2] if simulation_image else []},
+    })
+    env = {**os.environ, "PTCG_TEST_PYTHON": sys.executable, "PYTHONPATH": os.pathsep.join(str(ROOT / p) for p in (".", "tests/rules", "runtime/engine"))}
     scratch = ROOT / "var" / ("sync-regression-" + uuid.uuid4().hex)
     scratch.mkdir(parents=True)
-    processes = []
-    try:
-        for i, group in enumerate(groups):
-            log = (output / f"backend-{i}.log").open("wb")
+    # Keep the acceptance workload bounded when a local battle service shares
+    # the machine. This changes scheduling only, never test coverage.
+    workers = int(os.environ.get("PTCG_REGRESSION_WORKERS", "2"))
+    if not 1 <= workers <= 8:
+        raise ValueError("PTCG_REGRESSION_WORKERS must be between 1 and 8")
+
+    def run_partition(item):
+        i, group = item
+        with (output / f"backend-{i}.log").open("wb") as log:
             command = [sys.executable, "-X", "utf8", "-m", "pytest", *group, "--import-mode=importlib", "-q", "--basetemp=" + str(scratch / str(i)), "-p", "no:cacheprovider", f"--junitxml=artifacts/sync/backend-{i}.xml"]
             partition_env = env.copy()
+            if simulation_image and i in (1, 2):
+                command = [
+                    "docker", "run", "--rm", "--pull=never", "--network=none",
+                    "--read-only", "--cpus=1", "--memory=2g", "--pids-limit=128",
+                    "--tmpfs", "/tmp:rw,size=256m",
+                    "--mount", f"type=bind,source={ROOT},target=/source,readonly",
+                    "--mount", f"type=bind,source={output},target=/reports",
+                    "--mount", f"type=bind,source={scratch},target=/scratch",
+                    "--workdir=/source", "--env=PYTHONDONTWRITEBYTECODE=1",
+                    "--env=PYTHONPATH=/source:/source/tests/rules:/source/runtime/engine:/source/packages/engine-provider/src:/source/packages/battle-core/src:/source/packages/battle-protocol/src:/source/packages/online-client/src:/source/apps/desktop-api/src",
+                    "--entrypoint=python", simulation_image, "-X", "utf8", "-m", "pytest",
+                    *group, "--import-mode=importlib", "-q",
+                    f"--basetemp=/scratch/{i}", "-p", "no:cacheprovider",
+                    f"--junitxml=/reports/backend-{i}.xml",
+                ]
             if i >= shard_start:
                 command += ["-p", "scripts.sync.pytest_shard"]
                 partition_env.update(PTCG_TEST_SHARDS=str(shard_count), PTCG_TEST_SHARD=str(i-shard_start),
                                      PTCG_TEST_SHARD_REPORT=str(output / f"shard-{i}.json"))
-            processes.append((subprocess.Popen(command, cwd=ROOT, env=partition_env, stdout=log, stderr=subprocess.STDOUT), log))
-        codes = [process.wait() for process, _ in processes]
-    finally:
-        for process, log in processes:
-            if process.poll() is None:
-                process.terminate()
-                process.wait()
-            log.close()
+            return subprocess.run(command, cwd=ROOT, env=partition_env, stdout=log, stderr=subprocess.STDOUT).returncode
+
+    with ThreadPoolExecutor(max_workers=workers) as executor:
+        codes = list(executor.map(run_partition, enumerate(groups)))
     # Fail closed if collection differs, a case is missing, or any case ran twice.
     coverage = [json.loads((output / f"shard-{i}.json").read_text(encoding="utf-8"))
                 for i in range(shard_start, len(groups))]

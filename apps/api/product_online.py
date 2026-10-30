@@ -244,6 +244,9 @@ class ProductResources:
                     )
                 )
             signature = (
+                self.media.display_resources.active_id
+                if self.media.display_resources
+                else None,
                 stamp,
                 tuple(
                     (pid, name, (self.media.directory / name).exists())
@@ -336,6 +339,13 @@ class ProductResources:
         if match and self.sync_images:
             # Reuse the existing commit/blob-verified, on-demand resource service.
             # This URL is local and immutable; images are not carried by API v2.
+            return url if self.sync_images.available(match[1], match[2]) else None
+        if re.fullmatch(r"/api/sync/artwork/[a-f0-9]{64}", url) and self.media.artwork:
+            return url
+        if (
+            re.fullmatch(r"/api/sync/resource-images/[a-f0-9]{64}/[a-f0-9]{64}", url)
+            and self.media.display_resources
+        ):
             return url
         locations = {
             "/card-images/": ROOT / ".catalog/images",

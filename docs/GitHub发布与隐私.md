@@ -1,63 +1,17 @@
-# GitHub 发布与隐私
+# 源码发布与隐私
 
-## 三种交付物不能混用
+main 的 Git 跟踪树仅包含产品源码、正式文档、锁定依赖与必要测试源码。禁止提交个人数据库、凭据、卡组/对局私有状态、卡图缓存、完整运行资产、环境副本、生成的测试数据和阶段验收报告。
 
-| 交付物 | 内容 | 是否适合公开上传 |
-| --- | --- | --- |
-| 公开源码包 `scripts/public/export_source.py` | 自有源码、文档、许可证、依赖清单；不含 .git | 推荐以此建立新 GitHub 仓库，仍应人工复查 |
-| 完整数据 release 包 | 卡池、生成引擎和冻结版本 | 包含第三方受限资料；未取得所需授权，不应公开 |
-| 个人迁移包 / 用户备份 | Git 历史、数据库、收藏、对局私有状态、缓存 | 仅供本人迁移，不要上传 GitHub |
-
-原资料仓库为 [duanxr/PTCG-CHS-Datasets](https://github.com/duanxr/PTCG-CHS-Datasets)。其 README 的用途和再分发限制见第三方声明。项目 MIT 只授权自有代码与文档；不会授予卡图、卡牌数据或商标权利。
-
-## 源码检查与导出
-
-公开发布前检查源码及 Git 历史中的凭据、机器路径和本地数据。审计结果保存在 `var/publication-audit.json`，该报告不随源码包分发。扫描不能保证识别所有敏感内容，发布前仍需复查。
-
-```bash
-python3 scripts/public/audit.py --history
-python3 scripts/public/export_source.py
+```sh
+python3 scripts/public/audit.py --check
+python3 scripts/public/export_source.py --output exports/PTCG-Lab-source.zip
+python3 scripts/public/audit.py --check --artifact exports/PTCG-Lab-source.zip
 ```
 
-生成 `exports/PTCG-Lab-public-source.zip` 和同名 SHA-256 校验文件。压缩包不覆盖已有同名输出，可用 `--output` 指定新名称。包内 `PUBLIC-SOURCE.json` 记录逐文件校验值。
+公开导出使用允许列表，检查秘密模式、机器路径、符号链接与内容哈希，包含精确文件清单并排除 Git 历史。工作树审计同时检查 tracked 和未忽略的 untracked 文件。`--history` 可检查历史对象，但不会改写历史；整理 main 当前树不代表抹除旧提交。若分发目标只需要产品源码，使用已审计的源码 ZIP。
 
-解压到新目录后先人工复查，再自行执行：
+完整资料与引擎需合法取得，导入命令见 [README](../README.md)。首次导入只选择正式运行资产，不复制测试夹具、用户数据库或凭据。不能将下载上游卡牌 JSON 当作完整规则安装。
 
-```bash
-git init -b main
-# 先配置希望公开的 name/email；可使用 GitHub 的 noreply 邮箱。
-git add .
-git diff --cached --stat
-git commit -m "Initial public source release"
-# 随后在 GitHub 建空仓库，并按 GitHub 给出的命令设置 remote/push。
-```
+`release/`、`exports/`、`var/`、`data/`、`runtime/`、`.catalog/` 和本地缓存均是忽略的私有/生成目录，不属于 Git 发布树。清理分支不会删除这些实际目录或停止服务。二进制、API 镜像和离线卡图包另行生成、核验并决定分发，不随源码 commit/push 自动上传。
 
-源码导出不包含 Git 历史。直接推送现有仓库时，历史提交及作者、提交者身份也会公开；`.gitignore` 不会移除已提交的内容。
-
-## 公开源码如何启动
-
-**公开源码包不是带全卡池的即用安装包。** 卡牌资料和运行数据刻意不附带。仅克隆后执行启动脚本会提示缺少本地资产，这不应通过从他人个人迁移包中抽取用户数据库解决。
-
-有权使用且与当前代码兼容的可信本地完整环境时，在新的公开源码工作目录运行：
-
-```bash
-python3 scripts/public/import_local_assets.py /path/to/your/trusted-private-project
-bash start.sh --setup --check
-bash start.sh
-```
-
-Windows 使用相应 Python 命令与 `start.ps1 -Setup -Check` / `start.ps1`。导入工具仅复制 `data/`、`runtime/engine/` 和引擎完整性清单，不复制用户数据库、Git 历史、浏览器身份或旧发布工作进程。目标路径已存在会拒绝覆盖。确保该本地目录可信并且使用权允许；导入源码文件之后启动会执行其引擎代码。
-
-公开源码需要匹配的卡牌数据、效果实现和引擎运行时。目前没有从源码一键初始化完整对战卡池的入口；仅下载上游卡牌 JSON 无法提供完整运行环境。
-
-## 上游仓库设置
-
-进入“数据与对战更新”，输入完整 GitHub HTTPS 地址，保存后再检查更新或预演。默认原仓库；支持同结构的公开 fork。设置保存在本机 `.catalog/sync/repository.json`，更换仓库不会修改收藏、已有对局或已发布规则。缓存按仓库隔离，旧任务及旧图片继续对应原来源。当前只跟踪 main，不支持私有仓库令牌、SSH 或任意 Git 服务。
-
-## 发布与维护注意
-
-完整 release 构建涉及受限资料，命令需显式 `python scripts/release.py build --include-restricted-data`，该开关只是确认范围，不是取得第三方授权。个人数据备份与恢复见 [安装与使用手册](启动使用与跨系统迁移.md#备份恢复与升级)。
-
-## P1 源码和制品门禁
-
-公开导出现在覆盖新项目骨架，并拒绝已识别的秘密模式、机器路径和越界/符号链接。审计覆盖 tracked 和未忽略的 untracked 文件；可用 `python scripts/public/audit.py --check --artifact exports/p1-source-check.zip` 检查已生成源码包，失败以非零退出码报告，不打印秘密值。新包的 wheel/sdist/npm 包在构建门禁中另外检查。具体命令和限制见 [P1 验收](P1迁移基线与发布门禁验收.md)。这些工具不代替历史审计或第三方内容复核。
+源码含图标、原创桌垫与轻量卡图路径索引；不含全卡图。卡牌、图片和标志的权利归属见 [第三方声明](../THIRD_PARTY_NOTICES.md)。生产镜像只复制明确批准组件，资源包不包含客户端身份或用户资料。

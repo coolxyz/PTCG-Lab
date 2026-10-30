@@ -1,4 +1,8 @@
-# These files are hashed as bytes by the H2 policy registry.
+# Source/release identities are byte hashes. Keep text stable on Windows too;
+# auto detection preserves binary assets such as native icons.
+* text=auto eol=lf
+
+# These files are also hashed as bytes by the H2 policy registry.
 # Preserve the accepted fingerprints when checking out on Windows.
 apps/api/expert_policies/** text eol=lf
 apps/api/expert_service.py text eol=lf

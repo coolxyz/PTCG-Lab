@@ -18,7 +18,8 @@
     "./presentation": {
       "types": "./src/battle/presentation.ts",
       "default": "./src/battle/presentation.ts"
-    }
+    },
+    "./theme.css": "./src/theme.css"
   },
   "peerDependencies": {
     "react": "19.1.1",

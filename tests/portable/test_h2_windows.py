@@ -37,9 +37,10 @@ def test_windows_checkout_preserves_shipped_bundle(tmp_path, monkeypatch):
     subprocess.run(['git', '-c', 'core.autocrlf=true', 'checkout-index', '--all',
                     '--prefix=' + checkout.as_posix() + '/'], cwd=source,
                    check=True, capture_output=True)
-    # Prove conversion really happened for an ordinary file, while hashed files
-    # retain the exact accepted bytes, including every newly added dependency.
-    assert (checkout / 'unprotected.txt').read_bytes().endswith(b'\r\n')
+    # The current repository pins all text to LF, including ordinary files,
+    # even when a Windows checkout requests core.autocrlf=true.
+    assert (checkout / 'unprotected.txt').read_bytes().endswith(b'\n')
+    assert b'\r' not in (checkout / 'unprotected.txt').read_bytes()
     for name in names:
         if name.startswith('apps/api/expert_'):
             assert (checkout / name).read_bytes() == (ROOT / name).read_bytes(), name

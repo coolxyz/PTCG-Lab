@@ -21,24 +21,7 @@ if __package__ in (None, ""):
 from scripts.public.policy import source_files, safe_file  # noqa: E402
 from scripts.product.resources import export_pack  # noqa: E402
 
-PROJECTS = (
-    "packages/battle-protocol",
-    "packages/engine-provider",
-    "packages/online-client",
-    "apps/desktop-api",
-)
-DATA = (
-    "catalog/catalog.json",
-    "catalog/card-details.json",
-    "engine/catalog.json",
-    "simulation/effects.json",
-    "battle/h2-presets-v1.json",
-    "cardpool/plain-pokemon.json",
-    "cardpool/battle-scope.json",
-    "cardpool/source-exceptions.json",
-    "cardpool/species-names.json",
-    "cardpool/mechanism-workflow.json",
-)
+from scripts.native.layout import DATA, PROJECTS  # noqa: E402
 
 
 def assemble(output, wheels, image_home, origin, ca, *, root=ROOT):
@@ -96,7 +79,7 @@ def assemble(output, wheels, image_home, origin, ca, *, root=ROOT):
         )
         files["wheels/" + name] = safe_file(wheels, name)
     files["manage.py"] = root / "scripts/product/manage_kit.py"
-    files["README.md"] = root / "docs/P5.5完整产品双设备验收.md"
+    files["README.md"] = root / "docs/启动使用与跨系统迁移.md"
     output.mkdir(parents=True)
     for name, source in files.items():
         target = output / name

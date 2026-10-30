@@ -251,12 +251,15 @@
   padding: 10px 12px;
 }
 .arena .tabletop-hand > div {
-  padding: 18px 8px 12px;
+  /* Keep the raised card, focus ring and shadow inside the scrollport. */
+  padding: 32px 14px 18px;
   gap: 6px;
+  scroll-padding-inline: 14px;
   align-items: flex-end;
 }
 .arena .tabletop-hand .tabletop-slot {
   flex-shrink: 0;
+  scroll-margin-inline: 14px;
 }
 .arena .tabletop-hand .tabletop-card:hover,
 .arena .tabletop-hand .tabletop-card:focus-visible {
@@ -510,7 +513,7 @@
     padding: 6px 10px;
   }
   .arena .tabletop-hand > div {
-    padding: 14px 5px 5px;
+    padding: 32px 14px 18px;
     justify-content: safe center;
   }
   .arena .tabletop-feedback {
@@ -828,11 +831,11 @@
   background: none;
 }
 .battle-screen .arena {
-  background: var(--arena-background, #273444);
-  color: var(--arena-ink, #f3f7fa);
+  background: var(--arena-background, #eee5f8);
+  color: var(--arena-ink, #352b46);
   box-shadow:
-    0 8px 30px #244f3a14,
-    inset 0 0 0 1px #bccdc3;
+    0 8px 30px #7854b214,
+    inset 0 0 0 1px #d6c4e8;
 }
 .battle-screen
   .arena
@@ -845,16 +848,16 @@
     .tabletop-bench > small,
     .arena-stadium-label
   ) {
-  color: var(--arena-muted, #d7e2e9);
+  color: var(--arena-muted, #6e5c80);
 }
 .battle-screen .arena .arena-trainer {
-  color: var(--arena-ink, #f3f7fa);
+  color: var(--arena-ink, #352b46);
 }
 .battle-screen .arena :is(.card-state-more, .arena-action-actor small) {
-  color: #52675d;
+  color: #766485;
 }
 .battle-screen .arena .arena-action-actor {
-  color: #245d42;
+  color: #7854b2;
 }
 .battle-screen .arena .arena-trainer > i {
   color: white;
@@ -871,7 +874,7 @@
 .battle-screen .arena :is(.tabletop-bench, .tabletop-hand, .empty-slot) {
   background: var(--arena-zone, #07152266);
   border-color: var(--arena-line, #adc6d366);
-  color: var(--arena-muted, #d7e2e9);
+  color: var(--arena-muted, #6e5c80);
 }
 .battle-screen
   .arena
@@ -884,8 +887,8 @@
     .coin-results
   ) {
   background: #fff;
-  color: #23342b;
-  border-color: #b4c8bb;
+  color: #352b46;
+  border-color: #d6c4e8;
   box-shadow: none;
 }
 .battle-screen
@@ -895,24 +898,24 @@
     .tabletop-hand header button,
     .tabletop-piles summary
   ) {
-  background: #e3ece5;
-  color: #244f3a;
-  border-color: #b4c8bb;
+  background: #eee5f8;
+  color: #7854b2;
+  border-color: #d6c4e8;
 }
 .battle-screen .arena :is(.arena-action-effects span, .event-delta) {
-  background: #e4eee7;
-  color: #244f3a;
+  background: #f2eafa;
+  color: #7854b2;
 }
 .battle-screen .arena .event-delta.hp {
   background: #fae4d9;
   color: #7b382b;
 }
 .battle-screen .arena .arena-action-banner.is-ai {
-  background: #fff5ed;
-  border-color: #d7ad93;
+  background: #fcf2f9;
+  border-color: #e9bbd7;
 }
 .battle-screen .arena .is-ai .arena-action-actor {
-  color: #93452f;
+  color: #a43f7f;
 }
 .battle-screen .arena .tabletop-active .tabletop-card {
   box-shadow: 0 4px 10px #23342b25;
@@ -932,27 +935,27 @@
 }
 .battle-screen:has(.arena) .decision-panel {
   background: #fff;
-  color: #23342b;
-  border-color: #b4c8bb;
+  color: #352b46;
+  border-color: #d6c4e8;
 }
 .battle-screen:has(.arena) .decision-panel :is(p, small) {
-  color: #52675d;
+  color: #766485;
 }
 .battle-screen:has(.arena) .decision-panel h2 {
-  color: #244f3a;
+  color: #7854b2;
 }
 .battle-screen:has(.arena) .decision-options button {
-  background: #edf4ef;
-  color: #23342b;
-  border-color: #b4c8bb;
+  background: #f5effc;
+  color: #352b46;
+  border-color: #d6c4e8;
 }
 .battle-screen:has(.arena) .decision-options button:hover {
-  background: #dcebe1;
+  background: #ece2f8;
 }
 .battle-screen:has(.arena) .decision-panel input {
   background: white;
-  color: #23342b;
-  border: 1px solid #b4c8bb;
+  color: #352b46;
+  border: 1px solid #d6c4e8;
 }
 .battle-screen .arena .deck-pile {
   color: #fff;
@@ -984,7 +987,7 @@
   place-items: center;
   border-radius: 50%;
   border: 2px solid white;
-  background: #a34406;
+  background: #b84b92;
   color: white;
   font-size: 14px;
   font-weight: 800;
@@ -1001,15 +1004,49 @@
   outline: 3px dashed #fff !important;
   outline-offset: 3px;
   box-shadow:
-    0 0 0 3px #07516d,
+    0 0 0 3px #7854b2,
     0 0 0 8px #101d30;
 }
 .battle-screen .arena .settlement-target {
-  outline: 3px solid #a34406;
+  outline: 3px solid #b84b92;
   outline-offset: 2px;
   box-shadow: var(--card-chosen-ring);
 }
 .battle-screen .arena .coin-results button {
   color: #714b19;
   border-color: #926d36;
+}
+
+/* Opaque lavender controls remain readable over every chosen playmat. */
+.battle-screen .arena .tabletop-card {
+  background: linear-gradient(145deg, #f3ecfc, #d6c4ed);
+  border-color: var(--ptcg-line-strong);
+}
+.battle-screen .arena .tabletop-card .card-fallback {
+  color: var(--ptcg-ink);
+  text-shadow: none;
+}
+.battle-screen .arena .cardback {
+  background: radial-gradient(circle at center, #fff 0 8%, #7854b2 9% 17%, #f1dcfa 18% 21%, transparent 22%),
+    radial-gradient(ellipse at 22% 20%, #e59dce 0 12%, transparent 14%),
+    radial-gradient(ellipse at 78% 20%, #e59dce 0 12%, transparent 14%),
+    linear-gradient(145deg, #bca1e0, #9873c5);
+  border-color: #d8c5eb;
+  box-shadow: 2px 3px 0 #c7b3df, 3px 4px 0 #7854b21a;
+}
+.battle-screen .arena .arena-trainer > i { background: var(--ptcg-accent); border-color: #baa0d8; }
+.battle-screen .arena .enemy .arena-trainer > i { background: var(--ptcg-pink); border-color: #dda3c7; }
+.battle-screen .arena .tabletop-play-zone { background: #fff; border-color: var(--ptcg-line-strong); color: var(--ptcg-accent-ink); }
+.battle-screen .arena .tabletop-play-zone span { color: var(--ptcg-muted); }
+.battle-screen .arena .tabletop-stadium { border-color: var(--arena-line); }
+.battle-screen .arena .tabletop-card.chosen::after { background: var(--ptcg-pink); }
+.battle-screen .tabletop-dialog { background: var(--ptcg-background); color: var(--ptcg-ink); }
+.battle-screen .tabletop-dialog .tabletop-actions button { background: var(--ptcg-tint); color: var(--ptcg-accent-ink); border-color: var(--ptcg-line-strong); }
+.battle-screen .tabletop-dialog::backdrop { background: #35234566; }
+.battle-screen .arena .drop-ready { background: #e9d9fa66; }
+.tabletop-drag-preview { background: #f5effc; color: #352b46; border-color: #7854b2; box-shadow: 0 12px 30px #68448e33; }
+
+.battle-screen .arena .deck-pile :is(b, small) {
+  position: relative; z-index: 1; padding: 2px 6px; border-radius: 5px;
+  color: white; background: var(--ptcg-accent);
 }

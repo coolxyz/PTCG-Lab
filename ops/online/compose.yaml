@@ -14,7 +14,7 @@ services:
       timeout: 3s
       retries: 20
   api:
-    image: ${PTCG_V2_API_IMAGE:-ptcg-lab-online-api:p6e}
+    image: ${PTCG_V2_API_IMAGE:-ptcg-lab-online-api:current}
     build:
       context: ../..
       dockerfile: ops/online/Dockerfile

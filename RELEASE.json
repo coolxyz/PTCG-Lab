@@ -1,1 +1,19 @@
-{"battleReleaseId":"709c61a51b0ee42fc14cbbacca15fbcdd352c9345366688464ff4e100b60c099","battleScope":"G/H/I/J + eight basic energies","date":"2026-10-08","effectCount":2296,"layout":"functional","name":"PTCG 简中工坊","nextDevelopment":"A2 AI (independent, strength not yet rated)","retiredReleases":"removed; saved matches are replay-only","ruleset":"cn-standard-2026-09-16","sourceVariants":20345,"status":"stable","supportedPrintings":5346,"upstreamCommit":"ea69b4e3916a717ffe0c0116984c99d3e4a3cb8c","version":"1.0.1"}
+{
+  "schema": 1,
+  "version": "1.1.0-preview.1",
+  "date": "2026-10-30",
+  "status": "preview",
+  "rulePolicy": "current-only-v1",
+  "upstreamCommit": "3f9648f364caa750a18b56bb8e9d562c4c17689f",
+  "catalogPrintings": 12957,
+  "supportedPrintings": 5496,
+  "catalogSha256": "dfb73c38842e351b48f5d02ed93d823b0b3c6b9c67b2abe7968d24c7f47ae68c",
+  "artworkIndexSha256": "93cbba9f30e3ed4ec60b14681d57f429313d33ec17408b1c14876ae14f436f77",
+  "distributionApproval": {
+    "macosArm64": "preview; signing and clean-machine qualification pending",
+    "windowsX64": "native manual acceptance pending",
+    "macosIntel": "pending"
+  },
+  "releaseReady": false,
+  "runtimeAssetsInSource": false
+}

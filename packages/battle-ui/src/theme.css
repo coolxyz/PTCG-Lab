@@ -1,0 +1,18 @@
+/* Master Ball: shared, light product palette. Artwork and status colors are independent. */
+:root {
+  color-scheme: light;
+  --ptcg-background: #f8f5fc;
+  --ptcg-surface: #ffffff;
+  --ptcg-tint: #f5effc;
+  --ptcg-soft: #ece2f8;
+  --ptcg-line: #e3d8ef;
+  --ptcg-line-strong: #c7b3df;
+  --ptcg-ink: #352b46;
+  --ptcg-muted: #6f5e7e;
+  --ptcg-accent: #7854b2;
+  --ptcg-accent-hover: #65429d;
+  --ptcg-accent-ink: #67478f;
+  --ptcg-pink: #b84b92;
+  --ptcg-pink-soft: #faeaf4;
+  --ptcg-shadow: 0 8px 28px #68448e0d;
+}

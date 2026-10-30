@@ -31,8 +31,10 @@ def test_source_compiled_basic_can_evolve_into_reused_english_named_card(lower_i
 
 
 def rule(cid):
-    source=json.loads(Path('.catalog/sync/snapshots/ea69b4e3916a717ffe0c0116984c99d3e4a3cb8c/normalized.json').read_text('utf8'))
-    h=source['cards'][cid]['ruleHash']
+    from packages.collection.domain import CARDS
+    hashes={c['upstreamFaces'][cid]['ruleHash'] for c in CARDS.values() if cid in c.get('upstreamFaces',{})}
+    assert len(hashes)==1, 'The current approved catalogue must bind this source face'
+    h=next(iter(hashes))
     clauses=json.loads(Path('data/sync/reviewed-clauses.json').read_text('utf8'))['clauses']
     return next(c['definition'] for c in clauses if c['ruleHash']==h and c['kind']=='attack')
 

@@ -3,7 +3,7 @@
 import hashlib
 from pathlib import Path
 import re
-import subprocess
+import configparser
 
 from .common import REPOSITORY, SyncError, read
 
@@ -28,12 +28,12 @@ def canonical(repository):
 def legacy_repository(root):
     config = Path(root) / ".catalog/upstream/PTCG-CHS-Datasets/.git/config"
     if config.is_file():
-        value = subprocess.run(
-            ["git", "config", "--file", str(config), "--get", "remote.origin.url"],
-            capture_output=True,
-            text=True,
-            check=False,
-        ).stdout.strip()
+        parser = configparser.RawConfigParser()
+        try:
+            parser.read(config, encoding="utf-8")
+            value = parser.get('remote "origin"', "url", fallback="")
+        except (configparser.Error, UnicodeError, OSError):
+            return None
         try:
             return canonical(value)
         except SyncError:
@@ -50,11 +50,9 @@ def configured(home, root):
 
 
 def source_for(root, repository):
-    from .source import GitSource
+    from .http_source import HTTPSource
 
     repository = canonical(repository)
     base = Path(root) / ".catalog/upstream"
     directory = base / ("repo-" + hashlib.sha256(repository.encode()).hexdigest())
-    if legacy_repository(root) == repository:
-        directory = base / "PTCG-CHS-Datasets"
-    return GitSource(directory, repository)
+    return HTTPSource(directory, repository)

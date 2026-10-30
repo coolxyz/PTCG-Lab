@@ -157,20 +157,31 @@ def test_persisted_resource_version_survives_adapter_restart(product):
     assert restarted.catalog(first.version, catalog["assetVersion"]) == catalog
 
 
-def test_source_cache_rejects_modified_image_bytes(tmp_path):
+def test_source_cache_rejects_modified_image_bytes(tmp_path, monkeypatch):
     from packages.sync.images import Images
     from packages.sync.common import SyncError
     import sqlite3
 
-    images = Images(tmp_path, SimpleNamespace(validate_sha=lambda value: None))
+    images = Images(tmp_path, SimpleNamespace(repository='https://github.com/example/cards'))
+    snapshot = tmp_path / 'snapshots' / ('c' * 40)
+    snapshot.mkdir(parents=True)
+    (snapshot / 'image-index.json').write_text(json.dumps({'1': {'path': 'img/1.png', 'blob': 'b' * 40}}))
     digest = "a" * 64
     (images.directory / digest).write_bytes(b"tampered")
     with sqlite3.connect(images.database) as db:
         db.execute(
             "INSERT INTO images VALUES(?,?,?,?)", ("c" * 40, "1", digest, "image/png")
         )
-    with pytest.raises(SyncError, match="缓存卡图校验失败"):
+    attempted = []
+    def offline(*args):
+        attempted.append(args)
+        raise SyncError('SOURCE_UNAVAILABLE', 'test offline')
+    monkeypatch.setattr(images.cache, 'image', offline)
+    # Corrupt legacy bytes must never be returned; the current implementation
+    # attempts a verified on-demand replacement and propagates an offline error.
+    with pytest.raises(SyncError, match="test offline"):
         images.get("c" * 40, "1")
+    assert len(attempted) == 1
 
 
 def test_resource_edits_issue_new_version_and_keep_old_snapshot(product):

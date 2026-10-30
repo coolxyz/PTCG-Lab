@@ -120,6 +120,10 @@ def rules(card, state):
                     isinstance(c, EnergyCard) for c in card.attachment
                 ):
                     continue
+                if rule.get("hasEnergy") and not any(
+                    isinstance(c, EnergyCard) for c in card.attachment
+                ):
+                    continue
                 if rule.get('specialEnergy'):
                     from ptcg.core.enums import EnergyType
                     if not any(isinstance(c, EnergyCard) and c.energyType == EnergyType.SPECIAL for c in card.attachment):

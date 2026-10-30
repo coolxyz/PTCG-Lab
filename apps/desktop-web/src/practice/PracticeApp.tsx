@@ -6,6 +6,7 @@ import { browserPracticeStorage } from "./storage";
 import "./practice.css";
 import { PracticeHistory } from "./PracticeHistory";
 import { browserAppearanceStorage } from "../appearance-storage";
+import { indexCards } from "@ptcg/battle-ui/presentation";
 
 export function PracticeApp({
   active,
@@ -24,7 +25,7 @@ export function PracticeApp({
   }, [controller, active]);
   const names = useMemo(
     () =>
-      Object.fromEntries(
+      indexCards(
         [...(state.session?.cards ?? [])]
           .filter((c) => c.effectStatus === "verified")
           .sort((a, b) => {
@@ -32,11 +33,7 @@ export function PracticeApp({
               (c.image.userUploaded ? 100 : c.image.url ? 10 : 0) +
               (c.chineseDetails?.sections.length ? 1 : 0);
             return score(a) - score(b);
-          })
-          .flatMap((c) => [
-            [c.englishName, c],
-            [c.engineId, c],
-          ]),
+          }),
       ),
     [state.session],
   );

@@ -119,11 +119,13 @@ function Connected({
               {s.replay && (
                 <span role="status">
                   已加载 {s.replay.frames.length} 步
-                  {s.nextCursor ? " · 正在继续加载…" : " · 回放已完整加载"}
+                  {s.replayNotice
+                    ? ` · ${s.replayNotice}`
+                    : s.nextCursor ? " · 正在继续加载…" : " · 回放已完整加载"}
                 </span>
               )}
               {s.replay && s.nextCursor && (
-                <button disabled={s.busy} onClick={c.more}>
+                <button disabled={s.busy || !!s.replayNotice} onClick={c.more}>
                   加载更多回放
                 </button>
               )}

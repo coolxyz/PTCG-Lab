@@ -1,5 +1,5 @@
 """Manage H2 routing and publish the checked workspace to the local App runtime."""
-import argparse,json,os,subprocess,sys,uuid
+import argparse,json,os,re,subprocess,sys,uuid
 from pathlib import Path
 ROOT=Path(__file__).resolve().parents[2];sys.path.insert(0,str(ROOT))
 from apps.api.expert_policies import registry as reg
@@ -75,7 +75,20 @@ def main():
     def call(path,body=None):
         nonlocal cookie
         reply=worker.request('POST','/api/battle'+path,{'cookie':cookie,'content-type':'application/json'},json.dumps(body or {}).encode())
-        if reply['status'] not in (200,201):raise RuntimeError('Archived release smoke check failed: '+path)
+        if reply['status'] not in (200,201):
+            code='UNEXPECTED_RESPONSE'
+            try:
+                value=json.loads(reply['body'])
+                candidate_code=value.get('code') if isinstance(value,dict) else None
+                if isinstance(candidate_code,str) and re.fullmatch('[A-Z][A-Z0-9_]{0,79}',candidate_code):
+                    code=candidate_code
+            except (ValueError,UnicodeError):
+                pass
+            write(a.home/'h2-publish-failure.json',{
+                'releaseId':candidate,'error':{'code':code,'status':reply['status']},
+                'activated':False,
+            })
+            raise RuntimeError(f'Archived release smoke check failed: {path}; HTTP {reply["status"]} {code}')
         if 'set-cookie' in reply['headers']:cookie=reply['headers']['set-cookie'].split(';')[0]
         return json.loads(reply['body'])
     try:

@@ -1,6 +1,7 @@
 import { useEffect, useLayoutEffect, useRef, useState } from "react";
 import type { CSSProperties } from "react";
 import type { BattleView, CardInfo } from "./battle/types";
+import { eventText } from "./battle/presentation";
 
 type Event = NonNullable<BattleView["events"]>[number];
 const zones: Record<string, string> = {
@@ -207,7 +208,7 @@ export function EventPlayback({
       <section ref={root} className="event-playback" aria-label="结算反馈">
         <div key={event.seq} className="event-playback-step">
           <strong>
-            第 {event.seq} 步 · {event.text}
+            第 {event.seq} 步 · {eventText(event.text, cards, event.cardGroups?.flatMap((g) => g.cards))}
           </strong>
           <div>
             {event.effects?.map((effect, i) => (

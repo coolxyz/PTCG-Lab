@@ -92,4 +92,20 @@ def view(game, viewer):
                         option[role] = obj.name
                         option[role + "Id"] = getattr(obj, "id", None)
                         option[role + "Ref"] = locations.get(id(obj))
+                # The physical attacker and the public Tool providing its attack
+                # are distinct. Never export a private/nonattached effect source.
+                source = getattr(action, "source", None)
+                effect = getattr(action, "effect_source", None)
+                if (
+                    option.get("actionType") == "AttackAction"
+                    and effect is not None
+                    and source is not None
+                    and any(source is c for p in players for c in p.active)
+                    and any(effect is c for c in getattr(source, "attachment", []))
+                    and str(getattr(effect, "trainerType", "")).endswith("TOOL")
+                ):
+                    dto = game._card(effect)
+                    option["effectSource"] = {
+                        k: dto[k] for k in ("id", "name", "attacks", "abilities") if k in dto
+                    }
     return result

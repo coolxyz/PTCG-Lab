@@ -16,7 +16,7 @@ body.battle-screen-open {
   overflow: auto;
   overscroll-behavior: contain;
   padding: 18px clamp(12px, 2vw, 32px) 28px;
-  background: #f1f4f2;
+  background: var(--ptcg-background);
   outline: none;
 }
 .battle-screen:fullscreen {
@@ -29,13 +29,13 @@ body.battle-screen-open {
   gap: 12px;
   padding-bottom: 16px;
   margin-bottom: 14px;
-  border-bottom: 1px solid #d4ded9;
+  border-bottom: 1px solid var(--ptcg-line);
 }
 .battle-screen-brand {
   display: flex;
   align-items: center;
   gap: 12px;
-  color: #244f3a;
+  color: var(--ptcg-ink);
 }
 .battle-screen-brand span {
   font-size: 9px;

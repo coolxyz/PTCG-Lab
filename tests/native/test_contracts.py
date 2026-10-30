@@ -57,3 +57,27 @@ def test_missing_lock_and_added_capability_file_are_rejected(contract):
     assert check(contract)
     (contract / "apps/native-shell/src-tauri/Cargo.lock").unlink()
     assert check(contract)
+
+
+@pytest.mark.parametrize(
+    "kind", ["windows-version", "windows-feature", "no-gui-default"]
+)
+def test_windows_platform_dependencies_and_gui_default_are_locked(contract, kind):
+    path = contract / "apps/native-shell/src-tauri/Cargo.toml"
+    source = path.read_text()
+    if kind == "windows-version":
+        source = source.replace('version = "=0.61.2"', 'version = "0.61"')
+    elif kind == "windows-feature":
+        source = source.replace('"Win32_System_JobObjects",', "")
+    else:
+        source = source.replace('default = ["desktop"]', "default = []")
+    path.write_text(source)
+    assert check(contract)
+
+
+def test_windows_preview_cannot_accidentally_require_global_vc_runtime(contract):
+    path = contract / "apps/native-shell/src-tauri/tauri.conf.json"
+    config = json.loads(path.read_text())
+    config["build"]["windows"]["staticVCRuntime"] = False
+    path.write_text(json.dumps(config))
+    assert "native Windows CRT contract drift" in check(contract)

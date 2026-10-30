@@ -11,6 +11,7 @@ import "./battle.css";
 import { Tabletop } from "./Tabletop";
 import { DeckBrowser } from "./DeckBrowser";
 import type { ChineseDetails } from "./CardArtwork";
+import { indexCards } from "@ptcg/battle-ui/presentation";
 
 export type CardInfo = {
   cnName: string;
@@ -236,14 +237,13 @@ export function Battle({
   const createId = useRef(crypto.randomUUID());
   const names = useMemo(
     () =>
-      Object.fromEntries(
+      indexCards(
         (session?.cards || cards)
           .filter((c: CardInfo) => c.effectStatus === "verified")
           .sort((a: CardInfo, b: CardInfo) => {
             const score = (c: CardInfo) => (c.image.userUploaded ? 100 : c.image.url ? 10 : 0) + (c.chineseDetails?.sections?.length ? 1 : 0);
             return score(a) - score(b);
-          })
-          .flatMap((c: CardInfo) => [[c.englishName, c], [c.engineId, c]]),
+          }),
       ),
     [cards, session],
   );

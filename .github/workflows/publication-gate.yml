@@ -31,28 +31,19 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: "22"
-      - run: python -m pip install -r scripts/migration/requirements.lock
+      - run: python -m pip install -r scripts/checks/requirements.lock
+      - run: python -m pip install -r apps/api/requirements.lock -r apps/desktop-api/requirements.lock cryptography==50.0.2
       - run: python -m pip install -r packages/battle-core/requirements.lock
       - run: python -m pip install -r apps/online-server/requirements.lock httpx==0.28.1
+      - run: python -m pip install --no-build-isolation --no-deps ./packages/battle-protocol ./packages/engine-provider ./packages/battle-core ./packages/online-client ./apps/desktop-api ./apps/online-server
       - run: npm ci --ignore-scripts
-      - run: npm run p3:build
-      - run: npm run p3:product:build
-      - run: npm run p5:build
-      - run: node scripts/migration/p5c_controller_test.mjs
-      - run: npm --prefix apps/web run build -- --outDir ../../var/p3c/legacy-ci
-      - run: npx playwright install --with-deps chromium
-      - run: npm run p3:test
-      - run: python -m pip install --no-build-isolation --no-deps ./packages/battle-protocol ./packages/engine-provider ./packages/battle-core
-      - run: python -m pip install --no-build-isolation --no-deps ./apps/online-server
-      - run: python -m pip install --no-build-isolation --no-deps ./packages/online-client
-      - run: python -m pip install --no-build-isolation --no-deps ./apps/desktop-api
-      - run: python -m pytest tests/online_client tests/desktop_bridge tests/desktop_host -q
-      - name: Dedicated PostgreSQL session acceptance (synthetic inputs only)
+      - run: npm run product:build
+      - run: python scripts/checks/release_tree.py
+      - run: python -m pytest tests/core tests/providers tests/protocol tests/online_client tests/desktop_bridge tests/desktop_host tests/packaging tests/portable/test_public_export.py -q
+      - name: Dedicated PostgreSQL acceptance (synthetic inputs only)
         run: |
-          mkdir -p var/p4a
-          python -c "from pathlib import Path; p=Path('var/p4a/database-url'); p.write_text('postgresql://ptcg_p4a@127.0.0.1:55484/ptcg_p4a'); p.chmod(0o600)"
-          PTCG_V2_TEST_DSN_FILE="$PWD/var/p4a/database-url" python -m pytest tests/online_v2 -q
-      - run: python -m pytest tests/core tests/providers tests/protocol tests/migration tests/portable/test_public_export.py -q
-      - run: python -m pip download --only-binary=:all: -r packages/battle-protocol/requirements.lock -r packages/battle-core/requirements.lock -r apps/online-server/requirements.lock --dest var/p2/wheelhouse
-      - run: python scripts/migration/gate.py --build-output var/p2/ci-build --dependency-wheelhouse var/p2/wheelhouse
-      - run: node scripts/migration/p3_package_smoke.mjs var/p2/ci-build
+          mkdir -p var/ci
+          python -c "from pathlib import Path; p=Path('var/ci/database-url'); p.write_text('postgresql://ptcg_p4a@127.0.0.1:55484/ptcg_p4a'); p.chmod(0o600)"
+          PTCG_V2_TEST_DSN_FILE="$PWD/var/ci/database-url" python -m pytest tests/online_v2 -q
+      - run: python scripts/public/export_source.py --output exports/PTCG-Lab-source.zip
+      - run: python scripts/public/audit.py --check --artifact exports/PTCG-Lab-source.zip

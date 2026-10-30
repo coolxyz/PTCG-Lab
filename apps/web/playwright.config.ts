@@ -1,7 +1,7 @@
 import { defineConfig } from "@playwright/test";
 import path from "node:path";
 const root = path.resolve(import.meta.dirname, "../..");
-const python = path.join(
+const python = process.env.PTCG_TEST_PYTHON || path.join(
   root,
   ".venv",
   process.platform === "win32" ? "Scripts/python.exe" : "bin/python",

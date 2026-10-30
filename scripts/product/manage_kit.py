@@ -1,6 +1,6 @@
 """Full-product kit verification, platform-local installation and unified startup.
 
-Copied to the kit root as manage.py. Python 3.14+, Git; Node is not required.
+Copied to the kit root as manage.py. Python 3.14+; Node and external Git are not required.
 """
 
 import argparse
@@ -9,7 +9,6 @@ import json
 import os
 from pathlib import Path, PurePosixPath
 import platform
-import shutil
 import subprocess
 import sys
 import venv
@@ -96,8 +95,6 @@ def install(root, wheelhouse=None):
     manifest = verify(root)
     if sys.version_info < (3, 14) or sys.platform == "win32":
         raise ValueError("Use Python 3.14+ on macOS or inside WSL2")
-    if not shutil.which("git"):
-        raise ValueError("Git is required for card source updates")
     app = root / "app"
     python = app / ".venv/bin/python"
     if not python.exists():

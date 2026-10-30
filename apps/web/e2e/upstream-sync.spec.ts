@@ -35,7 +35,7 @@ test("repository setting persists and invalid source is rejected without network
   await expect(field).not.toHaveValue("");
   await field.fill("https://github.com/example/CompatibleCards.git");
   await page.getByRole("button", { name: "保存仓库地址", exact: true }).click();
-  await expect(page.getByRole("status")).toContainText("仓库地址已保存");
+  await expect(page.getByRole("status").filter({ hasText: "仓库地址已保存" })).toBeVisible();
   await page.reload();
   await expect(field).toHaveValue("https://github.com/example/CompatibleCards");
   await expect(page.getByRole("link", { name: "原仓库：duanxr/PTCG-CHS-Datasets ↗" })).toBeVisible();

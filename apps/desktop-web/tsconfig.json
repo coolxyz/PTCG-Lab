@@ -11,7 +11,15 @@
     "jsx": "react-jsx",
     "strict": true,
     "skipLibCheck": true,
-    "noEmit": true
+    "noEmit": true,
+    "paths": {
+      "@ptcg/battle-ui": [
+        "../../packages/battle-ui/src/index.ts"
+      ],
+      "@ptcg/battle-ui/presentation": [
+        "../../packages/battle-ui/src/battle/presentation.ts"
+      ]
+    }
   },
   "include": [
     "src",

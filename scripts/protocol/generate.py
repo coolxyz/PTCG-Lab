@@ -13,7 +13,7 @@ SCHEMAS = ("scaffold", "v2")
 
 def generate(check=False):
     if version("datamodel-code-generator") != "0.35.0":
-        raise SystemExit("Install the pinned migration requirements.lock")
+        raise SystemExit("Install the pinned scripts/checks/requirements.lock")
     with tempfile.TemporaryDirectory() as scratch:
         for name in SCHEMAS:
             output = Path(scratch) / (name + ".py")

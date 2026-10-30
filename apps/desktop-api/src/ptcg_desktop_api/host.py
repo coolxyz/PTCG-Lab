@@ -14,6 +14,7 @@ from starlette.concurrency import run_in_threadpool
 from starlette.responses import Response, RedirectResponse, FileResponse
 from .api import BridgeAPI, PREFIX, response
 from .bridge import BridgeError
+from .platform_files import private_directory
 
 
 class Host:
@@ -21,11 +22,7 @@ class Host:
         self.owner, self.origin, self.resources = owner, origin, resources
         self.api = BridgeAPI(owner, origin)
         self.build, self.launch_dir = Path(build).resolve(), Path(launch_dir)
-        if self.launch_dir.is_symlink():
-            raise ValueError("Unsafe launch directory")
-        self.launch_dir.mkdir(parents=True, exist_ok=True, mode=0o700)
-        if self.launch_dir.stat().st_mode & 0o077:
-            raise ValueError("Unsafe launch permissions")
+        private_directory(self.launch_dir)
         self.tickets, self.sessions = {}, {}
         self.lock = RLock()
         self.image_slots = 0

@@ -27,11 +27,11 @@ def attack_base(attack, mechanic):
 
 
 class Compiler:
-    def __init__(self, plain, catalog):
+    def __init__(self, plain, catalog, *, reviewed=None, species=None, evolution=None):
         self.attacks=defaultdict(dict)
         self.abilities=defaultdict(dict)
         self.names=defaultdict(dict)
-        self.reviewed=read('data/sync/reviewed-clauses.json')['clauses']
+        self.reviewed=reviewed if reviewed is not None else read('data/sync/reviewed-clauses.json')['clauses']
         # Reuse a reviewed clause across complete faces only when its entire
         # normalized wording is identical and the definition is unambiguous.
         for r in self.reviewed:
@@ -59,13 +59,13 @@ class Compiler:
                 self.abilities[norm(a.get('text',''))][digest(mechanic)]=(copy.deepcopy(a),s['effectKey'])
         # Translation only. BASIC is supplied by the printed source stage;
         # no evolutionary relationship is inferred from this species table.
-        for row in read('data/cardpool/species-names.json')['species']:
+        for row in species if species is not None else read('data/cardpool/species-names.json')['species']:
             for suffix in ('','ex'):
                 key=(name(row['chinese']+suffix),'BASIC')
                 if not self.names[key]:
                     lineage={'name':row['english']+(' ex' if suffix else ''),'stage':'BASIC','evolvesFrom':[]}
                     self.names[key][digest(lineage)]=lineage
-        for row in read('data/sync/evolution-evidence.json')['cards']:
+        for row in evolution if evolution is not None else read('data/sync/evolution-evidence.json')['cards']:
             key=(name(row['name']),row['stage'])
             lineage={'name':row['englishName'],'stage':row['stage'],'evolvesFrom':row['evolvesFrom'],'evolutionEvidence':row}
             self.names[key]={digest(lineage):lineage}

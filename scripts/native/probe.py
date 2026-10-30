@@ -4,15 +4,26 @@ import argparse
 from hashlib import sha256
 import json
 from pathlib import Path
-import select
+import os
+import queue
 import subprocess
 import tempfile
+from threading import Thread
 
 import httpx
 
 
-def probe(payload):
+def probe(payload, *, all_strategies=False):
     payload = Path(payload).resolve()
+    metadata = json.loads((payload / "manifest.json").read_text())
+    target = metadata["platform"]
+    if target not in {"macos-arm64", "windows-x64"} or (target == "windows-x64") != (
+        os.name == "nt"
+    ):
+        raise ValueError("Probe must execute on the payload's native platform")
+    interpreter = payload / (
+        "python/python.exe" if target == "windows-x64" else "python/bin/python3"
+    )
     checks = {}
     before = {
         p.relative_to(payload).as_posix(): sha256(p.read_bytes()).hexdigest()
@@ -27,9 +38,11 @@ def probe(payload):
         def launch():
             child = subprocess.Popen(
                 [
-                    str(payload / "python/bin/python3"),
+                    str(interpreter),
                     "-I",
                     "-B",
+                    "-X",
+                    "utf8",
                     str(payload / "bootstrap.py"),
                 ],
                 cwd=home,
@@ -37,7 +50,24 @@ def probe(payload):
                 stdout=subprocess.PIPE,
                 stderr=subprocess.DEVNULL,
                 text=True,
-                env={"HOME": str(home)},
+                encoding="utf-8",
+                env={
+                    **{
+                        k: v
+                        for k in [
+                            "SystemRoot",
+                            "WINDIR",
+                            "USERPROFILE",
+                            "LOCALAPPDATA",
+                            "APPDATA",
+                            "TEMP",
+                            "TMP",
+                        ]
+                        if (v := os.environ.get(k)) is not None
+                    },
+                    "HOME": str(home),
+                },
+                creationflags=subprocess.CREATE_NO_WINDOW if os.name == "nt" else 0,
             )
             children.append(child)
             nonce = "a" * 64
@@ -54,9 +84,22 @@ def probe(payload):
                 + "\n"
             )
             child.stdin.flush()
-            if not select.select([child.stdout], [], [], 35)[0]:
+            replies = queue.Queue(maxsize=1)
+
+            def answer():
+                try:
+                    replies.put(child.stdout.readline(16385))
+                except Exception:
+                    replies.put("")
+
+            Thread(target=answer, daemon=True).start()
+            try:
+                raw = replies.get(timeout=35)
+            except queue.Empty:
                 raise RuntimeError("PROBE_START_TIMEOUT")
-            result = json.loads(child.stdout.readline())
+            if len(raw) > 16384 or not raw.endswith("\n"):
+                raise RuntimeError("PROBE_START_FAILED")
+            result = json.loads(raw)
             if (
                 result.get("type") != "ready"
                 or result.get("pid") != child.pid
@@ -105,9 +148,34 @@ def probe(payload):
                 if saved.status_code != 201:
                     raise RuntimeError("PROBE_DECK_FAILED")
                 deck = saved.json()["id"]
-                checks["practiceSession"] = (
-                    web.post("/api/battle/session").status_code == 200
-                )
+                practice = web.post("/api/battle/session")
+                checks["practiceSession"] = practice.status_code == 200
+                if all_strategies:
+                    presets = practice.json()["presets"]
+                    if len(presets) != 5:
+                        raise RuntimeError("PROBE_POLICY_SET_INCOMPLETE")
+                    for preset in presets:
+                        revision = web.post(
+                            "/api/battle/presets/" + preset["id"] + "/revision", json={}
+                        )
+                        if revision.status_code != 200:
+                            raise RuntimeError("PROBE_POLICY_REVISION_FAILED")
+                        created = web.post(
+                            "/api/battle/matches",
+                            json={
+                                "requestId": "p8b-" + preset["id"],
+                                "revisionId": revision.json()["id"],
+                                "opponent": preset["id"],
+                                "aiLevel": "H2",
+                            },
+                        )
+                        if (
+                            created.status_code != 201
+                            or created.json().get("aiStrategy", {}).get("id")
+                            != preset["id"]
+                        ):
+                            raise RuntimeError("PROBE_POLICY_ROUTE_FAILED")
+                    checks["fiveH2Policies"] = True
             stop(first)
             second, reopened = launch()
             with httpx.Client(base_url=reopened["origin"], trust_env=False) as web:
@@ -136,7 +204,7 @@ def probe(payload):
         )
     return {
         "schema": 1,
-        "stage": "P8-A",
+        "stage": "P8-B-payload" if target == "windows-x64" else "P8-A",
         "checks": checks,
         "windowsAccepted": False,
         "keychainAccepted": False,
@@ -147,5 +215,6 @@ def probe(payload):
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("payload", type=Path)
+    parser.add_argument("--all-strategies", action="store_true")
     args = parser.parse_args()
-    print(json.dumps(probe(args.payload), indent=2))
+    print(json.dumps(probe(args.payload, all_strategies=args.all_strategies), indent=2))

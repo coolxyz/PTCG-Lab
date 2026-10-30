@@ -74,6 +74,8 @@ def resolve(mechanic, action, state):
             apply_status(chosen, SpecialCondition.PARALYZED)
     elif kind == "own_bench_damage":
         targets = list(p.bench)
+        if mechanic.get("both"):
+            targets += list(o.bench)
         if mechanic.get("select") and targets:
             targets = yield from reduce_choose_card_actions(choose_card_actions(p.id, p.id, 1, 1, targets, source=action.source), state)
         for card in targets:

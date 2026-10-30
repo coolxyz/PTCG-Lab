@@ -24,7 +24,18 @@ def build_catalog(normalized, baseline, detail_baseline, commit, mappings=None, 
     details = copy.deepcopy(detail_baseline)
     details.setdefault("cards", {})
     fixed = (mappings or {}).get("cards", {})
-    prior = (previous or {}).get("mappings", {})
+    prior = dict((previous or {}).get("mappings", {}))
+    # A bundled catalogue already contains reviewed upstream identities, even
+    # before this profile has created its first synchronization job. Recover
+    # only unique anchors; number/name matching alone loses split printings.
+    anchors = defaultdict(dict)
+    for card in cards.values():
+        for cid, evidence in card.get("upstreamFaces", {}).items():
+            anchors[cid][card["printingId"]] = evidence
+    for cid, choices in anchors.items():
+        if cid not in prior and len(choices) == 1:
+            pid, evidence = next(iter(choices.items()))
+            prior[cid] = {"printingId": pid, **evidence}
     indexed = defaultdict(set)
     for card in cards.values():
         indexed[(compact(card.get("productCode")), compact(card.get("collectorNumber")), compact(card.get("cnName")))].add(card["printingId"])

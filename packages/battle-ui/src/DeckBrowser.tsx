@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import type { CardInfo, Decision, EngineCard } from "./battle/types";
+import { lookupCard } from "./battle/presentation";
 
 function category(card: EngineCard) {
   return card.superType === "POKEMON"
@@ -22,7 +23,7 @@ export function DeckBrowser({
   const [query, setQuery] = useState("");
   const [filter, setFilter] = useState("全部");
   const label = (card: EngineCard) =>
-    names[card.id || ""]?.cnName || names[card.name]?.cnName || card.name;
+    lookupCard(card, names)?.cnName || card.name;
   const entries = [...inspection.cards].sort((a, b) =>
     label(a.card).localeCompare(label(b.card), "zh-CN"),
   );
@@ -70,7 +71,7 @@ export function DeckBrowser({
       </p>
       <ul className="deck-browser-list" aria-label="完整牌库内容">
         {visible.map(({ card, count }) => {
-          const info = names[card.id || ""] || names[card.name];
+          const info = lookupCard(card, names);
           return (
             <li key={card.id || card.name}>
               <details>

@@ -69,6 +69,14 @@ type Deck = {
   version: number;
   updatedAt: string;
 };
+function downloadExport(path: string) {
+  const link = document.createElement("a");
+  link.href = path;
+  link.download = "";
+  document.body.append(link);
+  link.click();
+  link.remove();
+}
 async function api(
   path: string,
   body?: unknown,
@@ -215,6 +223,14 @@ function App() {
         api("/decks").then(setDecks),
       ]);
     });
+  }, []);
+  useEffect(() => {
+    const completed = (event: Event) => {
+      const success = (event as CustomEvent).detail === true;
+      setToast(success ? "文件已导出到下载文件夹" : "导出失败，请重试并检查下载目录权限");
+    };
+    window.addEventListener("ptcg-export-complete", completed);
+    return () => window.removeEventListener("ptcg-export-complete", completed);
   }, []);
   useEffect(() => {
     if (toast) {
@@ -544,7 +560,7 @@ function App() {
           <option value="failed">本次加载失败</option>
           <option value="uploaded">用户上传</option>
         </select>
-        <a className="text-link" href="/api/card-image-gaps">导出缺失卡图清单</a>
+        <a className="text-link" href="/api/card-image-gaps" download>导出缺失卡图清单</a>
       </div>
       <div className="pack-filter">
         <label htmlFor="pack-filter">
@@ -921,7 +937,7 @@ function App() {
                   </p>
                 </div>
                 <div className="actions">
-                  <a className="secondary" href="/api/collection/export">
+                  <a className="secondary" href="/api/collection/export" download>
                     <ArrowDownToLine size={16} /> 导出 CSV
                   </a>
                   <button
@@ -1488,8 +1504,7 @@ function App() {
                         onClick={() =>
                           act(async () => {
                             await persist(draft);
-                            window.location.href =
-                              "/api/decks/" + draft.id + "/export";
+                            downloadExport("/api/decks/" + draft.id + "/export");
                           })
                         }
                       >
@@ -1499,8 +1514,7 @@ function App() {
                         onClick={() =>
                           act(async () => {
                             await persist(draft);
-                            window.location.href =
-                              "/api/decks/" + draft.id + "/export?format=text";
+                            downloadExport("/api/decks/" + draft.id + "/export?format=text");
                           })
                         }
                       >

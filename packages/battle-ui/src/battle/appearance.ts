@@ -2,6 +2,7 @@ import type { CSSProperties } from "react";
 
 const MAX_IMAGE_LENGTH = 1_500_000;
 export const PLAYMATS = [
+  { id: "lavender", name: "大师球浅紫", color: "#eee5f8", light: true },
   { id: "slate", name: "岩灰", color: "#273444" },
   { id: "forest", name: "墨绿", color: "#21483c" },
   { id: "navy", name: "深蓝", color: "#193653" },
@@ -31,7 +32,7 @@ export type AppearanceStorage = {
   load: () => Appearance;
   save: (value: Appearance) => void;
 };
-export const DEFAULT_APPEARANCE: Appearance = { preset: "slate" };
+export const DEFAULT_APPEARANCE: Appearance = { preset: "lavender" };
 
 function safeImage(value: unknown): value is string {
   return (
@@ -72,12 +73,12 @@ export function appearanceStyle(value: Appearance): CSSProperties {
     "--arena-background": image
       ? `${custom ? "linear-gradient(#101c30b3, #101c30b3), " : ""}url("${image}") center / cover no-repeat ${mat.color}`
       : mat.color,
-    "--arena-ink": light ? "#263c34" : "#f3f7fa",
-    "--arena-muted": light ? "#354e44" : "#d7e2e9",
-    "--arena-score-self": light ? "#07455f" : "#9fe7ff",
-    "--arena-score-other": light ? "#702d20" : "#ffd1b9",
-    "--arena-zone": light ? "#ffffff44" : "#07152266",
-    "--arena-line": light ? "#6d8276" : "#adc6d366",
+    "--arena-ink": light ? "#352b46" : "#f3f7fa",
+    "--arena-muted": light ? "#6e5c80" : "#d7e2e9",
+    "--arena-score-self": light ? "#68449e" : "#9fe7ff",
+    "--arena-score-other": light ? "#a43f7f" : "#ffd1b9",
+    "--arena-zone": light ? "#ffffff66" : "#07152266",
+    "--arena-line": light ? "#c2add9" : "#adc6d366",
   } as CSSProperties;
 }
 

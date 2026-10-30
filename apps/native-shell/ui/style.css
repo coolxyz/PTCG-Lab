@@ -1,1 +1,35 @@
-html{font:16px system-ui;background:#f3f5f8;color:#1d283c}main{max-width:36rem;margin:20vh auto;padding:2rem}h1{font-size:2rem}
+:root { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Microsoft YaHei", sans-serif; color: #352b46; background: #f8f5fc; color-scheme: dark; }
+* { box-sizing: border-box; }
+body { margin: 0; min-height: 100vh; background: radial-gradient(ellipse at 82% 38%, #d7bced66, transparent 52%), radial-gradient(ellipse at 8% 100%, #f4c9e355, transparent 48%), #f8f5fc; }
+.launch { max-width: 1180px; min-height: 100vh; margin: auto; padding: 40px 64px 26px; display: flex; flex-direction: column; }
+.brand { display: flex; align-items: center; gap: 12px; font-size: 16px; font-weight: 750; letter-spacing: 2px; }
+.brand-mark { display: grid; place-items: center; width: 32px; height: 32px; border: 1px solid #c7b3df; background: #ece2f8; border-radius: 10px; color: #7854b2; font-size: 19px; letter-spacing: 0; }
+.edition { margin-left: 4px; padding: 5px 8px; border: 1px solid #d9c7eb; border-radius: 5px; font-size: 9px; color: #6f5e7e; letter-spacing: 1.6px; }
+.welcome { flex: 1; display: grid; grid-template-columns: 1.2fr 1fr; align-items: center; gap: 30px; padding: 42px 0; }
+.eyebrow { font-size: 13px; color: #b84b92; letter-spacing: 3px; margin: 0 0 22px; }
+h1 { margin: 0; font-size: clamp(32px, 3.8vw, 48px); line-height: 1.38; letter-spacing: 1px; font-weight: 700; }
+.summary { color: #6f5e7e; font-size: 15px; line-height: 1.9; margin: 23px 0; }
+.features { display: flex; flex-wrap: wrap; gap: 10px; }
+.features span { padding: 7px 11px; border: 1px solid #e3d8ef; border-radius: 6px; font-size: 11px; color: #67478f; }
+.art { position: relative; isolation: isolate; display: grid; place-items: center; min-height: 330px; }
+.art img { position: relative; width: min(100%, 300px); height: auto; filter: drop-shadow(0 24px 40px #68448e22); }
+.orbit { position: absolute; z-index: -1; width: 310px; height: 310px; border: 1px solid #b59ad74d; border-radius: 50%; }
+.orbit-two { width: 370px; height: 370px; border-style: dashed; transform: rotate(-25deg) scaleY(.82); }
+.art-caption { position: absolute; bottom: -4px; font-size: 9px; letter-spacing: 3px; color: #6f5e7e; }
+.startup { border: 1px solid #e3d8ef; border-radius: 15px; padding: 21px 24px 17px; background: #ffffffcc; }
+.startup-line { display: flex; align-items: center; gap: 15px; }
+.status-light { width: 9px; height: 9px; flex: 0 0 auto; background: #9873c5; border-radius: 50%; box-shadow: 0 0 14px #bca1e044; }
+h2 { font-size: 15px; font-weight: 650; margin: 0 0 7px; }
+#startup-message { color: #6f5e7e; font-size: 12px; line-height: 1.7; margin: 0; }
+.loading-dots { display: flex; gap: 5px; margin-left: auto; padding-left: 20px; }
+.loading-dots i { width: 4px; height: 4px; background: #9873c5; border-radius: 50%; animation: pulse 1.5s infinite; }
+.loading-dots i:nth-child(2) { animation-delay: .2s; }.loading-dots i:nth-child(3) { animation-delay: .4s; }
+.progress { margin-top: 20px; height: 3px; background: #ece2f8; border-radius: 3px; overflow: hidden; }
+.progress span { display: block; height: 100%; width: 35%; background: linear-gradient(90deg, #9873c5, #d984b8); border-radius: inherit; animation: travel 2.4s ease-in-out infinite alternate; }
+.startup-help { margin: 13px 0 0; font-size: 11px; line-height: 1.7; color: #6f5e7e; }
+footer { display: flex; justify-content: space-between; gap: 16px; color: #6f5e7e; font-size: 10px; padding-top: 24px; }
+.is-error .progress, .is-error .loading-dots { display: none; }.is-error .status-light { background: #a44832; box-shadow: 0 0 14px #d9a79433; }.is-error .startup { border-color: #d9a79488; }
+@keyframes travel { to { transform: translateX(185%); } } @keyframes pulse { 50% { opacity: .25; } }
+@media (max-height: 680px) { .launch { padding-top: 24px; padding-bottom: 18px; }.welcome { padding: 14px 0; }.startup { padding-top: 17px; padding-bottom: 14px; }footer { padding-top: 18px; }.art { min-height: 270px; }.art img { width: 250px; }.orbit { width: 250px; height: 250px; }.orbit-two { width: 300px; height: 300px; }.summary { margin: 16px 0; }.eyebrow { margin-bottom: 14px; } }
+@media (max-width: 720px) { .launch { padding: 26px; }.welcome { grid-template-columns: 1fr; }.art { display: none; }.intro { padding: 25px 0; }h1 { font-size: 34px; }footer { flex-wrap: wrap; } }
+@media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation: none !important; transition: none !important; }.progress span { width: 100%; opacity: .65; } }

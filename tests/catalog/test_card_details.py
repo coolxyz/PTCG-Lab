@@ -115,6 +115,11 @@ def test_upload_removes_only_that_printing_from_missing_image_export(tmp_path, m
     details=card_media.details()
     monkeypatch.setattr(card_media,'details',lambda: {k:v for k,v in details.items() if k not in ids})
     client = TestClient(create_app(tmp_path / "app.sqlite"))
+    # Simulate a genuinely absent artwork binding as well as absent legacy
+    # metadata; on-demand artwork now fills the latter automatically.
+    client.app.state.card_media.artwork.rows = {
+        pid: row for pid, row in client.app.state.card_media.artwork.rows.items() if pid not in ids
+    }
     cards = client.get("/api/cards").json()["cards"]
     missing = [c for c in cards if not c["image"].get("url")]
     target, other = missing[:2]

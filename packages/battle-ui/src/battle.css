@@ -17,14 +17,14 @@
   font-size: 18px;
 }
 .battle-page p {
-  color: #6c796f;
+  color: var(--ptcg-muted);
   line-height: 1.7;
   font-size: 13px;
 }
 .battle-page .eyebrow {
   font-size: 10px;
   letter-spacing: 2px;
-  color: #8b9975;
+  color: var(--ptcg-muted);
 }
 .battle-lobby {
   display: grid;
@@ -86,13 +86,13 @@
   min-width: 0;
 }
 .battle-side {
-  border: 1px solid #dce6dd;
+  border: 1px solid var(--ptcg-line);
   border-radius: 12px;
-  background: #edf3e9;
+  background: var(--ptcg-tint);
   padding: 16px;
 }
 .battle-side.opponent {
-  background: #f0efea;
+  background: var(--ptcg-tint);
   border-color: #e3dfd5;
 }
 .battle-side > header {
@@ -109,7 +109,7 @@
 }
 .battle-side h4 {
   font-size: 11px;
-  color: #78816f;
+  color: var(--ptcg-muted);
   margin: 10px 0;
 }
 .battle-zones {
@@ -124,9 +124,9 @@
   align-items: flex-start;
 }
 .battle-card {
-  background: #fffef9;
-  box-shadow: 0 2px 5px #1d382610;
-  border: 1px solid #d9dfcf;
+  background: var(--ptcg-background);
+  box-shadow: 0 2px 5px #7854b210;
+  border: 1px solid var(--ptcg-line);
   border-radius: 7px;
   padding: 10px;
   width: 150px;
@@ -138,16 +138,16 @@
   font-size: 12px;
 }
 .battle-hp {
-  color: #547143;
+  color: var(--ptcg-muted);
   font-size: 11px;
 }
 .battle-card small {
   font-size: 10px;
-  color: #667362;
+  color: var(--ptcg-muted);
 }
 .battle-card details {
   font-size: 10px;
-  color: #667362;
+  color: var(--ptcg-muted);
 }
 .battle-card details p {
   font-size: 11px;
@@ -156,7 +156,7 @@
   padding: 14px;
   text-align: center;
   font-size: 12px;
-  color: #6f8068;
+  color: var(--ptcg-muted);
 }
 .battle-discard {
   display: flex;
@@ -195,7 +195,7 @@
   display: block;
   line-height: 1.7;
   margin-top: 8px;
-  color: #7e876e;
+  color: var(--ptcg-muted);
   font-size: 11px;
 }
 .decision-options,
@@ -209,24 +209,24 @@
 }
 .decision-options button,
 .decision-candidates button {
-  border: 1px solid #dce4d4;
+  border: 1px solid var(--ptcg-line);
   padding: 11px;
   border-radius: 6px;
-  background: #f8faf5;
+  background: var(--ptcg-background);
   text-align: left;
-  color: #3f5443;
+  color: var(--ptcg-accent-ink);
   font-size: 12px;
   line-height: 1.6;
   overflow-wrap: anywhere;
 }
 .decision-options button:hover,
 .decision-candidates button:hover {
-  background: #e9f0de;
+  background: var(--ptcg-tint);
 }
 .decision-candidates button.selected {
-  border-color: #385d39;
-  background: #e4efdb;
-  box-shadow: inset 3px 0 #385d39;
+  border-color: var(--ptcg-line-strong);
+  background: var(--ptcg-soft);
+  box-shadow: inset 3px 0 #7854b218;
 }
 .battle-log h3 {
   font-size: 13px;
@@ -241,10 +241,10 @@
 }
 .inspection-cards li {
   padding: 11px;
-  border: 1px solid #dce4d4;
+  border: 1px solid var(--ptcg-line);
   border-radius: 6px;
-  background: #f8faf5;
-  color: #3f5443;
+  background: var(--ptcg-background);
+  color: var(--ptcg-accent-ink);
   display: flex;
   justify-content: space-between;
   gap: 12px;
@@ -254,18 +254,18 @@
   flex-shrink: 0;
 }
 .inspection-cards .inspection-supporter {
-  border-color: #385d39;
-  background: #e4efdb;
-  box-shadow: inset 3px 0 #385d39;
+  border-color: var(--ptcg-line-strong);
+  background: var(--ptcg-soft);
+  box-shadow: inset 3px 0 #7854b218;
 }
 .inspection-summary {
   padding: 10px;
-  background: #e4efdb;
+  background: var(--ptcg-soft);
   border-radius: 6px;
-  color: #274b29;
+  color: var(--ptcg-ink);
 }
 .battle-page:has(.arena) .decision-panel p.inspection-summary {
-  color: #274b29;
+  color: var(--ptcg-ink);
 }
 .battle-log ol {
   list-style: none;
@@ -280,18 +280,18 @@
 .battle-log li {
   display: grid;
   gap: 5px;
-  border-bottom: 1px solid #eff1e9;
+  border-bottom: 1px solid var(--ptcg-line);
   padding-bottom: 10px;
   font-size: 12px;
 }
 .battle-log li small {
-  color: #84917b;
+  color: var(--ptcg-muted);
   font-size: 10px;
 }
 .battle-result {
   padding: 20px;
-  background: #e0edd5;
-  border: 1px solid #c9d8bc;
+  background: var(--ptcg-soft);
+  border: 1px solid var(--ptcg-line);
   border-radius: 10px;
   margin: 18px 0;
   font-size: 22px;
@@ -309,7 +309,7 @@
   align-items: center;
   gap: 12px;
   padding: 16px;
-  background: #f2eddb;
+  background: var(--ptcg-tint);
   border-radius: 8px;
   margin: 12px 0;
   flex-wrap: wrap;
@@ -322,7 +322,7 @@
 .battle-replay button,
 .battle-confirm button {
   background: white;
-  border: 1px solid #d5dacb;
+  border: 1px solid var(--ptcg-line);
   padding: 7px;
   border-radius: 5px;
 }
@@ -402,11 +402,11 @@
 
 .deck-browser {
   margin: 14px 0;
-  border: 1px solid #71856d;
+  border: 1px solid var(--ptcg-line-strong);
   border-radius: 8px;
   padding: 12px;
-  background: #f5f8ef;
-  color: #253b2c;
+  background: var(--ptcg-tint);
+  color: var(--ptcg-ink);
 }
 .deck-browser > summary {
   cursor: pointer;
@@ -414,7 +414,7 @@
   padding: 4px 0;
 }
 .battle-page:has(.arena) .decision-panel .deck-browser p {
-  color: #354b39;
+  color: var(--ptcg-ink);
 }
 .deck-browser label {
   display: grid;
@@ -426,8 +426,8 @@
   box-sizing: border-box;
   padding: 9px;
   background: white;
-  color: #253b2c;
-  border: 1px solid #a5b09c;
+  color: var(--ptcg-ink);
+  border: 1px solid var(--ptcg-line-strong);
   border-radius: 5px;
 }
 .deck-browser-filters {
@@ -439,11 +439,11 @@
 .deck-browser-filters button {
   padding: 6px 10px;
   background: white;
-  color: #354b39;
-  border: 1px solid #9aa891;
+  color: var(--ptcg-ink);
+  border: 1px solid var(--ptcg-line-strong);
 }
 .deck-browser-filters button[aria-pressed="true"] {
-  background: #385d39;
+  background: var(--ptcg-accent);
   color: white;
 }
 .deck-browser-list {
@@ -454,7 +454,7 @@
   list-style: none;
 }
 .deck-browser-list li {
-  border-top: 1px solid #d4ddcd;
+  border-top: 1px solid var(--ptcg-line);
   padding: 8px 0;
 }
 .deck-browser-list summary {

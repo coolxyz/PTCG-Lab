@@ -153,6 +153,63 @@ class API implements OnlineAPI {
 }
 console.log("3 online controller recovery/isolation scenarios passed");
 {
+  const api = new API(), c = new OnlineController(api, new Store());
+  await c.start();
+  await c.open(api.view.matchId);
+  const original = api.call.bind(api), page = demoReplay("PLAYER2");
+  const now = Date.now;
+  let clock = now(), attempts = 0;
+  const cursors: unknown[] = [];
+  Date.now = () => clock;
+  api.call = async <T>(profile: string, op: string, body: any = {}): Promise<T> => {
+    if (op !== "replay") return original(profile, op, body);
+    attempts++;
+    if (!body.cursor) return {...page, frames:page.frames.slice(0, 1), nextCursor:"exact-page"} as T;
+    cursors.push(body.cursor);
+    if (attempts === 2) throw new OnlineError("CAPACITY_EXCEEDED", true, 429);
+    return {...page, frames:page.frames.slice(1), nextCursor:null} as T;
+  };
+  try {
+    await c.replay();
+    await c.more();
+    assert.equal(attempts, 1, "manual clicks cannot bypass page pacing");
+    clock += 1500;
+    await c.more();
+    assert(c.snapshot().replayNotice.includes("限流"));
+    assert.equal(c.snapshot().error, "");
+    assert.equal(c.snapshot().nextCursor, "exact-page");
+    assert.equal(c.snapshot().replay!.frames.length, 1);
+    await c.more();
+    assert.equal(attempts, 2, "backoff cannot create a retry loop");
+    clock += 65000;
+    await c.more();
+    assert.deepEqual(cursors, ["exact-page", "exact-page"]);
+    assert.equal(c.snapshot().replayNotice, "");
+    assert.equal(c.snapshot().replay!.frames.length, page.frames.length);
+    assert.equal(c.snapshot().nextCursor, null);
+    assert(!api.calls.some(x => x.op === "command"));
+  } finally { Date.now = now; c.dispose(); }
+}
+{
+  const api = new API(), c = new OnlineController(api, new Store());
+  await c.start(); await c.open(api.view.matchId);
+  const original=api.call.bind(api), page=demoReplay("PLAYER2"), now=Date.now;
+  let clock=now(); Date.now=()=>clock;
+  api.call=async <T>(profile:string,op:string,body:any={}):Promise<T>=>{
+    if(op!=="replay") return original(profile,op,body);
+    if(body.cursor) throw new OnlineError("FORBIDDEN",false,403);
+    return {...page,frames:page.frames.slice(0,1),nextCursor:"protected-page"} as T;
+  };
+  try {
+    await c.replay(); clock+=1500; await c.more();
+    assert(c.snapshot().error.includes("FORBIDDEN"));
+    assert.equal(c.snapshot().replayNotice, "");
+    assert.equal(c.snapshot().nextCursor, "protected-page");
+    assert.equal(c.snapshot().replay!.frames.length, 1);
+  } finally { Date.now=now; c.dispose(); }
+}
+console.log("Replay pacing, exact-cursor backoff and authorization refusal passed");
+{
   const api = new API(),
     store = new Store();
   store.write("one", {

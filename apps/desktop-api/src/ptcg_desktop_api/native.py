@@ -4,7 +4,6 @@ The native shell owns stdin/stdout. EOF shuts down only this child. No credentia
 authorization HTML, activation codes or arbitrary exceptions are written to logs.
 """
 
-import fcntl
 import json
 import os
 from pathlib import Path
@@ -60,9 +59,18 @@ def request(value):
 
 
 class StateLock:
-    """macOS proof; Windows uses a separate native backend in P8-B."""
+    """Same-user, single backend owner; platform file locks remain explicit."""
 
     def __init__(self, path):
+        self.windows = None
+        self.fd = None
+        if sys.platform == "win32":
+            from .windows_storage import WindowsFiles
+
+            self.windows = WindowsFiles(path, "native")
+            return
+        import fcntl
+
         path = Path(path)
         # Reject links in every existing ancestor before creating anything.
         if any(p.is_symlink() for p in (path, *path.parents)):
@@ -90,12 +98,15 @@ class StateLock:
         self.fd = fd
 
     def close(self):
+        if self.windows is not None:
+            self.windows.close()
+            self.windows = None
         if self.fd is not None:
             os.close(self.fd)
             self.fd = None
 
 
-def main(*, build, local_factory=None):
+def main(*, build, local_factory=None, preflight=None):
     protocol = sys.stdout
     # Application output must never corrupt the inherited protocol pipe.
     sys.stdout = sys.stderr
@@ -110,6 +121,13 @@ def main(*, build, local_factory=None):
         start = request(frame(sys.stdin))
         state = Path(start["stateDir"])
         lock = StateLock(state)
+        if preflight:
+            preflight(state)
+        # POSIX update/verification children inherit this exact open-file
+        # description. Offline installation remains blocked until the last
+        # owned writer exits, even if this backend has already stopped.
+        if lock.fd is not None:
+            os.environ["PTCG_NATIVE_LOCK_FD"] = str(lock.fd)
         profiles = {
             key: Server(**value) for key, value in start["config"]["servers"].items()
         }
@@ -178,8 +196,14 @@ def main(*, build, local_factory=None):
         Thread(target=ready, daemon=True).start()
         runner.run(sockets=[sock])
         return 0
-    except Exception:
-        emit({"schema": 1, "type": "error", "code": "NATIVE_START_FAILED"})
+    except Exception as error:
+        from .installation import InstallError
+
+        code = str(error) if isinstance(error, InstallError) and str(error) in {
+            "DESKTOP_RECOVERY_REQUIRED", "DESKTOP_INSTALL_REQUIRED",
+            "DESKTOP_SCHEMA_UNSUPPORTED",
+        } else "NATIVE_START_FAILED"
+        emit({"schema": 1, "type": "error", "code": code})
         return 1
     finally:
         done.set()
@@ -189,4 +213,5 @@ def main(*, build, local_factory=None):
             sock.close()
         if lock:
             lock.close()
+        os.environ.pop("PTCG_NATIVE_LOCK_FD", None)
         sys.stdout = protocol

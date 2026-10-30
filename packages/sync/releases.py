@@ -63,7 +63,7 @@ class Releases:
                 write(stage / f"data/{name}.json", value)
         # Compute the exact archived implementation ID, without importing the engine.
         code = "from pathlib import Path; import hashlib,json; r=Path('.'); f=sorted((r/'packages/rules').glob('*.py')); f += [r/p for p in ['packages/engine_adapter/base.py','packages/engine_adapter/cn_format.py','scripts/engine/build_engine.py','artifacts/engine/overlay-hashes.json','data/engine/catalog.json','rulesets/cn-standard-2026-09-16.json','data/cardpool/plain-pokemon.json']]; print(hashlib.sha256(json.dumps({p.as_posix():p.read_text(encoding='utf-8') for p in f},ensure_ascii=False,sort_keys=True).encode()).hexdigest())"
-        engine = subprocess.run([sys.executable, "-X", "utf8", "-c", code], cwd=stage, capture_output=True, text=True, check=True).stdout.strip()
+        engine = subprocess.run([sys.executable, "-I", "-B", "-X", "utf8", "-c", code], cwd=stage, capture_output=True, text=True, check=True).stdout.strip()
         effect_path = stage / "data/simulation/effects.json"
         if effects is not None:
             value = read(effect_path)

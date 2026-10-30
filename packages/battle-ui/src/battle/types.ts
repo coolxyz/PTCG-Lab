@@ -57,6 +57,7 @@ export type Side = {
   lost_zone: EngineCard[];
 };
 export type Option = {
+  effectSource?: EngineCard;
   id: string;
   actionType: string;
   label?: string;

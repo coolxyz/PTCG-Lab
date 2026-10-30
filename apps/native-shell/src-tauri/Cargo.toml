@@ -6,16 +6,37 @@ rust-version = "1.90"
 license = "MIT"
 publish = false
 
+[features]
+default = ["desktop"]
+desktop = ["dep:tauri", "dep:tauri-build"]
+
+[[bin]]
+name = "ptcg-native-shell"
+path = "src/main.rs"
+required-features = ["desktop"]
+
 [build-dependencies]
-tauri-build = { version = "=2.7.4", features = [] }
+tauri-build = { version = "=2.7.4", features = [], optional = true }
 
 [dependencies]
-tauri = { version = "=2.12.5", features = [] }
-libc = "=0.2.191"
+tauri = { version = "=2.12.5", features = [], optional = true }
 serde = { version = "=1.0.228", features = ["derive"] }
 serde_json = "=1.0.145"
 sha2 = "=0.10.9"
 getrandom = "=0.3.4"
+
+url = "=2.5.8"
+
+[target.'cfg(target_os = "macos")'.dependencies]
+libc = "=0.2.191"
+
+[target.'cfg(windows)'.dependencies]
+windows-sys = { version = "=0.61.2", features = [
+  "Win32_Foundation", "Win32_Security", "Win32_Security_Authorization",
+  "Win32_Storage_FileSystem", "Win32_System_IO", "Win32_System_Pipes",
+  "Win32_System_Threading", "Win32_System_JobObjects", "Win32_System_Memory",
+  "Win32_System_RemoteDesktop", "Win32_UI_WindowsAndMessaging",
+] }
 
 [profile.release]
 codegen-units = 1

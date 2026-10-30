@@ -6,7 +6,7 @@ test.beforeEach(async ({ page }) => {
   await page.route("https://asia.pokemon-card.com/**", (r) => r.abort());
   // The isolated test database has no downloaded upstream image cache.
   // Exercise the image/zoom UI with a deterministic local response.
-  await page.route("**/api/sync/images/**", r => r.fulfill({
+  await page.route(/\/api\/sync\/(?:images|artwork)\//, r => r.fulfill({
     contentType: "image/svg+xml",
     body: '<svg xmlns="http://www.w3.org/2000/svg" width="400" height="560"><rect width="400" height="560" fill="#e9dcaf"/></svg>',
   }));
@@ -254,7 +254,7 @@ test("expanded pool pagination, unverified detail and local CN artwork", async (
   await expect
     .poll(() => image.evaluate((img: HTMLImageElement) => img.naturalWidth))
     .toBeGreaterThan(300);
-  await expect(page.locator(".image-label")).toContainText("简中卡图");
+  await expect(page.locator(".image-label")).toContainText("在线卡图");
   await page.getByLabel("系列").selectOption("CSM1aC");
   await page.getByLabel("搜索卡牌").fill("CN:CSM1aC:001");
   await page.getByLabel("效果状态").selectOption("verified");

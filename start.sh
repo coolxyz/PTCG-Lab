@@ -8,7 +8,7 @@ for arg in "$@"; do
     if [[ "$arg" == '--setup' ]]; then setup=true; else args+=("$arg"); fi
 done
 if $setup; then
-    "${PYTHON:-python3}" -X utf8 "$ROOT/scripts/portable/setup.py"
+    "${PYTHON:-python3}" -X utf8 "$ROOT/scripts/product/setup.py"
 fi
 if [[ ! -f "$ROOT/.venv/bin/python" ]]; then
     echo 'Run bash start.sh --setup first (Python 3.14+, Node/npm and Git required).' >&2

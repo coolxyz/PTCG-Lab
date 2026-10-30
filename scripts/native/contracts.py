@@ -19,6 +19,8 @@ def check(root):
             or config["app"]["security"]["capabilities"] != []
         ):
             errors.append("native GUI gained command authority")
+        if config["build"].get("windows", {}).get("staticVCRuntime") is not True:
+            errors.append("native Windows CRT contract drift")
         if config["app"]["windows"] != [] or config["bundle"]["targets"] != ["app"]:
             errors.append("native proof platform/window scope drift")
         if (
@@ -26,13 +28,41 @@ def check(root):
             or cargo["package"]["publish"] is not False
         ):
             errors.append("native toolchain/publication drift")
-        for name, value in cargo["dependencies"].items():
+        dependencies = dict(cargo["dependencies"])
+        dependencies.update(cargo["build-dependencies"])
+        for target in cargo.get("target", {}).values():
+            dependencies.update(target.get("dependencies", {}))
+        for name, value in dependencies.items():
             version = value if isinstance(value, str) else value["version"]
             if not version.startswith("=") or not any(
                 p["name"] == name and p["version"] == version[1:]
                 for p in lock["package"]
             ):
                 errors.append("unlocked native dependency: " + name)
+        windows = cargo["target"]["cfg(windows)"]["dependencies"]["windows-sys"]
+        if (
+            windows["version"] != "=0.61.2"
+            or set(windows["features"])
+            != {
+                "Win32_Foundation",
+                "Win32_Security",
+                "Win32_Security_Authorization",
+                "Win32_Storage_FileSystem",
+                "Win32_System_IO",
+                "Win32_System_Pipes",
+                "Win32_System_Threading",
+                "Win32_System_JobObjects",
+                "Win32_System_Memory",
+                "Win32_System_RemoteDesktop",
+                "Win32_UI_WindowsAndMessaging",
+            }
+            or cargo["features"]
+            != {"default": ["desktop"], "desktop": ["dep:tauri", "dep:tauri-build"]}
+            or cargo["bin"][0]["required-features"] != ["desktop"]
+            or cargo["dependencies"]["tauri"].get("optional") is not True
+            or cargo["build-dependencies"]["tauri-build"].get("optional") is not True
+        ):
+            errors.append("native platform/features contract drift")
         if (
             cargo["dependencies"]["tauri"]["version"] != "=" + runtime["tauri"]
             or cargo["build-dependencies"]["tauri-build"]["version"]

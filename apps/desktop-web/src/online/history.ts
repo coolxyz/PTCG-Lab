@@ -10,7 +10,7 @@ import type {
   CardInfo,
   ReplayCheckpoint,
 } from "@ptcg/battle-ui";
-import { eventText } from "@ptcg/battle-ui/presentation";
+import { eventText, lookupCard } from "@ptcg/battle-ui/presentation";
 import { card } from "../presentation";
 
 type Frame = ReplayFrame | MatchSnapshot;
@@ -125,7 +125,7 @@ function resultHeadline(
 ): string | undefined {
   const candidates = groups.filter((g) => g.cards.length).map((group) => {
     const names = group.cards.slice(0, 2).map((c) =>
-      cards[c.id || ""]?.cnName || cards[c.name]?.cnName || c.name,
+      lookupCard(c, cards)?.cnName || c.name,
     );
     return {
       priority: /展示|公开的奖赏卡/.test(group.label) ? 100

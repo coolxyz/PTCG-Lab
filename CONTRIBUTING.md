@@ -1,24 +1,16 @@
-# 开发与贡献
+# 贡献与维护
 
-请先阅读 README、THIRD_PARTY_NOTICES.md 和 SECURITY.md。提交项目原创代码时按根 MIT 许可证贡献；不要提交无权许可的第三方素材或私人记录。
+main 是产品发布源码分支，功能开发使用 `codex/` 或其他独立分支。提交范围应限于产品代码、依赖、正式操作说明和必要的回归测试源码。阶段计划、实验/压测工具、个人工作日志、环境副本、数据库、凭据及测试输出不进入 main。
 
-Python 3.14+、Node.js/npm、Git 为基础依赖。公开源码不含卡牌数据和引擎运行资产；先按 `docs/GitHub发布与隐私.md` 配置合法、可信、兼容的本地资产，再运行 `bash start.sh --setup --check`（Windows：`start.ps1 -Setup -Check`）。不要通过放宽完整性检查强行加载不兼容引擎。
+遵守 [当前规则约定](AGENTS.md)。不兼容旧规则执行版本；不能移除内容哈希、规则身份、授权、幂等或恢复检查。涉及引擎的修改要同时核对本机产品与共享核心，补充实际机制的回归测试。接口变更同时更新协议、客户端和共享 GUI。
 
-```bash
-PYTHONPATH=runtime/engine:.:tests/rules .venv/bin/python -m pytest tests/collection tests/battle tests/sync -q
-npm --prefix apps/web run build
+```sh
+npm ci --ignore-scripts
+npm run product:build
+python -m pytest tests/protocol tests/providers tests/packaging tests/portable/test_public_export.py -q
+python scripts/public/audit.py --check
 ```
 
-某些目录/来源测试依赖独立保管的第三方测试资料，不包含在公开源码包。缺少资料时请只运行不依赖它们的测试，不应伪造全量测试通过。新测试尽量使用自创的合成夹具，避免把整份上游资料纳入仓库。
+Python 测试需先安装各包锁定依赖和项目，生产数据相关测试还需配套私有资产。源码 CI 运行不依赖私有资产的合同测试；完整规则回归、浏览器验收和自然终局另行执行，不以跳过测试当作发布证据。维护规则的完整验证入口为 `scripts/sync/regression.py` 与 `scripts/sync/verify_runtime.py`。
 
-代码目录及运行边界见 `docs/架构与维护.md`。规则版本和对局快照须保持可追溯。可修改本机草稿，不能为修复界面而改写历史比赛结果。
-
-提交前检查 `git diff --cached` 和公开源码审计。PR 请写明问题、行为变化、测试及剩余限制。不要附私人迁移包、截图中的个人记录或完整日志路径。
-
-## P1 新项目与发布门禁
-
-新包骨架的构建、依赖边界、协议生成及发布检查见 [P1 验收与复查命令](docs/P1迁移基线与发布门禁验收.md)。这些检查只需公开源码和原创合成输入，不依赖完整卡池。不要将通过 P1 门禁写成已实现规则拆包或在线功能；旧产品运行与测试入口仍保持原样。
-
-P2 的协议生成、安装、合同测试和带依赖的制品检查使用 [P2 复查命令](docs/P2共享协议与规则核心实施记录.md#4-本地验收与复查)。旧服务无需启动；不得将静态协议校验写成真实规则投影已经等价。
-
-P2-B 还需安装 `packages/engine-provider` 并运行 `tests/providers`；完整命令与私有资产限制见 [Provider 验收](docs/P2B资源Provider与固定资产验收.md)。
+提交前按 [构建与发布](docs/构建与发布.md) 检查目标制品。外部签名、最低系统、Windows 原生与干净机验收没有实际证据时保持待完成。不要提交 `release/`、`var/`、`data/`、`.catalog/`、`runtime/`、测试夹具或任何个人数据。

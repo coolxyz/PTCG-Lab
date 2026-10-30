@@ -19,7 +19,7 @@ ROOT = Path(__file__).resolve().parents[2]
 if __package__ in (None, ""):
     sys.path.insert(0, str(ROOT))
 from scripts.public.policy import safe_file, source_files  # noqa: E402
-from scripts.product.kit import DATA, PROJECTS  # noqa: E402
+from scripts.native.layout import DATA, PROJECTS, install_artwork_index  # noqa: E402
 
 LEGACY = (
     "packages/collection/",
@@ -74,6 +74,7 @@ def assemble(archive, assets, output, *, root=ROOT):
             copy_file(safe_file(root, name), app / name)
     for name in DATA:
         copy_file(safe_file(assets, "data/" + name), app / "data" / name)
+    install_artwork_index(root, assets, app)
     for p in (assets / "data/sync").glob("*.json"):
         name = p.relative_to(assets).as_posix()
         copy_file(safe_file(assets, name), app / name)
@@ -121,6 +122,7 @@ def assemble(archive, assets, output, *, root=ROOT):
         'sys.path.insert(0, str(pathlib.Path(__file__).resolve().parent / "app"))\n'
         'runpy.run_module("apps.api.native_product", run_name="__main__")\n'
     )
+    copy_file(root / "scripts/native/installation-contract.json", output / "INSTALLATION.json")
     # Remove build/test tools and caches from the installed payload. Dependency
     # trimming beyond these explicit tools belongs to P8-C's signed installer.
     for p in output.rglob("__pycache__"):

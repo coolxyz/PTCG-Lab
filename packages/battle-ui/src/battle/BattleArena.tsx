@@ -5,7 +5,7 @@ import { DeckBrowser } from "../DeckBrowser";
 import { BattleScreen } from "./BattleScreen";
 import { BattleLog } from "./BattleLog";
 import type { AppearanceStorage } from "./appearance";
-import { playerLabel, skillName } from "./presentation";
+import { lookupCard, playerLabel, skillName } from "./presentation";
 import type {
   BattleView,
   CardInfo,
@@ -144,13 +144,13 @@ export function BattleArena({
     const source =
       visible.find(
         (c) => c.ref && c.ref === (o.sourceRef || o.active_pokemonRef),
-      ) || visible.find((c) => c.id === (o.sourceId || o.active_pokemonId));
-    const info =
-      (source?.id && names[source.id]) ||
-      (o.sourceId && names[o.sourceId]) ||
-      names[o.source || o.active_pokemon || ""];
+      ) || visible.find((c) => c.id && c.id === (o.sourceId || o.active_pokemonId));
+    const skillSource = o.effectSource || source;
+    const info = skillSource ? lookupCard(skillSource, names) : lookupCard(
+      { id: o.sourceId, name: o.source || o.active_pokemon || "" }, names,
+    );
     const skill = (name: string, kind: "attack" | "ability") =>
-      skillName(name, kind, source, info || undefined);
+      skillName(name, kind, skillSource, info);
     if (o.actionType === "ChooseCardAction") {
       const counts = new Map<string, number>();
       for (const name of o.chosen || [])
@@ -175,7 +175,7 @@ export function BattleArena({
         : pos?.endsWith("ACTIVE")
           ? "（战斗区）"
           : "";
-    return `${actionNames[o.actionType] || o.actionType}${o.source ? " · " + (names[o.sourceId || ""]?.cnName || cn(o.source)) + position(o.sourcePosition, o.sourceIndex) : ""}${o.target ? " → " + (names[o.targetId || ""]?.cnName || cn(o.target)) + position(o.targetPosition, o.targetIndex) : ""}${o.attack ? " · " + skill(o.attack.name, "attack") + (o.attack.damage ? " / " + o.attack.damage : "") : ""}${o.ability ? " · " + skill(o.ability, "ability") : ""}${o.active_pokemon ? " · " + cn(o.active_pokemon) : ""}`;
+    return `${actionNames[o.actionType] || o.actionType}${o.source ? " · " + (lookupCard({id:o.sourceId,name:o.source}, names)?.cnName || cn(o.source)) + position(o.sourcePosition, o.sourceIndex) : ""}${o.target ? " → " + (lookupCard({id:o.targetId,name:o.target}, names)?.cnName || cn(o.target)) + position(o.targetPosition, o.targetIndex) : ""}${o.attack ? " · " + skill(o.attack.name, "attack") + (o.attack.damage ? " / " + o.attack.damage : "") : ""}${o.effectSource ? "（来自" + (lookupCard(o.effectSource, names)?.cnName || o.effectSource.name) + "）" : ""}${o.ability ? " · " + skill(o.ability, "ability") : ""}${o.active_pokemon ? " · " + cn(o.active_pokemon) : ""}`;
   }
   const previousTurn = timeline.filter((point) => point.seq < replaySeq).at(-1);
   const nextTurn = timeline.find((point) => point.seq > replaySeq);

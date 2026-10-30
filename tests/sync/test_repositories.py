@@ -58,7 +58,7 @@ def test_setting_persists_without_network_and_is_local(tmp_path):
 
 
 def test_source_attribution_uses_configured_repository():
-    from test_sync import raw as synthetic_source
+    from tests.sync.test_sync import raw as synthetic_source
 
     raw = synthetic_source.__wrapped__()
     result = build_catalog(

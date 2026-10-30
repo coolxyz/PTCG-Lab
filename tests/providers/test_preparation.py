@@ -3,7 +3,7 @@ import json
 import pytest
 from ptcg_engine_provider.bundle import DirectoryEngineProvider
 from ptcg_engine_provider.values import ProviderError, canonical, sha256
-from scripts.migration.prepare_rule_bundle import INPUTS, prepare
+from scripts.product.prepare_rule_bundle import INPUTS, prepare
 
 from .synthetic import catalog, payloads
 

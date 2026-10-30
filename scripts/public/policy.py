@@ -16,16 +16,24 @@ FOLDERS = (
     "packages",
     "scripts",
     "tests",
-    "docs",
     "licenses",
     "rulesets",
     "resources/schemas",
     "resources/examples",
     "ops/online",
-    "benchmarks/online",
     ".github/workflows",
 )
 FILES = (
+    'docs/GitHub发布与隐私.md',
+    'docs/Git卡图下载与资源包工具.md',
+    'docs/Windows验证步骤.md',
+    'docs/上游卡库同步.md',
+    'docs/启动使用与跨系统迁移.md',
+    'docs/安装升级与迁移.md',
+    'docs/按需卡图与本地缓存.md',
+    'docs/构建与发布.md',
+    'docs/架构与维护.md',
+    "resources/artwork/builtin-index.json",
     "README.md",
     "AGENTS.md",
     "LICENSE",
@@ -39,27 +47,15 @@ FILES = (
     "RELEASE.json",
     "package.json",
     "package-lock.json",
+    "apps/native-shell/ui/icon.png",
     "apps/native-shell/src-tauri/icons/icon.png",
-    "releases/projects.json",
-    "releases/migration-status.json",
-    "releases/p4d-acceptance.json",
-    "releases/p5d-acceptance.json",
-    "releases/p5d-user-acceptance.json",
-    "releases/p55-user-acceptance.json",
-    "releases/p6a-baseline.json",
-    "releases/p6b-streams.json",
-    "releases/p6c-scheduler.json",
-    "releases/p6d-workers.json",
-    "releases/p6e-budgets.json",
-    "releases/p7a-isolation.json",
-    "releases/p7b-matrix.json",
-    "releases/p8a-native.json",
-    "releases/p7b-before-driver-repair.json",
-    "releases/p7-measured-p6e-baseline.json",
-    "releases/p7-measured-matrix-baseline.json",
-    "releases/source-candidates.json",
+    "apps/native-shell/src-tauri/icons/icon-source.png",
+    "apps/native-shell/src-tauri/icons/icon.icns",
+    "apps/native-shell/src-tauri/icons/icon.ico",
+    "apps/native-shell/src-tauri/icons/32x32.png",
+    "apps/native-shell/src-tauri/icons/128x128.png",
+    "apps/native-shell/src-tauri/icons/128x128@2x.png",
     "ops/online/Dockerfile.dockerignore",
-    "benchmarks/online/Dockerfile.dockerignore",
 )
 EXCLUDED = {
     ".git",
@@ -87,6 +83,8 @@ EXCLUDED = {
     "secrets",
     "credentials",
     "private",
+    "benchmarks",
+    "releases",
     ".aws",
 }
 ALLOWED = {
@@ -157,7 +155,7 @@ def private_name(name):
 
 
 def allowed_source(name):
-    if private_name(name):
+    if private_name(name) or name.startswith("scripts/migration/"):
         return False
     p = PurePosixPath(name)
     if name.startswith("tests/") and p.suffix == ".json":

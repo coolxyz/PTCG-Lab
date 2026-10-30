@@ -1,8 +1,10 @@
+@import "@ptcg/battle-ui/theme.css";
+
 body {
   margin: 0;
-  background: #f1f4f2;
+  background: var(--ptcg-background);
   font-family: system-ui, sans-serif;
-  color: #23342b;
+  color: var(--ptcg-ink);
 }
 .demo-lobby {
   max-width: 760px;
@@ -19,10 +21,10 @@ body {
   font: inherit;
   padding: 12px;
   border-radius: 8px;
-  border: 1px solid #d4ded9;
+  border: 1px solid var(--ptcg-line);
 }
 .demo-lobby button {
-  background: #244f3a;
+  background: var(--ptcg-accent);
   color: white;
   cursor: pointer;
 }

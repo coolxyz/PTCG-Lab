@@ -57,6 +57,7 @@ def test_transfer_offline_restart_and_keep_old_version(tmp_path):
         SimpleNamespace(validate_sha=lambda _: None, initialize=offline, blob=offline),
     )
     assert images.get("a" * 40, "123")[0].read_bytes() == raw
+    assert images.available("a" * 40, "123")
     second, _ = seed(source, "b" * 40, "blue")
     export_pack(source, tmp_path / "update")
     install_pack(tmp_path / "update", target)
@@ -145,7 +146,7 @@ def test_cover_upgrade_installs_only_manifest_wheels(tmp_path, monkeypatch):
     monkeypatch.setattr(
         manage_kit, "verify", lambda _: {"files": {"wheels/client-new.whl": "digest"}}
     )
-    monkeypatch.setattr(manage_kit.shutil, "which", lambda _: "git")
+    monkeypatch.setenv("PATH", "")
     calls = []
     monkeypatch.setattr(
         manage_kit.subprocess, "run", lambda command, **kw: calls.append(command)
@@ -153,3 +154,21 @@ def test_cover_upgrade_installs_only_manifest_wheels(tmp_path, monkeypatch):
     manage_kit.install(tmp_path)
     assert str(tmp_path / "wheels/client-new.whl") in calls[0]
     assert str(tmp_path / "wheels/client-old.whl") not in calls[0]
+
+
+def test_pathless_offline_image_tamper_cannot_trigger_network(tmp_path):
+    from packages.sync.images import Images
+    from packages.sync.common import SyncError
+
+    source, target, pack = (tmp_path / n for n in ("source", "target", "pack"))
+    digest, _ = seed(source)
+    export_pack(source, pack)
+    install_pack(pack, target)
+    (target / "images" / digest).write_bytes(b"tampered")
+    def offline(*args):
+        raise AssertionError("Pathless imports cannot download")
+    images = Images(target, SimpleNamespace(), resolver=offline)
+    assert images.available("a" * 40, "123") is False
+    with pytest.raises(SyncError) as error:
+        images.get("a" * 40, "123")
+    assert error.value.code == "IMAGE_MISSING"

@@ -1,6 +1,6 @@
 # 第三方来源与版权
 
-核对日期：2026-10-09。PTCG Lab 为非官方开源工具与 AI 对战实验平台，与 Pokémon 官方无隶属或背书关系。
+核对日期：2026-10-09。PTCG Lab 为非官方开源卡牌工具与人机/网络对战产品，与 Pokémon 官方无隶属或背书关系。
 
 ## 自有代码
 
@@ -8,7 +8,7 @@
 
 ## 规则引擎
 
-来源：[gemelom/ptcg-engine](https://github.com/gemelom/ptcg-engine)，固定基础提交 `92c3cc4fe85a26f102d7bb6b3e8be7678512d2e5`。本地 vendor 源码该版本声明 MIT，完整原文保存在 `licenses/ptcg-engine-MIT.txt`。生成引擎由 `scripts/engine/build_engine.py` 应用本项目修复，改动在脚本及 `packages/rules` 中可查。分发含上游代码的衍生版本时保留其版权与许可；不要把衍生部分全部声明为本项目原创。`runtime/engine/UPSTREAM-LICENSE` 是生成副本的原声明。
+来源：[gemelom/ptcg-engine](https://github.com/gemelom/ptcg-engine)，固定基础提交 `92c3cc4fe85a26f102d7bb6b3e8be7678512d2e5`。本地 vendor 源码该版本声明 MIT，完整原文保存在 `licenses/ptcg-engine-MIT.txt`。生成引擎由 `scripts/engine/build_engine.py` 应用本项目修复，改动在构建脚本及 `packages/battle-core` 等当前规则实现中可查。分发含上游代码的衍生版本时保留其版权与许可；不要把衍生部分全部声明为本项目原创。`runtime/engine/UPSTREAM-LICENSE` 是生成副本的原声明。
 
 ## 简中卡牌资料和图片
 
@@ -40,3 +40,5 @@ Python 依赖固定在 `apps/api/requirements.lock`，JavaScript 依赖固定在
 PTCG Lab 是项目名称，不代表官方背书，也不表示已完成商标、域名或软件商店名称核验。本说明记录技术核查与授权边界，不构成完整法律审查。
 
 P6-A API 运行依赖新增 `psycopg-pool==3.2.8`，安装 wheel 元数据声明 `LGPL-3.0-only`。该包与现有 Psycopg 分开固定版本，未复制或改写其源码；独立 API 镜像保留安装包内的版权/许可证。源码与镜像依赖清单见 `apps/online-server/requirements.lock`，正式发行仍需汇总实际构建依赖声明。
+
+当前 App 图标为用户选定的生成大师球三卡图稿，原创桌垫以 SVG 随源码提供；生成图稿或源码 MIT 不改变 Pokémon 相关元素/商标的权利归属。轻量图片索引记录来源身份，实际卡图、离线 ZIP 和个人缓存仍按各自来源条件处理。

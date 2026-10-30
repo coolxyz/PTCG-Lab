@@ -16,6 +16,15 @@ from .common import SyncError
 from .releases import RULE_POLICY
 
 
+def native_writer_options():
+    """Keep the native owner's POSIX lock alive for profile-writing children."""
+    if os.name == "posix" and (value := os.environ.get("PTCG_NATIVE_LOCK_FD")):
+        fd = int(value)
+        os.fstat(fd)  # An invalid inherited lock must fail, never silently detach.
+        return {"pass_fds": (fd,)}
+    return {}
+
+
 class Worker:
     def __init__(self, releases, release_id, user_db):
         manifest = releases.verify(release_id)
@@ -26,7 +35,7 @@ class Worker:
         log = releases.home / "logs" / (release_id + ".log")
         log.parent.mkdir(parents=True, exist_ok=True)
         self.log = log.open("ab")
-        self.process = subprocess.Popen([sys.executable, "-X", "utf8", str(Path(__file__).with_name("worker.py")), str(releases.path(release_id).resolve()), str(Path(user_db).resolve()), release_id, str((releases.home / "identity-archive.json").resolve())], stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=self.log, text=True, encoding="utf-8", creationflags=subprocess.CREATE_NO_WINDOW if os.name == "nt" else 0)
+        self.process = subprocess.Popen([sys.executable, "-I", "-B", "-X", "utf8", str(Path(__file__).with_name("worker.py")), str(releases.path(release_id).resolve()), str(Path(user_db).resolve()), release_id, str((releases.home / "identity-archive.json").resolve())], stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=self.log, text=True, encoding="utf-8", creationflags=subprocess.CREATE_NO_WINDOW if os.name == "nt" else 0, **native_writer_options())
 
     def request(self, method, path, headers=None, body=b"", timeout=90):
         with self.lock:

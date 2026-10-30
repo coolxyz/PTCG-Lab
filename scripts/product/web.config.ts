@@ -1,18 +1,18 @@
 import { defineConfig } from "vite";
 import react from "@vitejs/plugin-react";
-import { createRequire } from "node:module";
 import { fileURLToPath } from "node:url";
-const require = createRequire(import.meta.url);
+import { workspaceAliases, workspaceEntries, workspaceSourceCheck } from "./workspace-source";
 const root = fileURLToPath(new URL("../../apps/web/", import.meta.url));
 export default defineConfig({
   root,
-  plugins: [react()],
+  plugins: [react(), workspaceSourceCheck()],
   resolve: {
     alias: [
       {
         find: "./Practice",
-        replacement: require.resolve("@ptcg/desktop-web/practice"),
+        replacement: workspaceEntries().get("@ptcg/desktop-web/practice")!,
       },
+      ...workspaceAliases(),
     ],
     dedupe: ["react", "react-dom"],
   },

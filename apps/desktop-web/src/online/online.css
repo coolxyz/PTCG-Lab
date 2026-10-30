@@ -26,7 +26,7 @@
 }
 .online-eyebrow,
 .lobby-step {
-  color: #5c7565;
+  color: var(--ptcg-muted);
   letter-spacing: 0.15em;
   font-size: 11px;
   font-weight: 700;
@@ -86,7 +86,7 @@
 }
 .lobby-sync {
   min-width: 6em;
-  color: #607366;
+  color: var(--ptcg-muted);
   font-size: 12px;
 }
 .online-lobby label {
@@ -108,8 +108,8 @@
   width: 100%;
   min-width: 0;
   background: #fff;
-  color: #23342b;
-  border: 1px solid #c6d3c9;
+  color: var(--ptcg-ink);
+  border: 1px solid var(--ptcg-line);
   border-radius: 9px;
   padding: 11px 12px;
   margin-top: 7px;
@@ -121,9 +121,9 @@
 .online-lobby button,
 .online-controls button {
   padding: 10px 16px;
-  border: 1px solid #244f3a;
+  border: 1px solid var(--ptcg-line-strong);
   border-radius: 9px;
-  background: #244f3a;
+  background: var(--ptcg-accent);
   color: #fff;
   font: inherit;
   font-weight: 600;
@@ -133,38 +133,38 @@
   min-height: 42px;
 }
 .online-lobby button:hover:not(:disabled) {
-  background: #193c2b;
+  background: var(--ptcg-accent);
 }
 .online-lobby button:disabled {
   cursor: not-allowed;
   opacity: 0.48;
 }
 .online-lobby :is(button, input, select, textarea, a, summary):focus-visible {
-  outline: 3px solid #669a77;
+  outline: 3px solid var(--ptcg-line-strong);
   outline-offset: 3px;
 }
 .online-lobby a {
-  color: #245d42;
+  color: var(--ptcg-ink);
   text-underline-offset: 3px;
 }
 .online-lobby .lobby-secondary,
 .online-lobby .lobby-link-button {
   background: #fff;
-  color: #244f3a;
-  border: 1px solid #c6d3c9;
+  color: var(--ptcg-ink);
+  border: 1px solid var(--ptcg-line);
 }
 .online-lobby .lobby-secondary:hover:not(:disabled),
 .online-lobby .lobby-link-button:hover {
-  background: #edf4ee;
+  background: var(--ptcg-tint);
 }
 .online-lobby .lobby-text-button {
-  color: #426b58;
+  color: var(--ptcg-accent-ink);
   background: transparent;
   border-color: transparent;
   font-size: 13px;
 }
 .online-lobby .lobby-text-button:hover:not(:disabled) {
-  background: #edf4ee;
+  background: var(--ptcg-tint);
 }
 .lobby-link-button {
   padding: 10px 16px;
@@ -192,7 +192,7 @@
 .online-muted,
 .online-lobby aside {
   font-size: 13px;
-  color: #617267;
+  color: var(--ptcg-muted);
   line-height: 1.7;
 }
 .online-lobby [role="alert"] {
@@ -210,7 +210,7 @@
   font-size: 11px;
   font-weight: 600;
   background: #f0f2ef;
-  color: #637066;
+  color: var(--ptcg-muted);
   white-space: nowrap;
 }
 .lobby-badge.is-ready {
@@ -223,9 +223,9 @@
   gap: 18px;
   padding: 18px;
   margin-top: 18px;
-  border: 1px solid #dce6dc;
+  border: 1px solid var(--ptcg-line);
   border-radius: 12px;
-  background: linear-gradient(120deg, #eef4eb, #f8faf6);
+  background: linear-gradient(120deg, var(--ptcg-tint), var(--ptcg-background));
 }
 .lobby-deck-preview > div:last-child {
   min-width: 0;
@@ -235,7 +235,7 @@
   overflow-wrap: anywhere;
 }
 .lobby-deck-preview p {
-  color: #617267;
+  color: var(--ptcg-muted);
   font-size: 12px;
 }
 .lobby-deck-mark {
@@ -243,18 +243,18 @@
   height: 70px;
   display: grid;
   place-items: center;
-  border: 3px double #8aab91;
+  border: 3px double var(--ptcg-line-strong);
   border-radius: 7px;
-  color: #456c4d;
+  color: var(--ptcg-accent-ink);
   font-size: 24px;
-  background: #e1eddd;
-  box-shadow: 4px 4px 0 #cfddc9;
+  background: var(--ptcg-soft);
+  box-shadow: 4px 4px 0 #7854b218;
   transform: rotate(-7deg);
 }
 .lobby-deck-check {
   padding: 12px 0;
   font-size: 12px;
-  color: #627569;
+  color: var(--ptcg-muted);
   min-height: 45px;
 }
 .lobby-deck-check ul {
@@ -265,8 +265,8 @@
 .lobby-notice {
   padding: 12px 14px;
   border-radius: 9px;
-  background: #eef4ec;
-  color: #47634e;
+  background: var(--ptcg-tint);
+  color: var(--ptcg-accent-ink);
   font-size: 12px;
 }
 .online-lobby .lobby-notice {
@@ -288,21 +288,21 @@
 .lobby-room-art span {
   width: 52px;
   height: 74px;
-  border: 4px double #a9bba3;
+  border: 4px double var(--ptcg-line-strong);
   border-radius: 8px;
-  background: #eaf0e4;
+  background: var(--ptcg-tint);
   transform: rotate(-12deg);
-  box-shadow: 5px 5px 0 #f4f5ef;
+  box-shadow: 5px 5px 0 #7854b218;
 }
 .lobby-room-art span:last-child {
   transform: rotate(12deg);
   background: #f3e8cf;
-  border-color: #c5b689;
+  border-color: var(--ptcg-line-strong);
 }
 .lobby-room-art b {
   font-size: 18px;
   font-style: italic;
-  color: #8b9a86;
+  color: var(--ptcg-muted);
 }
 .lobby-create .lobby-wide {
   margin-top: 24px;
@@ -342,7 +342,7 @@
 .online-lobby .lobby-copy-status {
   font-size: 12px;
   min-height: 20px;
-  color: #617267;
+  color: var(--ptcg-muted);
 }
 .lobby-seats {
   display: grid;
@@ -355,11 +355,11 @@
   flex-direction: column;
   align-items: center;
   gap: 8px;
-  border: 1px dashed #c6d3c9;
+  border: 1px dashed var(--ptcg-line);
   border-radius: 12px;
   padding: 18px 8px;
   font-size: 12px;
-  color: #64776a;
+  color: var(--ptcg-muted);
 }
 .lobby-seat.is-ready {
   background: #eef6ed;
@@ -367,8 +367,8 @@
 }
 .lobby-avatar {
   border-radius: 50%;
-  background: #e8eee6;
-  color: #526f58;
+  background: var(--ptcg-tint);
+  color: var(--ptcg-muted);
   width: 38px;
   height: 38px;
   display: grid;
@@ -393,18 +393,18 @@
   font-size: 14px;
   vertical-align: middle;
   margin-left: 5px;
-  color: #64776a;
+  color: var(--ptcg-muted);
 }
 .lobby-filters {
   display: flex;
   gap: 4px;
   padding: 4px;
-  background: #f1f4ef;
+  background: var(--ptcg-tint);
   border-radius: 10px;
 }
 .online-lobby .lobby-filters button {
   font-size: 13px;
-  color: #66756b;
+  color: var(--ptcg-muted);
   background: transparent;
   border-color: transparent;
   min-height: 34px;
@@ -412,8 +412,8 @@
 }
 .online-lobby .lobby-filters button[aria-pressed="true"] {
   background: #fff;
-  color: #244f3a;
-  box-shadow: 0 1px 4px #1c392012;
+  color: var(--ptcg-ink);
+  box-shadow: 0 1px 4px #7854b212;
 }
 .lobby-filters span {
   margin-left: 4px;
@@ -429,21 +429,21 @@
   align-items: center;
   gap: 18px;
   padding: 20px 0;
-  border-top: 1px solid #e6ebe6;
+  border-top: 1px solid var(--ptcg-line);
 }
 .lobby-match-symbol {
   display: grid;
   place-items: center;
   flex: 0 0 44px;
   height: 44px;
-  background: #f0f2ed;
-  color: #687968;
+  background: var(--ptcg-tint);
+  color: var(--ptcg-muted);
   border-radius: 12px;
   font-size: 24px;
 }
 .lobby-match-symbol.is-active {
-  background: #e7f0e5;
-  color: #426c49;
+  background: var(--ptcg-tint);
+  color: var(--ptcg-accent-ink);
 }
 .lobby-match-info {
   flex: 1;
@@ -458,14 +458,14 @@
 .online-lobby .lobby-match-info p {
   margin: 5px 0 2px;
   font-size: 12px;
-  color: #6b7b6e;
+  color: var(--ptcg-muted);
 }
 .lobby-match-info p span {
   padding: 0 7px;
 }
 .lobby-match-info details {
   font-size: 12px;
-  color: #6b7b6e;
+  color: var(--ptcg-muted);
 }
 .lobby-match-info code {
   display: block;
@@ -473,7 +473,7 @@
 }
 .online-lobby summary {
   cursor: pointer;
-  color: #55705d;
+  color: var(--ptcg-muted);
   font-size: 12px;
 }
 .lobby-match > button {
@@ -508,13 +508,13 @@
   border-top: 1px solid var(--lobby-line);
 }
 .lobby-empty > span {
-  color: #7d9d7b;
+  color: var(--ptcg-muted);
   font-size: 36px;
 }
 .lobby-footer {
   padding-top: 30px;
   text-align: center;
-  color: #7c8a7e;
+  color: var(--ptcg-muted);
   font-size: 12px;
 }
 .online-controls {
@@ -563,3 +563,6 @@
   font-size: 12px;
   border-radius: 6px;
 }
+
+.lobby-badge { background: var(--ptcg-tint); }
+.lobby-room-art span:last-child { background: var(--ptcg-pink-soft); border-color: #e2b2d0; }

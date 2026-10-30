@@ -8,7 +8,7 @@ $ErrorActionPreference = 'Stop'
 $env:PYTHONUTF8 = '1'
 $projectPython = Join-Path $PSScriptRoot '.venv/Scripts/python.exe'
 if ($Setup) {
-    & $Python -X utf8 (Join-Path $PSScriptRoot 'scripts/portable/setup.py')
+    & $Python -X utf8 (Join-Path $PSScriptRoot 'scripts/product/setup.py')
     if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
 }
 if (-not (Test-Path -LiteralPath $projectPython)) {

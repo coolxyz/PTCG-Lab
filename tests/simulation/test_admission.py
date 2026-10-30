@@ -75,6 +75,11 @@ def test_structured_animation_events_never_expose_hand_locations():
 
     dto = {
         "phase": "playing",
+        "observation": {
+            "self": {"active": [{"name": "Public target", "ref": "v7:self:active:0"}], "bench": [], "hand": []},
+            "opponent": {"active": [], "bench": [], "hand": None},
+            "stadium": [],
+        },
         "decision": {
             "kind": "options",
             "options": [

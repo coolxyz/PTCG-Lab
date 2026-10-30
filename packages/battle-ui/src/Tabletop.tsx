@@ -1,4 +1,5 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState, type PointerEvent } from "react";
+import { createPortal } from "react-dom";
 import type {
   BattleView,
   EngineCard,
@@ -7,7 +8,7 @@ import type {
   Side,
   PlayerSeat,
 } from "./battle/types";
-import { playerLabel, skillName } from "./battle/presentation";
+import { eventText, lookupCard, playerLabel, skillName } from "./battle/presentation";
 import "./tabletop.css";
 import "./arena.css";
 import { EventPlayback } from "./EventPlayback";
@@ -43,12 +44,18 @@ export function Tabletop({
   const [focus, setFocus] = useState<EngineCard | null>(null);
   const [choices, setChoices] = useState<Option[] | null>(null);
   const [drag, setDrag] = useState<string | null>(null);
+  const [pointer, setPointer] = useState({ x: 0, y: 0 });
+  const gesture = useRef<{
+    source: string; epoch: string; x: number; y: number;
+    active: boolean; pointerId: number; element: HTMLButtonElement;
+  } | null>(null);
+  const suppressClick = useRef(false);
   const [sort, setSort] = useState(false);
   const [motion, setMotion] = useState(true);
   const dialog = useRef<HTMLDialogElement>(null);
   const decision = view.decision;
   const options = decision?.kind === "options" ? decision.options : [];
-  const cardInfo = (c: EngineCard) => (c.id && cards[c.id]) || cards[c.name];
+  const cardInfo = (c: EngineCard) => lookupCard(c, cards);
   const name = (c: EngineCard) => cardInfo(c)?.cnName || c.name;
   useEffect(() => {
     setFocus(null);
@@ -64,19 +71,92 @@ export function Tabletop({
       (o) =>
         !!card.ref && [o.sourceRef, o.active_pokemonRef].includes(card.ref),
     );
-  const targets = (ref: string) =>
-    options.filter(
-      (o) =>
-        o.sourceRef === drag &&
-        (o.targetRef === ref ||
-          (ref === "bench" && o.actionType === "PlayPokemonAction")),
-    );
-  const drop = (ref: string) => {
-    if (locked) return;
-    const valid = targets(ref);
+  // Drop gestures select only options already supplied by the current decision.
+  // Pointer capture avoids WebView-specific HTML5/image dragging behavior.
+  const epoch = `${view.matchId}:${view.stateVersion}:${decision?.id}:${locked}`;
+  const currentEpoch = useRef(epoch);
+  currentEpoch.current = epoch;
+  const targets = (ref: string, source = drag) =>
+    source && !locked ? options.filter((o) =>
+      [o.sourceRef, o.active_pokemonRef].includes(source) &&
+      (o.targetRef === ref || (!o.targetRef && (
+        (ref === "bench" && o.actionType === "PlayPokemonAction") ||
+        (ref === "stadium" && o.actionType === "PutStadiumAction") ||
+        (ref === "play" && !["PlayPokemonAction", "PutStadiumAction"].includes(o.actionType))
+      )))
+    ) : [];
+  const selectionTarget = (ref: string, source = drag) =>
+    !locked && !!source && decision?.kind === "selection" &&
+    decision.candidates.some((c) => c.boardRef === source) &&
+    ((view.phase === "active" && ref === "active") ||
+      (["bench", "bonus_bench"].includes(view.phase) && ref === "bench"));
+  const ready = (ref: string) => targets(ref).length > 0 || selectionTarget(ref);
+  const cancelDrag = () => {
+    const g = gesture.current;
+    gesture.current = null;
+    if (g?.element.hasPointerCapture(g.pointerId)) g.element.releasePointerCapture(g.pointerId);
     setDrag(null);
+  };
+  useEffect(() => {
+    cancelDrag();
+  }, [epoch]);
+  useEffect(() => {
+    const cancel = () => cancelDrag();
+    const escape = (e: KeyboardEvent) => { if (e.key === "Escape") cancelDrag(); };
+    window.addEventListener("blur", cancel);
+    window.addEventListener("keydown", escape);
+    return () => {
+      window.removeEventListener("blur", cancel);
+      window.removeEventListener("keydown", escape);
+    };
+  }, []);
+  const drop = (ref: string, source: string) => {
+    if (locked) return;
+    if (selectionTarget(ref, source)) {
+      const c = decision?.candidates.find((c) => c.boardRef === source);
+      // Setup still uses the existing explicit confirmation and selection limit.
+      if (c && !selected.includes(c.ref)) toggle(c.ref);
+      return;
+    }
+    const valid = targets(ref, source);
     if (valid.length === 1) play(valid[0].id);
     else if (valid.length) setChoices(valid);
+  };
+  const beginDrag = (e: PointerEvent<HTMLButtonElement>, card: EngineCard) => {
+    suppressClick.current = false;
+    if (e.button !== 0 || !e.isPrimary || locked || !card.ref ||
+      (!actions(card).length && !candidate(card))) return;
+    gesture.current = { source: card.ref, epoch, x: e.clientX, y: e.clientY,
+      active: false, pointerId: e.pointerId, element: e.currentTarget };
+    e.currentTarget.setPointerCapture(e.pointerId);
+  };
+  const moveDrag = (e: PointerEvent<HTMLButtonElement>) => {
+    const g = gesture.current;
+    if (!g || g.pointerId !== e.pointerId) return;
+    if (g.epoch !== currentEpoch.current) { cancelDrag(); return; }
+    if (!g.active && Math.hypot(e.clientX - g.x, e.clientY - g.y) < 7) return;
+    g.active = true;
+    suppressClick.current = true;
+    e.preventDefault();
+    setDrag(g.source);
+    setPointer({ x: e.clientX, y: e.clientY });
+  };
+  const endDrag = (e: PointerEvent<HTMLButtonElement>) => {
+    const g = gesture.current;
+    if (!g || g.pointerId !== e.pointerId) return;
+    if (g.active && g.epoch === currentEpoch.current) {
+      e.preventDefault();
+      const hit = document.elementFromPoint(e.clientX, e.clientY);
+      // Walk outwards so a card nested inside a bench/stadium zone does not
+      // swallow a legal zone drop. Never infer an action from an invalid target.
+      for (let node = hit; node; node = node.parentElement) {
+        const ref = node.getAttribute("data-card-drop");
+        if (ref && (targets(ref, g.source).length || selectionTarget(ref, g.source))) {
+          drop(ref, g.source); break;
+        }
+      }
+    }
+    cancelDrag();
   };
   const candidate = (card: EngineCard) =>
     decision?.kind === "selection"
@@ -203,30 +283,28 @@ export function Tabletop({
       <div
         key={key}
         data-motion-card={location}
-        className={`tabletop-slot ${targets(card.ref || "").length ? "drop-ready" : ""}`}
-        onDragOver={(e) => {
-          if (targets(card.ref || "").length) e.preventDefault();
-        }}
-        onDrop={(e) => {
-          e.preventDefault();
-          drop(card.ref || "");
-        }}
+        className={`tabletop-slot ${ready(card.ref || "") ? "drop-ready" : ""}`}
+        data-card-drop={card.ref}
       >
         <button
           className={`tabletop-card ${canUse ? "usable" : ""} ${c && selected.includes(c.ref) ? "chosen" : ""}`}
           aria-label={`${name(card)}${card.hp !== undefined ? ` · HP ${Math.max(0, card.hp)}` : ""}`}
           aria-pressed={c ? selected.includes(c.ref) : undefined}
-          draggable={!locked && actions(card).length > 0}
-          onDragStart={(e) => {
-            setDrag(card.ref || null);
-            e.dataTransfer.setData("text/plain", card.ref || "");
+          draggable={false}
+          onPointerDown={(e) => beginDrag(e, card)}
+          onPointerMove={moveDrag}
+          onPointerUp={endDrag}
+          onPointerCancel={cancelDrag}
+          onLostPointerCapture={cancelDrag}
+          onClick={() => {
+            if (suppressClick.current) { suppressClick.current = false; return; }
+            open(card);
           }}
-          onDragEnd={() => setDrag(null)}
-          onClick={() => open(card)}
         >
           {info?.image.url && (
             <img
               src={info.image.url}
+              draggable={false}
               alt=""
               loading="lazy"
               onError={(e) => {
@@ -326,7 +404,8 @@ export function Tabletop({
           </div>
           <div className="tabletop-center">
             <div
-              className="tabletop-active"
+              className={`tabletop-active ${!enemy && ready("active") ? "drop-ready" : ""}`}
+              data-card-drop={enemy ? undefined : "active"}
               data-motion-zone={`${enemy ? "opponent" : "self"}:active`}
             >
               <small>战斗区</small>
@@ -339,15 +418,9 @@ export function Tabletop({
               </div>
             </div>
             <div
-              className={`tabletop-bench ${!enemy && targets("bench").length ? "drop-ready" : ""}`}
+              className={`tabletop-bench ${!enemy && ready("bench") ? "drop-ready" : ""}`}
+              data-card-drop={enemy ? undefined : "bench"}
               data-motion-zone={`${enemy ? "opponent" : "self"}:bench`}
-              onDragOver={(e) => {
-                if (!enemy && targets("bench").length) e.preventDefault();
-              }}
-              onDrop={(e) => {
-                e.preventDefault();
-                if (!enemy) drop("bench");
-              }}
             >
               <small>
                 备战区 · {side.bench.length}/{side.benchCapacity || 5}
@@ -432,7 +505,7 @@ export function Tabletop({
         enabled={motion && animateEvents}
         opponentLabel={opponentLabel}
       />
-      <div className="tabletop-stadium">
+      <div className={`tabletop-stadium ${ready("stadium") ? "drop-ready" : ""}`} data-card-drop="stadium">
         <span className="arena-stadium-label">竞技场</span>
         {view.observation.stadium.length ? (
           view.observation.stadium.map(picture)
@@ -454,7 +527,7 @@ export function Tabletop({
             <small>第 {lastAction.seq} 步</small>
           </span>
           <div>
-            <strong>{lastAction.text}</strong>
+            <strong>{eventText(lastAction.text, cards, lastAction.cardGroups?.flatMap((g) => g.cards))}</strong>
             <div className="arena-action-effects">
               {lastAction.effects
                 ?.filter(
@@ -518,6 +591,19 @@ export function Tabletop({
         </section>
       )}
       {side(view.observation.self, false)}
+      <div className={`tabletop-play-zone ${ready("play") ? "drop-ready" : ""}`} data-card-drop="play">
+        <strong>打出区</strong><span>物品、支援者或特性可拖到这里；有多个操作时再选择</span>
+      </div>
+      {drag && createPortal(
+        <div className="tabletop-drag-preview" style={{ left: pointer.x + 16, top: pointer.y + 16 }} aria-hidden="true">
+          {(() => {
+            const card = [...(view.observation.self.hand || []), ...view.observation.self.active,
+              ...view.observation.self.bench, ...view.observation.stadium].find((c) => c.ref === drag);
+            const image = card && cardInfo(card)?.image.url;
+            return <>{image && <img src={image} alt="" draggable={false} />}<span>{card ? name(card) : "卡牌"}</span></>;
+          })()}
+        </div>, document.body
+      )}
       <CoinResults
         key={`coins:${view.matchId}:${lastAction?.seq}`}
         coins={lastAction?.coins || []}
@@ -574,7 +660,7 @@ export function Tabletop({
             <div>
               {cardInfo(focus)?.image.url ? (
                 <img
-                  src={cardInfo(focus).image.url!}
+                  src={cardInfo(focus)?.image.url || undefined}
                   alt={name(focus)}
                   onError={(e) => {
                     e.currentTarget.style.display = "none";
@@ -594,7 +680,7 @@ export function Tabletop({
               <p>{cardInfo(focus)?.reviewNote}</p>
               {!!cardInfo(focus)?.chineseDetails?.sections?.length && (
                 <CardDescription
-                  details={cardInfo(focus).chineseDetails}
+                  details={cardInfo(focus)?.chineseDetails}
                   types={{
                     GRASS: "草",
                     FIRE: "火",

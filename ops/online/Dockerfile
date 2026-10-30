@@ -1,4 +1,4 @@
-# P4-D API and isolated rule worker image. Rule assets are supplied separately as read-only inputs.
+# API and isolated current-rule worker image. Rule assets are supplied separately as read-only inputs.
 ARG PYTHON_IMAGE=python:3.14-slim@sha256:35caba83af2fe6da9a5d922f9b0156f21d1246a48278c58a08bd253303ba42e8
 FROM ${PYTHON_IMAGE} AS wheels
 WORKDIR /source

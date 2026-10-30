@@ -1,10 +1,12 @@
+@import "@ptcg/battle-ui/theme.css";
+
 /* Shared page geometry for the product shell and standalone battle clients. */
 .workspace-page {
-  --workspace-green: var(--green, #244f3a);
-  --workspace-muted: var(--muted, #7a857b);
-  --workspace-line: var(--line, #e1e6dd);
+  --workspace-green: var(--green, var(--ptcg-accent));
+  --workspace-muted: var(--muted, var(--ptcg-accent));
+  --workspace-line: var(--line, var(--ptcg-line));
   color-scheme: light;
-  color: #23342b;
+  color: var(--ptcg-ink);
   font-family: inherit;
   box-sizing: border-box;
   width: 100%;
@@ -41,7 +43,7 @@
 }
 .workspace-page > .page-heading .eyebrow {
   margin: 0 0 11px;
-  color: #84917f;
+  color: var(--ptcg-muted);
   font-size: 9px;
   font-weight: 700;
   letter-spacing: 2px;
@@ -76,7 +78,7 @@
   filter: brightness(0.96);
 }
 .workspace-page :is(button, select, input, summary, a):focus-visible {
-  outline: 3px solid #669a77;
+  outline: 3px solid var(--ptcg-line-strong);
   outline-offset: 3px;
 }
 .workspace-page button:disabled {

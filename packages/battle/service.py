@@ -34,6 +34,7 @@ from packages.collection.store import now
 from packages.battle import agent, h2
 from packages.battle.presets import PRESETS
 from packages.battle.decision import decide
+from packages.battle.presentation import TOOL_SOURCE_LABEL, tool_attack_event
 from packages.simulation.a2 import VERSION as A2_VERSION
 
 COOKIE = "ptcg_practice_session"
@@ -423,9 +424,11 @@ class MatchService:
         ).fetchone()
         view = json.loads(f[0])
         view["events"] = [
-            json.loads(r[0])
+            tool_attack_event(json.loads(r["event"]), json.loads(r["previous_body"])["observation"] if r["previous_body"] else None)
             for r in db.execute(
-                "SELECT event FROM match_frames WHERE match_id=? ORDER BY seq DESC LIMIT 60",
+                "SELECT f.event,p.body AS previous_body FROM match_frames f "
+                "LEFT JOIN match_frames p ON p.match_id=f.match_id AND p.seq=f.seq-1 "
+                "WHERE f.match_id=? ORDER BY f.seq DESC LIMIT 60",
                 (row["id"],),
             )
         ][::-1]
@@ -498,6 +501,10 @@ class MatchService:
                         shown_cards.append({k: card[k] for k in ("id", "name", "attacks", "abilities") if k in card})
                 if shown_cards:
                     structured["cardGroups"] = [{"label": "使用 / 涉及的卡牌", "cards": shown_cards}]
+                if chosen.get("actionType") == "AttackAction" and chosen.get("effectSource"):
+                    structured.setdefault("cardGroups", []).append({
+                        "label": TOOL_SOURCE_LABEL, "cards": [chosen["effectSource"]],
+                    })
                 if (chosen.get("attack") or {}).get("name"):
                     text += " · " + chosen["attack"]["name"]
                 if chosen.get("ability"):
@@ -511,7 +518,13 @@ class MatchService:
                     # Hand positions are private and unnecessary for public animation.
                     if "hand" not in location:
                         structured[role + "Location"] = ":".join(location)
-        return {"actor": "ai" if ai else "you", "text": text, **structured}
+        event = {"actor": "ai" if ai else "you", "text": text, **structured}
+        # Newly generated declarations and saved visible frames use the same
+        # presentation fallback. The persisted command and engine are untouched.
+        before = view["observation"]
+        if ai:
+            before = {**before, "self": before["opponent"], "opponent": before["self"]}
+        return tool_attack_event(event, before)
 
     def _save(self, db, row, game, event):
         status = (
@@ -799,10 +812,12 @@ class MatchService:
                 {
                     "seq": r["seq"],
                     "view": decorate(json.loads(r["body"])),
-                    "event": json.loads(r["event"]),
+                    "event": tool_attack_event(json.loads(r["event"]), json.loads(r["previous_body"])["observation"] if r["previous_body"] else None),
                 }
                 for r in db.execute(
-                    "SELECT * FROM match_frames WHERE match_id=? AND seq>? ORDER BY seq LIMIT ?",
+                    "SELECT f.*,p.body AS previous_body FROM match_frames f "
+                    "LEFT JOIN match_frames p ON p.match_id=f.match_id AND p.seq=f.seq-1 "
+                    "WHERE f.match_id=? AND f.seq>? ORDER BY f.seq LIMIT ?",
                     (id, after, limit),
                 )
             ]

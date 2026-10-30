@@ -6,14 +6,31 @@ from ptcg.utils.utils import current_player, opponent_player, move_cards, shuffl
 from packages.rules.entry_effects import choice, transfer, reveal
 from packages.rules.protection import blocked
 
-OPERATIONS = {"transfer_counters", "transfer_energy", "strip_attached", "search_top", "window_bench", "opponent_hand_bench", "optional_push"}
+OPERATIONS = {"transfer_counters", "transfer_energy", "strip_attached", "search_top", "window_bench", "opponent_hand_bench", "optional_push", "search_bench_transfer"}
 
 
 def resolve(r, action, state):
     p, o = current_player(state), opponent_player(state)
     source, target = action.source, action.target
     op = r["operation"]
-    if op == "transfer_counters":
+    if op == "search_bench_transfer":
+        # The attachment goes only to the Pokémon actually put onto the Bench
+        # by this attack, never to a pre-existing Bench Pokémon.
+        pool = [c for c in p.left if isinstance(c, PokemonCard) and c.stage == Stage.BASIC]
+        selected = []
+        if len(p.bench) < p.benchSize:
+            selected = yield from choice(source, pool, state, 0, 1)
+        if selected:
+            reveal(selected, state, p)
+            move_cards(selected, (p.id, CardPosition.LEFT), (p.id, CardPosition.BENCH), state)
+            selected[0].firstTurnPlayed = True
+        shuffle_cards(p.left, state)
+        if selected:
+            from packages.rules.energy_selection import choose_units
+            cards = yield from choose_units(source, 1, action, state)
+            if cards:
+                transfer(source, selected[0], cards)
+    elif op == "transfer_counters":
         from packages.rules.attack_math import counters
         owner = o if r.get("opponent") else p
         donors = list(owner.active + owner.bench if r.get("anywhere") else owner.bench)

@@ -69,6 +69,7 @@ export const errorText = (error: unknown) => {
     REPLAY_EMPTY: "这场对局暂时没有可读回放帧，请刷新后重试。",
     REPLAY_PAGE_LIMIT: "已达到本地回放加载上限。",
     REPLAY_CURSOR_STALLED: "回放分页未推进，请重新打开回放。",
+    CAPACITY_EXCEEDED: "服务器请求较多，请稍后重试；已保存的对局和操作记录不会丢失。",
     RULE_RELEASE_UNAVAILABLE: "服务器没有所选规则版本。",
     STREAM_UNAVAILABLE: "推送已断开，请重新连接。",
   };
@@ -94,6 +95,7 @@ export type State = {
   replay: ReplayPage | null;
   frame: number;
   nextCursor: string | null;
+  replayNotice: string;
   playing: boolean;
   speed: number;
   connected: boolean;
@@ -119,6 +121,7 @@ export class OnlineController {
     replay: null,
     frame: 0,
     nextCursor: null,
+    replayNotice: "",
     playing: false,
     speed: 1,
     connected: false,
@@ -132,6 +135,7 @@ export class OnlineController {
   private logCursor?: string;
   private logThrough = -1;
   private initializingTries = 0;
+  private nextReplayPageAt = 0;
   constructor(
     private api: OnlineAPI,
     private storage: OnlineStorage,
@@ -225,7 +229,9 @@ export class OnlineController {
     )
       this.timer = setTimeout(
         () => this.background(),
-        s.replay ? 100 : s.showing ? 600 : 1500,
+        s.replay
+          ? Math.max(1500, this.nextReplayPageAt - Date.now())
+          : s.showing ? 600 : 1500,
       );
   }
   private background() {
@@ -384,7 +390,7 @@ export class OnlineController {
   }
   private cardIndex(cards: CardInfo[]) {
     const result: Record<string, CardInfo> = Object.fromEntries(
-      cards.map((c) => [c.engineId, c]),
+      cards.filter((c) => !!c.engineId?.trim()).map((c) => [c.engineId, c]),
     );
     for (const c of [...cards].sort(
       (a, b) =>
@@ -392,7 +398,7 @@ export class OnlineController {
         Number(b.engineId.startsWith("unverified:")),
     ))
       for (const alias of [c.englishName, ...(c.aliases || [])])
-        if (alias && !result[alias]) result[alias] = c;
+        if (alias?.trim() && !Object.hasOwn(result, alias)) result[alias] = c;
     return result;
   }
   private async status() {
@@ -747,8 +753,10 @@ export class OnlineController {
         matchId: this.state.view!.matchId,
       });
       if (!page.frames.length) throw new OnlineError("REPLAY_EMPTY");
+      this.nextReplayPageAt = Date.now() + 1500;
       this.patch({
         replay: page,
+        replayNotice: "",
         frame: 0,
         nextCursor: page.nextCursor,
         playing: false,
@@ -758,12 +766,27 @@ export class OnlineController {
   private async fetchMore() {
     const s = this.state;
     if (!s.nextCursor || !s.replay) return;
+    if (Date.now() < this.nextReplayPageAt) return;
     if (s.replay.frames.length >= 5000)
       throw new OnlineError("REPLAY_PAGE_LIMIT");
-    const page = await this.call<ReplayPage>("replay", {
-      matchId: s.view!.matchId,
-      cursor: s.nextCursor,
-    });
+    this.nextReplayPageAt = Date.now() + 1500;
+    let page: ReplayPage;
+    try {
+      page = await this.call<ReplayPage>("replay", {
+        matchId: s.view!.matchId,
+        cursor: s.nextCursor,
+      });
+    } catch (error) {
+      if (this.disposed || this.state.replay !== s.replay) return;
+      if (error instanceof OnlineError && error.status === 429 && error.retryable) {
+        // Read-only pagination can retry the exact cursor after the server's
+        // fixed minute budget resets. Never retry writes or discard frames.
+        this.nextReplayPageAt = Date.now() + 65000;
+        this.patch({ replayNotice: "服务器暂时限流，已保留回放进度，将在约一分钟后自动继续加载。" });
+        return;
+      }
+      throw error;
+    }
     if (this.disposed || this.state.replay !== s.replay) return;
     if (
       page.viewerSeat !== s.replay.viewerSeat ||
@@ -781,6 +804,7 @@ export class OnlineController {
         frames: [...frames.values()].sort((a, b) => a.matchSeq - b.matchSeq),
       },
       nextCursor: page.nextCursor,
+      replayNotice: "",
     });
   }
   openReplay = (matchId: string) =>
@@ -788,8 +812,10 @@ export class OnlineController {
       await this.openInner(matchId);
       const page = await this.call<ReplayPage>("replay", { matchId });
       if (!page.frames.length) throw new OnlineError("REPLAY_EMPTY");
+      this.nextReplayPageAt = Date.now() + 1500;
       this.patch({
         replay: page,
+        replayNotice: "",
         frame: 0,
         nextCursor: page.nextCursor,
         playing: false,
@@ -809,7 +835,8 @@ export class OnlineController {
     this.schedule();
   };
   closeReplay = () => {
-    this.patch({ replay: null, playing: false });
+    this.nextReplayPageAt = 0;
+    this.patch({ replay: null, playing: false, replayNotice: "" });
     this.schedule();
   };
   dispose() {

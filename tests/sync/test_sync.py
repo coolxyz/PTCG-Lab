@@ -99,6 +99,70 @@ def test_revision_updates_source_owned_facts_and_revokes_old_effect(raw):
     assert card["effectStatus"] == "unverified" and not card["sourceVerified"]
 
 
+def test_first_profile_sync_preserves_bundled_split_identity_and_revokes_changes(raw):
+    first = build_catalog(normalize(raw), {"cards": [], "products": [], "templates": []}, {"cards": {}}, "a" * 40)
+    original = first['catalog']['cards'][0]
+    original.update(effectStatus='verified', sourceVerified=True)
+    other = copy.deepcopy(original)
+    other['printingId'] = 'local-other-printing'
+    other['upstreamFaces'] = {'2': {**original['upstreamFaces']['1']}}
+    first['catalog']['cards'].append(other)
+    same = build_catalog(normalize(raw), first['catalog'], first['details'], 'b' * 40)
+    assert not same['conflicts']
+    assert same['mappings']['1']['printingId'] == original['printingId']
+    raw['collections'][0]['cards'][0]['details']['hp'] = 120
+    changed = build_catalog(normalize(raw), first['catalog'], first['details'], 'c' * 40)
+    card = next(c for c in changed['catalog']['cards'] if c['printingId'] == original['printingId'])
+    assert card['hp'] == 120 and card['effectStatus'] == 'unverified'
+    assert not card['sourceVerified']
+
+
+def test_ambiguous_bundled_upstream_anchor_is_not_silently_selected(raw):
+    first = build_catalog(normalize(raw), {"cards": [], "products": [], "templates": []}, {"cards": {}}, "a" * 40)
+    duplicate = copy.deepcopy(first['catalog']['cards'][0])
+    duplicate['printingId'] = 'ambiguous-other'
+    first['catalog']['cards'].append(duplicate)
+    result = build_catalog(normalize(raw), first['catalog'], first['details'], 'b' * 40)
+    assert any(c['code'] == 'IDENTITY_REVIEW' for c in result['conflicts'])
+
+
+@pytest.mark.parametrize('changed', [False, True])
+def test_snapshot_review_requires_complete_face_and_does_not_activate(raw, tmp_path, changed):
+    from scripts.sync.review_snapshot import prepare
+    face = normalize(raw)['cards']['1']['face']
+    catalog = {'cards': [], 'products': [], 'templates': []}
+    files = {
+        'data/catalog/catalog.json': catalog,
+        'data/cardpool/plain-pokemon.json': {'cards': [], 'trainers': [], 'specialEnergies': []},
+        'data/simulation/effects.json': {'effects': [{'effectKey': 'TEST-001', 'name': 'Reviewed'}]},
+        'data/sync/implementations.json': {'cards': {}},
+        'data/sync/reviewed-equivalence.json': {'proofs': {'old': {
+            'face': face, 'effectKey': 'TEST-001', 'method': 'complete-face-comparison',
+        }}},
+        'data/sync/source-corrections.json': {'cards': {}},
+        'data/sync/reviewed-clauses.json': {'clauses': []},
+        'data/cardpool/species-names.json': {'species': []},
+        'data/sync/evolution-evidence.json': {'cards': []},
+        'rulesets/cn-standard-2026-09-16.json': {'id': 'test', 'allowedMarks': ['J']},
+        'data/cardpool/battle-scope.json': {'allowedMarks': ['J'], 'basicEnergyTypes': []},
+    }
+    for name, value in files.items():
+        write(tmp_path / name, value)
+    if changed:
+        raw['collections'][0]['cards'][0]['details']['abilityItemList'][0]['abilityText'] = '未知效果。'
+    snapshot = tmp_path / 'snapshot'
+    write(snapshot / 'source.json', {'commit': 'a' * 40, 'tree': {}, 'repository': 'https://github.com/example/cards'})
+    write(snapshot / 'upstream.json', raw)
+    report, candidates = prepare(tmp_path, snapshot, '2026-10-30')
+    assert not report['activated']
+    assert report['preparedVariants'] == (0 if changed else 1)
+    assert bool(report['gaps']) == changed
+    assert not (tmp_path / 'current.json').exists()
+    assert json.loads((tmp_path / 'data/sync/implementations.json').read_text()) == {'cards': {}}
+    if not changed:
+        assert candidates['data/sync/implementations.json']['cards']['1']['effectKey'] == 'TEST-001'
+
+
 @pytest.mark.parametrize("path", ["../secret", "/tmp/x", "img/../../x", "C:/x", "img\\x"])
 def test_paths_cannot_escape(path):
     with pytest.raises(SyncError):

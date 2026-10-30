@@ -1,6 +1,6 @@
 import { useLayoutEffect, useRef, useState } from "react";
 import { CardDescription } from "../CardDescription";
-import { eventText, playerLabel } from "./presentation";
+import { eventText, lookupCard, playerLabel } from "./presentation";
 import type { BattleView, CardInfo, EngineCard, PlayerSeat } from "./types";
 import "./log.css";
 
@@ -15,7 +15,7 @@ function PublicCard({
   cards: Record<string, CardInfo>;
   onOpen: (card: EngineCard) => void;
 }) {
-  const info = cards[card.id || ""] || cards[card.name],
+  const info = lookupCard(card, cards),
     name = info?.cnName || card.name;
   return (
     <button
@@ -299,7 +299,7 @@ export function BattleLog({
       {focus && (
         <RecordCardDialog
           card={focus}
-          info={cards[focus.id || ""] || cards[focus.name]}
+          info={lookupCard(focus, cards)}
           onClose={() => setFocus(null)}
         />
       )}

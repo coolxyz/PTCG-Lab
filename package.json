@@ -1,6 +1,6 @@
 {
-  "name": "ptcg-lab-foundation",
-  "version": "0.0.0-p1",
+  "name": "ptcg-lab",
+  "version": "1.1.0-preview.1",
   "private": true,
   "type": "module",
   "workspaces": [
@@ -8,7 +8,8 @@
     "packages/platform-services",
     "apps/desktop-web",
     "packages/battle-ui",
-    "packages/battle-protocol/ts"
+    "packages/battle-protocol/ts",
+    "apps/web"
   ],
   "devDependencies": {
     "@playwright/test": "1.55.1",
@@ -22,12 +23,9 @@
   },
   "scripts": {
     "protocol:generate": "node scripts/protocol/generate-ts.mjs",
-    "p3:dev": "npm run dev --workspace @ptcg/desktop-web",
-    "p3:build": "npm run build --workspace @ptcg/desktop-web",
-    "p3:test": "npm test --workspace @ptcg/desktop-web",
-    "p3:product:build": "tsc --noEmit -p apps/web && tsc --noEmit -p apps/desktop-web && vite build --config scripts/migration/p3c_product.config.ts",
-    "p3:product:test": "playwright test --config scripts/migration/p3c_playwright.config.ts",
-    "p5:build": "tsc --noEmit -p apps/desktop-web && vite build --config scripts/migration/p5c_web.config.ts",
-    "product:build": "tsc --noEmit -p apps/web && tsc --noEmit -p apps/desktop-web && vite build --config scripts/product/web.config.ts && vite build --config scripts/migration/p5c_web.config.ts --outDir ../../apps/desktop-web/dist"
+    "practice:build": "npm run build --workspace @ptcg/desktop-web",
+    "product:build": "tsc --noEmit -p apps/web && tsc --noEmit -p apps/desktop-web && vite build --config scripts/product/web.config.ts && vite build --config scripts/product/online.config.ts",
+    "product:check": "tsc --noEmit -p apps/web && tsc --noEmit -p apps/desktop-web",
+    "test:ui": "npm test --workspace @ptcg/desktop-web"
   }
 }

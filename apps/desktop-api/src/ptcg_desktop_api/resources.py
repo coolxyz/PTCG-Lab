@@ -11,6 +11,7 @@ from urllib.parse import urlsplit
 import uuid
 from ptcg_online_client.contracts import unpack
 from .bridge import BridgeError
+from .platform_files import private_directory
 
 MAX_IMAGE = 2 * 1024 * 1024
 
@@ -32,11 +33,7 @@ def raster(data):
 class Resources:
     def __init__(self, cache, manifests=(), *, capacity=256 * 1024 * 1024):
         self.root = Path(cache)
-        if self.root.is_symlink():
-            raise ValueError("Unsafe cache")
-        self.root.mkdir(parents=True, exist_ok=True, mode=0o700)
-        if self.root.stat().st_mode & 0o077:
-            raise ValueError("Unsafe cache permissions")
+        private_directory(self.root)
         self.lock, self.capacity = Lock(), capacity
         self.catalogs, self.images = {}, {}
         for path, pin in manifests:

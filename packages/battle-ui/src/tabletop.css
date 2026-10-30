@@ -1,3 +1,5 @@
+@import "./theme.css";
+
 .tabletop {
   --card-w: 90px;
   --card-h: 126px;
@@ -668,3 +670,23 @@
     transform: translate(var(--fly-x), var(--fly-y)) scale(1);
   }
 }
+
+/* Internal pointer dragging works consistently in WKWebView and WebView2. */
+.tabletop-card { user-select: none; -webkit-user-select: none; }
+.tabletop-card.usable { touch-action: none; cursor: grab; }
+.tabletop-card.usable:active { cursor: grabbing; }
+.tabletop-card img { pointer-events: none; -webkit-user-drag: none; }
+.tabletop-play-zone {
+  display: flex; flex-wrap: wrap; align-items: center; gap: 8px 16px;
+  margin-top: 12px; padding: 12px 16px; border: 1px dashed #93abc766;
+  border-radius: 10px; color: #d6e6f4; background: #09142480;
+}
+.tabletop-play-zone span { font-size: 12px; color: #bbd0e6; }
+.tabletop-drag-preview {
+  position: fixed; z-index: 2147483647; pointer-events: none;
+  width: 84px; padding: 4px; border: 2px solid #7be6ee;
+  border-radius: 8px; background: #152238; color: white;
+  box-shadow: 0 12px 30px #0006; font: 12px system-ui;
+}
+.tabletop-drag-preview img { width: 100%; display: block; border-radius: 4px; }
+.tabletop-drag-preview span { display: block; padding: 4px; }

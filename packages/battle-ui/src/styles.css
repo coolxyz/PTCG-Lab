@@ -1,12 +1,14 @@
+@import "./theme.css";
+
 /* Standalone theme, scoped to the display boundary rather than host navigation. */
 .battle-screen {
   color-scheme: light;
   font-family: -apple-system, BlinkMacSystemFont, "Noto Sans SC", sans-serif;
-  color: #23342b;
-  --green: #244f3a;
-  --muted: #7a857b;
-  --line: #e1e6dd;
-  --gold: #d1aa64;
+  color: var(--ptcg-ink);
+  --green: var(--ptcg-accent);
+  --muted: var(--ptcg-muted);
+  --line: var(--ptcg-line);
+  --gold: var(--ptcg-pink);
 }
 .battle-screen,
 .battle-screen * {
@@ -29,7 +31,7 @@
   outline-offset: 4px;
 }
 .battle-screen :is(button, a):focus-visible {
-  outline: 2px solid #bd954e;
+  outline: 2px solid var(--ptcg-accent);
 }
 .battle-screen :is(input, select, textarea) {
   border: 1px solid var(--line);

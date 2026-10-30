@@ -115,7 +115,7 @@ def create_app(db_path=None):
                 )
             if (
                 request.headers.get("content-length", "").isdigit()
-                and int(request.headers["content-length"]) > (MAX_BYTES if request.url.path.endswith("/image") else 1048576)
+                and int(request.headers["content-length"]) > (256*1024*1024 if request.url.path == "/api/sync/resources/install" else MAX_BYTES if request.url.path.endswith("/image") else 1048576)
             ):
                 return JSONResponse(
                     {"code": "TOO_LARGE", "message": "请求过大"}, status_code=413
@@ -124,7 +124,10 @@ def create_app(db_path=None):
         response.headers["X-Content-Type-Options"] = "nosniff"
         response.headers["Referrer-Policy"] = "no-referrer"
         response.headers["X-Frame-Options"] = "DENY"
-        if request.url.path.startswith("/api"):
+        image_route = request.url.path.startswith((
+            "/api/sync/artwork/", "/api/sync/images/", "/api/sync/resource-images/"
+        )) and request.url.path not in {"/api/sync/artwork/settings"}
+        if request.url.path.startswith("/api") and not (image_route and response.status_code == 200):
             response.headers["Cache-Control"] = "no-store"
         return response
 

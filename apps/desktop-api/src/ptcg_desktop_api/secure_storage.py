@@ -75,11 +75,33 @@ class KeychainCipher:
             raise ClientError("INVALID_STORAGE") from None
 
 
-def native_vault(root, server, *, keychain=None, initial_state=None):
+def native_vault(
+    root,
+    server,
+    *,
+    keychain=None,
+    initial_state=None,
+    require_existing=False,
+    require_new=False,
+):
+    if sys.platform == "win32":
+        if keychain is not None:
+            raise ClientError("CREDENTIAL_BACKEND_UNAVAILABLE")
+        from .windows_storage import windows_vault
+
+        return windows_vault(
+            root,
+            server,
+            initial_state=initial_state,
+            require_existing=require_existing,
+            require_new=require_new,
+        )
     return Vault(
         root,
         server,
         initial_state=initial_state,
+        require_existing=require_existing,
+        require_new=require_new,
         codec_factory=lambda **options: KeychainCipher(
             root, server, keychain=keychain, **options
         ),
@@ -90,19 +112,32 @@ def native_client(server, storage):
     return Client(server, storage, vault_factory=native_vault)
 
 
-def import_identity(source, destination, server, *, keychain=None):
+def import_identity(
+    source, destination, server, *, keychain=None, source_kind="browser"
+):
     """Explicit trusted operator call; source stays intact, destination must be new."""
-    source, destination = Path(source).resolve(), Path(destination).absolute()
+    source, destination = Path(source).absolute(), Path(destination).absolute()
     if not (source / (server.key + ".json")).is_file():
         raise ClientError("IDENTITY_SOURCE_MISSING")
     if (destination / (server.key + ".json")).exists():
         raise ClientError("IDENTITY_DESTINATION_EXISTS")
-    original = Vault(source, server)
+    if source_kind == "native":
+        original = native_vault(
+            source, server, keychain=keychain, require_existing=True
+        )
+    elif source_kind == "browser":
+        original = Vault(source, server, require_existing=True)
+    else:
+        raise ClientError("IDENTITY_SOURCE_KIND")
     try:
         with original.transaction() as state:
             imported = deepcopy(state)
         target = native_vault(
-            destination, server, keychain=keychain, initial_state=imported
+            destination,
+            server,
+            keychain=keychain,
+            initial_state=imported,
+            require_new=True,
         )
         try:
             with target.transaction() as result:

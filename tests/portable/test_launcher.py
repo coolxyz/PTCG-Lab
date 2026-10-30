@@ -54,24 +54,6 @@ def test_launcher_uses_project_cwd_and_loopback(monkeypatch, tmp_path, platform)
     assert options["env"]["PYTHONPATH"] == str(project)
 
 
-def test_release_verify_rejects_tampering_and_traversal(tmp_path):
-    import hashlib
-    import json
-    import pytest
-
-    release = load("release_tool", "scripts/release.py")
-    (tmp_path / "file").write_bytes(b"original")
-    manifest = tmp_path / "RELEASE-FILES.json"
-    manifest.write_text(json.dumps({"file": hashlib.sha256(b"original").hexdigest()}))
-    release.verify(tmp_path)
-    (tmp_path / "file").write_bytes(b"changed")
-    with pytest.raises(RuntimeError):
-        release.verify(tmp_path)
-    manifest.write_text(json.dumps({"../outside": "bad"}))
-    with pytest.raises(RuntimeError):
-        release.verify(tmp_path)
-
-
 def test_integrated_launcher_uses_one_process_and_explicit_state(monkeypatch, tmp_path):
     launcher = load("integrated_launcher", "scripts/start.py")
     project = tmp_path / "product"
@@ -118,7 +100,7 @@ def test_integrated_launcher_uses_one_process_and_explicit_state(monkeypatch, tm
 def test_setup_installs_native_packages_and_builds_complete_product(
     monkeypatch, tmp_path
 ):
-    setup = load("product_setup", "scripts/portable/setup.py")
+    setup = load("product_setup", "scripts/product/setup.py")
     python = tmp_path / ".venv/bin/python"
     python.parent.mkdir(parents=True)
     python.touch()

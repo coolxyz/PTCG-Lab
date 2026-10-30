@@ -42,9 +42,11 @@ def verify(service, job_id, games=1000, workers=4):
         result_path = service.home / "verifications" / rid
         result_path.mkdir(parents=True, exist_ok=True)
         service.jobs.update(job_id, stage="testing-battle", battleReleaseStatus="testing")
-        command = [sys.executable, "-X", "utf8", str(service.root / "scripts/sync/verify_runtime.py"), "--root", str(service.releases.path(rid).resolve()), "--output", str((result_path / "matches.json").resolve()), "--games", str(games), "--workers", str(workers)]
+        command = [sys.executable, "-I", "-B", "-X", "utf8", str(service.root / "scripts/sync/verify_runtime.py"), "--root", str(service.releases.path(rid).resolve()), "--output", str((result_path / "matches.json").resolve()), "--games", str(games), "--workers", str(workers)]
         with (result_path / "matches.log").open("wb") as log:
-            process = subprocess.Popen(command, cwd=service.root, stdout=log, stderr=subprocess.STDOUT)
+            from .runtime import native_writer_options
+
+            process = subprocess.Popen(command, cwd=service.root, stdout=log, stderr=subprocess.STDOUT, **native_writer_options())
             while True:
                 try:
                     returncode = process.wait(timeout=2)

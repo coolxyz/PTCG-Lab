@@ -32,7 +32,7 @@ def write(path, content, *, mode=0o600):
     path = Path(path)
     path.parent.mkdir(parents=True, exist_ok=True)
     fd = os.open(path, os.O_WRONLY | os.O_CREAT | os.O_EXCL, mode)
-    with os.fdopen(fd, "w") as stream:
+    with os.fdopen(fd, "w", encoding="utf-8", newline="\n") as stream:
         stream.write(content)
 
 
