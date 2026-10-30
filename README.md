@@ -31,6 +31,7 @@ Windows 使用 `./start.ps1 -Setup -Check`，再运行 `./start.ps1`。资产必
 - [Windows 验证步骤](docs/Windows验证步骤.md)
 - [更新上游卡库与规则](docs/上游卡库同步.md)
 - [制作离线卡图包](docs/Git卡图下载与资源包工具.md)
+- [部署 Cloudflare 免费卡图 CDN](docs/Cloudflare卡图CDN部署.md)
 - [架构与维护](docs/架构与维护.md)
 - [源码发布与隐私](docs/GitHub发布与隐私.md)
 

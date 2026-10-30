@@ -22,6 +22,8 @@ battle_log/
 .env.*
 !.env.example
 !.env.sample
+.dev.vars*
+.wrangler/
 .venv/
 venv/
 

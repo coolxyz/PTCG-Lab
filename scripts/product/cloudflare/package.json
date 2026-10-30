@@ -1,0 +1,12 @@
+{
+  "name": "ptcg-cloudflare-artwork-tools",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Maintainer-only CLI; never shipped as an App runtime dependency",
+  "devDependencies": {
+    "wrangler": "4.156.0"
+  },
+  "scripts": {
+    "login": "wrangler login"
+  }
+}

@@ -24,6 +24,7 @@ FOLDERS = (
     ".github/workflows",
 )
 FILES = (
+    'docs/Cloudflare卡图CDN部署.md',
     'docs/GitHub发布与隐私.md',
     'docs/Git卡图下载与资源包工具.md',
     'docs/Windows验证步骤.md',
@@ -86,6 +87,7 @@ EXCLUDED = {
     "benchmarks",
     "releases",
     ".aws",
+    ".wrangler",
 }
 ALLOWED = {
     ".js",
@@ -138,6 +140,7 @@ def private_name(name):
         or bool(EXCLUDED.intersection(part.lower() for part in p.parts))
         or any(part.endswith(".egg-info") for part in p.parts)
         or (p.name.startswith(".env") and p.name not in {".env.example", ".env.sample"})
+        or p.name.startswith(".dev.vars")
         or p.suffix.lower()
         in {".sqlite", ".db", ".pem", ".key", ".p12", ".pfx", ".pyc", ".log"}
         or p.name.endswith((".sqlite-wal", ".sqlite-shm", ".tsbuildinfo"))
