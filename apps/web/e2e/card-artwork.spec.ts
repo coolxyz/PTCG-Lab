@@ -28,26 +28,13 @@ test("bottom pagination stays in sync and card details preserve background scrol
   expect(await page.evaluate(() => window.scrollY)).toBe(scrollY);
 });
 
-test("upload, reload and restore card artwork with Chinese rules", async ({ page }) => {
-  await page.route("https://asia.pokemon-card.com/**", route => route.abort());
+test("card details show Chinese rules without retired upload controls", async ({ page }) => {
   await page.goto("/");
   await page.getByLabel("搜索卡牌").fill("CN:CSVM2cC:007");
-  await page.getByRole("button", { name: "查看 赛富豪ex 007", exact: true }).click();
-  const rules = page.getByLabel("中文卡牌说明");
-  await expect(rules).toBeVisible();
-  await expect(rules).toContainText("嘉奖硬币");
-  await expect(rules).toContainText("淘金潮");
-  await page.getByLabel("选择卡图文件").setInputFiles({ name: "card.png", mimeType: "image/png", buffer: Buffer.from("iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAwMCAO+aX1sAAAAASUVORK5CYII=", "base64") });
-  await expect(page.getByAltText("待上传卡图预览")).toBeVisible();
-  await page.getByRole("button", { name: "保存卡图", exact: true }).click();
-  await expect(page.getByRole("button", { name: "恢复默认卡图" })).toBeVisible();
-  await expect(page.locator(".real-image img")).toHaveAttribute("src", /uploaded-card-images/);
-  await page.reload();
-  await page.getByLabel("卡图状态").selectOption("uploaded");
-  await page.getByRole("button", { name: "查看 赛富豪ex 007", exact: true }).click();
-  await expect(page.locator(".real-image img")).toHaveAttribute("src", /uploaded-card-images/);
-  await page.getByRole("button", { name: "恢复默认卡图" }).click();
-  await expect(page.getByRole("button", { name: "恢复默认卡图" })).toHaveCount(0);
+  await page.getByRole("button", {name:"查看 赛富豪ex 007",exact:true}).click();
+  await expect(page.getByLabel("中文卡牌说明")).toContainText("淘金潮");
+  await expect(page.getByLabel("选择卡图文件")).toHaveCount(0);
+  await expect(page.getByRole("button",{name:"恢复默认卡图"})).toHaveCount(0);
 });
 
 test("card image filters and Chinese details fit a phone viewport", async ({ page }) => {

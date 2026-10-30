@@ -8,15 +8,12 @@ from typing import Literal
 
 import anyio
 from fastapi import APIRouter, Request
-from fastapi.responses import JSONResponse, Response, FileResponse
+from fastapi.responses import JSONResponse, Response
 from pydantic import BaseModel, ConfigDict, Field
 
 from packages.sync.common import ROOT, SyncError
 from packages.sync.service import SyncService
-from packages.sync.display import DisplayResources, MAX_PACK
 from packages.collection.domain import RAW, CARDS
-from ptcg_engine_provider.catalog import MemoryCatalog
-import tempfile
 
 
 class Input(BaseModel):
@@ -28,9 +25,14 @@ class Repository(Input):
 
 
 class ArtworkSettings(Input):
-    source: Literal["github-raw", "cdn"] = "github-raw"
+    source: Literal["github-raw", "cdn", "local-git"] = "github-raw"
     baseUrl: str = Field(default="", max_length=1024)
     capacityMiB: int = Field(default=1024, ge=64, le=8192)
+    localGitPath: str = Field(default="", max_length=4096)
+
+
+class LocalArtworkDirectory(Input):
+    path: str = Field(min_length=1, max_length=4096)
 
 
 class Start(Input):
@@ -45,11 +47,6 @@ class Activate(Input):
 
 class Rollback(Activate):
     releaseId: str = Field(pattern=r"^[a-f0-9]{64}$")
-
-
-class ResourceActivation(Input):
-    packId: str | None = Field(default=None, pattern=r"^[a-f0-9]{64}$")
-    expectedPack: str | None = Field(pattern=r"^[a-f0-9]{64}$")
 
 
 class VariantAllocation(Input):
@@ -76,11 +73,6 @@ def attach(app, store):
 
     artwork = BuiltinArtwork(service.artwork_cache, known=CARDS, synced=service.images)
     app.state.card_media.artwork = artwork
-    resources = DisplayResources(
-        Path(home) / "display", MemoryCatalog.from_catalog(RAW).catalog_version, CARDS
-    )
-    service.display_resources = resources
-    app.state.card_media.display_resources = resources
     app.state.battles.release_id = service.releases.current
     api = APIRouter(prefix="/api/sync")
     # Waiting image requests must not consume the shared API thread pool;
@@ -120,18 +112,36 @@ def attach(app, store):
 
     @app.exception_handler(SyncError)
     async def sync_error(request, exc):
+        payload = {"code": exc.code, "message": exc.message}
+        if hasattr(exc, "retry_after"):
+            payload.update(retryAfterSeconds=exc.retry_after, retryable=exc.retryable,
+                           cooldownScope=exc.scope, upstreamStatus=exc.upstream_status,
+                           cfRay=exc.ray)
         return JSONResponse(
-            {"code": exc.code, "message": exc.message}, status_code=exc.status,
+            payload, status_code=exc.status,
             headers={"Retry-After": str(exc.retry_after)} if hasattr(exc, "retry_after") else {},
         )
 
     @api.get("/artwork/settings")
     def artwork_settings():
-        return {**service.artwork_cache.status(), "indexedCards": len(artwork.rows)}
+        return {**service.artwork_cache.status(), "indexedCards": len(artwork.rows),
+                "indexedFaces": len(service.images.builtin.rows) if service.images.builtin else 0}
 
     @api.put("/artwork/settings")
     def configure_artwork(body: ArtworkSettings):
-        return service.artwork_cache.configure(body.model_dump())
+        service.artwork_cache.configure(body.model_dump())
+        return artwork_settings()
+
+    @api.post("/artwork/local-check")
+    def check_local_artwork(body: LocalArtworkDirectory):
+        from packages.sync.local_artwork import LocalGitArtwork
+        reader = LocalGitArtwork(body.path)
+        reader.validate()
+        samples = list(artwork.assets.values())[:6]
+        for row in samples:
+            reader.read(row["path"], row["blob"])
+        return {"valid": True, "checkedImages": len(samples),
+                "message": f"目录可读取，{len(samples)} 张示例卡图通过校验；不复制资源、不执行 Git、不联网"}
 
     @api.get("/artwork/{key}")
     async def artwork_image(key: str):
@@ -139,56 +149,6 @@ def attach(app, store):
             data, mime = await anyio.to_thread.run_sync(lambda: artwork.image(key))
         return Response(data, media_type=mime,
             headers={"Cache-Control": "private, max-age=31536000, immutable"})
-
-    @api.get("/resources")
-    def resource_status():
-        return resources.status()
-
-    @api.post("/resources/install", status_code=201)
-    async def resource_install(request: Request):
-        pin = request.headers.get("x-ptcg-resource-sha256", "")
-        from packages.sync.display import digest
-
-        if not digest(pin) or request.headers.get("content-type") != "application/zip":
-            raise SyncError(
-                "INVALID_RESOURCE_PIN", "请选择 ZIP 并提供发布方的完整 SHA-256"
-            )
-        # Staging is disk-backed and capped while receiving, never an arbitrary
-        # browser filesystem path or an executable upload.
-        with tempfile.TemporaryFile() as stream:
-            total = 0
-            async for block in request.stream():
-                total += len(block)
-                if total > MAX_PACK:
-                    raise SyncError("RESOURCE_CAPACITY", "资源 ZIP 超过 256 MiB", 413)
-                stream.write(block)
-            stream.seek(0)
-
-            def install():
-                with service.jobs.lease():
-                    with tempfile.TemporaryDirectory(prefix="ptcg-display-") as folder:
-                        target = Path(folder) / "resource.zip"
-                        with target.open("wb") as out:
-                            import shutil
-
-                            shutil.copyfileobj(stream, out)
-                        return resources.install(target, pin)
-
-            return await anyio.to_thread.run_sync(install)
-
-    @api.post("/resources/activate")
-    def resource_activate(body: ResourceActivation):
-        with service.jobs.lease():
-            return resources.activate(body.packId, body.expectedPack)
-
-    @api.get("/resource-images/{pack_id}/{image_hash}")
-    def resource_image(pack_id: str, image_hash: str):
-        path, mime = resources.image(pack_id, image_hash)
-        return FileResponse(
-            path,
-            media_type=mime,
-            headers={"Cache-Control": "private, max-age=31536000, immutable"},
-        )
 
     @api.post("/repository")
     def repository(body: Repository):
@@ -352,7 +312,12 @@ def attach(app, store):
             import json
 
             payload = json.loads(result["body"])
-            payload["cards"] = app.state.card_media.display(payload["cards"])
+            try:
+                payload["cards"] = app.state.card_media.display(payload["cards"])
+            except SyncError as exc:
+                return JSONResponse(
+                    {"code": exc.code, "message": exc.message}, status_code=exc.status
+                )
             result["body"] = json.dumps(payload, ensure_ascii=False).encode()
         result["headers"]["X-PTCG-Release"] = release_id
         return Response(

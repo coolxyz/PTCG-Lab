@@ -122,26 +122,14 @@ def test_freeze_detects_concurrent_edit_and_revision_corruption(product):
         adapter.call(profile, "product-deck", body(revision))
 
 
-def test_resources_require_exact_catalog_and_snapshot_uploaded_image(product):
+def test_resources_require_exact_catalog_and_reject_removed_image_sources(product):
     from ptcg_desktop_api.resources import Resources
-    from PIL import Image
-    import io
-
-    store, adapter, _, revision, _ = product
-    output = io.BytesIO()
-    Image.new("RGB", (10, 14), "blue").save(output, format="PNG")
-    pid = revision["entries"][0]["printingId"]
-    adapter.media.upload(pid, output.getvalue())
+    store, adapter, *_ = product
     resources = adapter.resources(Resources(Path(store.path).parent / "cache"))
     assert resources.catalog("wrong-version", "unavailable")["missing"]
     catalog = resources.catalog(resources.version, "unavailable")
-    image = next(c for c in catalog["cards"] if c["printingId"] == pid)["image"]["url"]
-    assert image.startswith("/resources/")
-    before = resources.image(image.split("/")[-1])
-    adapter.media.remove(pid)
-    for p in adapter.media.directory.iterdir():
-        p.unlink()
-    assert resources.image(image.split("/")[-1]) == before
+    assert resources.local_image("/uploaded-card-images/old.png") is None
+    assert resources.local_image("/api/sync/resource-images/"+"a"*64+"/"+"b"*64) is None
     assert resources.catalog(resources.version, catalog["assetVersion"]) == catalog
     assert resources.catalog(resources.version, "unknown-assets")["missing"]
 
@@ -184,21 +172,22 @@ def test_source_cache_rejects_modified_image_bytes(tmp_path, monkeypatch):
     assert len(attempted) == 1
 
 
-def test_resource_edits_issue_new_version_and_keep_old_snapshot(product):
+def test_approved_detail_edits_issue_new_version_and_keep_old_snapshot(product, tmp_path, monkeypatch):
     from ptcg_desktop_api.resources import Resources
-    from PIL import Image
-    import io
-
+    from packages.collection import card_media
+    import apps.api.product_online as module
     store, adapter, _, revision, _ = product
-    resources = adapter.resources(Resources(Path(store.path).parent / "cache"))
-    before = resources.catalog(resources.version, "unavailable")
-    image = io.BytesIO()
-    Image.new("RGB", (10, 14), "green").save(image, "PNG")
-    adapter.media.upload(revision["entries"][0]["printingId"], image.getvalue())
-    after = resources.catalog(resources.version, "unavailable")
-    assert after["assetVersion"] != before["assetVersion"]
-    assert resources.catalog(resources.version, before["assetVersion"]) == before
-    assert resources.catalog(resources.version, after["assetVersion"]) == after
+    marker=tmp_path/'data/catalog/card-details.json';marker.parent.mkdir(parents=True);marker.write_text('before')
+    monkeypatch.setattr(module,'ROOT',tmp_path)
+    resources=adapter.resources(Resources(Path(store.path).parent/'cache'))
+    before=resources.catalog(resources.version,'unavailable')
+    pid=revision['entries'][0]['printingId']
+    revised={**card_media.details(),pid:{'sections':[{'kind':'招式','name':'已批准说明','text':'展示资料更新'}]}}
+    monkeypatch.setattr(card_media,'details',lambda:revised)
+    marker.write_text('updated detail stamp')
+    after=resources.catalog(resources.version,'unavailable')
+    assert after['assetVersion']!=before['assetVersion']
+    assert resources.catalog(resources.version,before['assetVersion'])==before
 
 
 def test_artwork_choice_preserves_english_aliases_and_chinese_skills(product):

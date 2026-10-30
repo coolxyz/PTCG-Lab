@@ -1,3 +1,4 @@
+import { RetryImage } from "../RetryImage";
 import { useLayoutEffect, useRef, useState } from "react";
 import { CardDescription } from "../CardDescription";
 import { eventText, lookupCard, playerLabel } from "./presentation";
@@ -25,13 +26,10 @@ function PublicCard({
       aria-label={`查看记录卡牌：${name}`}
     >
       {info?.image.url && (
-        <img
+        <RetryImage
           src={info.image.url}
           alt=""
           loading="lazy"
-          onError={(e) => {
-            e.currentTarget.style.display = "none";
-          }}
         />
       )}
       <span>{name}</span>
@@ -75,7 +73,7 @@ function RecordCardDialog({
         </button>
       </header>
       <p>这是该步骤公开的卡牌记录，不代表它仍在原区域或当前手牌中。</p>
-      {info?.image.url && <img src={info.image.url} alt={info.cnName} />}
+      {info?.image.url && <RetryImage src={info.image.url} alt={info.cnName} />}
       <CardDescription details={info?.chineseDetails} types={{}} />
       {!info?.chineseDetails?.sections?.length &&
         card.attacks?.map((a, i) => (

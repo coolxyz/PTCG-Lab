@@ -1,8 +1,8 @@
 import { useEffect, useRef, useState } from "react";
-import type { SyntheticEvent } from "react";
+import { RetryImage, type ArtworkStatus } from "@ptcg/battle-ui";
 import { X } from "lucide-react";
 
-export function DetailImage({ card, onError, compact = false }: { card: { cnName: string; image: { url: string | null; label: string; source?: string } }; onError: (event: SyntheticEvent<HTMLImageElement>) => void; compact?: boolean }) {
+export function DetailImage({ card, onStatusChange, compact = false }: { card: { cnName: string; image: { url: string | null; label: string; source?: string } }; onStatusChange?: (status: ArtworkStatus) => void; compact?: boolean }) {
   const [expanded, setExpanded] = useState(false);
   const preview = useRef<HTMLDialogElement>(null);
   const trigger = useRef<HTMLButtonElement>(null);
@@ -24,7 +24,7 @@ export function DetailImage({ card, onError, compact = false }: { card: { cnName
         aria-haspopup="dialog"
         onClick={() => setExpanded(true)}
       >
-        <img src={card.image.url!} alt={label} onError={onError} />
+        <RetryImage src={card.image.url!} alt={label} onStatusChange={onStatusChange} />
         <span>点击放大卡图</span>
       </button>
       {!compact && <small>{card.image.label} · 仅替代展示，身份仍为简中印刷</small>}
@@ -51,7 +51,7 @@ export function DetailImage({ card, onError, compact = false }: { card: { cnName
           >
             <X size={24} />
           </button>
-          <img src={card.image.url!} alt={label} onError={onError} />
+          <RetryImage src={card.image.url!} alt={label} onStatusChange={onStatusChange} />
         </dialog>
       )}
     </div>

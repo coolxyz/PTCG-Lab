@@ -38,3 +38,8 @@ def install_artwork_index(root, assets, app):
     target = Path(app) / ARTWORK_INDEX
     target.parent.mkdir(parents=True, exist_ok=True)
     shutil.copy2(source, target)
+    from packages.sync.builtin_images import BuiltinImages, INDEX as SNAPSHOT_INDEX
+    BuiltinImages(root, catalog_path=catalog)
+    source = safe_file(root, SNAPSHOT_INDEX)
+    target = Path(app) / SNAPSHOT_INDEX
+    shutil.copy2(source, target)

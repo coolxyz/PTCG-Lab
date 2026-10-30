@@ -1,4 +1,6 @@
 import { DetailImage } from "./DetailImage";
+import { RetryImage, type ArtworkStatus } from "@ptcg/battle-ui";
+import { apiResponse } from "./api-response";
 import React, { useState, useEffect, useLayoutEffect, useRef, useMemo } from "react";
 import { createRoot } from "react-dom/client";
 import {
@@ -30,7 +32,7 @@ import "./style.css";
 import { PracticeApp } from "./Practice";
 import { OnlineApp } from "@ptcg/desktop-web/online";
 import { Sync } from "./Sync";
-import { CardArtwork, CardDescription, type ChineseDetails } from "./CardArtwork";
+import { CardDescription, type ChineseDetails } from "./CardDescription";
 import { CardVariants } from './CardVariants';
 
 type Entry = { printingId: string; quantity: number };
@@ -56,7 +58,7 @@ type Card = Entry & {
   sourceEvidence: string[];
   engineId: string;
   stage: string;
-  image: { url: string | null; label: string; userUploaded?: boolean; source?: string };
+  image: { url: string | null; label: string; source?: string };
   chineseDetails?: ChineseDetails;
   owned: number;
   variants?: { variantId: string }[];
@@ -87,12 +89,7 @@ async function api(
     headers: body ? { "Content-Type": "application/json" } : undefined,
     body: body ? JSON.stringify(body) : undefined,
   });
-  const data = await r.json();
-  if (!r.ok)
-    throw new Error(
-      data.message || data.detail?.[0]?.msg || "操作未完成，请稍后重试",
-    );
-  return data;
+  return apiResponse(r, "/api" + path);
 }
 const count = (es: Entry[]) => es.reduce((s, e) => s + e.quantity, 0);
 const sign = (d: Deck) => JSON.stringify([d.name, d.entries]);
@@ -135,6 +132,20 @@ function App() {
   const [cardPage, setCardPage] = useState(0);
   const [effect, setEffect] = useState("");
   const [failedImages, setFailedImages] = useState<Set<string>>(new Set());
+  const [imageMessages, setImageMessages] = useState<Map<string, string>>(new Map());
+  function imageStatus(id: string, status: ArtworkStatus) {
+    if (status.state === "loading") return;
+    const failed = status.state === "failed" || status.state === "retrying";
+    setFailedImages(previous => {
+      if (previous.has(id) === failed) return previous;
+      const next = new Set(previous); if (failed) next.add(id); else next.delete(id); return next;
+    });
+    setImageMessages(previous => {
+      const message = failed ? status.message : "";
+      if ((previous.get(id) || "") === message) return previous;
+      const next = new Map(previous); next.set(id, message); return next;
+    });
+  }
   const [page, setPage] = useState(
       productPage,
     ),
@@ -429,7 +440,7 @@ function App() {
     return (
       (!q || hay.includes(q)) &&
       (!category || c.category === category) &&
-      (!imageFilter || (imageFilter === "missing" ? !c.image.url : imageFilter === "failed" ? failedImages.has(c.printingId) : c.image.userUploaded)) &&
+      (!imageFilter || (imageFilter === "missing" ? !c.image.url : imageFilter === "failed" ? failedImages.has(c.printingId) : false)) &&
       (!product || c.productCode === product) &&
       (!pack || c.productIds?.includes(pack)) &&
       (!effect || c.effectStatus === effect) &&
@@ -558,7 +569,6 @@ function App() {
           <option value="">全部卡图状态</option>
           <option value="missing">待补卡图</option>
           <option value="failed">本次加载失败</option>
-          <option value="uploaded">用户上传</option>
         </select>
         <a className="text-link" href="/api/card-image-gaps" download>导出缺失卡图清单</a>
       </div>
@@ -667,16 +677,13 @@ function App() {
           onClick={() => setDetail(c)}
           aria-label={"查看 " + c.cnName + " " + (c.collectorNumber || "储备")}
         >
-          {c.image.url && !failedImages.has(c.printingId) && (
-            <img
+          {c.image.url && (
+            <RetryImage
               className="tile-original"
               src={c.image.url}
               alt={c.cnName + " · " + c.image.label}
               loading="lazy"
-              onError={(e) => {
-                e.currentTarget.style.display = "none";
-                setFailedImages((prev) => new Set(prev).add(c.printingId));
-              }}
+              onStatusChange={status => imageStatus(c.printingId, status)}
             />
           )}
           <div className="face-top">
@@ -725,9 +732,9 @@ function App() {
           </button>
         </div>
         {c.image.url && (
-          <small className="image-label">
+          <small className="image-label" title={imageMessages.get(c.printingId)}>
             {failedImages.has(c.printingId)
-              ? "卡图暂不可用 · 资料占位"
+              ? imageMessages.get(c.printingId) || "卡图暂不可用 · 资料占位"
               : c.image.label + " · 替代展示"}
           </small>
         )}
@@ -1558,15 +1565,14 @@ function App() {
               </p>
             </div>
           </div>
-          {detail.image.url && !failedImages.has(detail.printingId) && (
+          {detail.image.url && (
             <DetailImage
               key={detail.printingId}
               card={detail}
-              onError={() =>
-                setFailedImages((prev) => new Set(prev).add(detail.printingId))
-              }
+              onStatusChange={status => imageStatus(detail.printingId, status)}
             />
           )}
+          {failedImages.has(detail.printingId) && <p role="status">{imageMessages.get(detail.printingId)}</p>}
           <div className="detail-facts">
             <span>资料已收录</span>
             <span>
@@ -1579,64 +1585,6 @@ function App() {
                 : "效果待验证 · 暂不可对战"}
             </span>
           </div>
-          <CardArtwork key={detail.printingId} id={detail.printingId} uploaded={detail.image.userUploaded} onChange={(card: Card) => {
-            setCards(previous => previous.map(c => c.printingId === card.printingId ? { ...c, ...card } : c));
-            setDetail(previous => previous?.printingId === card.printingId ? { ...previous, ...card } : previous);
-            setFailedImages(previous => { const next = new Set(previous); next.delete(card.printingId); return next; });
-            setToast("卡图已更新");
-          }} />
-          <CardDescription details={detail.chineseDetails} types={typeLabels} />
-          {detail.catalogStatus === "source-conflict" && (
-            <p className="notice" role="note">
-              编号存在来源冲突：原站的同一编号指向不同卡牌，现分别保留资料，具体印刷尚待核对。
-            </p>
-          )}
-          {detail.pendingSourceException && <p className="notice" role="note">待核实例外：保留原始资料，暂不开放对战，不计入已支持卡牌。</p>}
-          {detail.identityKind === "source-record" && (
-            <p className="muted">
-              原表标记：{detail.printedNumber || "未提供编号"}。此条目按来源区分，不代表已经确认的正式卡号。
-            </p>
-          )}
-          <h3>规则核对摘要</h3>
-          <p className="rules-text">{detail.reviewNote}</p>
-          <small className="muted">
-            此处为核对摘要，并非完整官方卡面文字。
-          </small>
-          <details>
-            <summary>资料来源与印刷信息</summary>
-            <p>{detail.printingId}</p>
-            {detail.sourceEvidence.map((url, i) => (
-              <a
-                className="source"
-                target="_blank"
-                rel="noreferrer"
-                key={i}
-                href={url}
-              >
-                查看来源 {i + 1} <ArrowUpRight size={13} />
-              </a>
-            ))}
-          </details>
-          <hr />
-          <h3>
-            {detail.identityKind === "basic-energy"
-              ? "能量储备 · 未指定收藏版次"
-              : "我的收藏"}
-          </h3>
-          {detail.identityKind === "basic-energy" && (
-            <p className="notice">
-              可登记用于构筑的基本能量数量；这不代表已确认某个收藏印刷版本。
-            </p>
-          )}
-          <HoldingEditor
-            key={detail.printingId + ":" + collection.version}
-            card={detail}
-            holdings={collection.entries.filter(
-              (e) => e.printingId === detail.printingId,
-            )}
-            busy={busy}
-            save={(r) => act(() => saveHold(r))}
-          />
           <CardVariants id={detail.printingId} version={collection.version} onChange={refreshCollection} />
           <button
             className={

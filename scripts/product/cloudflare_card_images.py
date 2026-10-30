@@ -20,7 +20,7 @@ import tempfile
 
 ROOT = Path(__file__).resolve().parents[2]
 sys.path.insert(0, str(ROOT))
-from scripts.product.git_card_images import GitCache, app_root, encoded, regular_path  # noqa: E402
+from scripts.product.git_artwork import GitCache, app_root, encoded, regular_path  # noqa: E402
 
 FREE_FILES = 20_000
 CF_FILE_BYTES = 25 * 1024**2
@@ -93,13 +93,64 @@ def image_mime(raw):
         raise ValueError("Artwork failed full image decoding") from error
 
 
-def plan(indexes, *, name="ptcg-card-images", max_files=FREE_FILES):
+def snapshot_indexes(home, *, include_variants=False):
+    """Read public display metadata only; never import a frozen runtime or open user DBs."""
+    home = checked_path(home)
+    pointer = parsed(read_bytes(home / "current.json", 8192))
+    release = pointer.get("releaseId")
+    if not isinstance(release, str) or not HEX64.fullmatch(release):
+        raise ValueError("Invalid current sync release")
+    root = home / "releases" / release
+    manifest = parsed(read_bytes(root / "manifest.json", 8 * 1024**2))
+    raw = read_bytes(root / "data/catalog/catalog.json", 96 * 1024**2)
+    if manifest.get("releaseId") != release or manifest.get("files", {}).get("data/catalog/catalog.json") != digest(raw):
+        raise ValueError("Current sync catalogue differs from its release manifest")
+    catalog = parsed(raw)
+    catalog_pin = digest(raw)
+    groups, image_maps = {}, {}
+    for card in catalog["cards"]:
+        images = card.get("images", [])
+        if not include_variants:
+            images = next(([image] for locale in ("zh-Hans", "zh-Hant") for image in images
+                           if image.get("locale") == locale and image.get("equivalenceReviewed") is True
+                           and image.get("source") and image.get("url")), [])
+        else:
+            images = [*images, *(v.get("image", {}) for v in card.get("variants", []))]
+        for image in images:
+            if image.get("equivalenceReviewed") is not True:
+                continue
+            match = re.fullmatch(r"/api/sync/images/([a-f0-9]{40})/([0-9]+)", image.get("url") or "")
+            if not match:
+                continue
+            commit, card_id = match.groups()
+            if commit not in image_maps:
+                snapshot = home / "snapshots" / commit
+                source = parsed(read_bytes(snapshot / "source.json", 24 * 1024**2))
+                repository = source.get("repository")
+                if not isinstance(repository, str) or not REPOSITORY.fullmatch(repository):
+                    raise ValueError("Invalid sync image repository")
+                image_maps[commit] = (repository, parsed(read_bytes(snapshot / "image-index.json", 16 * 1024**2)))
+            repository, rows = image_maps[commit]
+            entry = rows.get(card_id)
+            if not isinstance(entry, dict) or not entry.get("path") or not entry.get("blob"):
+                raise ValueError("Current display image has no pinned path/blob; refresh sync metadata")
+            key = (repository, commit)
+            index = groups.setdefault(key, {"schema": 1, "repository": repository, "commit": commit,
+                                           "catalogFileSha256": catalog_pin, "cards": {}})
+            identity = card["printingId"] + (":" + card_id if include_variants else "")
+            index["cards"][identity] = {"printingId": identity, "engineId": card["engineId"],
+                                        "path": entry["path"], "blob": entry["blob"]}
+    return [{**index, "cards": list(index["cards"].values())} for index in groups.values()]
+
+
+def plan(indexes, *, name="ptcg-card-images", max_files=FREE_FILES, sync_home=None, include_variants=False):
     worker_config(name)
     if type(max_files) is not int or not 2 <= max_files <= FREE_FILES:
         raise ValueError("File budget must be between 2 and the 20,000-file Free limit")
     sources, images, entries = {}, {}, 0
-    for path in indexes:
-        raw = read_bytes(path, 8 * 1024**2)
+    inputs = [*indexes, *(snapshot_indexes(sync_home, include_variants=include_variants) if sync_home else [])]
+    for path in inputs:
+        raw = encoded(path) if isinstance(path, dict) else read_bytes(path, 8 * 1024**2)
         index = parsed(raw)
         if not isinstance(index, dict) or set(index) != {"schema", "repository", "commit", "catalogFileSha256", "cards"}:
             raise ValueError("Invalid artwork index schema")
@@ -110,7 +161,7 @@ def plan(indexes, *, name="ptcg-card-images", max_files=FREE_FILES):
                 or not isinstance(commit, str) or not HEX40.fullmatch(commit)
                 or not isinstance(index["catalogFileSha256"], str)
                 or not HEX64.fullmatch(index["catalogFileSha256"])
-                or not isinstance(index["cards"], list) or not 1 <= len(index["cards"]) <= FREE_FILES):
+                or not isinstance(index["cards"], list) or not 1 <= len(index["cards"]) <= 100000):
             raise ValueError("Invalid pinned artwork index")
         pin = digest(raw)
         if pin in sources:
@@ -148,8 +199,9 @@ def plan(indexes, *, name="ptcg-card-images", max_files=FREE_FILES):
 
 
 def build(indexes, cache_path, output, *, name="ptcg-card-images", previous=None,
-          max_files=FREE_FILES, max_total_bytes=DEFAULT_TOTAL_BYTES, cache_factory=GitCache):
-    selection = plan(indexes, name=name, max_files=max_files)
+          max_files=FREE_FILES, max_total_bytes=DEFAULT_TOTAL_BYTES, cache_factory=GitCache,
+          sync_home=None, include_variants=False):
+    selection = plan(indexes, name=name, max_files=max_files, sync_home=sync_home, include_variants=include_variants)
     if type(max_total_bytes) is not int or max_total_bytes <= 0:
         raise ValueError("Total disk budget must be positive")
     output, cache_path = checked_path(output), checked_path(cache_path)
@@ -158,6 +210,8 @@ def build(indexes, cache_path, output, *, name="ptcg-card-images", previous=None
     if output.is_relative_to(ROOT) and output.relative_to(ROOT).parts[0] not in {"var", "release", "exports"}:
         raise ValueError("Generated output in this repository belongs under var/, release/ or exports/")
     protected = [cache_path, *[checked_path(p) for p in indexes]]
+    if sync_home:
+        protected.append(checked_path(sync_home))
     old = {}
     if previous:
         previous = checked_path(previous)
@@ -274,7 +328,11 @@ def verify(directory, *, pin=None):
         if not p.is_dir():
             actual.add(p.relative_to(public).as_posix())
     if actual != set(manifest["files"]):
-        raise ValueError("Unexpected or missing public assets")
+        extras, missing = sorted(actual - set(manifest["files"])), sorted(set(manifest["files"]) - actual)
+        raise ValueError("Unexpected or missing public assets: " + json.dumps({
+            "unexpectedCount": len(extras), "unexpectedExamples": extras[:5],
+            "missingCount": len(missing), "missingExamples": missing[:5],
+        }, ensure_ascii=True) + ("; Finder metadata must be moved outside public/ before retrying" if any(Path(x).name == ".DS_Store" for x in extras) else ""))
     total = 0
     for dest, row in manifest["files"].items():
         regular_path(dest)
@@ -328,6 +386,8 @@ def main():
         source.add_argument("--app", type=Path, help="Read the index from an installed macOS App or unpacked Windows bundle")
         p.add_argument("--name", default="ptcg-card-images")
         p.add_argument("--max-files", type=int, default=FREE_FILES)
+        p.add_argument("--sync-home", type=Path, help="Explicit sync directory; include current catalogue's preferred display images without reading credentials")
+        p.add_argument("--include-variants", action="store_true", help="Also include other reviewed card faces from --sync-home; may exceed Free file budget")
         if operation == "build":
             p.add_argument("--cache", type=Path, required=True)
             p.add_argument("--output", type=Path, required=True)
@@ -343,14 +403,17 @@ def main():
             p.add_argument("--dry-run", action="store_true", help="Print the verified command without starting Wrangler")
     args = parser.parse_args()
     if args.command in {"plan", "build"}:
+        if args.include_variants and not args.sync_home:
+            raise ValueError("--include-variants requires --sync-home")
         indexes = args.index or [(app_root(args.app) if args.app else ROOT) / "resources/artwork/builtin-index.json"]
         if args.command == "plan":
-            selection = plan(indexes, name=args.name, max_files=args.max_files)
+            selection = plan(indexes, name=args.name, max_files=args.max_files, sync_home=args.sync_home, include_variants=args.include_variants)
             result = {k: v for k, v in selection.items() if k != "images"}
             result["images"] = len(selection["images"])
         else:
             result = build(indexes, args.cache, args.output, name=args.name, previous=args.previous,
-                           max_files=args.max_files, max_total_bytes=args.max_total_mib * 1024**2)
+                           max_files=args.max_files, max_total_bytes=args.max_total_mib * 1024**2,
+                           sync_home=args.sync_home, include_variants=args.include_variants)
     elif args.command == "verify":
         value = verify(args.directory, pin=args.manifest_sha256)
         result = {"status": "verified", "files": len(value["files"]), "imageBytes": value["imageBytes"]}

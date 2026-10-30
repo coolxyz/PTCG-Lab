@@ -1,3 +1,4 @@
+import { RetryImage } from "./RetryImage";
 import React, { useState } from "react";
 import type { CardInfo, Decision, EngineCard } from "./battle/types";
 import { lookupCard } from "./battle/presentation";
@@ -83,11 +84,8 @@ export function DeckBrowser({
                   {category(card)} · {card.id}
                 </small>
                 {info?.image?.url && (
-                  <img
+                  <RetryImage
                     loading="lazy"
-                    onError={(e) => {
-                      e.currentTarget.style.display = "none";
-                    }}
                     src={info.image.url}
                     alt={label(card)}
                   />

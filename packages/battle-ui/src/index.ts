@@ -5,4 +5,6 @@ export { BattleScreen } from "./battle/BattleScreen";
 export { parseAppearance, DEFAULT_APPEARANCE } from "./battle/appearance";
 export type { Appearance, AppearanceStorage } from "./battle/appearance";
 export { playerLabel, eventText } from "./battle/presentation";
+export { RetryImage } from "./RetryImage";
+export type { ArtworkStatus } from "./artwork-retry";
 export type * from "./battle/types";

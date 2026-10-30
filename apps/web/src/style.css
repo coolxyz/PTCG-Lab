@@ -1859,6 +1859,11 @@ html {
   color: var(--ptcg-muted);
   font-size: 10px;
   margin-bottom: 5px;
+  line-height: 14px;
+  height: 14px;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
 }
 .batch-bar {
   flex-wrap: wrap;

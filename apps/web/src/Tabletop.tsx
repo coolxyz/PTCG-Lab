@@ -1,10 +1,11 @@
+import { RetryImage } from "@ptcg/battle-ui";
 import { useEffect, useRef, useState } from "react";
 import type { BattleView, EngineCard, CardInfo, Option, Side } from "./Battle";
 import "./tabletop.css";
 import "./arena.css";
 import { EventPlayback } from "./EventPlayback";
 import { CoinResults } from "./CoinResults";
-import { CardDescription } from "./CardArtwork";
+import { CardDescription } from "./CardDescription";
 
 type Props = {
   view: BattleView;
@@ -165,13 +166,10 @@ export function Tabletop({
           onClick={() => open(card)}
         >
           {info?.image.url && (
-            <img
+            <RetryImage
               src={info.image.url}
               alt=""
               loading="lazy"
-              onError={(e) => {
-                e.currentTarget.style.display = "none";
-              }}
             />
           )}
           <span className="card-fallback">{name(card)}</span>
@@ -398,7 +396,7 @@ export function Tabletop({
           <div className="tabletop-detail">
             <div>
               {cardInfo(focus)?.image.url ? (
-                <img src={cardInfo(focus).image.url!} alt={name(focus)} />
+                <RetryImage src={cardInfo(focus).image.url!} alt={name(focus)} />
               ) : (
                 <div className="detail-placeholder">{name(focus)}</div>
               )}

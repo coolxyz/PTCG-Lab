@@ -2,7 +2,6 @@ import io
 from PIL import Image
 from fastapi.testclient import TestClient
 from apps.api.main import create_app
-from packages.collection.card_media import MAX_BYTES
 from scripts.catalog.complete_details import description, text, traditional_candidates
 
 PID = "CN:CSVM2cC:007"
@@ -74,61 +73,12 @@ def test_official_tera_description_is_a_rule_not_an_ability(tmp_path, monkeypatc
     assert result[0]["kind"] == "规则"
 
 
-def test_upload_persists_isolated_version_and_can_restore(tmp_path):
-    db = tmp_path / "app.sqlite"
-    client = TestClient(create_app(db))
-    original = next(c for c in client.get("/api/cards").json()["cards"] if c["printingId"] == PID)
-    out = io.BytesIO()
-    Image.new("RGB", (120, 170), "blue").save(out, format="PNG")
-    response = client.put(f"/api/cards/{PID}/image", content=out.getvalue(), headers={"Content-Type": "image/png"})
-    assert response.status_code == 200
-    card = response.json()
-    assert card["image"]["userUploaded"]
-    assert card["engineId"] == original["engineId"]
-    assert client.get(card["image"]["url"]).headers["content-type"] == "image/jpeg"
-    restarted = TestClient(create_app(db))
-    assert next(c for c in restarted.get("/api/cards").json()["cards"] if c["printingId"] == PID)["image"] == card["image"]
-    assert next(c for c in restarted.post("/api/battle/session").json()["cards"] if c["printingId"] == PID)["image"] == card["image"]
-    assert restarted.delete(f"/api/cards/{PID}/image").json()["image"] == original["image"]
-    assert restarted.get("/api/card-image-gaps").status_code == 200
-
-
-def test_upload_rejects_invalid_unknown_oversized_and_cross_site(tmp_path):
-    client = TestClient(create_app(tmp_path / "app.sqlite"))
-    assert client.put(f"/api/cards/{PID}/image", content=b"<svg/>").status_code == 422
-    assert client.put("/api/cards/not-a-card/image", content=b"bad").status_code == 404
-    assert client.put(f"/api/cards/{PID}/image", content=b"a", headers={"Content-Length": str(MAX_BYTES + 1)}).status_code == 413
-    assert client.put(f"/api/cards/{PID}/image", content=iter([b"a" * MAX_BYTES, b"b"])).status_code == 413
-    assert client.put(f"/api/cards/{PID}/image", content=b"a", headers={"Origin": "https://example.com"}).status_code == 403
-
-
-def test_upload_removes_only_that_printing_from_missing_image_export(tmp_path, monkeypatch):
-    from packages.collection import domain, card_media
-    import apps.api.main as api
-    original=domain.catalog_view
-    # The live source now supplies artwork for every row. Simulate two gaps
-    # explicitly so upload/removal remains covered as the catalogue grows.
-    ids=[c['printingId'] for c in original()[:2]]
-    def gaps(*args, **kwargs):
-        return [{**c,'image':{}} if c['printingId'] in ids else c for c in original(*args, **kwargs)]
-    monkeypatch.setattr(api,'catalog_view',gaps)
-    details=card_media.details()
-    monkeypatch.setattr(card_media,'details',lambda: {k:v for k,v in details.items() if k not in ids})
-    client = TestClient(create_app(tmp_path / "app.sqlite"))
-    # Simulate a genuinely absent artwork binding as well as absent legacy
-    # metadata; on-demand artwork now fills the latter automatically.
-    client.app.state.card_media.artwork.rows = {
-        pid: row for pid, row in client.app.state.card_media.artwork.rows.items() if pid not in ids
-    }
+def test_missing_image_export_reports_only_unbound_cards(tmp_path):
+    client = TestClient(create_app(tmp_path.resolve() / "app.sqlite"))
+    client.app.state.card_media.artwork.rows = {}
+    client.app.state.sync.images.builtin.rows = {}
     cards = client.get("/api/cards").json()["cards"]
-    missing = [c for c in cards if not c["image"].get("url")]
-    target, other = missing[:2]
-    before = client.get("/api/card-image-gaps").text
-    assert target["printingId"] in before and other["printingId"] in before
-    image = io.BytesIO()
-    Image.new("RGB", (20, 30)).save(image, format="PNG")
-    assert client.put(f'/api/cards/{target["printingId"]}/image', content=image.getvalue()).status_code == 200
-    after = client.get("/api/card-image-gaps").text
-    assert target["printingId"] not in after and other["printingId"] in after
-    client.delete(f'/api/cards/{target["printingId"]}/image')
-    assert target["printingId"] in client.get("/api/card-image-gaps").text
+    expected = [c for c in cards if not c["image"].get("url")]
+    response = client.get("/api/card-image-gaps")
+    assert response.status_code == 200
+    assert expected and expected[0]["printingId"] in response.text

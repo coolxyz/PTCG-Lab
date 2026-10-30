@@ -1,6 +1,6 @@
 # Cloudflare 免费卡图 CDN 工具
 
-维护端通过 Git 获取固定版本的原图，导出为 Cloudflare Workers Static Assets。用户的 App 仍然只在需要显示图片时下载并缓存；图片不进入对战 API，不需要重新编译 App，也不占用 App 离线 ZIP 的 256 MiB 预算。
+维护端通过 Git 获取固定版本的原图，导出为 Cloudflare Workers Static Assets。用户的 App 仍然只在需要显示图片时下载并缓存；图片不进入对战 API，不需要重新编译 App，与本地克隆目录模式并存。
 
 工具入口为 `scripts/product/cloudflare_card_images.py`，包含 `plan`、`build`、`verify`、`deploy`。前三个命令不访问 Cloudflare；只有显式运行 `deploy` 才可能发布。本文不表示已经部署到某个账号。
 
@@ -48,7 +48,7 @@ python3.14 scripts/product/cloudflare_card_images.py build \
 
 如果服务对象是已安装 App，改用 `--app '/Applications/PTCG Lab Preview.app'`。输出目录必须是新的；仓库内生成目录只能位于忽略提交的 `var/`、`release/` 或 `exports/`，不能与缓存、索引或上一份输出重叠。Git 缓存按仓库隔离，只获取索引固定的 40 位提交，逐一核对 Git tree 与 blob 身份。
 
-构建按批获取缺失 Git 对象，保留原始文件字节，检查 Git blob、SHA-256、格式、大小与完整图像解码。不修改卡表、规则或用户资料，也不生成或导入展示 ZIP。默认本地图片总量预算为 8 GiB；可通过 `--max-total-mib` 显式调整，它与 App ZIP 上限及 Cloudflare 免费存储政策不是同一概念。
+构建按批获取缺失 Git 对象，保留原始文件字节，检查 Git blob、SHA-256、格式、大小与完整图像解码。不修改卡表、规则或用户资料，也不生成或导入展示 ZIP。默认本地图片总量预算为 8 GiB；可通过 `--max-total-mib` 显式调整，它是维护端磁盘预算，与 Cloudflare 免费文件数预算分别检查。
 
 失败时不留下可部署的最终目录，Git 对象缓存保留，重试使用相同缓存与新输出路径。成功目录包含：
 
@@ -65,6 +65,30 @@ candidate-1/
 ```
 
 只有 `public/` 是上传的静态目录。根目录的计划、清单和报告不公开上传；凭据不写入这些文件。`_headers` 设置长期 immutable 缓存，配置关闭 HTML 路径重写和 SPA 回退；缺图返回 404，不用首页或占位 HTML 冒充图片。
+
+### 同时覆盖已同步资料的实际首选卡图
+
+已安装 App 的随包索引不包含用户资料中全部同步图片路径。若这台 App 曾运行数据同步，必须显式增加 `--sync-home`，将当前激活卡表的首选卡图与随包索引取并集；只更新 App 或重复导出随包索引不能保证覆盖同步页面。
+
+```sh
+python3.14 scripts/product/cloudflare_card_images.py plan \
+  --app '/Applications/PTCG Lab Preview.app' \
+  --sync-home "$HOME/Library/Application Support/org.ptcglab.desktop.preview/app.sync"
+
+python3.14 scripts/product/cloudflare_card_images.py build \
+  --app '/Applications/PTCG Lab Preview.app' \
+  --sync-home "$HOME/Library/Application Support/org.ptcglab.desktop.preview/app.sync" \
+  --previous release/cloudflare-artwork/candidate-1 \
+  --name ptcg-card-images \
+  --cache var/cloudflare-artwork/git-cache \
+  --output release/cloudflare-artwork/candidate-2
+```
+
+工具只读指定同步目录的 current.json、当前发布清单／卡表和对应 snapshot 的 source.json／image-index.json，检查卡表发布摘要，再用固定 Git tree/blob 验证新增图片。不会执行冻结代码、加载旧规则、读取用户数据库或账号凭据，也不默认扫描其他用户或历史发布。导出的公开内容只有图片和固定缓存头；计划不记录本机 profile 路径。当前已核对的首选卡图并集为 13,469 个图片 URL，比随包索引多 538 个。
+
+默认范围是资料库／对战的首选卡图。若还需其他稀有度等卡面，增加 `--include-variants` 预演；全卡面会超过当前 Free 的 20,000 文件预算，工具会在下载前拒绝，不会静默裁剪或升级套餐。未导出的额外卡面可暂用 GitHub Raw 图源，或明确规划其他存储方案。
+
+Finder 浏览 public/ 可能生成 `.DS_Store`。校验会报告额外／缺失文件数量和少量相对路径示例；将这些元数据移出 public/ 再校验。不要忽略所有未知文件或绕过清单检查，也不要将凭据放进部署目录。
 
 ## 4. 校验候选
 
@@ -123,7 +147,7 @@ https://ptcg-card-images.your-subdomain.workers.dev
 
 ## 7. 上游更新与保留旧 App
 
-工具固定索引的提交，不自动将 `main` 最新卡图强塞给旧 App。先按 [卡图索引维护](按需卡图与本地缓存.md#维护索引) 生成并审核新索引，再导出 CDN。
+工具固定索引的提交，不自动将 `main` 最新卡图强塞给旧 App。先按 [卡图索引维护](按需卡图与本地缓存.md#固定图片索引) 生成并审核新索引，再导出 CDN。
 
 上一份输出可作为本地复用来源：
 
@@ -143,6 +167,6 @@ python3.14 scripts/product/cloudflare_card_images.py build \
 
 ## 维护与发布边界
 
-只提交工具、锁定依赖、必要测试源码与本文。`release/`、`var/`、Git 对象、下载图片、计划和构建报告不进入产品 main；Cloudflare 登录资料和 token 永不写入源码或输出目录。离线 ZIP 导入仍使用 [Git 卡图资源包工具](Git卡图下载与资源包工具.md)，两种工具共存但输出格式不同。
+只提交工具、锁定依赖、必要测试源码与本文。`release/`、`var/`、Git 对象、下载图片、计划和构建报告不进入产品 main；Cloudflare 登录资料和 token 永不写入源码或输出目录。App 已移除卡图 ZIP 导入。离线使用可选择 [本地克隆目录](按需卡图与本地缓存.md#直接读取本地克隆目录)，无需制作资源包。
 
 本工具的回归使用本地合成 Git 仓库，覆盖固定提交、路径拒绝、去重、额度预检、增量复用、多索引保留、完整性、失败清理及部署命令。Cloudflare 账号登录、实际发布和公网验收由维护者按本文执行，不把本地测试写成远端发布成功。

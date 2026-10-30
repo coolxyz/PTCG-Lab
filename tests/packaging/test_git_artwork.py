@@ -1,4 +1,4 @@
-"""Use real local Git objects; validate ZIPs without importing into any App."""
+"""Validate pinned Git objects and exact printing-to-image matching."""
 
 from copy import deepcopy
 from hashlib import sha256
@@ -6,11 +6,10 @@ import io
 import json
 from pathlib import Path
 import subprocess
-import zipfile
 
 from PIL import Image
 import pytest
-from scripts.product import git_card_images as tool
+from scripts.product import git_artwork as tool
 
 
 @pytest.fixture
@@ -84,43 +83,11 @@ def example(tmp_path):
             }
         ],
     }
-    contract = tool.contracts(Path(__file__).resolve().parents[2])
+    from packages.sync.normalize import COSMETIC
+    contract = (None,None,None,None,COSMETIC)
     return cache, commit, tree, catalog, raw, contract
 
 
-def test_real_git_pack_is_import_format_valid_deduplicated_and_reproducible(
-    example, tmp_path
-):
-    cache, commit, tree, catalog, raw, contract = example
-    second = {**catalog["cards"][0], "printingId": "p2", "engineId": "e2"}
-    catalog["cards"].append(second)
-    selection = tool.plan(catalog, raw, tree, cosmetic=contract[4])
-    assert len(selection["selected"]) == 2
-    before = json.dumps(catalog, sort_keys=True)
-    reports = []
-    for i in range(2):
-        out = tmp_path / f"output-{i}"
-        out.mkdir()
-        reports.append(
-            tool.build(cache, catalog, selection, out, commit, contract, name="test")
-        )
-        with zipfile.ZipFile(out / "card-images.zip") as z:
-            value, images = contract[0](
-                z.read("DISPLAY.json"),
-                contract[5].from_catalog(catalog).catalog_version,
-                {c["printingId"]: c for c in catalog["cards"]},
-            )
-            assert len(value["cards"]) == 2 and len(images) == 1
-            assert set(z.namelist()) == {
-                "DISPLAY.json",
-                *["files/" + key for key in images],
-            }
-        assert (out / "SHA256.txt").read_text().strip() == sha256(
-            (out / "card-images.zip").read_bytes()
-        ).hexdigest()
-        assert reports[-1]["automaticallyImported"] is False
-    assert reports[0]["sha256"] == reports[1]["sha256"]
-    assert json.dumps(catalog, sort_keys=True) == before
 
 
 def test_identity_mismatch_and_conflicting_face_are_not_guessed(example):
@@ -149,22 +116,6 @@ def test_printed_total_mismatch_is_not_silently_matched(example):
     assert len(tool.plan(catalog, raw, tree, cosmetic=contract[4])["selected"]) == 1
 
 
-def test_bad_image_and_pack_capacity_do_not_produce_importable_zip(example, tmp_path):
-    cache, commit, tree, catalog, raw, contract = example
-    selection = tool.plan(catalog, raw, tree, cosmetic=contract[4])
-    out = tmp_path / "too-big"
-    out.mkdir()
-    tiny = (*contract[:2], 10, *contract[3:])
-    with pytest.raises(ValueError, match="256 MiB"):
-        tool.build(cache, catalog, selection, out, commit, tiny, name="test")
-    assert not (out / "card-images.zip").exists()
-    bad = tmp_path / "bad"
-    bad.mkdir()
-    row = selection["selected"][0]
-    row["blob"] = tree["ptcg_chs_infos.json"]
-    with pytest.raises(ValueError):
-        tool.build(cache, catalog, selection, bad, commit, contract, name="test")
-    assert not (bad / "SHA256.txt").exists()
 
 
 def test_fixed_cache_can_be_reused_without_fetch(example, monkeypatch):

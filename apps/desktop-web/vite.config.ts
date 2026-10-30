@@ -26,7 +26,7 @@ export default defineConfig({
     strictPort: true,
     proxy: api
       ? Object.fromEntries(
-          ["/api", "/card-images", "/uploaded-card-images"].map((prefix) => [
+          ["/api"].map((prefix) => [
             prefix,
             { target: api },
           ]),

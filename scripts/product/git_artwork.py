@@ -1,12 +1,7 @@
-"""Download pinned Git artwork and build an App-compatible display ZIP, never import it.
-
-Standalone usage uses the target App's own catalog and validation modules. The
-only writes are to the explicitly selected Git cache and NEW output directory.
-"""
+"""Maintainer-only pinned Git objects and exact artwork matching; no ZIP importer."""
 
 from __future__ import annotations
 
-import argparse
 from collections import Counter, defaultdict
 from hashlib import sha1, sha256
 import json
@@ -15,8 +10,6 @@ from pathlib import Path, PurePosixPath
 import re
 import subprocess
 import sys
-import tempfile
-import zipfile
 
 sys.dont_write_bytecode = True
 
@@ -67,17 +60,6 @@ def app_root(path):
         if (candidate / "data/catalog/catalog.json").is_file():
             return candidate
     raise ValueError("--app must select a macOS .app or an unpacked Windows bundle")
-
-
-def contracts(root):
-    # The target App decides the identity and pack format; never reimplement or
-    # rewrite its catalog identity to force an incompatible pack into the App.
-    sys.path.insert(0, str(root))
-    from packages.sync.display import manifest, raster, MAX_PACK, MAX_UNPACKED
-    from packages.sync.normalize import COSMETIC
-    from ptcg_engine_provider.catalog import MemoryCatalog
-
-    return manifest, raster, MAX_PACK, MAX_UNPACKED, COSMETIC, MemoryCatalog
 
 
 class GitCache:
@@ -350,7 +332,7 @@ def plan(
         targets = targets[:limit]
     if not targets:
         raise ValueError(
-            "No cards selected in the target App catalog; newly synced cards may not be accepted by its resource importer"
+            "No cards selected in the target App catalog"
         )
     for c in targets:
         key = (
@@ -400,232 +382,3 @@ def plan(
             }
         )
     return {"selected": selected, "skipped": skipped, "targetCards": len(targets)}
-
-
-def build(cache, catalog, selection, output, commit, contract, *, name):
-    validate, raster, max_pack, max_unpacked, _, provider = contract
-    known = {c["printingId"]: c for c in catalog["cards"]}
-    rows, unique, total = [], {}, 0
-    with tempfile.TemporaryDirectory(prefix=".artwork-", dir=output) as temporary:
-        stage = Path(temporary)
-        selected = selection["selected"]
-        for start in range(0, len(selected), 32):
-            batch = selected[start : start + 32]
-            cache.prefetch([r["blob"] for r in batch])
-            for row in batch:
-                data = cache.blob(row["blob"], MAX_IMAGE)
-                key = sha256(data).hexdigest()
-                if key not in unique:
-                    mime = raster(data)
-                    unique[key] = {"sha256": key, "size": len(data), "mime": mime}
-                    total += len(data)
-                    if total > max_unpacked - 16 * 1024 * 1024:
-                        raise ValueError(
-                            "Images exceed App pack budget; select fewer products/printing IDs (Git cache is retained)"
-                        )
-                    (stage / key).write_bytes(data)
-                rows.append(
-                    {
-                        "printingId": row["printingId"],
-                        "engineId": row["engineId"],
-                        "image": unique[key],
-                    }
-                )
-            print(
-                f"Downloaded/verified {min(start + 32, len(selected))}/{len(selected)} card images",
-                flush=True,
-            )
-        raw = encoded(
-            {
-                "schema": 1,
-                "kind": "ptcg-display-pack",
-                "name": name,
-                "catalogVersion": provider.from_catalog(catalog).catalog_version,
-                "cards": rows,
-            }
-        )
-        validate(raw, provider.from_catalog(catalog).catalog_version, known)
-        if len(raw) + total > max_unpacked:
-            raise ValueError("Resource pack exceeds App unpacked budget")
-        temporary_zip = output / "card-images.zip.partial"
-        with zipfile.ZipFile(
-            temporary_zip, "x", zipfile.ZIP_DEFLATED, compresslevel=6
-        ) as z:
-            for filename, data in [
-                ("DISPLAY.json", raw),
-                *[("files/" + key, None) for key in sorted(unique)],
-            ]:
-                entry = zipfile.ZipInfo(filename, date_time=(1980, 1, 1, 0, 0, 0))
-                entry.compress_type = zipfile.ZIP_DEFLATED
-                entry.external_attr = 0o100644 << 16
-                z.writestr(
-                    entry,
-                    data
-                    if data is not None
-                    else (stage / filename.split("/")[1]).read_bytes(),
-                )
-                if z.fp.tell() > max_pack:
-                    raise ValueError(
-                        "ZIP exceeds App's 256 MiB limit; select fewer products (cache retained)"
-                    )
-        if temporary_zip.stat().st_size > max_pack:
-            raise ValueError("ZIP exceeds App's 256 MiB limit")
-        with zipfile.ZipFile(temporary_zip) as z:
-            if z.testzip() is not None:
-                raise ValueError("ZIP integrity check failed")
-        target = output / "card-images.zip"
-        temporary_zip.rename(target)
-    pin = sha256(target.read_bytes()).hexdigest()
-    (output / "SHA256.txt").write_text(pin + "\n")
-    (output / "SHA256SUMS.txt").write_text(pin + "  card-images.zip\n")
-    return {
-        "status": "ready-for-manual-import",
-        "zip": target.name,
-        "sha256": pin,
-        "cards": len(rows),
-        "images": len(unique),
-        "zipBytes": target.stat().st_size,
-        "catalogVersion": provider.from_catalog(catalog).catalog_version,
-        "commit": commit,
-        "displayOnly": True,
-        "automaticallyImported": False,
-    }
-
-
-def main():
-    parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("--app", type=Path, required=True)
-    parser.add_argument("--repository", default=DEFAULT_REPOSITORY)
-    parser.add_argument(
-        "--commit", help="Fixed full commit; default pins origin/main once"
-    )
-    parser.add_argument("--cache", type=Path, default=Path("card-image-git-cache"))
-    parser.add_argument("--output", type=Path, default=Path("card-image-output"))
-    parser.add_argument(
-        "--product",
-        action="append",
-        default=[],
-        help="App productCode or product ID; repeatable",
-    )
-    parser.add_argument("--printing-id", action="append", default=[])
-    parser.add_argument(
-        "--limit", type=int, help="Limit target cards for a small manual pilot"
-    )
-    parser.add_argument("--name", default="Git 下载卡图")
-    parser.add_argument(
-        "--all-cards",
-        action="store_true",
-        help="Explicitly download all matches; may exceed App pack limits",
-    )
-    parser.add_argument(
-        "--plan-only",
-        action="store_true",
-        help="Fetch metadata and plan only; no image pack",
-    )
-    parser.add_argument("--list-products", action="store_true")
-    args = parser.parse_args()
-    root = app_root(args.app)
-    contract = contracts(root)
-    catalog = read(root / "data/catalog/catalog.json")
-    if args.list_products:
-        counts = Counter(
-            c.get("productCode") for c in catalog["cards"] if c.get("productCode")
-        )
-        print(json.dumps(dict(sorted(counts.items())), ensure_ascii=False, indent=2))
-        return
-    if args.all_cards and (args.product or args.printing_id or args.limit is not None):
-        parser.error("--all-cards cannot be combined with card/product filters")
-    if not (
-        args.plan_only
-        or args.product
-        or args.printing_id
-        or args.limit is not None
-        or args.all_cards
-    ):
-        parser.error(
-            "Select --product / --printing-id / --limit, or use --plan-only first; all artwork requires --all-cards"
-        )
-    if args.limit is not None and args.limit < 1:
-        parser.error("--limit must be positive")
-    if not 1 <= len(args.name) <= 100:
-        parser.error("--name requires 1..100 characters")
-    output, cache_path = args.output.absolute(), args.cache.absolute()
-    app = args.app.resolve()
-    if any(p.is_symlink() or p.is_junction() for p in (output, *output.parents)):
-        parser.error("Output must not contain symlinks")
-    if any(p.resolve().is_relative_to(app) for p in (output, cache_path)):
-        parser.error("Cache/output must be outside the App")
-    if (
-        output == cache_path
-        or output.is_relative_to(cache_path)
-        or cache_path.is_relative_to(output)
-    ):
-        parser.error("Choose separate, non-overlapping cache and output directories")
-    output.mkdir(parents=True, exist_ok=False)
-    try:
-        cache = GitCache(cache_path, args.repository)
-        commit = cache.fetch(args.commit)
-        tree = cache.tree(commit)
-        key = tree.get("ptcg_chs_infos.json")
-        if not key:
-            raise ValueError("Upstream is missing ptcg_chs_infos.json")
-        cache.prefetch([key])
-        from packages.sync.http_source import parse
-
-        upstream = parse(cache.blob(key, 96 * 1024 * 1024))
-        selection = plan(
-            catalog,
-            upstream,
-            tree,
-            args.product,
-            args.printing_id,
-            args.limit,
-            contract[4],
-        )
-        write(
-            output / "PLAN.json",
-            {
-                "repository": args.repository,
-                "commit": commit,
-                "catalogVersion": contract[5].from_catalog(catalog).catalog_version,
-                "catalogFileSha256": sha256(
-                    (root / "data/catalog/catalog.json").read_bytes()
-                ).hexdigest(),
-                "packLimitMiB": contract[2] // (1024 * 1024),
-                "onlyOneDisplayPackActiveAtATime": True,
-                **selection,
-            },
-        )
-        print(
-            f"Pinned {commit}: {len(selection['selected'])} matches, {len(selection['skipped'])} skipped",
-            flush=True,
-        )
-        if args.plan_only:
-            result = {
-                "status": "plan-only",
-                "commit": commit,
-                "matched": len(selection["selected"]),
-                "skipped": len(selection["skipped"]),
-                "automaticallyImported": False,
-            }
-        else:
-            if not selection["selected"]:
-                raise ValueError("No unambiguous artwork matches; see PLAN.json")
-            result = build(
-                cache, catalog, selection, output, commit, contract, name=args.name
-            )
-        write(output / "REPORT.json", result)
-        print(json.dumps(result, ensure_ascii=False, indent=2))
-    except Exception as e:
-        write(
-            output / "ERROR.json", {"message": str(e), "automaticallyImported": False}
-        )
-        raise
-
-
-if __name__ == "__main__":
-    try:
-        main()
-    except (ValueError, FileExistsError, OSError) as error:
-        print("ERROR: " + str(error), file=sys.stderr)
-        sys.exit(1)

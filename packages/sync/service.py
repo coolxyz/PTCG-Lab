@@ -36,7 +36,9 @@ class SyncService:
         from .artwork import ArtworkCache
 
         self.artwork_cache = ArtworkCache(self.home)
-        self.images = Images(self.home, self.source, resolver=self.image_source, cache=self.artwork_cache)
+        from .builtin_images import BuiltinImages
+        self.images = Images(self.home, self.source, resolver=self.image_source, cache=self.artwork_cache,
+                             builtin=BuiltinImages(self.root))
         self.threads = {}
         self.thread_lock = threading.Lock()
 

@@ -30,7 +30,7 @@ export function CardVariants({id,version,onChange}:{id:string;version:number;onC
       <p>此品相共 {entry?.quantity || 0} 张 · 未分配卡面 {entry?.unassigned || 0} 张</p>
       <p className="muted">“保存卡面数量”会同步增减持有总量。整理以前登记的收藏时，请使用“分配已有收藏”，总量保持不变。</p>
       <div className="variant-grid">{data.variants.map((v:any)=><article key={v.variantId} className="variant-card" data-variant={v.variantId}>
-        {v.image?.url ? <DetailImage compact card={{cnName: v.finishLabel+' · CHS:'+v.upstreamId, image: {...v.image, label: v.rarity || '卡面'}}} onError={e=>{e.currentTarget.hidden=true}} /> : <p>暂无此版本卡图</p>}
+        {v.image?.url ? <DetailImage compact card={{cnName: v.finishLabel+' · CHS:'+v.upstreamId, image: {...v.image, label: v.rarity || '卡面'}}} /> : <p>暂无此版本卡图</p>}
         <b>{v.finishLabel}</b><small>{v.rarity || '无稀有度标记'} · CHS:{v.upstreamId}{v.removed?' · 上游已移除':''}</small>
         <label>持有数量<input aria-label={'卡面数量 '+v.upstreamId} type="number" min="0" max="9999" disabled={busy} value={values[v.variantId] || 0} onChange={e=>setValues({...values,[v.variantId]:Number(e.target.value)})}/></label>
         <button disabled={busy} onClick={()=>void save(v.variantId)}>保存卡面数量</button>

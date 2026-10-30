@@ -112,11 +112,6 @@ for c in catalog['cards']:
         chosen = normalized['cards'].get(image_id)
         if not chosen or not image_checks.get(chosen.get('imageBlob'),{}).get('ok'):
             reasons.append('已绑定图片无法从本地缓存解码')
-    elif ui_image['url'].startswith('/uploaded-card-images/'):
-        path = ROOT / 'var/app-card-images' / Path(ui_image['url']).name
-        try:
-            with Image.open(path) as im: im.verify()
-        except Exception: reasons.append('用户上传图片文件缺失或无效')
     else:
         reasons.append('图片地址不是当前本地来源，需复核')
     if reasons:

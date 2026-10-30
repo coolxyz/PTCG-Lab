@@ -10,7 +10,7 @@ from PIL import Image
 import pytest
 
 from scripts.product import cloudflare_card_images as tool
-from scripts.product.git_card_images import GitCache
+from scripts.product.git_artwork import GitCache
 
 
 @pytest.fixture
@@ -77,6 +77,74 @@ def test_export_reproducible_and_previous_verified_bytes_are_reused(artwork, tmp
         return OfflineGitCache(path, str(tmp_path / "upstream"), allow_local=True)
     third = tool.build([artwork[0]], tmp_path / "cache", tmp_path / "three", cache_factory=offline)
     assert third["manifestSha256"] == first["manifestSha256"]
+
+
+def sync_home(tmp_path, value, path, raw):
+    home = tmp_path / "profile.sync"
+    release = "f" * 64
+    root = home / "releases" / release
+    snapshot = home / "snapshots" / value["commit"]
+    (root / "data/catalog").mkdir(parents=True)
+    snapshot.mkdir(parents=True)
+    (home / "current.json").write_text(json.dumps({"releaseId": release}))
+    image = {"locale": "zh-Hans", "equivalenceReviewed": True, "source": "public-source",
+             "url": f"/api/sync/images/{value['commit']}/99"}
+    catalog = {"cards": [{"printingId": "p1", "engineId": "e1", "images": [image]}]}
+    data = tool.encoded(catalog)
+    (root / "data/catalog/catalog.json").write_bytes(data)
+    (root / "manifest.json").write_text(json.dumps({"releaseId": release, "files": {"data/catalog/catalog.json": tool.digest(data)}}))
+    (snapshot / "source.json").write_text(json.dumps({"repository": value["repository"]}))
+    (snapshot / "image-index.json").write_text(json.dumps({"99": {"path": path, "blob": tool.blob_id(raw)}}))
+    return home, root, snapshot, catalog
+
+
+def test_explicit_current_sync_images_are_exported_without_importing_frozen_code(artwork, tmp_path):
+    index, value, _, cache, _ = artwork
+    repository = tmp_path / "upstream"
+    stream = io.BytesIO(); Image.new("RGB", (8, 12), "green").save(stream, "PNG")
+    raw = stream.getvalue()
+    (repository / "img/246/99.png").write_bytes(raw)
+    subprocess.run(["git", "-C", repository, "add", "."], check=True)
+    subprocess.run(["git", "-C", repository, "-c", "user.name=Test", "-c", "user.email=test@example.invalid", "commit", "-m", "sync-only image"], check=True, capture_output=True)
+    current = {**value, "commit": subprocess.check_output(["git", "-C", repository, "rev-parse", "HEAD"]).decode().strip()}
+    home, release, snapshot, catalog = sync_home(tmp_path, current, "img/246/99.png", raw)
+    # A profile can contain code and credentials. Neither is executed/read/exported.
+    (release / "do-not-execute.py").write_text("raise RuntimeError('must not execute')")
+    (home / "credentials.json").write_text("private sentinel")
+    assert len(tool.plan([index])["images"]) == 1
+    assert len(tool.plan([index], sync_home=home)["images"]) == 2
+    out = tmp_path / "output"
+    report = tool.build([index], tmp_path / "cache", out, sync_home=home, cache_factory=cache)
+    assert report["images"] == 2
+    assert (out / "public/example/cards" / current["commit"] / "img/246/99.png").read_bytes() == raw
+    assert not list(out.rglob("credentials.json"))
+    (snapshot / "image-index.json").write_text(json.dumps({"99": {"path": "../escape.png", "blob": tool.blob_id(raw)}}))
+    with pytest.raises(ValueError): tool.plan([index], sync_home=home)
+
+
+def test_sync_catalog_hash_and_variant_budget_are_checked_before_download(artwork, tmp_path):
+    index, value, raw, _, _ = artwork
+    home, release, snapshot, catalog = sync_home(tmp_path, value, "img/246/0.png", raw)
+    file = release / "data/catalog/catalog.json"
+    file.write_bytes(b'{}')
+    with pytest.raises(ValueError, match="release manifest"):
+        tool.plan([index], sync_home=home)
+    second = {**catalog["cards"][0]["images"][0], "url": f"/api/sync/images/{value['commit']}/100"}
+    catalog["cards"][0]["variants"] = [{"image": second}]
+    data = tool.encoded(catalog);file.write_bytes(data)
+    (release / "manifest.json").write_text(json.dumps({"releaseId": "f" * 64, "files": {"data/catalog/catalog.json": tool.digest(data)}}))
+    (snapshot / "image-index.json").write_text(json.dumps({"99": {"path": "img/246/0.png", "blob": tool.blob_id(raw)}, "100": {"path": "img/246/1.png", "blob": tool.blob_id(raw)}}))
+    assert len(tool.plan([index], sync_home=home)["images"]) == 1
+    with pytest.raises(ValueError, match="budget exceeded"):
+        tool.plan([index], sync_home=home, include_variants=True, max_files=2)
+
+
+def test_finder_metadata_is_diagnosed_and_still_rejected(artwork, tmp_path):
+    artwork[-1]()
+    out = tmp_path / "output"
+    (out / "public/.DS_Store").write_bytes(b"finder metadata")
+    with pytest.raises(ValueError, match=r"unexpectedCount.*1.*DS_Store.*Finder"):
+        tool.verify(out)
 
 
 def test_incremental_export_fetches_only_new_blob_and_can_retain_old_commit(artwork, tmp_path):

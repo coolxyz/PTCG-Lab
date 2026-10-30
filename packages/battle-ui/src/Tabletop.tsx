@@ -1,3 +1,4 @@
+import { RetryImage } from "./RetryImage";
 import { useEffect, useRef, useState, type PointerEvent } from "react";
 import { createPortal } from "react-dom";
 import type {
@@ -302,14 +303,11 @@ export function Tabletop({
           }}
         >
           {info?.image.url && (
-            <img
+            <RetryImage
               src={info.image.url}
               draggable={false}
               alt=""
               loading="lazy"
-              onError={(e) => {
-                e.currentTarget.style.display = "none";
-              }}
             />
           )}
           <span className="card-fallback">{name(card)}</span>
@@ -600,7 +598,7 @@ export function Tabletop({
             const card = [...(view.observation.self.hand || []), ...view.observation.self.active,
               ...view.observation.self.bench, ...view.observation.stadium].find((c) => c.ref === drag);
             const image = card && cardInfo(card)?.image.url;
-            return <>{image && <img src={image} alt="" draggable={false} />}<span>{card ? name(card) : "卡牌"}</span></>;
+            return <>{image && <RetryImage src={image} alt="" draggable={false} />}<span>{card ? name(card) : "卡牌"}</span></>;
           })()}
         </div>, document.body
       )}
@@ -659,12 +657,9 @@ export function Tabletop({
           <div className="tabletop-detail">
             <div>
               {cardInfo(focus)?.image.url ? (
-                <img
+                <RetryImage
                   src={cardInfo(focus)?.image.url || undefined}
                   alt={name(focus)}
-                  onError={(e) => {
-                    e.currentTarget.style.display = "none";
-                  }}
                 />
               ) : (
                 <div className="detail-placeholder">{name(focus)}</div>

@@ -15,29 +15,34 @@ import sqlite3
 import ssl
 import threading
 import time
+import math
+from email.utils import parsedate_to_datetime
 from urllib.parse import quote, urlsplit
 import uuid
 
 import certifi
 
 from .common import ROOT, SyncError, digest, read, write
-from .display import raster
+from .raster import raster
 from .http_source import HTTPSource, object_sha, parse
 from .repositories import canonical
 
 MAX_IMAGE = 8 * 1024 * 1024
-DEFAULTS = {"source": "github-raw", "baseUrl": "", "capacityMiB": 1024}
+DEFAULTS = {"source": "github-raw", "baseUrl": "", "capacityMiB": 1024, "localGitPath": ""}
 INDEX = "resources/artwork/builtin-index.json"
 
 
-def settings(value):
-    if not isinstance(value, dict) or set(value) != set(DEFAULTS):
+def settings(value, *, validate_local=True):
+    if not isinstance(value, dict) or set(value) - set(DEFAULTS) or not {"source", "baseUrl", "capacityMiB"} <= set(value):
         raise SyncError("INVALID_IMAGE_SOURCE", "卡图来源设置格式无效")
+    value = {**DEFAULTS, **value}
     if (
-        value["source"] not in ("github-raw", "cdn")
+        value["source"] not in ("github-raw", "cdn", "local-git")
         or type(value["capacityMiB"]) is not int
         or not 64 <= value["capacityMiB"] <= 8192
         or not isinstance(value["baseUrl"], str)
+        or not isinstance(value["localGitPath"], str)
+        or len(value["localGitPath"]) > 4096
     ):
         raise SyncError("INVALID_IMAGE_SOURCE", "请选择卡图来源和 64–8192 MiB 缓存容量")
     base = value["baseUrl"].rstrip("/")
@@ -69,13 +74,29 @@ def settings(value):
             )
     if value["source"] == "cdn" and not base:
         raise SyncError("INVALID_IMAGE_SOURCE", "请填写静态图源的 HTTPS 基础地址")
+    if value["source"] == "local-git" and validate_local:
+        from .local_artwork import local_path
+        value["localGitPath"] = str(local_path(value["localGitPath"]))
     return {**value, "baseUrl": base}
 
 
 class DownloadError(SyncError):
-    def __init__(self, code, message, retry_after=60):
-        super().__init__(code, message, 503)
+    def __init__(self, code, message, retry_after=60, *, retryable=True,
+                 scope=None, upstream_status=None, ray=None, status=503):
+        super().__init__(code, message, status)
         self.retry_after = retry_after
+        self.retryable = retryable
+        self.scope = scope or ("source" if code == "IMAGE_SOURCE_BUSY" else "image")
+        self.upstream_status, self.ray = upstream_status, ray
+
+
+def retry_seconds(header, default=60):
+    try:
+        if header.isdecimal():
+            return min(86401, max(1, int(header)))
+        return min(86401, max(1, math.ceil(parsedate_to_datetime(header).timestamp() - time.time())))
+    except (ValueError, TypeError, OverflowError):
+        return default
 
 
 def https(url, limit):
@@ -131,30 +152,43 @@ def https(url, limit):
             },
         )
         reply = connection.getresponse()
-        if reply.status in (403, 429, 503):
-            header = reply.getheader("Retry-After", "")
-            retry = max(60, min(int(header), 3600)) if header.isdecimal() else 60
+        header = reply.getheader("Retry-After", "")
+        metadata = {"upstream_status": reply.status, "ray": reply.getheader("cf-ray")}
+        if reply.status == 429 or reply.status == 503 and header:
+            retry = retry_seconds(header)
             raise DownloadError(
-                "IMAGE_SOURCE_BUSY", "卡图来源暂时限流，已暂停请求；稍后可重试", retry
+                "IMAGE_SOURCE_BUSY", "卡图来源要求稍后重试，已暂停该图源请求", retry,
+                retryable=retry <= 86400, scope="source", **metadata,
             )
+        if reply.status in (404, 410):
+            raise DownloadError("IMAGE_NOT_FOUND", "图源缺少这张卡图，请更新 CDN 图库", 300,
+                                retryable=False, status=404, **metadata)
+        if reply.status == 403:
+            raise DownloadError("IMAGE_SOURCE_FORBIDDEN", "图源拒绝了这张卡图的访问，请检查访问策略", 300,
+                                retryable=False, status=403, **metadata)
         if (
             reply.status != 200
             or reply.getheader("Content-Encoding", "identity") != "identity"
         ):
-            raise DownloadError("IMAGE_UNAVAILABLE", "卡图暂不可用，已保留已有缓存")
+            raise DownloadError("IMAGE_UNAVAILABLE", "这张卡图暂不可用，其他图片继续加载", 5,
+                                retryable=reply.status >= 500, **metadata)
         length = reply.getheader("Content-Length")
         if length and (not length.isdecimal() or int(length) > limit):
-            raise DownloadError("IMAGE_TOO_LARGE", "上游卡图超过单图容量限制")
+            raise DownloadError("IMAGE_TOO_LARGE", "上游卡图超过单图容量限制", retryable=False)
         data, total, deadline = [], 0, time.monotonic() + 45
         while block := reply.read(min(65536, limit + 1 - total)):
             total += len(block)
-            if total > limit or time.monotonic() > deadline:
-                raise DownloadError("IMAGE_TOO_LARGE", "卡图下载超过大小或时间预算")
+            if total > limit:
+                raise DownloadError("IMAGE_TOO_LARGE", "卡图下载超过单图容量限制", retryable=False)
+            if time.monotonic() > deadline:
+                raise DownloadError("IMAGE_NETWORK_UNAVAILABLE", "这张卡图下载超时，稍后自动重试", 2)
             data.append(block)
         return b"".join(data)
+    except ssl.SSLCertVerificationError as exc:
+        raise DownloadError("IMAGE_TLS_FAILED", "卡图来源证书验证失败", 300, retryable=False) from exc
     except (OSError, http.client.HTTPException) as exc:
         raise DownloadError(
-            "IMAGE_NETWORK_UNAVAILABLE", "卡图下载失败，已有缓存仍可离线使用"
+            "IMAGE_NETWORK_UNAVAILABLE", "这张卡图下载失败，其他图片继续加载", 2
         ) from exc
     finally:
         connection.close()
@@ -197,13 +231,16 @@ class ArtworkCache:
         with self.lock:
             self.safe(self.config)
             if self.config.is_file():
-                if self.config.stat().st_size > 4096:
+                if self.config.stat().st_size > 32 * 1024:
                     raise SyncError("INVALID_IMAGE_SOURCE", "卡图来源设置过大")
-                return settings(read(self.config))
+                return settings(read(self.config), validate_local=False)
             return dict(DEFAULTS)
 
     def configure(self, value):
         value = settings(value)
+        if value["source"] == "local-git":
+            from .local_artwork import LocalGitArtwork
+            LocalGitArtwork(value["localGitPath"]).validate()
         with self.lock:
             self.safe(self.config)
             write(self.config, value)
@@ -225,21 +262,33 @@ class ArtworkCache:
 
     def status(self):
         config = self.configuration()
+        available, message = self.local_status(config)
         with self.lock, closing(self.db()) as db:
             count, size = db.execute(
                 "SELECT COUNT(*),COALESCE(SUM(bytes),0) FROM blobs"
             ).fetchone()
-            retry = max(
-                [0, *[until - self.clock() for until in self.host_cooldown.values()]]
-            )
+            host = urlsplit("https://raw.githubusercontent.com" if config["source"] == "github-raw" else config["baseUrl"]).hostname
+            retry = 0 if config["source"] == "local-git" else max(0, self.host_cooldown.get(host, (0, None))[0] - self.clock())
         return {
             **config,
             "cachedImages": count,
             "cachedBytes": size,
             "retryAfterSeconds": max(0, int(retry)),
             "mode": "on-demand",
-            "offlineZipSupported": True,
+            "localGitAvailable": available,
+            "localGitMessage": message,
         }
+
+    @staticmethod
+    def local_status(config):
+        if config["source"] != "local-git":
+            return None, ""
+        from .local_artwork import LocalGitArtwork
+        try:
+            LocalGitArtwork(config["localGitPath"]).validate()
+            return True, "本地目录可读取；卡图显示时逐张校验，不复制全库、不联网"
+        except (SyncError, OSError) as error:
+            return False, error.message if isinstance(error, SyncError) else "本地目录暂不可读取"
 
     def _cached(self, blob):
         with closing(self.db()) as db, db:
@@ -278,6 +327,10 @@ class ArtworkCache:
                 config = self.configuration()
             if cached:
                 return cached
+            if config["source"] == "local-git":
+                from .local_artwork import LocalGitArtwork
+                with self.downloads:
+                    return LocalGitArtwork(config["localGitPath"]).read(path, blob)
             base = (
                 "https://raw.githubusercontent.com"
                 if config["source"] == "github-raw"
@@ -296,49 +349,52 @@ class ArtworkCache:
             key = (url, blob)
             with self.downloads:
                 with self.lock:
-                    until = max(
-                        self.host_cooldown.get(host, 0), self.failures.get(key, 0)
+                    until, previous = max(
+                        [self.host_cooldown.get(host, (0, None)), self.failures.get(key, (0, None))],
+                        key=lambda item: item[0],
                     )
-                    if until > self.clock():
+                    if previous is not None and until > self.clock():
                         raise DownloadError(
                             "IMAGE_RETRY_LATER",
-                            "卡图请求已退避，稍后可重试",
-                            max(1, int(until - self.clock())),
+                            "卡图请求已退避：" + previous.message,
+                            max(1, math.ceil(until - self.clock())),
+                            retryable=previous.retryable, scope=previous.scope,
+                            upstream_status=previous.upstream_status, ray=previous.ray,
+                            status=previous.status,
                         )
                 try:
                     data = self.transport(url, MAX_IMAGE)
                     if not isinstance(data, bytes) or not 0 < len(data) <= MAX_IMAGE:
-                        raise DownloadError("IMAGE_TOO_LARGE", "卡图超过单图容量限制")
+                        raise DownloadError("IMAGE_TOO_LARGE", "卡图超过单图容量限制", retryable=False)
                     if object_sha("blob", data) != blob:
                         raise DownloadError(
-                            "IMAGE_HASH_MISMATCH", "卡图与固定提交不一致，未写入缓存"
+                            "IMAGE_HASH_MISMATCH", "卡图与固定提交不一致，未写入缓存", retryable=False
                         )
                     mime = raster(data)
                 except (OSError, http.client.HTTPException) as exc:
-                    with self.lock:
-                        if len(self.failures) >= 512:
-                            self.failures.pop(next(iter(self.failures)))
-                        self.failures[key] = self.clock() + 60
-                        self.host_cooldown[host] = self.failures[key]
-                    raise DownloadError(
-                        "IMAGE_UNAVAILABLE", "卡图下载失败，已有缓存仍可使用"
-                    ) from exc
+                    error = DownloadError("IMAGE_NETWORK_UNAVAILABLE", "这张卡图下载失败，其他图片继续加载", 2)
+                    self._failure(key, host, error)
+                    raise error from exc
                 except SyncError as exc:
-                    with self.lock:
-                        self.failures[key] = self.clock() + getattr(
-                            exc, "retry_after", 60
-                        )
-                        if exc.code in {
-                            "IMAGE_SOURCE_BUSY",
-                            "IMAGE_NETWORK_UNAVAILABLE",
-                        }:
-                            self.host_cooldown[host] = self.failures[key]
-                        if len(self.failures) > 512:
-                            self.failures.pop(next(iter(self.failures)))
-                    raise
+                    error = exc if isinstance(exc, DownloadError) else DownloadError(
+                        exc.code, exc.message, 300, retryable=False, status=exc.status
+                    )
+                    self._failure(key, host, error)
+                    if error is exc:
+                        raise
+                    raise error from exc
                 with self.lock:
                     self._store(blob, data, mime, config["capacityMiB"] * 1024**2)
                 return data, mime
+
+    def _failure(self, key, host, error):
+        with self.lock:
+            record = (self.clock() + error.retry_after, error)
+            self.failures[key] = record
+            if error.scope == "source":
+                self.host_cooldown[host] = record
+            if len(self.failures) > 512:
+                self.failures.pop(next(iter(self.failures)))
 
     def _store(self, blob, data, mime, capacity):
         sha = sha256(data).hexdigest()
@@ -437,11 +493,13 @@ class BuiltinArtwork:
         # Bundled display metadata can refer to an old sync URL while a fresh
         # profile has no such snapshot. Only an installed snapshot supersedes
         # the shipped printing index; missing snapshots must not hide its image.
-        if synced and self.synced and self.synced.available(synced[1], synced[2]):
-            return None
+        if synced and self.synced and self.synced.installed(synced[1]) and self.synced.available(synced[1], synced[2]):
+            return current
         row = self.rows.get(card.get("printingId"))
         if row and row[0] == card.get("engineId"):
             return "/api/sync/artwork/" + row[1]
+        if synced and self.synced and self.synced.available(synced[1], synced[2]):
+            return current
 
     def image(self, key):
         row = self.assets.get(key)

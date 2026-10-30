@@ -1,3 +1,4 @@
+import { RetryImage } from "@ptcg/battle-ui";
 import { useEffect, useLayoutEffect, useRef, useState } from "react";
 import type { CSSProperties } from "react";
 import type { BattleView, CardInfo } from "./Battle";
@@ -167,7 +168,7 @@ export function EventPlayback({
             style={flight.style}
           >
             {flight.name && cards[flight.name]?.image.url ? (
-              <img src={cards[flight.name].image.url!} alt="" />
+              <RetryImage src={cards[flight.name].image.url!} alt="" />
             ) : (
               <span>
                 {flight.name

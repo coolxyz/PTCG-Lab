@@ -8,14 +8,15 @@ import threading
 
 from .artwork import ArtworkCache, MAX_IMAGE
 from .common import SyncError
-from .display import raster
+from .raster import raster
 from .http_source import HTTPSource, object_sha
 
 
 class Images:
-    def __init__(self, home, source, *, resolver=None, cache=None):
+    def __init__(self, home, source, *, resolver=None, cache=None, builtin=None):
         self.home, self.source = Path(home), source
         self.resolver = resolver
+        self.builtin = builtin
         self.indexes, self.index_lock = {}, threading.RLock()
         self.cache = cache or ArtworkCache(self.home)
         # Existing verified image files remain available offline. They are not
@@ -32,7 +33,7 @@ class Images:
         HTTPSource.validate_sha(commit)
         path = self.cache.safe(self.home / "snapshots" / commit / "image-index.json")
         if not path.is_file():
-            return {}
+            return self.builtin.rows if self.builtin and self.builtin.commit == commit else {}
         if path.stat().st_size > 16 * 1024**2:
             raise SyncError("IMAGE_SNAPSHOT_MISSING", "图片索引过大", 404)
         stamp = (path.stat().st_mtime_ns, path.stat().st_size)
@@ -49,6 +50,10 @@ class Images:
                 self.indexes.pop(next(iter(self.indexes)))
             self.indexes[commit] = (stamp, value)
             return value
+
+    def installed(self, commit):
+        HTTPSource.validate_sha(commit)
+        return self.cache.safe(self.home / "snapshots" / commit / "image-index.json").is_file()
 
     def available(self, commit, card_id):
         try:
@@ -72,8 +77,6 @@ class Images:
         if not isinstance(card_id, str) or not card_id.isdecimal():
             raise SyncError("INVALID_CARD_ID", "卡图编号无效")
         path = self.home / "snapshots" / commit / "image-index.json"
-        if not path.exists():
-            raise SyncError("IMAGE_SNAPSHOT_MISSING", "该版本图片索引不存在", 404)
         entry = self.index(commit).get(card_id)
         if not entry or not entry.get("blob"):
             raise SyncError("IMAGE_MISSING", "上游未提供对应图片", 404)
@@ -97,6 +100,8 @@ class Images:
         if not entry.get("path"):
             raise SyncError("IMAGE_MISSING", "离线图片缺失或已损坏", 404)
         source = self.resolver(commit) if self.resolver else self.source
+        if not path.exists() and self.builtin and self.builtin.commit == commit:
+            source = self.builtin
         # The immutable snapshot already provides the expected Git blob. No
         # tree/blob REST API request is needed when an image becomes visible.
         return self.cache.image(source.repository, commit, entry["path"], entry["blob"])
@@ -105,7 +110,19 @@ class Images:
         data, mime = self.data(commit, card_id)
         sha = sha256(data).hexdigest()
         shared = self.cache.directory / sha
-        return (shared if shared.is_file() else self.directory / sha), mime
+        if shared.is_file():
+            return shared, mime
+        legacy = self.directory / sha
+        if legacy.is_file():
+            return legacy, mime
+        config = self.cache.configuration()
+        if config["source"] == "local-git":
+            from .local_artwork import LocalGitArtwork
+            entry = self.index(commit)[card_id]
+            reader = LocalGitArtwork(config["localGitPath"])
+            reader.read(entry["path"], entry["blob"])
+            return reader.root / entry["path"], mime
+        return legacy, mime
 
     def status(self, commit):
         HTTPSource.validate_sha(commit)

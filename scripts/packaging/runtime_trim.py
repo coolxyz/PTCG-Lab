@@ -66,7 +66,6 @@ def trim(payload, *, root):
     for name in (
         "scripts/sync/verify_runtime.py",
         "scripts/product/resources.py",
-        "scripts/product/display_resources.py",
         "scripts/product/desktop_install.py",
     ):
         source = safe_file(root, name)

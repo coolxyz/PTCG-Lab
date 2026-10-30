@@ -58,7 +58,6 @@ def clean_database(database, removed):
         delete('decks', 'id', decks)
         delete('collection_variants', 'printing_id', removed)
         delete('collection', 'printing_id', removed)
-        delete('card_images', 'printing_id', removed)
         imports = {i for i, body in db.execute('SELECT id,body FROM imports') if has_removed(json.loads(body), removed)}
         changes = {i for i, batch, body in db.execute('SELECT id,batch_id,body FROM changes') if batch in imports or has_removed(json.loads(body), removed)}
         delete('changes', 'id', changes)
@@ -214,12 +213,6 @@ def apply(work, resume_backup=None):
     for name in ('data/engine/catalog.json', 'data/simulation/effects.json', 'data/cardpool/plain-pokemon.json', 'data/cardpool/source-exceptions.json'):
         shutil.copy2(release / name, ROOT / name)
     shutil.copy2(work / 'apply-user.sqlite', ROOT / 'var/app.sqlite')
-    with closing(sqlite3.connect(ROOT / 'var/app.sqlite')) as db:
-        files = {r[0] for r in db.execute('SELECT filename FROM card_images')}
-    if upload.exists():
-        for path in list(upload.iterdir()):
-            if path.is_file() and path.name not in files:
-                move(path)
     report.update(appliedAt=now(), backup=str(backup))
     move(work)
     write(backup / 'cleanup-report.json', report)

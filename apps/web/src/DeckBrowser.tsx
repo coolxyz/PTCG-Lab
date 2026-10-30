@@ -1,3 +1,4 @@
+import { RetryImage } from "@ptcg/battle-ui";
 import React, { useState } from "react";
 import type { CardInfo, Decision, EngineCard } from "./Battle";
 
@@ -31,7 +32,7 @@ export function DeckBrowser({ inspection, names, selectedCount }: {
         return <li key={card.id || card.name}><details>
           <summary><strong>{label(card)}</strong><span>× {count}</span></summary>
           <small>{category(card)} · {card.id}</small>
-          {info?.image?.url && <img loading="lazy" onError={e => { e.currentTarget.style.display = "none"; }} src={info.image.url} alt={label(card)} />}
+          {info?.image?.url && <RetryImage loading="lazy" src={info.image.url} alt={label(card)} />}
           {info?.chineseDetails?.sections?.length ? info.chineseDetails.sections.map((s, i) => <p key={i}><strong>{s.name}</strong> {s.damage} {s.text}</p>) : <>
             {card.abilities?.map((a, i) => <p key={`ability-${i}`}>{a.name}：{a.text}</p>)}
             {card.attacks?.map((a, i) => <p key={`attack-${i}`}>{a.name} {a.damage}：{a.text}</p>)}

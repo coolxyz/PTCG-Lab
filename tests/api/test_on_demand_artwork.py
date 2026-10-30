@@ -3,7 +3,6 @@
 from hashlib import sha256
 import io
 import json
-import zipfile
 
 from fastapi.testclient import TestClient
 from PIL import Image
@@ -16,7 +15,7 @@ from ptcg_desktop_api.resources import Resources
 from ptcg_engine_provider.catalog import MemoryCatalog
 
 
-def test_lazy_catalog_shared_views_cached_http_offline_zip_and_personal_upload(
+def test_lazy_catalog_shared_views_cached_http_and_offline(
     tmp_path, monkeypatch
 ):
     import packages.sync.artwork as module
@@ -50,6 +49,8 @@ def test_lazy_catalog_shared_views_cached_http_offline_zip_and_personal_upload(
         )
     )
     monkeypatch.setattr(module, "INDEX", str(index))
+    import packages.sync.builtin_images as face_module
+    monkeypatch.setattr(face_module, "INDEX", str(tmp_path / "no-builtin-faces.json"))
     app = create_app(tmp_path.resolve() / "app.sqlite")
     calls = []
     app.state.sync.artwork_cache.transport = (
@@ -122,61 +123,6 @@ def test_lazy_catalog_shared_views_cached_http_offline_zip_and_personal_upload(
             ).status_code
             == 403
         )
-        pack = {
-            "schema": 1,
-            "kind": "ptcg-display-pack",
-            "name": "offline",
-            "catalogVersion": MemoryCatalog.from_catalog(RAW).catalog_version,
-            "cards": [
-                {
-                    "printingId": card["printingId"],
-                    "engineId": card["engineId"],
-                    "image": {
-                        "sha256": sha256(data).hexdigest(),
-                        "size": len(data),
-                        "mime": "image/png",
-                    },
-                }
-            ],
-        }
-        output = io.BytesIO()
-        with zipfile.ZipFile(output, "w") as z:
-            z.writestr("DISPLAY.json", json.dumps(pack))
-            z.writestr("files/" + sha256(data).hexdigest(), data)
-        raw = output.getvalue()
-        installed = client.post(
-            "/api/sync/resources/install",
-            content=raw,
-            headers={
-                "Content-Type": "application/zip",
-                "X-PTCG-Resource-SHA256": sha256(raw).hexdigest(),
-            },
-        )
-        assert installed.status_code == 201
-        key = installed.json()["packId"]
-        assert (
-            client.post(
-                "/api/sync/resources/activate",
-                json={"packId": key, "expectedPack": None},
-            ).status_code
-            == 200
-        )
-        offline = next(
-            c
-            for c in client.get("/api/cards").json()["cards"]
-            if c["printingId"] == card["printingId"]
-        )["image"]["url"]
-        assert (
-            offline.startswith("/api/sync/resource-images/")
-            and client.get(offline).content == data
-        )
-        uploaded = client.put(
-            "/api/cards/" + card["printingId"] + "/image", content=data
-        )
-        assert uploaded.status_code == 200 and uploaded.json()["image"][
-            "url"
-        ].startswith("/uploaded-card-images/")
-        assert len(calls) == 1
 
 
 def test_slow_image_queue_does_not_starve_product_metadata(tmp_path):
@@ -211,3 +157,21 @@ def test_slow_image_queue_does_not_starve_product_metadata(tmp_path):
         finally:
             release.set()
         assert all(f.result(timeout=5).status_code == 200 for f in images)
+
+
+def test_artwork_api_reports_retry_policy_without_sharing_network_failure(tmp_path):
+    from packages.sync.artwork import DownloadError
+    app = create_app(tmp_path.resolve() / "app.sqlite")
+    artwork = app.state.card_media.artwork
+    key = next(iter(artwork.assets))
+    def failed(_key):
+        raise DownloadError("IMAGE_NETWORK_UNAVAILABLE", "single image failure", 2)
+    artwork.image = failed
+    with TestClient(app) as client:
+        response = client.get("/api/sync/artwork/" + key)
+        assert response.status_code == 503
+        assert response.headers["Retry-After"] == "2"
+        assert response.headers["Cache-Control"] == "no-store"
+        assert response.json()["retryable"] is True
+        assert response.json()["cooldownScope"] == "image"
+        assert client.get("/api/sync/artwork/settings").json()["retryAfterSeconds"] == 0

@@ -185,15 +185,15 @@ def test_bad_download_is_not_cached_and_is_not_retried_immediately(tmp_path, kin
     assert cache.status()["cachedImages"] == 0 and len(calls) == 1
 
 
-def test_lru_eviction_repairs_corruption_and_does_not_touch_offline_resources(tmp_path):
+def test_lru_eviction_repairs_corruption_and_does_not_touch_clone(tmp_path):
     first, second = png(), png((11, 22, 33))
     b1, b2 = object_sha("blob", first), object_sha("blob", second)
     calls = []
     cache = ArtworkCache(
         tmp_path.resolve(), transport=lambda *a: calls.append(1) or first
     )
-    offline = tmp_path / "display/retained.png"
-    offline.parent.mkdir()
+    offline = tmp_path / "local-clone/img/retained.png"
+    offline.parent.mkdir(parents=True)
     offline.write_bytes(first)
     cache._store(b1, first, "image/png", len(first) + len(second) - 1)
     cache._store(b2, second, "image/png", len(first) + len(second) - 1)
@@ -325,8 +325,8 @@ def test_builtin_index_identity_and_missing_snapshot_fallback(tmp_path):
     snap = cache.home / "snapshots" / COMMIT
     snap.mkdir(parents=True)
     (snap / "image-index.json").write_text(json.dumps({"1": row}))
-    assert builtin.url(card) is None  # installed snapshot takes precedence
-    assert builtin.url({**card, "engineId": "wrong"}) is None
+    assert builtin.url(card) == card["image"]["url"]  # installed snapshot takes precedence
+    assert builtin.url({**card, "engineId": "wrong"}) == card["image"]["url"]
     with pytest.raises(SyncError):
         module.BuiltinArtwork(cache, root=root, known={"p1": {"engineId": "wrong"}})
     catalog.write_text('{"changed":true}')
@@ -382,3 +382,71 @@ def test_fixed_raw_origin_keeps_verified_tls_with_vpn_synthetic_dns(monkeypatch)
         == data
     )
     assert calls == [("GET", f"/example/Cards/{COMMIT}/img/1.png")]
+
+
+@pytest.mark.parametrize("status,header,code,scope,retryable", [
+    (404, "", "IMAGE_NOT_FOUND", "image", False),
+    (403, "", "IMAGE_SOURCE_FORBIDDEN", "image", False),
+    (429, "120", "IMAGE_SOURCE_BUSY", "source", True),
+    (503, "120", "IMAGE_SOURCE_BUSY", "source", True),
+    (503, "", "IMAGE_UNAVAILABLE", "image", True),
+    (500, "", "IMAGE_UNAVAILABLE", "image", True),
+    (302, "", "IMAGE_UNAVAILABLE", "image", False),
+])
+def test_http_failure_keeps_status_and_only_explicit_source_throttle_is_shared(monkeypatch, status, header, code, scope, retryable):
+    import http.client
+    monkeypatch.setattr(socket, "getaddrinfo", lambda *a, **k: [(2, 1, 6, "", ("93.184.216.34", 443))])
+
+    class Reply:
+        def getheader(self, name, default=None):
+            return {"Retry-After": header, "cf-ray": "test-ray"}.get(name, default)
+
+    reply = Reply()
+    reply.status = status
+    class Connection:
+        def __init__(self, *a, **k): pass
+        def request(self, *a, **k): pass
+        def getresponse(self): return reply
+        def close(self): pass
+
+    monkeypatch.setattr(http.client, "HTTPSConnection", Connection)
+    with pytest.raises(DownloadError) as error:
+        https("https://images.example.org/img/1.png", 8192)
+    assert (error.value.code, error.value.scope, error.value.retryable) == (code, scope, retryable)
+    assert error.value.upstream_status == status and error.value.ray == "test-ray"
+
+
+@pytest.mark.parametrize("kind", ["network", "missing", "forbidden", "hash"])
+def test_one_failed_image_does_not_block_other_images(tmp_path, kind):
+    now, calls, raw = [100.0], [], png()
+    def download(url, limit):
+        calls.append(url)
+        if url.endswith("bad.png"):
+            if kind == "network": raise OSError("transient")
+            if kind == "missing": raise DownloadError("IMAGE_NOT_FOUND", "missing", 300, retryable=False, upstream_status=404, status=404)
+            if kind == "forbidden": raise DownloadError("IMAGE_SOURCE_FORBIDDEN", "forbidden", 300, retryable=False, upstream_status=403, status=403)
+            return png((0, 0, 0))
+        return raw
+    cache = ArtworkCache(tmp_path.resolve(), transport=download, clock=lambda: now[0])
+    blob = object_sha("blob", raw)
+    with pytest.raises(DownloadError) as first:
+        cache.image(REPO, COMMIT, "img/bad.png", blob)
+    assert cache.status()["retryAfterSeconds"] == 0
+    assert cache.image(REPO, COMMIT, "img/good.png", blob)[0] == raw
+    # A separate blob avoids a successful cache hit hiding the failed URL.
+    other = object_sha("blob", png((4, 5, 6)))
+    with pytest.raises(DownloadError):
+        cache.image(REPO, COMMIT, "img/bad.png", other)
+    with pytest.raises(DownloadError) as again:
+        cache.image(REPO, COMMIT, "img/bad.png", other)
+    assert again.value.retryable == (kind == "network")
+    assert again.value.scope == "image"
+    assert first.value.retryable == (kind == "network")
+
+
+def test_retry_after_http_date_and_large_delay(monkeypatch):
+    from packages.sync.artwork import retry_seconds
+    monkeypatch.setattr("packages.sync.artwork.time.time", lambda: 100)
+    assert retry_seconds("Thu, 01 Jan 1970 00:03:40 GMT") == 120
+    assert retry_seconds("garbage") == 60
+    assert retry_seconds("999999999999999999999999999") == 86401

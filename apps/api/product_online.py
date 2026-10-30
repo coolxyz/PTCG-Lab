@@ -4,10 +4,8 @@ import json
 import sqlite3
 import re
 from pathlib import Path
-from hashlib import sha256
 from threading import RLock
 from ptcg_desktop_api.bridge import BridgeError, fields
-from ptcg_desktop_api.resources import MAX_IMAGE, raster
 from ptcg_online_client.contracts import ClientError
 from ptcg_engine_provider.catalog import MemoryCatalog
 from packages.collection.domain import RAW, ROOT, DomainError, content_hash, validation
@@ -228,8 +226,8 @@ class ProductResources:
                     if archived:
                         return archived[-1]
                 return self.fallback.catalog(catalog_version, asset_version)
-            # Presentation edits do not change the rules catalog. Rebuild the current
-            # display snapshot when uploads or the approved details file change,
+            # Presentation data does not change the rules catalog. Rebuild the current
+            # display snapshot when the approved details file changes,
             # while retaining every previously issued assetVersion for replays.
             details = ROOT / "data/catalog/card-details.json"
             stamp = (
@@ -237,22 +235,7 @@ class ProductResources:
                 if details.exists()
                 else None
             )
-            with self.media.store.db() as db:
-                uploads = list(
-                    db.execute(
-                        "SELECT printing_id,filename FROM card_images ORDER BY printing_id"
-                    )
-                )
-            signature = (
-                self.media.display_resources.active_id
-                if self.media.display_resources
-                else None,
-                stamp,
-                tuple(
-                    (pid, name, (self.media.directory / name).exists())
-                    for pid, name in uploads
-                ),
-            )
+            signature = stamp
             if (
                 signature == self.current_signature
                 and (catalog_version, asset_version) in self.saved
@@ -342,34 +325,6 @@ class ProductResources:
             return url if self.sync_images.available(match[1], match[2]) else None
         if re.fullmatch(r"/api/sync/artwork/[a-f0-9]{64}", url) and self.media.artwork:
             return url
-        if (
-            re.fullmatch(r"/api/sync/resource-images/[a-f0-9]{64}/[a-f0-9]{64}", url)
-            and self.media.display_resources
-        ):
-            return url
-        locations = {
-            "/card-images/": ROOT / ".catalog/images",
-            "/uploaded-card-images/": self.media.directory,
-        }
-        for prefix, root in locations.items():
-            if not url.startswith(prefix):
-                continue
-            path = root / url.removeprefix(prefix)
-            if (
-                not path.resolve().is_relative_to(root.resolve())
-                or not path.is_file()
-                or path.stat().st_size > MAX_IMAGE
-            ):
-                return None
-            try:
-                data = path.read_bytes()
-                raster(data)
-                key = sha256(data).hexdigest()
-                with self.fallback.lock:
-                    self.fallback._write(key, data)
-                return "/resources/" + key
-            except (OSError, BridgeError):
-                return None
         # No browser remote image requests and no unpinned fallback download.
         return None
 

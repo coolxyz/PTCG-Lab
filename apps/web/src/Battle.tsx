@@ -10,7 +10,7 @@ import {
 import "./battle.css";
 import { Tabletop } from "./Tabletop";
 import { DeckBrowser } from "./DeckBrowser";
-import type { ChineseDetails } from "./CardArtwork";
+import type { ChineseDetails } from "./CardDescription";
 import { indexCards } from "@ptcg/battle-ui/presentation";
 
 export type CardInfo = {

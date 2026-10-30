@@ -26,7 +26,6 @@ FOLDERS = (
 FILES = (
     'docs/Cloudflare卡图CDN部署.md',
     'docs/GitHub发布与隐私.md',
-    'docs/Git卡图下载与资源包工具.md',
     'docs/Windows验证步骤.md',
     'docs/上游卡库同步.md',
     'docs/启动使用与跨系统迁移.md',
@@ -35,6 +34,7 @@ FILES = (
     'docs/构建与发布.md',
     'docs/架构与维护.md',
     "resources/artwork/builtin-index.json",
+    "resources/artwork/builtin-snapshot.json",
     "README.md",
     "AGENTS.md",
     "LICENSE",

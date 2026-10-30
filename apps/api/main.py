@@ -75,7 +75,7 @@ def create_app(db_path=None):
     app = FastAPI(title="PTCG Lab", version="1.0.1")
     app.add_middleware(GZipMiddleware, minimum_size=1024, compresslevel=4)
     app.state.store = store
-    from packages.collection.card_media import CardMedia, MAX_BYTES
+    from packages.collection.card_media import CardMedia
     media = CardMedia(store)
     app.state.card_media = media
     from apps.api.battle import router
@@ -115,7 +115,7 @@ def create_app(db_path=None):
                 )
             if (
                 request.headers.get("content-length", "").isdigit()
-                and int(request.headers["content-length"]) > (256*1024*1024 if request.url.path == "/api/sync/resources/install" else MAX_BYTES if request.url.path.endswith("/image") else 1048576)
+                and int(request.headers["content-length"]) > 1048576
             ):
                 return JSONResponse(
                     {"code": "TOO_LARGE", "message": "请求过大"}, status_code=413
@@ -125,7 +125,7 @@ def create_app(db_path=None):
         response.headers["Referrer-Policy"] = "no-referrer"
         response.headers["X-Frame-Options"] = "DENY"
         image_route = request.url.path.startswith((
-            "/api/sync/artwork/", "/api/sync/images/", "/api/sync/resource-images/"
+            "/api/sync/artwork/", "/api/sync/images/"
         )) and request.url.path not in {"/api/sync/artwork/settings"}
         if request.url.path.startswith("/api") and not (image_route and response.status_code == 200):
             response.headers["Cache-Control"] = "no-store"
@@ -140,11 +140,6 @@ def create_app(db_path=None):
     def rows(model):
         return [e.model_dump() for e in model.entries]
 
-    image_dir = ROOT / ".catalog/images"
-    if image_dir.exists():
-        app.mount("/card-images", StaticFiles(directory=image_dir), name="card-images")
-    app.mount("/uploaded-card-images", StaticFiles(directory=media.directory), name="uploaded-card-images")
-
     @app.get("/api/card-image-gaps")
     def image_gaps():
         import csv, io
@@ -157,24 +152,6 @@ def create_app(db_path=None):
             row = [c["printingId"], c["cnName"], c.get("productCode"), c.get("collectorNumber"), d.get("imageGap", "尚无卡图"), d.get("source")]
             writer.writerow(["'" + str(v) if str(v).startswith(("=", "+", "-", "@")) else v for v in row])
         return Response("\ufeff" + output.getvalue(), media_type="text/csv", headers={"Content-Disposition": 'attachment; filename="missing-card-images.csv"'})
-
-    def image_card(pid):
-        return next(c for c in media.decorate(catalog_view()) if c["printingId"] == pid)
-
-    @app.put("/api/cards/{pid}/image")
-    async def upload_image(pid: str, request: Request):
-        data = bytearray()
-        async for chunk in request.stream():
-            data.extend(chunk)
-            if len(data) > MAX_BYTES:
-                raise DomainError("TOO_LARGE", "卡图不能超过 8 MB", 413)
-        media.upload(pid, bytes(data))
-        return image_card(pid)
-
-    @app.delete("/api/cards/{pid}/image")
-    def remove_image(pid: str):
-        media.remove(pid)
-        return image_card(pid)
 
     @app.get("/api/meta")
     def meta():

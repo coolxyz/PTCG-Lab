@@ -235,7 +235,9 @@ def compose_document(
                 "cpus": 0.5,
                 "mem_limit": "256m",
                 "healthcheck": {
-                    "test": ["CMD-SHELL", "pg_isready -U ptcg_v2 -d ptcg_v2"],
+                    # The image's temporary initialization server accepts Unix
+                    # sockets before initialization finishes. Wait for final TCP.
+                    "test": ["CMD-SHELL", "pg_isready -h 127.0.0.1 -U ptcg_v2 -d ptcg_v2"],
                     "interval": "3s",
                     "timeout": "3s",
                     "retries": 30,
