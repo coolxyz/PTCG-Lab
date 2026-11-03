@@ -13,9 +13,20 @@
     "macosArm64": "source distribution; manual functional and upgrade acceptance confirmed; no distribution signing required",
     "windowsX64": "source distribution; native manual and upgrade acceptance confirmed; no distribution signing required",
     "macosIntel": "unsupported",
-    "ios": "manual acceptance confirmed; limited TestFlight distribution planned, not uploaded",
+    "ios": "Release archive handoff prepared; operator distribution signing, TestFlight upload and Beta review pending",
     "minimumOsRuntime": "declared deployment targets; physical minimum-OS testing waived"
   },
   "releaseReady": false,
-  "runtimeAssetsInSource": false
+  "runtimeAssetsInSource": false,
+  "developmentStatus": "complete",
+  "developmentCompletedAt": "2026-11-03",
+  "developmentScope": {
+    "onlineBattle": "delivered; current rules only",
+    "macos": "Apple Silicon; self-built source distribution",
+    "windows": "x64; user-confirmed native acceptance",
+    "ios": "user-confirmed functional acceptance; Release handoff available",
+    "intelMac": "unsupported",
+    "minimumOsPhysicalTest": "waived",
+    "formalCapacity": "target-deployment qualification; no fixed concurrency guarantee"
+  }
 }

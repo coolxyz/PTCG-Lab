@@ -37,6 +37,9 @@ def test_public_export_excludes_state_data_and_history():
         "apps/mobile/src-tauri/Info.ios.plist",
         "apps/mobile/src-tauri/ios/Sources/Documents.swift",
         "tests/mobile/ios-ui/project.yml",
+        "apps/mobile/src-tauri/PrivacyInfo.xcprivacy",
+        "licenses/mobile/supplemental.json",
+        "docs/TestFlight发布.md",
         "rulesets/cn-standard-2026-09-16.json",
     } <= set(names)
     assert all(Path(n).is_file() for n in names)

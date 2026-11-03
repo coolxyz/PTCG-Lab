@@ -13,6 +13,29 @@ def relative(name):
     p=PurePosixPath(name)
     return bool(name) and not p.is_absolute() and p.as_posix()==name and '..' not in p.parts and '\\' not in name and ':' not in name
 
+def supplement(root, package, fixed, declaration, archive):
+    """Require both the locked archive and its own VCS identity before using texts."""
+    manifest=Path(root)/'licenses/mobile/supplemental.json'
+    if not manifest.exists():return None
+    value=json.loads(safe_file(root,'licenses/mobile/supplemental.json').read_bytes())
+    if value.get('schema')!=1:raise ValueError('Invalid supplemental license manifest')
+    rows=[r for r in value['components'] if (r['name'],r['version'])==(package['name'],package['version'])]
+    if not rows:return None
+    if len(rows)!=1:raise ValueError('Duplicate supplemental license record')
+    row=rows[0];prefix=package['name']+'-'+package['version']+'/'
+    vcs=json.loads(archive.extractfile(prefix+'.cargo_vcs_info.json').read())
+    if row['crateSha256']!=fixed['checksum'] or row['vcsCommit']!=vcs['git']['sha1'] or row['pathInVcs']!=vcs['path_in_vcs'] or row['licenseDeclared']!=declaration.get('license'):
+        raise ValueError('Supplemental license identity differs from locked crate')
+    texts=[]
+    for file in row['files']:
+        if not relative(file['path']):raise ValueError('Unsafe supplemental license path')
+        raw=safe_file(Path(root)/'licenses/mobile',file['path']).read_bytes()
+        if sha256(raw).hexdigest()!=file['sha256']:raise ValueError('Changed supplemental license text')
+        texts.append((file['path'],raw))
+    if not texts:raise ValueError('Empty supplemental license record')
+    notice='\n'.join([package['name']+' '+package['version'],'Declared license: '+row['licenseDeclared'],'Upstream: '+str(row['repository']),'Authors (metadata, not a substituted copyright notice): '+', '.join(row['authors']),'Unmodified source code: '+row['sourceArchive'],'VCS commit: '+row['vcsCommit']])+'\n'
+    return row,texts,notice.encode()
+
 def generate(root,cargo_home,metadata,output):
     root,cargo_home=Path(root),Path(cargo_home);output=new_output(output)
     lock=tomllib.loads(safe_file(root,'apps/mobile/src-tauri/Cargo.lock').read_text())
@@ -56,6 +79,12 @@ def generate(root,cargo_home,metadata,output):
             if not names:
                 names=[e.name.removeprefix(prefix) for e in t.getmembers() if e.isfile() and e.name.startswith(prefix) and relative(e.name.removeprefix(prefix)) and PurePosixPath(e.name).name.lower() in {'license','license.txt','copying','copying.txt'}][:10]
             for name in sorted(set(names)):add(item,name,t.extractfile(prefix+name).read())
+            extra=supplement(root,package,fixed,declaration,t)
+            if extra:
+                row,texts,notice=extra
+                for name,raw in texts:add(item,'supplemental/'+PurePosixPath(name).name,raw)
+                add(item,'UPSTREAM-NOTICE.txt',notice)
+                item['supplementalEvidence']={k:row[k] for k in ('vcsCommit','sourceArchive','files')}
     npm_lock=json.loads(safe_file(root,'package-lock.json').read_bytes())['packages'];seen=set()
     def npm(name):
         if name in seen:return

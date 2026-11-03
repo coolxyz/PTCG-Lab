@@ -81,16 +81,20 @@ if __name__=="__main__":
     command=sub.add_parser("bundle")
     command.add_argument("--resources",required=True,type=Path)
     command.add_argument("--output",required=True,type=Path)
-    command=sub.add_parser("candidate")
-    command.add_argument("--assets",required=True,type=Path)
-    command.add_argument("--work",required=True,type=Path)
-    command.add_argument("--output",required=True,type=Path)
-    command.add_argument("--rust-bin",required=True,type=Path)
-    command.add_argument("--cargo-home",required=True,type=Path)
-    command.add_argument("--tools-bin",type=Path)
-    command.add_argument("--gems",type=Path)
-    command.add_argument("--target-cache",type=Path)
-    command.add_argument("--target",choices=["simulator","device"],action="append")
+    for name in ('candidate','testflight'):
+        command=sub.add_parser(name)
+        command.add_argument("--assets",required=True,type=Path)
+        command.add_argument("--work",required=True,type=Path)
+        command.add_argument("--output",required=True,type=Path)
+        command.add_argument("--rust-bin",required=True,type=Path)
+        command.add_argument("--cargo-home",required=True,type=Path)
+        command.add_argument("--tools-bin",type=Path)
+        command.add_argument("--gems",type=Path)
+        command.add_argument("--target-cache",type=Path)
+        if name=='testflight':
+            command.add_argument('--team',required=True)
+            command.add_argument('--build-number',required=True)
+        else:command.add_argument("--target",choices=["simulator","device"],action="append")
     command=sub.add_parser("record")
     command.add_argument("--ledger",required=True,type=Path)
     command.add_argument("--artifact",required=True,type=Path)
@@ -111,9 +115,9 @@ if __name__=="__main__":
         elif args.command=='bundle':
             from scripts.packaging.mobile_assets import bundle
             result=bundle(args.resources,args.output)
-        elif args.command=='candidate':
+        elif args.command in {'candidate','testflight'}:
             from scripts.native.ios_candidate import candidate
-            result=candidate(args.assets,args.work,args.output,rust_bin=args.rust_bin,cargo_home=args.cargo_home,tools=args.tools_bin,gems=args.gems,target_cache=args.target_cache,targets=args.target or ['simulator'])
+            result=candidate(args.assets,args.work,args.output,rust_bin=args.rust_bin,cargo_home=args.cargo_home,tools=args.tools_bin,gems=args.gems,target_cache=args.target_cache,targets=['device'] if args.command=='testflight' else args.target or ['simulator'],**({'release_team':args.team,'build_number':args.build_number} if args.command=='testflight' else {}))
         else:
             from scripts.native.ios_acceptance import update
             result=update(args.ledger,args.case,args.result,args.evidence,system=args.system,device=args.device_class,operator=args.operator,artifact=args.artifact)

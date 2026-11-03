@@ -2,7 +2,7 @@
 
 PTCG Lab 是简体中文 PTCG 本地应用，提供卡牌资料库、收藏、卡组构筑、人机练习与房间码网络对战。桌面 App 使用 Tauri 2，本机 Web 使用同一套产品界面；网络对战由独立的 API v2 服务裁定。人机和网络模式共用本地卡组、对战桌面及回放界面。
 
-当前版本为 **1.1.0-preview.1**。桌面支持 macOS Apple Silicon 和 Windows x64，用户已确认 Windows、iOS 和升级安装人工验收通过。Intel Mac 暂不支持，声明的最低系统不作为实机验收门禁。项目按开源源码交付，由用户自行编译桌面程序，不要求维护者提供 Developer ID、公证或 Windows 签名；iOS 计划通过 TestFlight 有限分发。当前支持状态见 [RELEASE.json](RELEASE.json)。
+当前版本为 **1.1.0-preview.1**。网络对战和原生 App 的当前功能开发已完成，后续进入维护与具体部署/分发。桌面支持 macOS Apple Silicon 和 Windows x64，用户已确认 Windows、iOS 和升级安装人工验收通过。Intel Mac 暂不支持，声明的最低系统不作为实机验收门禁。项目按开源源码交付，由用户自行编译桌面程序，不要求维护者提供 Developer ID、公证或 Windows 签名；iOS 计划通过 TestFlight 有限分发。当前支持状态见 [RELEASE.json](RELEASE.json)。
 
 ## 开始使用
 
@@ -33,6 +33,7 @@ Windows 使用 `./start.ps1 -Setup -Check`，再运行 `./start.ps1`。资产必
 - [更新上游卡库与规则](docs/上游卡库同步.md)
 - [本地克隆卡图与在线缓存](docs/按需卡图与本地缓存.md)
 - [iOS 移动开发与验收](docs/iOS开发与验收.md)：包含收藏/CSV 交换、卡组管理及文件导入、卡图缓存、目录更新、原生分享及 API v2 对战；iPhone XR 与桌面完整对局及回放已人工验收。TestFlight 签名上传与分发材料另行准备。
+- [TestFlight Release 归档、签名与有限分发](docs/TestFlight发布.md)
 - [部署 Cloudflare 免费卡图 CDN](docs/Cloudflare卡图CDN部署.md)
 - [架构与维护](docs/架构与维护.md)
 - [源码发布与隐私](docs/GitHub发布与隐私.md)

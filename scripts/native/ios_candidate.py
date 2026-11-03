@@ -10,6 +10,7 @@ from scripts.packaging.ios_inventory import generate as notices
 from scripts.packaging.ios_artifact import audit,archive,seal_simulator
 from scripts.packaging.ios_icons import install as install_icons, SOURCE as ICON_SOURCE, BACKGROUND as ICON_BACKGROUND
 from scripts.native.ios_acceptance import write_matrix
+from scripts.packaging import ios_distribution
 
 def simulator_project(spec):
     spec=json.loads(json.dumps(spec))
@@ -43,8 +44,13 @@ def environment(work,rust_bin,cargo_home,tools=None,gems=None,target_cache=None)
         env['CARGO_TARGET_DIR']=str(target)
     return env
 
-def candidate(assets,work,output,*,rust_bin,cargo_home,tools=None,gems=None,target_cache=None,targets=('simulator',),root=ROOT):
+def candidate(assets,work,output,*,rust_bin,cargo_home,tools=None,gems=None,target_cache=None,targets=('simulator',),root=ROOT,release_team=None,build_number=None):
     if not targets or any(t not in {'simulator','device'} for t in targets) or len(set(targets))!=len(targets):raise ValueError('Explicit unique targets required')
+    release=release_team is not None or build_number is not None
+    if release:
+        distribution=ios_distribution.inputs(release_team,build_number)
+        if tuple(targets)!=('device',):raise ValueError('TestFlight preparation requires device-only Release archive')
+    else:distribution={'developmentTeam':'0000000000'}
     assets,rust_bin,cargo_home=Path(assets).absolute(),Path(rust_bin).absolute(),Path(cargo_home).absolute()
     work,output=new_output(work),new_output(output);root=Path(root).absolute()
     if work.is_relative_to(output) or output.is_relative_to(work):raise ValueError('Separate work/output directories required')
@@ -73,9 +79,10 @@ def candidate(assets,work,output,*,rust_bin,cargo_home,tools=None,gems=None,targ
         resources(assets,work/'resources',root=checkout)
         cargo=Path(rust_bin)/'cargo';metadata=command('cargo-metadata',[cargo,'metadata','--locked','--offline','--format-version','1','--filter-platform','aarch64-apple-ios','--manifest-path',mobile/'src-tauri/Cargo.toml'],checkout,capture=True)
         phase='inventory';inventory=notices(checkout,cargo_home,json.loads(metadata),work/'licenses');completed.append('inventory')
+        if release and not inventory['evidenceComplete']:raise ValueError('Release preparation requires complete dependency notice evidence')
         # Tauri requires a nonempty team even with --no-sign. This sentinel is
         # only for unsigned SDK builds; it is not an Apple account/team.
-        config=work/'tauri.ios.conf.json';record(config,{'build':{'frontendDist':str(mobile/'dist')},'bundle':{'iOS':{'developmentTeam':'0000000000'},'resources':{str(work/'resources')+'/':'catalog/',str(work/'licenses')+'/':'licenses/'}}})
+        config=work/'tauri.ios.conf.json';record(config,{'build':{'frontendDist':str(mobile/'dist')},'bundle':{'iOS':distribution,'resources':{str(work/'resources')+'/':'catalog/',str(work/'licenses')+'/':'licenses/'}}})
         # Use the package script so generated Xcode phases retain the npm runner.
         # Calling tauri.js with node directly generates an invalid `node tauri`.
         cli=['npm','run','tauri','--']
@@ -86,14 +93,16 @@ def candidate(assets,work,output,*,rust_bin,cargo_home,tools=None,gems=None,targ
         phase='install-icons'
         icon_report=install_icons(work/'icons/ios',mobile/'src-tauri/gen/apple',checkout/ICON_SOURCE)
         record(output/'ICON-SOURCE.json',icon_report);completed.append(phase)
-        if 'simulator' in targets:
-            apple=mobile/'src-tauri/gen/apple';project=apple/'project.yml'
-            spec=json.loads(command('simulator-project-spec',['xcodegen','dump','--type','json','--no-env','--spec',project],apple,capture=True))
-            project.write_text(json.dumps(simulator_project(spec),indent=2)+'\n')
-            command('simulator-project',['xcodegen','generate','--spec',project],apple)
+        apple=mobile/'src-tauri/gen/apple';project=apple/'project.yml'
+        ios_distribution.validate_privacy(checkout/ios_distribution.PRIVACY)
+        spec=json.loads(command('project-spec',['xcodegen','dump','--type','json','--no-env','--spec',project],apple,capture=True))
+        spec=ios_distribution.project(spec,team=release_team)
+        if 'simulator' in targets:spec=simulator_project(spec)
+        project.write_text(json.dumps(spec,indent=2)+'\n')
+        command('configured-project',['xcodegen','generate','--spec',project],apple)
         seals=[]
         for target in targets:
-            command('build-'+target,[*cli,'ios','build','--ci','--debug',*(['--no-sign'] if target=='device' else []),'--archive-only','--target','aarch64-sim' if target=='simulator' else 'aarch64','--config',config],mobile,local_simulator=target=='simulator')
+            command('build-'+target,[*cli,'ios','build','--ci',*([] if release else ['--debug']),*(['--no-sign'] if target=='device' else []),'--archive-only','--target','aarch64-sim' if target=='simulator' else 'aarch64','--config',config],mobile,local_simulator=target=='simulator')
             candidates=[]
             for app in (mobile/'src-tauri/gen/apple').rglob('*.app'):
                 try:audit(app,target,expected_resources=work/'resources');candidates.append(app)
@@ -107,6 +116,10 @@ def candidate(assets,work,output,*,rust_bin,cargo_home,tools=None,gems=None,targ
                 completed.append(phase)
             packed=archive(app,output/target,target,expected_resources=work/'resources')
             write_matrix(output/target,packed['sha256'],source['publicSourceSha256'],target)
+        if release:
+            archives=sorted(apple.rglob('*.xcarchive'),key=lambda p:p.stat().st_mtime,reverse=True)
+            if not archives:raise ValueError('Actual Xcode Release archive missing')
+            ios_distribution.handoff(archives[0],output,team=release_team,number=build_number,resources=work/'resources',source=source)
         shutil.copytree(work/'licenses',output/'licenses')
         report={'schema':1,'status':'unsigned_candidates_built_runtime_pending','source':source,'icons':icon_report,'targets':list(targets),'completed':completed,'codeSeals':seals,'distributionSigned':False,'licenseEvidenceComplete':inventory['evidenceComplete'],'licenseMissingCount':len(inventory['missingEvidence']),'signed':False,'runtimeAccepted':False,'releaseReady':False,'servicesChanged':False,'deviceOperations':'disabled'}
         record(output/'BUILD-REPORT.json',report)

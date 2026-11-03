@@ -4,6 +4,8 @@
 
 iPhone XR / iOS 18.7.11 已完成开发签名安装、卡库/卡图/卡组及真实 Keychain 身份保持验证。2026-11-03 用户确认 iOS 相关测试、XR＋桌面完整对局/本人回放和升级安装通过，功能验收按其确认范围收口。最低系统无需实机测试；其他历史候选的失败/pending 保留，不自动改写为重测通过。iOS 将通过 TestFlight 有限发布，上传与分发签名尚未执行；许可及分发材料另行审阅，不阻塞 API 交付。最新范围见[构建与分发说明](构建与发布.md)。
 
+TestFlight 使用独立的 Release 归档准备入口，真实团队和递增 Build 必填，生成可交给 Xcode 签名的归档、ExportOptions 和上传步骤；不自动访问账号。具体命令、隐私/加密填写和邮件邀请见 [TestFlight 发布](TestFlight发布.md)。
+
 ## 环境
 
 构建机需要完整 Xcode、iOS SDK、CocoaPods、Rust 1.90.0、Node/npm 和锁定的 Tauri CLI 2.12.4。模拟器运行还需 Xcode 中安装对应系统运行时；较新的 Xcode 使用 Device Hub，旧版使用 Simulator.app。Rust crate 使用 Tauri 2.12.5 / tauri-build 2.7.4，依赖闭包见移动项目的 Cargo.lock。声明最低 iOS 16.0；需相应设备验证，不能从 SDK 编译成功推导最低系统通过。
@@ -118,7 +120,7 @@ python -B scripts/native/ios.py doctor --runtime
 
 安装仅写指定私有目录，不调用 sudo/Homebrew。逐一验证 `.gem` 摘要、真实 gemspec 的 `ruby` 平台、Ruby 版本及锁定依赖，拒绝 Java/其他平台和校验不符的包；保留 TLS 校验。XcodeGen 同时安装平台预设文件，避免只有可执行文件却缺失构建设置。工具检查与 App 运行检查分别记录；`doctor --runtime` 在 Xcode 首次设置未完成时不调用 simctl，避免它隐式启动全局初始化。
 
-许可清单覆盖 Cargo iOS 目标与宿主构建依赖的保守闭包，以及前端声明的运行依赖，不声称每项都最终链接。Rust 原文仅从与 Cargo.lock SHA 一致的 crate 提取，npm 原文取锁定安装目录；workspace 使用其实际版本与项目许可。`licenses/INVENTORY.json` 保留逐项来源、文件摘要及 `missingEvidence`，`THIRD-PARTY.html` 方便人工审阅。上游只有 SPDX 声明但未附原文的依赖继续记为缺证据，不能据此通过分发许可审阅。
+许可清单覆盖 Cargo iOS 目标与宿主构建依赖的保守闭包，以及前端声明的运行依赖，不声称每项都最终链接。Rust 原文仅从与 Cargo.lock SHA 一致的 crate 提取，npm 原文取锁定安装目录；workspace 使用其实际版本与项目许可。`licenses/INVENTORY.json` 保留逐项来源、文件摘要及 `missingEvidence`，`THIRD-PARTY.html` 方便人工审阅。上游未附原文的依赖可由 `licenses/mobile/supplemental.json` 补充固定提交的声明和标准条款，逐项核对 crate 哈希、VCS 身份及文本哈希；没有匹配证据仍记为缺失。Release 准备入口要求内容证据齐备，权利及分发条件审阅单独进行。
 
 ## 候选包验收记录
 

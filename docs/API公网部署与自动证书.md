@@ -11,6 +11,29 @@
 
 当前交付是单主机、单 API 进程、默认一个规则 worker 的有界方案，不支持通过简单复制 API 容器获得多副本一致性。不要使用 `--scale api`。容量需按当前镜像、规则、主机和网络实测；本机双局功能通过不代表并发容量已达标。
 
+## Docker-only 离线安装包
+
+目标服务器没有 Python 时，可使用可配置离线包。它包含当前规则 API、PostgreSQL 和 Caddy 的固定镜像归档；只需 Docker/Compose v2 和 SHA-256 校验工具。构建方先按下文生成并核验一份 ACME kit，再执行：
+
+```sh
+python3 -B scripts/packaging/offline_server.py \
+  --from-kit release/approved-acme-kit \
+  --output release/offline/ptcg-api-linux-amd64
+```
+
+工具只复制三个镜像归档及必要启动源码，不复制原 kit 的私钥、密码、服务器身份或数据库。输出可解压目录、`.tar.gz` 和对应 `.sha256`；架构取自已核验 kit，arm64 需用对应输入另生成。校验包后解压，在目录中运行：
+
+```sh
+./server.sh setup --host api.example.com --email operator@example.com
+./server.sh start
+./server.sh check
+./server.sh check-public
+```
+
+域名/邮箱在服务器首次安装时填写。setup 使用已导入 API 镜像里的 Python、无网络容器生成私有 `state/deployment`、新身份和数据库秘密，不覆盖已有安装；`start` 自动迁移并等待就绪，所有服务禁用拉取。`load` 可单独导入，`status`/`logs` 查看状态，`stop` 只关闭本项目并保留卷。重新配置需独立安装/迁移计划，不删除 state 或卷来重置。
+
+“离线”指镜像导入及运行依赖不依赖仓库、pip、npm 或镜像站。ACME 自动签发/续期仍要求正确公网 DNS、TCP 80/443 和出站网络；本包不是断网环境的证书签发方案。该离线包的入口为 `server.sh`，后续章节的 `manage.py` 命令适用于原始固定配置 kit。
+
 ## 1. 公网主机准备
 
 准备自己管理的域名、ACME 联系邮箱、Linux Docker/Compose v2 主机和批准的当前规则 bundle。选择 `linux/arm64` 或 `linux/amd64`，与服务器 CPU 对应。构建机另需开发 Python 3.14+；目标主机可仅装 Docker，便捷管理器需 Python 3.11+。

@@ -7,3 +7,6 @@
 apps/api/expert_policies/** text eol=lf
 apps/api/expert_service.py text eol=lf
 artifacts/engine/overlay-hashes.json text eol=lf
+
+# Keep audited upstream license text bytes, including original trailing spaces.
+licenses/mobile/texts/*.txt whitespace=-blank-at-eol
