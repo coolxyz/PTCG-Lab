@@ -1,0 +1,35 @@
+name: P8FMobileAcceptance
+options:
+  deploymentTarget:
+    iOS: "16.0"
+settings:
+  base:
+    SWIFT_VERSION: "5.0"
+    GENERATE_INFOPLIST_FILE: YES
+    CODE_SIGN_IDENTITY: "-"
+    CODE_SIGN_STYLE: Manual
+    DEVELOPMENT_TEAM: ""
+targets:
+  Acceptance:
+    type: bundle.ui-testing
+    platform: iOS
+    sources:
+      - Acceptance.swift
+      - PublicServer.json
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: org.ptcglab.mobile.acceptance.driver
+        TARGETED_DEVICE_FAMILY: "1,2"
+        TEST_TARGET_NAME: ""
+schemes:
+  Acceptance:
+    build:
+      targets:
+        Acceptance:
+          - test
+    test:
+      targets:
+        - Acceptance
+      language: zh-Hans
+      region: CN
+      parallelizable: false

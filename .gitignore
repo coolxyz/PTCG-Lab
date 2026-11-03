@@ -60,3 +60,7 @@ packages/*/ts/dist/
 **/build/
 **/target/
 apps/native-shell/src-tauri/gen/
+
+# iOS generated projects, simulator products and private display resources
+apps/mobile/dist/
+apps/mobile/src-tauri/gen/

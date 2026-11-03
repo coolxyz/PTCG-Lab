@@ -1,11 +1,11 @@
 # 桌面产品 Windows x64 预览程序验收
 
 
-本手顺适用于完整 MSVC AMD64 GUI EXE、Python 3.14.10、锁定依赖、当前规则、资料和统一产品 GUI。macOS 使用 cargo-xwin 0.23.1、Rust 1.90.0、LLVM/LLD 23.1.4 及 Microsoft CRT/SDK 交叉编译；SDK 仅参与构建，不放入交付包。Windows 原生运行结果仍待填写。交叉编译与 PE 静态核对不替代原生自动化、DPAPI、Job Object 或 WebView2 实机验收。
+本手顺适用于完整 MSVC AMD64 GUI EXE、Python 3.14.10、锁定依赖、当前规则、资料和统一产品 GUI。macOS 使用 cargo-xwin 0.23.1、Rust 1.90.0、LLVM/LLD 23.1.4 及 Microsoft CRT/SDK 交叉编译；SDK 仅参与构建，不放入交付包。2026-11-03 用户确认原生 Windows 及升级安装人工测试通过；下表继续作为新构建的空白检查模板，不表示本轮仍被整体阻塞。交叉编译与 PE 静态核对不替代原生自动化、DPAPI、Job Object 或 WebView2 实机验收。
 
 ## 准备与校验
 
-1. 使用 Windows 10/11 x64、普通用户及本地 NTFS 目录。准备 Microsoft 官方 Edge WebView2 Runtime；无需 WSL2、Python、Node、Git 或 Rust。记录 Windows build、CPU、WebView2 版本及是否干净机。最低系统兼容性只能由对应实机确认。
+1. 使用 Windows 10/11 x64、普通用户及本地 NTFS 目录。准备 Microsoft 官方 Edge WebView2 Runtime；无需 WSL2、Python、Node、Git 或 Rust。记录 Windows build、CPU、WebView2 版本及是否干净机。最低系统保留声明，本轮无需实机测试，不把免测写成实测。
 2. 从同批交付记录核对 ZIP 的 SHA-256：`Get-FileHash .\PTCG-Lab-Windows-x64-preview.zip -Algorithm SHA256`。完整解压到新目录，建议 `C:\PTCG-Lab`，不要覆盖旧 APP 或复制进旧数据目录。
 3. 阅读 `Verify.ps1` 后在允许执行本地审核脚本的 PowerShell 中运行 `& .\Verify.ps1`。保持系统执行策略；如组织策略禁止脚本，使用签名审核流程或逐项运行脚本中的命令，不使用 Bypass。它核对精确文件清单与哈希，并以随包 Python 执行后台探针，写到 stdout 的结果不包含身份密钥。
 4. 双击 `PTCG Lab Preview.exe`。这是未签名 preview；遇到来源警告时核对哈希并由测试人员按本机策略决定，不能关闭 SmartScreen、杀毒或其他系统保护。
@@ -45,4 +45,4 @@
 
 已有身份转移按 `identity.cmd --help` 对应的加密导入流程进行，口令在隐藏输入中提供。保留同规则恢复与升级/回退要求，不直接复制其他用户的 DPAPI 密文。旧规则对局不能继续执行，可以保留已存公开回放。
 
-将环境、包 ZIP/EXE 哈希、每项结果、去敏错误码、自然对局与故障恢复证据填写为独立记录。未执行项目保持“待完成”；未签名、未公证、最低系统、干净机、Intel Mac 和 Windows 实机不因 macOS 验收通过而自动关闭。
+将环境、包 ZIP/EXE 哈希、每项结果、去敏错误码、自然对局与故障恢复证据填写为独立记录。新构建未执行的项目保留原始状态，不伪造证据。本轮 Windows 通过依据用户确认；Intel Mac 暂不支持，最低系统实机测试免除，桌面开源分发不要求维护者代码签名/公证。可选安装器或签名工具的检查只在采用对应分发方式时执行。

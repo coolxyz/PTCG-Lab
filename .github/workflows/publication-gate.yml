@@ -38,6 +38,7 @@ jobs:
       - run: python -m pip install --no-build-isolation --no-deps ./packages/battle-protocol ./packages/engine-provider ./packages/battle-core ./packages/online-client ./apps/desktop-api ./apps/online-server
       - run: npm ci --ignore-scripts
       - run: npm run product:build
+      - run: npm run mobile:build
       - run: python scripts/checks/release_tree.py
       - run: python -m pytest tests/core tests/providers tests/protocol tests/online_client tests/desktop_bridge tests/desktop_host tests/packaging tests/portable/test_public_export.py -q
       - name: Dedicated PostgreSQL acceptance (synthetic inputs only)

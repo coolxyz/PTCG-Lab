@@ -51,10 +51,25 @@ type Caps = {
 export const errorText = (error: unknown) => {
   const code = error instanceof OnlineError ? error.code : "LOCAL_STATE_FAILED";
   const names: Record<string, string> = {
-    LOCAL_AUTH_REQUIRED: "本机窗口授权已过期，请关闭并重新打开 APP 或本地启动器。",
-    CREDENTIAL_BACKEND_UNAVAILABLE: "无法访问系统凭据存储，请允许访问后重新打开 APP。",
-    CREDENTIAL_KEY_UNAVAILABLE: "系统凭据密钥不可用，请保留本地数据并检查 Keychain 访问权限。",
-    NATIVE_IDENTITY_IMPORT_REQUIRED: "检测到旧版明文身份，请先关闭 APP 并按身份导入手顺迁移。",
+    IDENTITY_CREATION_UNKNOWN:
+      "身份创建结果尚未确认，已保留原记录，不会自动创建新游客。",
+    JOURNAL_CORRUPT:
+      "本机身份记录校验失败，请保留数据；不会重建身份或覆盖原记录。",
+    JOURNAL_UNAVAILABLE:
+      "身份与操作记录无法保存，请检查设备空间，勿删除原数据。",
+    JOURNAL_RECOVERY_REQUIRED:
+      "发现尚待核对的身份记录，请保留数据并停止重复创建身份。",
+    INVALID_SERVER: "服务器地址必须是完整、无路径和凭据的 HTTPS origin。",
+    INVALID_TRUST_ROOT: "服务器 CA 证书格式无效，请仅使用公开的 PEM CA 证书。",
+    APP_SUSPENDED: "应用已进入后台，请回到前台后刷新原对局。",
+    LOCAL_AUTH_REQUIRED:
+      "本机窗口授权已过期，请关闭并重新打开 APP 或本地启动器。",
+    CREDENTIAL_BACKEND_UNAVAILABLE:
+      "无法访问系统凭据存储，请允许访问后重新打开 APP。",
+    CREDENTIAL_KEY_UNAVAILABLE:
+      "系统凭据密钥不可用，请保留本地数据并检查 Keychain 访问权限。",
+    NATIVE_IDENTITY_IMPORT_REQUIRED:
+      "检测到旧版明文身份，请先关闭 APP 并按身份导入手顺迁移。",
     REAUTHENTICATION_REQUIRED:
       "身份需要重新认证。游客身份无法自动找回，请保留本地凭据和待确认记录。",
     LOCAL_CONTROL_REQUIRED: "另一个窗口已接管，请重新取得操作权。",
@@ -69,7 +84,8 @@ export const errorText = (error: unknown) => {
     REPLAY_EMPTY: "这场对局暂时没有可读回放帧，请刷新后重试。",
     REPLAY_PAGE_LIMIT: "已达到本地回放加载上限。",
     REPLAY_CURSOR_STALLED: "回放分页未推进，请重新打开回放。",
-    CAPACITY_EXCEEDED: "服务器请求较多，请稍后重试；已保存的对局和操作记录不会丢失。",
+    CAPACITY_EXCEEDED:
+      "服务器请求较多，请稍后重试；已保存的对局和操作记录不会丢失。",
     RULE_RELEASE_UNAVAILABLE: "服务器没有所选规则版本。",
     STREAM_UNAVAILABLE: "推送已断开，请重新连接。",
   };
@@ -131,6 +147,9 @@ export class OnlineController {
   private listeners = new Set<() => void>();
   private timer?: ReturnType<typeof setTimeout>;
   private disposed = false;
+  private suspended = false;
+  private lifecycleEpoch = 0;
+  private working?: Promise<void>;
   private polling?: Promise<void>;
   private logCursor?: string;
   private logThrough = -1;
@@ -167,6 +186,8 @@ export class OnlineController {
     // body is safe. Other failures retain their existing idempotency handling.
     const profile = this.state.profile;
     for (let attempt = 0; ; attempt++) {
+      if (this.suspended || this.disposed)
+        throw new OnlineError("APP_SUSPENDED");
       try {
         return await this.api.call<T>(profile, op, body);
       } catch (error) {
@@ -184,12 +205,16 @@ export class OnlineController {
     }
   }
   private async run(fn: () => Promise<void>) {
-    if (this.state.busy || this.disposed) return;
+    if (this.state.busy || this.disposed || this.suspended) return;
     clearTimeout(this.timer);
     this.patch({ busy: true, error: "" });
+    let complete!: () => void;
+    this.working = new Promise<void>((resolve) => {
+      complete = resolve;
+    });
     try {
       await this.polling;
-      if (this.disposed) return;
+      if (this.disposed || this.suspended) return;
       await fn();
     } catch (e) {
       this.patch({ error: errorText(e), playing: false });
@@ -200,12 +225,15 @@ export class OnlineController {
       }
     } finally {
       this.patch({ busy: false });
+      this.working = undefined;
+      complete();
       this.schedule();
     }
   }
   private schedule() {
     clearTimeout(this.timer);
-    if (this.disposed || this.state.busy || this.state.error) return;
+    if (this.disposed || this.suspended || this.state.busy || this.state.error)
+      return;
     const s = this.state;
     if (s.replay && s.playing && s.frame + 1 < s.replay.frames.length) {
       this.timer = setTimeout(() => {
@@ -231,11 +259,14 @@ export class OnlineController {
         () => this.background(),
         s.replay
           ? Math.max(1500, this.nextReplayPageAt - Date.now())
-          : s.showing ? 600 : 1500,
+          : s.showing
+            ? 600
+            : 1500,
       );
   }
   private background() {
-    if (this.disposed || this.state.busy || this.polling) return;
+    if (this.disposed || this.suspended || this.state.busy || this.polling)
+      return;
     this.polling = (async () => {
       try {
         if (this.state.replay) await this.fetchMore();
@@ -655,6 +686,7 @@ export class OnlineController {
     });
   control = () =>
     this.run(async () => {
+      const epoch = this.lifecycleEpoch;
       const v = this.state.view!;
       const pending = this.state.status?.recovery.controls.some(
         (p) => p.matchId === v.matchId,
@@ -667,7 +699,8 @@ export class OnlineController {
         },
       );
       this.accept(value.snapshot);
-      this.patch({ lease: value.lease });
+      if (!this.suspended && epoch === this.lifecycleEpoch)
+        this.patch({ lease: value.lease });
       await this.status();
     });
   submit = (choice: Command["choice"]) =>
@@ -778,11 +811,18 @@ export class OnlineController {
       });
     } catch (error) {
       if (this.disposed || this.state.replay !== s.replay) return;
-      if (error instanceof OnlineError && error.status === 429 && error.retryable) {
+      if (
+        error instanceof OnlineError &&
+        error.status === 429 &&
+        error.retryable
+      ) {
         // Read-only pagination can retry the exact cursor after the server's
         // fixed minute budget resets. Never retry writes or discard frames.
         this.nextReplayPageAt = Date.now() + 65000;
-        this.patch({ replayNotice: "服务器暂时限流，已保留回放进度，将在约一分钟后自动继续加载。" });
+        this.patch({
+          replayNotice:
+            "服务器暂时限流，已保留回放进度，将在约一分钟后自动继续加载。",
+        });
         return;
       }
       throw error;
@@ -839,6 +879,28 @@ export class OnlineController {
     this.patch({ replay: null, playing: false, replayNotice: "" });
     this.schedule();
   };
+  suspend() {
+    this.lifecycleEpoch++;
+    this.suspended = true;
+    this.patch({ lease: "", playing: false });
+    clearTimeout(this.timer);
+    void this.api.lifecycle?.(false).catch(() => {});
+  }
+  async resume() {
+    if (this.disposed) return;
+    const epoch = ++this.lifecycleEpoch;
+    try {
+      await this.api.lifecycle?.(true);
+      await this.working;
+      await this.polling;
+      if (this.disposed || epoch !== this.lifecycleEpoch) return;
+      this.patch({ lease: "" });
+      this.suspended = false;
+      await this.refresh();
+    } catch (error) {
+      this.patch({ error: errorText(error) });
+    }
+  }
   dispose() {
     this.disposed = true;
     clearTimeout(this.timer);

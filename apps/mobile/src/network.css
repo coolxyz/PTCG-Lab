@@ -1,0 +1,120 @@
+.mobile-network {
+  --green: var(--ptcg-accent);
+  --muted: var(--ptcg-muted);
+  --line: var(--ptcg-line);
+  width: 100%;
+  min-width: 0;
+  max-width: 100%;
+}
+.mobile-network .page-heading {
+  display: none;
+}
+.mobile-network .online-lobby {
+  padding: 0;
+  width: 100%;
+  min-width: 0;
+  max-width: 100%;
+}
+.mobile-network :is(button, input, select, textarea) {
+  min-height: 44px;
+  font-size: 16px;
+  max-width: 100%;
+}
+.mobile-network .lobby-play-grid {
+  grid-template-columns: minmax(0, 1fr);
+}
+.mobile-network
+  :is(
+    .lobby-panel,
+    .lobby-connection,
+    .lobby-deck-picker,
+    .lobby-connection-main > div,
+    form,
+    label
+  ) {
+  min-width: 0;
+  max-width: 100%;
+}
+.mobile-network .online-lobby select {
+  /* WebKit's native select must fit the card, even with a full rule digest. */
+  -webkit-appearance: none;
+  appearance: none;
+  width: 100%;
+  min-width: 0;
+  max-width: 100%;
+  min-height: 46px;
+  padding: 11px 38px 11px 12px;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  background-image:
+    linear-gradient(45deg, transparent 50%, var(--ptcg-muted) 50%),
+    linear-gradient(135deg, var(--ptcg-muted) 50%, transparent 50%);
+  background-position:
+    calc(100% - 21px) 50%,
+    calc(100% - 16px) 50%;
+  background-size: 5px 5px;
+  background-repeat: no-repeat;
+}
+.mobile-network
+  :is(
+    .lobby-connection-main,
+    .lobby-deck-preview,
+    .lobby-submitted,
+    .lobby-hint,
+    .lobby-seat
+  ) {
+  overflow-wrap: anywhere;
+}
+.mobile-network code {
+  overflow-wrap: anywhere;
+}
+.battle-screen {
+  padding-top: max(18px, env(safe-area-inset-top)) !important;
+  padding-bottom: max(28px, env(safe-area-inset-bottom)) !important;
+}
+@media (min-width: 850px) {
+  .mobile-network .lobby-play-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+@media (max-width: 649px) {
+  .mobile-network .online-lobby :is(.lobby-panel, .lobby-connection) {
+    padding: 16px;
+  }
+  .mobile-network .lobby-connection-main {
+    align-items: stretch;
+    flex-direction: column;
+  }
+  .mobile-network .lobby-connection-main > div:first-child {
+    display: grid;
+    grid-template-columns: 8px minmax(0, 1fr);
+    gap: 8px 12px;
+  }
+  .mobile-network .lobby-connection-main > div:first-child > .online-muted {
+    grid-column: 2;
+  }
+  .mobile-network .lobby-sync {
+    min-width: 0;
+  }
+  .mobile-network .lobby-inline {
+    flex-direction: column;
+  }
+  .mobile-network .lobby-filters {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+  .mobile-network .lobby-filters button {
+    min-width: 0;
+    padding: 8px 4px;
+  }
+  .mobile-network .lobby-history-bottom {
+    align-items: stretch;
+    flex-direction: column;
+    gap: 12px;
+  }
+  .mobile-network .lobby-history-bottom nav {
+    justify-content: space-between;
+    gap: 8px;
+  }
+}

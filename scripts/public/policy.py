@@ -13,6 +13,7 @@ FOLDERS = (
     "apps/desktop-web",
     "apps/online-server",
     "apps/native-shell",
+    "apps/mobile",
     "packages",
     "scripts",
     "tests",
@@ -24,9 +25,11 @@ FOLDERS = (
     ".github/workflows",
 )
 FILES = (
+    'docs/API公网部署与自动证书.md',
     'docs/Cloudflare卡图CDN部署.md',
     'docs/GitHub发布与隐私.md',
     'docs/Windows验证步骤.md',
+    'docs/iOS开发与验收.md',
     'docs/上游卡库同步.md',
     'docs/启动使用与跨系统迁移.md',
     'docs/安装升级与迁移.md',
@@ -49,6 +52,7 @@ FILES = (
     "package.json",
     "package-lock.json",
     "apps/native-shell/ui/icon.png",
+    "apps/mobile/src-tauri/Info.ios.plist",
     "apps/native-shell/src-tauri/icons/icon.png",
     "apps/native-shell/src-tauri/icons/icon-source.png",
     "apps/native-shell/src-tauri/icons/icon.icns",
@@ -111,6 +115,7 @@ ALLOWED = {
     ".yml",
     ".sql",
     ".rs",
+    ".swift",
 }
 SYNTHETIC_JSON = frozenset({"tests/synthetic/protocol/scaffold.json", "tests/synthetic/protocol/v2.json"})
 PATTERNS = {

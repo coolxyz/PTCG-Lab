@@ -208,6 +208,7 @@ def compose_document(
         "PTCG_ONLINE_V2_RULE_DIRECTORY": "/opt/ptcg-rules",
         "PTCG_ONLINE_V2_RULE_MANIFEST_SHA256": pin,
         "PTCG_ONLINE_V2_APPROVED_RULE_RELEASE_ID": release,
+        "PTCG_ONLINE_V2_WORKER_RSS_MB": "384",
     }
     common = {
         "image": api,
@@ -313,13 +314,31 @@ def build(
     output,
     *,
     host="localhost",
-    port=8876,
+    port=None,
     bind="127.0.0.1",
     platform="linux/arm64",
     base_image=None,
     postgres_image="postgres:17",
+    tls_mode="local-ca",
+    email=None,
+    http_port=80,
+    caddy_image="caddy:2",
+    acme_staging=False,
+    proxy_subnet="172.30.80.0/28",
+    server_id=None,
 ):
-    san = public_host(host, port, bind)
+    if tls_mode not in {"local-ca", "acme"}:
+        raise ValueError("Choose local-ca or acme TLS")
+    port = port if port is not None else (443 if tls_mode == "acme" else 8876)
+    if tls_mode == "acme":
+        from scripts.packaging import public_api
+        public_api.validate(host, email, port, http_port, proxy_subnet)
+        if bind not in {"127.0.0.1", "0.0.0.0"}:
+            raise ValueError("Invalid public bind")
+    else:
+        san = public_host(host, port, bind)
+    if server_id is not None and not re.fullmatch(r"[A-Za-z0-9._:-]{1,128}", server_id):
+        raise ValueError("Invalid deployment server ID")
     if platform not in {"linux/arm64", "linux/amd64"}:
         raise ValueError("Choose linux/arm64 or linux/amd64")
     output = new_output(output)
@@ -421,8 +440,12 @@ def build(
         raise ValueError("This preview requires PostgreSQL 17")
     postgres = "ptcg-lab-postgres-preview:" + pg_info["Id"].split(":")[1][:16]
     run(["docker", "tag", pg_info["Id"], postgres])
-    origin, project = f"https://{host}:{port}", "ptcg-preview-" + token
-    tls(output, host, san)
+    origin = f"https://{host}" if port == 443 else f"https://{host}:{port}"
+    project = "ptcg-preview-" + token
+    if tls_mode == "local-ca":
+        tls(output, host, san)
+    else:
+        (output / "private").mkdir(mode=0o700)
     password = secrets.token_urlsafe(36)
     write(
         output / "private/database.env",
@@ -437,19 +460,34 @@ def build(
         postgres,
         platform,
         origin,
-        "server-" + secrets.token_hex(12),
+        server_id or "server-" + secrets.token_hex(12),
         release,
         pin,
         port,
         bind,
     )
+    extra_images = {}
+    if tls_mode == "acme":
+        try:
+            edge_id, edge_platform = image_id(caddy_image)
+        except subprocess.CalledProcessError:
+            run(["docker", "pull", "--platform", platform, caddy_image])
+            edge_id, edge_platform = image_id(caddy_image)
+        if edge_platform != platform:
+            raise ValueError("Caddy image architecture mismatch")
+        edge_tag = "ptcg-lab-caddy:" + edge_id.split(":")[1][:16]
+        run(["docker", "tag", edge_id, edge_tag])
+        document = public_api.compose(document, edge_tag, host, email, port, http_port, bind, proxy_subnet)
+        write(output / "Caddyfile", public_api.caddyfile(host, email, port, staging=acme_staging), mode=0o644)
+        extra_images[edge_tag] = edge_id
     document["name"] = project
     record(output / "compose.yaml", document)
     shutil.copyfile(ROOT / "scripts/packaging/manage_server.py", output / "manage.py")
+    shutil.copyfile(ROOT / "scripts/packaging/server_backup.py", output / "server_backup.py")
     shutil.copyfile(
         ROOT / "scripts/packaging/configure_macos.py", output / "configure-mac.py"
     )
-    record(output / "client.json", {"origin": origin, "caFile": "tls/ca.pem"})
+    record(output / "client.json", {"origin": origin, "caFile": "tls/ca.pem" if tls_mode == "local-ca" else None})
     write(
         output / "configure-mac.command",
         '#!/bin/sh\nset -eu\ncd "$(dirname "$0")"\nPTCG_APP="${PTCG_APP:-../macos-arm64/PTCG Lab Preview.app}"\nexec "$PTCG_APP/Contents/Resources/backend/python/bin/python3" -I -B configure-mac.py\n',
@@ -459,6 +497,8 @@ def build(
     images.mkdir()
     save_image(api, images / "api.tar.gz")
     save_image(postgres, images / "postgres.tar.gz")
+    if extra_images:
+        save_image(edge_tag, images / "caddy.tar.gz")
     shutil.copyfile(ROOT / "scripts/packaging/server-README.md", output / "README.md")
     return manifest(
         output,
@@ -471,7 +511,10 @@ def build(
         ruleManifestSha256=pin,
         postgresUpstream=pg_info["RepoDigests"],
         postgresVersion=pg_version,
-        images={api: image_id(api)[0], postgres: image_id(postgres)[0]},
+        images={api: image_id(api)[0], postgres: image_id(postgres)[0], **extra_images},
+        tlsMode=tls_mode,
+        acmeStaging=acme_staging if tls_mode == "acme" else False,
+        serverId=document["services"]["api"]["environment"]["PTCG_ONLINE_V2_SERVER_ID"],
     )
 
 
@@ -481,8 +524,15 @@ def main():
     parser.add_argument("--rule-pin", required=True)
     parser.add_argument("--output", type=Path, default=ROOT / "release/api-server")
     parser.add_argument("--host", default="localhost")
-    parser.add_argument("--port", type=int, default=8876)
+    parser.add_argument("--port", type=int, help="HTTPS port: local-ca 8876, acme 443")
     parser.add_argument("--bind", default="127.0.0.1")
+    parser.add_argument("--tls-mode", choices=("local-ca", "acme"), default="local-ca")
+    parser.add_argument("--email", help="ACME contact email for a public DNS domain")
+    parser.add_argument("--http-port", type=int, default=80)
+    parser.add_argument("--caddy-image", default="caddy:2")
+    parser.add_argument("--acme-staging", action="store_true", help="Use untrusted Let's Encrypt staging certificates")
+    parser.add_argument("--proxy-subnet", default="172.30.80.0/28", help="Unused private subnet for the isolated trusted edge network")
+    parser.add_argument("--server-id", help="Explicit original server ID when preparing a disaster-restore kit")
     parser.add_argument(
         "--platform", choices=("linux/arm64", "linux/amd64"), default="linux/arm64"
     )
@@ -506,6 +556,13 @@ def main():
         platform=args.platform,
         base_image=args.base_image,
         postgres_image=args.postgres_image,
+        tls_mode=args.tls_mode,
+        email=args.email,
+        http_port=args.http_port,
+        caddy_image=args.caddy_image,
+        acme_staging=args.acme_staging,
+        proxy_subnet=args.proxy_subnet,
+        server_id=args.server_id,
     )
     print(
         json.dumps(

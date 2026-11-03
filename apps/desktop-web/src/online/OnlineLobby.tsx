@@ -7,10 +7,12 @@ export function OnlineLobby({
   controller: c,
   state: s,
   product,
+  native = false,
 }: {
   controller: OnlineController;
   state: State;
   product: boolean;
+  native?: boolean;
 }) {
   const [name, setName] = useState("训练家");
   const [deck, setDeck] = useState("");
@@ -33,14 +35,16 @@ export function OnlineLobby({
           <h1>对战大厅</h1>
           <p className="online-muted">带上你的卡组，邀请朋友开启下一场对决。</p>
         </div>
-        <a
-          className="lobby-link-button"
-          href={product ? "/#online" : "/online.html"}
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          打开另一个窗口 ↗
-        </a>
+        {!native && (
+          <a
+            className="lobby-link-button"
+            href={product ? "/#online" : "/online.html"}
+            target="_blank"
+            rel="noopener noreferrer"
+          >
+            打开另一个窗口 ↗
+          </a>
+        )}
       </header>
       <section className="lobby-connection" aria-label="连接与身份">
         <div className="lobby-connection-main">
@@ -109,7 +113,9 @@ export function OnlineLobby({
             </form>
           )}
           <p className="online-muted">
-            身份与对局记录保存在本机后台。请保留凭据目录，以便继续对局和观看回放。
+            {native
+              ? "身份与对局记录保存在此设备。请保留应用数据，以便继续对局和观看本人回放。"
+              : "身份与对局记录保存在本机后台。请保留凭据目录，以便继续对局和观看回放。"}
           </p>
         </details>
       </section>

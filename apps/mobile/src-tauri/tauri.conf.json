@@ -1,0 +1,42 @@
+{
+  "$schema": "https://schema.tauri.app/config/2",
+  "productName": "PTCG Lab Mobile Preview",
+  "version": "0.8.0",
+  "identifier": "org.ptcglab.mobile.preview",
+  "build": {
+    "frontendDist": "../dist",
+    "devUrl": "http://127.0.0.1:5193"
+  },
+  "app": {
+    "withGlobalTauri": true,
+    "windows": [],
+    "security": {
+      "csp": "default-src 'none'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' blob: data: mobile-artwork:; connect-src ipc: http://ipc.localhost mobile-artwork:; font-src 'self'; base-uri 'none'; form-action 'none'; frame-src 'none'",
+      "capabilities": [
+        {
+          "identifier": "mobile-local",
+          "windows": [
+            "main"
+          ],
+          "permissions": [
+            "allow-mobile-request",
+            "allow-mobile-artwork",
+            "allow-mobile-online",
+            "allow-mobile-files"
+          ]
+        }
+      ]
+    }
+  },
+  "bundle": {
+    "active": true,
+    "category": "Game",
+    "iOS": {
+      "minimumSystemVersion": "16.0",
+      "infoPlist": "Info.ios.plist"
+    },
+    "icon": [
+      "../../native-shell/src-tauri/icons/icon.png"
+    ]
+  }
+}

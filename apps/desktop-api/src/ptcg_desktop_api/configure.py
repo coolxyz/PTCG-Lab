@@ -19,7 +19,7 @@ def configure(kit, state):
     if manifest.get("kind") != "ptcg-api-compose-preview":
         raise ClientError("INVALID_SERVER_KIT")
     values = {}
-    for name in ["client.json", "tls/ca.pem"]:
+    def read(name):
         path = kit / name
         if (
             any(p.is_symlink() or p.is_junction() for p in [path, path.parent])
@@ -30,24 +30,30 @@ def configure(kit, state):
         value = path.read_bytes()
         if sha256(value).hexdigest() != manifest.get("files", {}).get(name):
             raise ClientError("INVALID_SERVER_KIT")
-        values[name] = value
+        return value
+    values["client.json"] = read("client.json")
     connection = json.loads(values["client.json"])
     if (
         set(connection) != {"origin", "caFile"}
-        or connection["caFile"] != "tls/ca.pem"
-        or b"PRIVATE KEY" in values["tls/ca.pem"]
+        or connection["caFile"] not in (None, "tls/ca.pem")
     ):
         raise ClientError("INVALID_SERVER_KIT")
-    Server(connection["origin"], ca_file=str(kit / "tls/ca.pem"))
+    public_ca = connection["caFile"] is not None
+    if public_ca:
+        values["tls/ca.pem"] = read("tls/ca.pem")
+        if b"PRIVATE KEY" in values["tls/ca.pem"]:
+            raise ClientError("INVALID_SERVER_KIT")
+    Server(connection["origin"], ca_file=str(kit / "tls/ca.pem") if public_ca else None)
     lock = StateLock(state)
     try:
         target, ca = state / "connection.json", state / "preview-server-ca.pem"
         if any(p.exists() or p.is_symlink() for p in [target, ca]):
             raise ClientError("EXISTING_CONFIGURATION")
-        access(ca, data=values["tls/ca.pem"], limit=65536)
+        if public_ca:
+            access(ca, data=values["tls/ca.pem"], limit=65536)
         config = {
             "servers": {
-                "preview": {"origin": connection["origin"], "ca_file": str(ca)}
+                "preview": {"origin": connection["origin"], **({"ca_file": str(ca)} if public_ca else {})}
             },
             "manifests": [],
         }

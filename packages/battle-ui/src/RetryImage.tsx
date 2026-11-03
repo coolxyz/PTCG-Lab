@@ -26,7 +26,7 @@ export function RetryImage({ src, onStatusChange, style, ...props }: Props) {
     setBroken(false);
     setGeneration(0);
     notify("loading", "正在加载卡图");
-    const eligible = !!src && /^\/api\/sync\/(?:artwork|images)\//.test(src);
+    const eligible = !!src && (/^\/api\/sync\/(?:artwork|images)\//.test(src) || /^mobile-artwork:\/\/localhost\/[a-f0-9]{40}\//.test(src));
 
     async function probe() {
       if (!alive || probing || !src) return;

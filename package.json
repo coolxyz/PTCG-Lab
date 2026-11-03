@@ -9,7 +9,8 @@
     "apps/desktop-web",
     "packages/battle-ui",
     "packages/battle-protocol/ts",
-    "apps/web"
+    "apps/web",
+    "apps/mobile"
   ],
   "devDependencies": {
     "@playwright/test": "1.55.1",
@@ -26,6 +27,8 @@
     "practice:build": "npm run build --workspace @ptcg/desktop-web",
     "product:build": "tsc --noEmit -p apps/web && tsc --noEmit -p apps/desktop-web && vite build --config scripts/product/web.config.ts && vite build --config scripts/product/online.config.ts",
     "product:check": "tsc --noEmit -p apps/web && tsc --noEmit -p apps/desktop-web",
-    "test:ui": "npm test --workspace @ptcg/desktop-web"
+    "test:ui": "npm test --workspace @ptcg/desktop-web",
+    "mobile:check": "npm run check --workspace @ptcg/mobile",
+    "mobile:build": "npm run build --workspace @ptcg/mobile"
   }
 }

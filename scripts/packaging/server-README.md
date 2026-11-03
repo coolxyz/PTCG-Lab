@@ -1,8 +1,8 @@
-# API Server 人工验收环境
+# 独立 API Server 部署包
 
-当前为单规则、单 API 实例的私有预览环境，包含实际规则、Python 运行依赖、API 与 PostgreSQL 镜像归档。与源码目录、旧 APP、既有 LAN 数据库无依赖。镜像架构、测试地址、规则身份及文件校验见 `MANIFEST.json`，不代表 P7 容量或正式发布验收通过。
+本包包含当前批准规则、Python 运行依赖、API/PostgreSQL 镜像归档、Compose 与私有数据库配置，无需源码、桌面 GUI 或卡图目录。`MANIFEST.json` 记录 origin、serverId、规则、架构及文件/镜像哈希；它证明完整性，不证明来源真实性或并发容量。
 
-在本目录使用 Python 3.11+ 和 Docker Compose v2：
+目标机需要匹配架构的 Docker/Compose v2；便捷管理器另需 Python 3.11+：
 
 ```sh
 python3 manage.py verify
@@ -12,25 +12,42 @@ python3 manage.py status
 python3 manage.py down
 ```
 
-`up` 从本目录归档加载并核对镜像，自动启动独立数据库、执行 migration，再启动 HTTPS API，等待 `/readyz`。不会拉取新镜像，也不会读取仓库中的数据库。首次运行可能花费一两分钟。`down` 仅停止本 manifest 的 Compose 项目并保留数据卷，不删除数据库。再次 `up` 使用原数据。不要同时将同一个包当作两个独立服务器；独立部署应重新生成自己的证书、服务器身份和数据库秘密。
+`up` 从归档加载并核对固定镜像，启动独立数据库、执行 migration，再启动 API。`down` 只停止本 manifest 的项目，保留所有数据卷。不要修改成既有服务的项目名，不执行全局 prune 或 `down --volumes`。API 只提供 API v2/WSS，不提供网页，不允许浏览器 CORS。
 
-服务器也可以只安装 Docker，通过原生命令运行。Compose 内已固定本包的独立项目名，勿自行改成既有服务的项目名：
+## 两种 TLS 模式
+
+检查 MANIFEST 的 `tlsMode` 和 `client.json`：
+
+- `local-ca`：API 直接提供 HTTPS，默认 8876；提供 30 天测试 CA/TLS，客户端只导入同批公开 `tls/ca.pem`，不导入私钥，不关闭验证。
+- `acme`：Caddy 提供公网 HTTPS/WSS 与自动 ACME 续期，默认 TCP 80/443；API、数据库、管理口均不对外。必须提前配置正确的公网 DNS、防火墙/NAT 和出站网络。签发完成后运行 `python3 manage.py check-public`，验证系统信任链与公网 `/readyz`。内部 `check` 或 Caddy 健康通过不代表公网证书已就绪。
+
+`acmeStaging=true` 是测试 CA，不被系统信任。生产部署应重新构建去掉 staging 的私有 kit。保留 Caddy 的 `caddy_data`/`caddy_config` 卷，不要反复删除并重签；数据库位于 `database` 卷。续期不要求重启 API。公开端口冲突或私网 `--proxy-subnet` 冲突时，重新规划并构建，不覆盖其他服务。
+
+只有 Docker 时，分别 `docker load --input images/api.tar.gz`、`images/postgres.tar.gz`；ACME 模式还需加载 `images/caddy.tar.gz`。然后执行 `docker compose -f compose.yaml up -d --wait`。
+
+## App 配置
+
+公网模式 `caFile=null`，App 使用系统信任，只设置 origin。局域网模式额外配置公开 CA。Mac 关闭 App 后可运行 `configure-mac.command`；默认解释器在相邻 `../macos-arm64/PTCG Lab Preview.app`，移动后设置 `PTCG_APP` 路径。助手拒绝覆盖已有配置，不改凭据、卡组或收藏。不要为换服务器而删除 profile。
+
+## 备份与恢复
 
 ```sh
-docker load --input images/api.tar.gz
-docker load --input images/postgres.tar.gz
-docker compose -f compose.yaml up -d --wait
-docker compose -f compose.yaml down
+python3 manage.py backup --output /secure/backups/new-backup
 ```
 
-Python 仅用于可选管理器的清单／镜像核对和便捷命令，API 所需 Python 已在镜像内。
+输出含秘密和私有对局，用 0700/0600 权限保管并另行加密离线保存，独立保留 BACKUP.json 的可信 SHA-256。恢复 kit 必须同 origin/serverId/当前规则，数据库为空且 API 停止：
 
-默认端口为 8876；实际地址见 `client.json`。API 不提供网页，也不接受浏览器 CORS，使用本地 APP 的原生 API v2 客户端。WebSocket 使用相同 TLS 地址。数据库不发布宿主端口。测试 API 使用 1 CPU／768 MiB，数据库 0.5 CPU／256 MiB；这些预算不是并发容量保证。
+```sh
+python3 manage.py load
+python3 manage.py restore --backup /secure/backups/new-backup --backup-sha256 <可信SHA256>
+python3 manage.py up
+python3 manage.py check
+```
 
-Mac 连接：关闭 `PTCG Lab Preview.app`，运行 `configure-mac.command`，再重新打开 APP。此脚本默认使用相邻 `../macos-arm64/PTCG Lab Preview.app` 的随包 Python；APP 已移动时可设置 `PTCG_APP` 为 APP 的路径后运行。它只复制公共 CA 和服务器地址到 preview profile，不导入身份、不修改卡组、不覆盖已有配置。已有 profile 配置会提示人工检查；凭据目录必须保留，不要为更换服务器而删除整个 profile。
+ACME 模式补充 `check-public`。工具拒绝非空库，不覆盖既有资料；原 kit 与卷继续保留。数据库备份不含 Caddy 证书卷，迁移时另行私有保留或重新签发。恢复后用原身份核对当前局、回放和重复命令回执，再开放流量。
 
-测试 TLS CA 和服务端证书有效期 30 天，绑定构建时指定的主机／IP；仅本 APP 使用提供的公共 CA，不要求导入系统根证书。更换地址或到期时用打包脚本生成新候选环境。此包含私有数据库密码、测试 CA 私钥与 TLS 私钥，整个目录以 0700 生成，不能上传为公开 release；只分享 APP ZIP 和公共 CA／连接信息。TLS 文件在容器挂载目录内对 UID 10001 可读，宿主访问由外层私有目录保护。
+## 预算与交付边界
 
-当前 `linux/arm64` 镜像适用于相同架构 Docker 主机；x86_64 服务器请用 `--platform linux/amd64` 重新打包，不把模拟运行当作原生架构验收。规则更新不保留旧核心，不要求旧规则续局；只保存历史可见帧与回执。
+API 1 CPU/768 MiB、数据库 0.5 CPU/256 MiB；公网 Caddy 另有 0.5 CPU/192 MiB，宿主还需系统余量。worker 默认 384 MiB 回收阈值，避免当前规则正常恢复即超过旧 256 MiB；它不是总内存或并发容量保证。不要直接 scale API，多局由单 API 内按 match 串行和 worker 有界调度。
 
-正式发布仍需完成签名／公证、许可／SBOM、资源授权审查、干净系统、备份恢复、Windows 和 P7 容量验收。该目录的清单是完整性检查，不是数字签名。请勿运行全局 Docker prune 或对其他 Compose 项目执行删除操作。
+本目录包含数据库密码；局域网包还含测试 CA/TLS 私钥，公网运行卷含 ACME 私钥。整个目录不可公开发布，只分享批准的 App 与公开 origin/CA。桌面开源分发无需维护者代码签名；iOS TestFlight 另行处理。规则只执行当前批准版本，身份、哈希、鉴权与幂等不放宽；不提供旧规则续局。更新前备份，回退按同一截点的整套镜像、配置和数据库操作。

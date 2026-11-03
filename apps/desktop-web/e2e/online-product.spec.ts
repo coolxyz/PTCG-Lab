@@ -166,8 +166,22 @@ test("background polling preserves interaction state and complete replay paginat
     expect(c.snapshot().view).toBe(original);
     view.done = true;
     await c.refresh();
-    await c.replay();
-    for (let i = 0; i < 102 && c.snapshot().nextCursor; i++) await c.more();
+    const realNow = Date.now;
+    let clock = realNow();
+    try {
+      Date.now = () => clock;
+      await c.replay();
+      // Pagination deliberately has a 1.5s read budget. Exercise it without
+      // 150 seconds of wall time or changing the production throttle.
+      await c.more();
+      expect(c.snapshot().replay?.frames).toHaveLength(3);
+      for (let i = 0; i < 102 && c.snapshot().nextCursor; i++) {
+        clock += 1501;
+        await c.more();
+      }
+    } finally {
+      Date.now = realNow;
+    }
     expect(c.snapshot().replay?.frames).toHaveLength(304);
     c.seek(303);
     expect(c.snapshot().frame).toBe(303);
@@ -303,14 +317,23 @@ test("old frames show public discard identities but never claim they were played
   expect(gap.text).toBe("恢复对局记录 · 第 9 步");
   expect(gap.cardGroups).toEqual([]);
   expect(gap.changes).toEqual(["前序记录尚未补齐，暂不推断跨步变化。"]);
-  after.events = [{ seq: 9, actor: "PLAYER2", kind: "action", text: "完成一次效果选择" }];
-  after.publicReveals = [{ kind: "search_reveal", actor: "PLAYER2", cards: [{ name: "Public result" }] }];
+  after.events = [
+    { seq: 9, actor: "PLAYER2", kind: "action", text: "完成一次效果选择" },
+  ];
+  after.publicReveals = [
+    {
+      kind: "search_reveal",
+      actor: "PLAYER2",
+      cards: [{ name: "Public result" }],
+    },
+  ];
   const recovered = visibleHistory([before, after], {})[1];
   expect(recovered.turn).toBeUndefined();
-  expect(recovered.cardGroups?.[0].label).toContain("此前已公开，具体步骤待补齐");
+  expect(recovered.cardGroups?.[0].label).toContain(
+    "此前已公开，具体步骤待补齐",
+  );
   expect(recovered.changes).toEqual(["前序记录尚未补齐，暂不推断跨步变化。"]);
 });
-
 
 test("headlines prefer named actions and otherwise summarize authorized outcomes", () => {
   const before = demoSnapshot("PLAYER1");
@@ -320,63 +343,184 @@ test("headlines prefer named actions and otherwise summarize authorized outcomes
   next.matchSeq = 1;
   next.events = [];
   next.observation.opponent.handCount = 2;
-  expect(visibleHistory([before, next], {})[1].text).toBe("对手的手牌数量：1 → 2");
+  expect(visibleHistory([before, next], {})[1].text).toBe(
+    "对手的手牌数量：1 → 2",
+  );
   next.observation.self.active[0].card.presentation!.hp = 30;
   expect(visibleHistory([before, next], {})[1].text).toContain("HP：90 → 30");
-  next.publicReveals = [{ kind: "search_reveal", actor: "PLAYER2", cards: [
-    { name: "Public hit" }, { name: "Public second" }, { name: "Public third" },
-  ] }];
+  next.publicReveals = [
+    {
+      kind: "search_reveal",
+      actor: "PLAYER2",
+      cards: [
+        { name: "Public hit" },
+        { name: "Public second" },
+        { name: "Public third" },
+      ],
+    },
+  ];
   const catalog: any = {
     "Public hit": { englishName: "Public hit", cnName: "公开卡甲" },
-    "Source": { englishName: "Source", cnName: "来源宝可梦", chineseDetails: {
-      sections: [{ kind: "特性", name: "测试特性" }],
-    } },
+    Source: {
+      englishName: "Source",
+      cnName: "来源宝可梦",
+      chineseDetails: {
+        sections: [{ kind: "特性", name: "测试特性" }],
+      },
+    },
   };
-  next.events = [{ seq: 1, actor: "PLAYER2", kind: "action", text: "完成一次效果选择" }];
-  expect(visibleHistory([before, next], catalog)[1].text)
-    .toBe("对手 · 按效果展示卡牌：公开卡甲、Public second 等 3 张");
-  next.events = [{ seq: 1, actor: "PLAYER2", kind: "action",
-    text: "使用特性 · Source · Public Ability", cards: [{ cardId: "source", name: "Source",
-      presentation: { name: "Source", abilities: [{ name: "Public Ability", text: "" }] },
-    }],
-  }];
-  expect(visibleHistory([before, next], catalog)[1].text)
-    .toBe("使用特性 · 来源宝可梦 · 测试特性");
+  next.events = [
+    { seq: 1, actor: "PLAYER2", kind: "action", text: "完成一次效果选择" },
+  ];
+  expect(visibleHistory([before, next], catalog)[1].text).toBe(
+    "对手 · 按效果展示卡牌：公开卡甲、Public second 等 3 张",
+  );
+  next.events = [
+    {
+      seq: 1,
+      actor: "PLAYER2",
+      kind: "action",
+      text: "使用特性 · Source · Public Ability",
+      cards: [
+        {
+          cardId: "source",
+          name: "Source",
+          presentation: {
+            name: "Source",
+            abilities: [{ name: "Public Ability", text: "" }],
+          },
+        },
+      ],
+    },
+  ];
+  expect(visibleHistory([before, next], catalog)[1].text).toBe(
+    "使用特性 · 来源宝可梦 · 测试特性",
+  );
   const privateChoice = structuredClone(before);
   privateChoice.matchSeq = 1;
-  privateChoice.events = [{ seq: 1, actor: "PLAYER2", kind: "action", text: "完成一次效果选择" }];
-  expect(visibleHistory([before, privateChoice], catalog)[1].text)
-    .toBe("已完成选牌");
+  privateChoice.events = [
+    { seq: 1, actor: "PLAYER2", kind: "action", text: "完成一次效果选择" },
+  ];
+  expect(visibleHistory([before, privateChoice], catalog)[1].text).toBe(
+    "已完成选牌",
+  );
   privateChoice.events[0].coins = ["heads", "tails"];
-  expect(visibleHistory([before, privateChoice], catalog)[1].text)
-    .toBe("投币结果：正面、反面");
+  expect(visibleHistory([before, privateChoice], catalog)[1].text).toBe(
+    "投币结果：正面、反面",
+  );
   // Replay rendering uses the same summaries and does not need the latest frame.
   const { viewerSeat: _seat, ...replayBefore } = before;
   const { viewerSeat: _nextSeat, ...replayNext } = next;
-  expect(visibleHistory([{ ...replayBefore, frameSeq: 0 }, { ...replayNext, frameSeq: 1 }], catalog)[1].text)
-    .toBe("使用特性 · 来源宝可梦 · 测试特性");
+  expect(
+    visibleHistory(
+      [
+        { ...replayBefore, frameSeq: 0 },
+        { ...replayNext, frameSeq: 1 },
+      ],
+      catalog,
+    )[1].text,
+  ).toBe("使用特性 · 来源宝可梦 · 测试特性");
 });
-
 
 test("public markers, protections, prizes and turn changes produce meaningful results", () => {
   const before = demoSnapshot("PLAYER1");
   before.matchSeq = 0;
   before.events = [];
   const scenarios: [string, (frame: typeof before) => void][] = [
-    ["特性使用标记：已使用", (f) => { f.observation.opponent.active[0].flags = ["abilityUsed"]; }],
-    ["特性无效标记：生效", (f) => { f.observation.opponent.active[0].card.presentation!.abilitiesSuppressed = true; }],
-    ["撤退限制：生效", (f) => { f.observation.opponent.active[0].card.presentation!.retreatBlocked = true; }],
-    ["攻击限制：生效", (f) => { f.observation.opponent.active[0].card.presentation!.attackBlocked = true; }],
-    ["招式伤害增加：30", (f) => { f.observation.opponent.active[0].card.presentation!.attackPowerBonus = 30; }],
-    ["受到招式伤害减少：20", (f) => { f.observation.opponent.active[0].card.presentation!.attackDamageReduction = 20; }],
-    ["防止招式伤害：生效", (f) => { f.observation.opponent.active[0].card.presentation!.attackProtection = { damage: true }; }],
-    ["防止招式效果：生效", (f) => { f.observation.opponent.active[0].card.presentation!.attackProtection = { effects: true }; }],
-    ["受限招式：测试招式", (f) => { f.observation.opponent.active[0].card.presentation!.limitedAttacks = ["测试招式"]; }],
-    ["回复效果：回复 20 HP，解除特殊状态", (f) => { f.observation.opponent.active[0].card.presentation!.recovery = { amount: 20, cure: true }; }],
-    ["受击反击：3 个伤害指示物", (f) => { f.observation.opponent.active[0].card.presentation!.retaliationCounters = 30; }],
-    ["HP 上限：100 → 130", (f) => { f.observation.opponent.active[0].maximumHp = 130; }],
-    ["备战区容量：5 → 8", (f) => { f.observation.opponent.benchCapacity = 8; }],
-    ["进入回合 3", (f) => { f.observation.turnNumber = 3; f.visualEffects = []; }],
+    [
+      "特性使用标记：已使用",
+      (f) => {
+        f.observation.opponent.active[0].flags = ["abilityUsed"];
+      },
+    ],
+    [
+      "特性无效标记：生效",
+      (f) => {
+        f.observation.opponent.active[0].card.presentation!.abilitiesSuppressed = true;
+      },
+    ],
+    [
+      "撤退限制：生效",
+      (f) => {
+        f.observation.opponent.active[0].card.presentation!.retreatBlocked = true;
+      },
+    ],
+    [
+      "攻击限制：生效",
+      (f) => {
+        f.observation.opponent.active[0].card.presentation!.attackBlocked = true;
+      },
+    ],
+    [
+      "招式伤害增加：30",
+      (f) => {
+        f.observation.opponent.active[0].card.presentation!.attackPowerBonus = 30;
+      },
+    ],
+    [
+      "受到招式伤害减少：20",
+      (f) => {
+        f.observation.opponent.active[0].card.presentation!.attackDamageReduction = 20;
+      },
+    ],
+    [
+      "防止招式伤害：生效",
+      (f) => {
+        f.observation.opponent.active[0].card.presentation!.attackProtection = {
+          damage: true,
+        };
+      },
+    ],
+    [
+      "防止招式效果：生效",
+      (f) => {
+        f.observation.opponent.active[0].card.presentation!.attackProtection = {
+          effects: true,
+        };
+      },
+    ],
+    [
+      "受限招式：测试招式",
+      (f) => {
+        f.observation.opponent.active[0].card.presentation!.limitedAttacks = [
+          "测试招式",
+        ];
+      },
+    ],
+    [
+      "回复效果：回复 20 HP，解除特殊状态",
+      (f) => {
+        f.observation.opponent.active[0].card.presentation!.recovery = {
+          amount: 20,
+          cure: true,
+        };
+      },
+    ],
+    [
+      "受击反击：3 个伤害指示物",
+      (f) => {
+        f.observation.opponent.active[0].card.presentation!.retaliationCounters = 30;
+      },
+    ],
+    [
+      "HP 上限：100 → 130",
+      (f) => {
+        f.observation.opponent.active[0].maximumHp = 130;
+      },
+    ],
+    [
+      "备战区容量：5 → 8",
+      (f) => {
+        f.observation.opponent.benchCapacity = 8;
+      },
+    ],
+    [
+      "进入回合 3",
+      (f) => {
+        f.observation.turnNumber = 3;
+        f.visualEffects = [];
+      },
+    ],
   ];
   for (const [expected, change] of scenarios) {
     const next = structuredClone(before);
@@ -386,20 +530,25 @@ test("public markers, protections, prizes and turn changes produce meaningful re
     expect(result.text).toContain(expected);
     expect(result.explanation).toContain("未保存动作声明");
     next.matchSeq = 4;
-    expect(visibleHistory([before, next], {})[1].changes?.join()).not.toContain(expected);
+    expect(visibleHistory([before, next], {})[1].changes?.join()).not.toContain(
+      expected,
+    );
   }
   const next = structuredClone(before);
   next.matchSeq = 1;
-  next.observation.opponent.faceUpPrizes = [{ index: 2, card: { cardId: "public", name: "公开奖赏甲" } }];
+  next.observation.opponent.faceUpPrizes = [
+    { index: 2, card: { cardId: "public", name: "公开奖赏甲" } },
+  ];
   const event = visibleHistory([before, next], {})[1];
   expect(event.text).toBe("对手公开的奖赏卡：公开奖赏甲");
   expect(event.cardGroups?.[0].cards).toHaveLength(1);
   // Slot replacement is not evidence that the replacement used an ability.
   next.observation.opponent.active[0].card.cardId = "replacement";
   next.observation.opponent.active[0].flags = ["abilityUsed"];
-  expect(visibleHistory([before, next], {})[1].changes?.join()).not.toContain("特性使用标记");
+  expect(visibleHistory([before, next], {})[1].changes?.join()).not.toContain(
+    "特性使用标记",
+  );
 });
-
 
 test("stadium declarations and follow-up context survive even with identical visible boards", () => {
   const before = demoSnapshot("PLAYER2");
@@ -409,16 +558,36 @@ test("stadium declarations and follow-up context survive even with identical vis
   before.observation.stadium = [{ ref: "stadium", card: stadium }];
   const use = structuredClone(before);
   use.matchSeq = 1;
-  use.events = [{ seq: 1, actor: "PLAYER1", kind: "action", text: "使用竞技场效果 · Test Stadium", cards: [stadium] }];
+  use.events = [
+    {
+      seq: 1,
+      actor: "PLAYER1",
+      kind: "action",
+      text: "使用竞技场效果 · Test Stadium",
+      cards: [stadium],
+    },
+  ];
   const choice = structuredClone(use);
   choice.matchSeq = 2;
-  choice.events = [{ seq: 2, actor: "PLAYER1", kind: "action", text: "竞技场效果 · Test Stadium · 完成选牌", cards: [stadium] }];
-  const catalog: any = { "Test Stadium": { englishName: "Test Stadium", cnName: "测试竞技场" } };
+  choice.events = [
+    {
+      seq: 2,
+      actor: "PLAYER1",
+      kind: "action",
+      text: "竞技场效果 · Test Stadium · 完成选牌",
+      cards: [stadium],
+    },
+  ];
+  const catalog: any = {
+    "Test Stadium": { englishName: "Test Stadium", cnName: "测试竞技场" },
+  };
   const entries = visibleHistory([before, use, choice], catalog);
   expect(entries[1].text).toBe("使用竞技场效果 · 测试竞技场");
   expect(entries[2].text).toBe("竞技场效果 · 测试竞技场 · 完成选牌");
   expect(entries[2].changes).toEqual([]);
-  choice.events = [{ seq: 2, actor: "PLAYER1", kind: "action", text: "完成效果选项选择" }];
+  choice.events = [
+    { seq: 2, actor: "PLAYER1", kind: "action", text: "完成效果选项选择" },
+  ];
   const unknown = visibleHistory([before, use, choice], catalog)[2];
   expect(unknown.text).toBe("已完成效果选项选择");
   expect(unknown.text).not.toContain("竞技场"); // Do not attribute an unrelated reaction to the last source.

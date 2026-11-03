@@ -223,6 +223,25 @@ def test_runtime_lru_idle_record_budget_and_restore_deadline():
         runtime.restore(dict(recovery={"v": 1}), metrics)
 
 
+def test_default_memory_budget_retains_observed_current_catalogue_working_set(monkeypatch):
+    """A normal 279 MiB restore must not discard its warm match on every step."""
+    from collections import OrderedDict
+
+    settings = Settings("postgresql://unused/unused", "memory-test", "https://example.com")
+    runtime = RuleRuntime.__new__(RuleRuntime)
+    runtime.cache, runtime.pending = OrderedDict(), None
+    runtime.limits = dict(entries=8, bytes=8 * 1024 * 1024, idle=60, rss=settings.worker_rss_mb * 1024 * 1024)
+    monkeypatch.setattr(runtime, "rss", lambda: 279 * 1024 * 1024)
+    match = SimpleNamespace(_adapter=SimpleNamespace(done=False))
+    metrics = Metrics()
+    runtime.remember("active", {"v": 1}, match, metrics)
+    assert not runtime.prune(metrics)
+    assert runtime.cached({"match_id": "active", "recovery": {"v": 1}}, metrics)
+    # Real excess memory still triggers the guard rather than disabling recycling.
+    monkeypatch.setattr(runtime, "rss", lambda: 512 * 1024 * 1024)
+    assert runtime.prune(metrics)
+
+
 @pytest.mark.parametrize("kind", ["generation", "requestId", "oversize", "timeout"])
 def test_pipe_limits_and_stale_generation_results_are_rejected(kind):
     script = """import json,sys,time

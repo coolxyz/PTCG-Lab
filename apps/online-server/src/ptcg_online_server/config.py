@@ -46,7 +46,9 @@ class Settings:
     worker_cache_entries: int = 8
     worker_cache_record_bytes: int = 8 * 1024 * 1024
     worker_cache_idle: float = 60
-    worker_rss_mb: int = 256
+    # Current approved catalogues exceed 256 MiB while restoring a normal match.
+    # Keep the warm worker; the container still enforces its independent ceiling.
+    worker_rss_mb: int = 384
     worker_restore_seconds: float = 10
     worker_compute_seconds: float = 5
     command_queue_enabled: bool = True
@@ -273,7 +275,7 @@ class Settings:
                     env("WORKER_CACHE_RECORD_BYTES", "8388608")
                 ),
                 worker_cache_idle=float(env("WORKER_CACHE_IDLE", "60")),
-                worker_rss_mb=int(env("WORKER_RSS_MB", "256")),
+                worker_rss_mb=int(env("WORKER_RSS_MB", "384")),
                 worker_restore_seconds=float(env("WORKER_RESTORE_SECONDS", "10")),
                 worker_compute_seconds=float(env("WORKER_COMPUTE_SECONDS", "5")),
                 command_queue_enabled=env("COMMAND_QUEUE_ENABLED", "1") == "1",

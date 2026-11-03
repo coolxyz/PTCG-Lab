@@ -13,11 +13,12 @@ def configure(root, state):
 
     root, state = Path(root).resolve(), Path(state).absolute()
     connection = json.loads((root / "client.json").read_text())
-    if set(connection) != {"origin", "caFile"} or connection["caFile"] != "tls/ca.pem":
+    if set(connection) != {"origin", "caFile"} or connection["caFile"] not in (None, "tls/ca.pem"):
         raise ValueError("Invalid preview connection")
     from ptcg_online_client.transport import Server
 
-    Server(connection["origin"], ca_file=str(root / "tls/ca.pem"))
+    public_ca = connection["caFile"] is not None
+    Server(connection["origin"], ca_file=str(root / "tls/ca.pem") if public_ca else None)
     lock = StateLock(state)
     try:
         target = state / "connection.json"
@@ -29,13 +30,14 @@ def configure(root, state):
         # Existing CA is never overwritten, including a dangling symbolic link.
         if ca.exists() or ca.is_symlink():
             raise ValueError("Existing CA retained; review the profile before retrying")
-        with ca.open("xb") as stream:
-            os.chmod(ca, 0o600)
-            with (root / "tls/ca.pem").open("rb") as source:
-                shutil.copyfileobj(source, stream)
+        if public_ca:
+            with ca.open("xb") as stream:
+                os.chmod(ca, 0o600)
+                with (root / "tls/ca.pem").open("rb") as source:
+                    shutil.copyfileobj(source, stream)
         config = {
             "servers": {
-                "preview": {"origin": connection["origin"], "ca_file": str(ca)}
+                "preview": {"origin": connection["origin"], **({"ca_file": str(ca)} if public_ca else {})}
             },
             "manifests": [],
         }

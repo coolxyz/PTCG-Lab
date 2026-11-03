@@ -2,12 +2,12 @@
 
 PTCG Lab 是简体中文 PTCG 本地应用，提供卡牌资料库、收藏、卡组构筑、人机练习与房间码网络对战。桌面 App 使用 Tauri 2，本机 Web 使用同一套产品界面；网络对战由独立的 API v2 服务裁定。人机和网络模式共用本地卡组、对战桌面及回放界面。
 
-当前版本为 **1.1.0-preview.1**。macOS Apple Silicon 和 Windows x64 均有打包入口；Windows 原生实机、最低系统、干净机和正式签名验收仍待完成，不能将源码发布分支或交叉编译成功等同于正式二进制发行。当前支持状态见 [RELEASE.json](RELEASE.json)。
+当前版本为 **1.1.0-preview.1**。桌面支持 macOS Apple Silicon 和 Windows x64，用户已确认 Windows、iOS 和升级安装人工验收通过。Intel Mac 暂不支持，声明的最低系统不作为实机验收门禁。项目按开源源码交付，由用户自行编译桌面程序，不要求维护者提供 Developer ID、公证或 Windows 签名；iOS 计划通过 TestFlight 有限分发。当前支持状态见 [RELEASE.json](RELEASE.json)。
 
 ## 开始使用
 
-- 桌面用户：阅读 [安装与使用手册](docs/启动使用与跨系统迁移.md)，使用维护者提供的完整 App/DMG 或 Windows ZIP。
-- 连接对战服务器：关闭 App 后，用同批 API kit 的公开 CA 和 origin 配置客户端，重开后在大厅建立身份、选择已保存卡组并创建或加入房间。
+- 桌面用户：阅读 [安装与使用手册](docs/启动使用与跨系统迁移.md)，按[构建说明](docs/构建与发布.md)生成完整 App/DMG 或 Windows ZIP。
+- 连接对战服务器：配置 API origin，公网可信证书使用系统信任；局域网私有 CA 需额外配置同批公开 CA。重开后在大厅建立身份、选择已保存卡组并创建或加入房间。
 - 卡图：默认从 GitHub Raw 按需下载并本地缓存，可配置静态图源/CDN，或指定已 clone 的本地 Git 卡图目录直接读取。无需完整下载所有图片，详见 [卡图设置](docs/按需卡图与本地缓存.md)。
 
 ## 从源码运行
@@ -27,10 +27,12 @@ Windows 使用 `./start.ps1 -Setup -Check`，再运行 `./start.ps1`。资产必
 ## 部署与维护
 
 - [构建 macOS、Windows 和 API Compose 包](docs/构建与发布.md)
+- [API 公网部署、自动证书及备份恢复](docs/API公网部署与自动证书.md)
 - [安装升级、身份迁移与整套回退](docs/安装升级与迁移.md)
 - [Windows 验证步骤](docs/Windows验证步骤.md)
 - [更新上游卡库与规则](docs/上游卡库同步.md)
 - [本地克隆卡图与在线缓存](docs/按需卡图与本地缓存.md)
+- [iOS 移动开发与验收](docs/iOS开发与验收.md)：包含收藏/CSV 交换、卡组管理及文件导入、卡图缓存、目录更新、原生分享及 API v2 对战；iPhone XR 与桌面完整对局及回放已人工验收。TestFlight 签名上传与分发材料另行准备。
 - [部署 Cloudflare 免费卡图 CDN](docs/Cloudflare卡图CDN部署.md)
 - [架构与维护](docs/架构与维护.md)
 - [源码发布与隐私](docs/GitHub发布与隐私.md)

@@ -10,9 +10,11 @@
   "catalogSha256": "dfb73c38842e351b48f5d02ed93d823b0b3c6b9c67b2abe7968d24c7f47ae68c",
   "artworkIndexSha256": "93cbba9f30e3ed4ec60b14681d57f429313d33ec17408b1c14876ae14f436f77",
   "distributionApproval": {
-    "macosArm64": "preview; signing and clean-machine qualification pending",
-    "windowsX64": "native manual acceptance pending",
-    "macosIntel": "pending"
+    "macosArm64": "source distribution; manual functional and upgrade acceptance confirmed; no distribution signing required",
+    "windowsX64": "source distribution; native manual and upgrade acceptance confirmed; no distribution signing required",
+    "macosIntel": "unsupported",
+    "ios": "manual acceptance confirmed; limited TestFlight distribution planned, not uploaded",
+    "minimumOsRuntime": "declared deployment targets; physical minimum-OS testing waived"
   },
   "releaseReady": false,
   "runtimeAssetsInSource": false

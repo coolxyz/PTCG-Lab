@@ -2,14 +2,24 @@ import { useEffect, useState, useSyncExternalStore } from "react";
 import { BattleArena } from "@ptcg/battle-ui";
 import { snapshotView, replayView } from "../presentation";
 import { OnlineController, errorText } from "./controller";
-import { connect, authorizeProduct } from "./transport";
-import { onlineStorage } from "./storage";
+import { connect, authorizeProduct, type OnlineAPI } from "./transport";
+import { onlineStorage, type OnlineStorage } from "./storage";
 import "./online.css";
 import { OnlineLobby } from "./OnlineLobby";
 import { visibleHistory, replayTimeline } from "./history";
 import { browserAppearanceStorage } from "../appearance-storage";
 
-export function OnlineApp({ product = false }: { product?: boolean }) {
+export function OnlineApp({
+  product = false,
+  connectAPI = connect,
+  storage = onlineStorage,
+  native = false,
+}: {
+  product?: boolean;
+  connectAPI?: (windowId: string) => Promise<OnlineAPI>;
+  storage?: OnlineStorage;
+  native?: boolean;
+}) {
   const [code, setCode] = useState("");
   const [attempt, setAttempt] = useState(0);
   const [controller, setController] = useState<OnlineController | null>(null);
@@ -17,25 +27,41 @@ export function OnlineApp({ product = false }: { product?: boolean }) {
   useEffect(() => {
     let current: OnlineController | undefined;
     let ended = false;
-    void connect(onlineStorage.windowId())
+    void connectAPI(storage.windowId())
       .then((api) => {
         if (ended) {
           void api.close();
           return;
         }
-        current = new OnlineController(api, onlineStorage);
+        current = new OnlineController(api, storage);
         setController(current);
         void current.start();
       })
       .catch((e) => setError(errorText(e)));
-    const leave = () => current?.dispose();
+    const leave = (event: PageTransitionEvent) =>
+      native && event.persisted ? current?.suspend() : current?.dispose();
+    const visibility = () => {
+      if (native) {
+        if (document.visibilityState === "hidden") current?.suspend();
+        else void current?.resume();
+      }
+    };
+    const show = (event: PageTransitionEvent) => {
+      if (native && event.persisted) void current?.resume();
+    };
     window.addEventListener("pagehide", leave);
+    if (native) {
+      document.addEventListener("visibilitychange", visibility);
+      window.addEventListener("pageshow", show);
+    }
     return () => {
       ended = true;
-      leave();
+      current?.dispose();
       window.removeEventListener("pagehide", leave);
+      document.removeEventListener("visibilitychange", visibility);
+      window.removeEventListener("pageshow", show);
     };
-  }, [attempt]);
+  }, [attempt, connectAPI, storage, native]);
   if (!controller)
     return (
       <section className="workspace-page online-lobby">
@@ -46,9 +72,25 @@ export function OnlineApp({ product = false }: { product?: boolean }) {
             <p>使用平台卡组，邀请朋友开始对战。</p>
           </div>
         </header>
-        <p role={error ? "alert" : "status"}>{error || "正在连接本地后台…"}</p>
+        <p role={error ? "alert" : "status"}>
+          {error || (native ? "正在读取对战资料…" : "正在连接本地后台…")}
+        </p>
         {error &&
-          (product ? (
+          (native ? (
+            <div>
+              <p>
+                请检查服务器设置和网络连接；已保存的身份和待确认操作会保留。
+              </p>
+              <button
+                onClick={() => {
+                  setError("");
+                  setAttempt((n) => n + 1);
+                }}
+              >
+                重试连接
+              </button>
+            </div>
+          ) : product ? (
             <form
               onSubmit={async (e) => {
                 e.preventDefault();
@@ -84,14 +126,18 @@ export function OnlineApp({ product = false }: { product?: boolean }) {
           ))}
       </section>
     );
-  return <Connected controller={controller} product={product} />;
+  return (
+    <Connected controller={controller} product={product} native={native} />
+  );
 }
 function Connected({
   controller: c,
   product,
+  native,
 }: {
   controller: OnlineController;
   product: boolean;
+  native: boolean;
 }) {
   const s = useSyncExternalStore(c.subscribe, c.snapshot);
   if (s.showing && s.view)
@@ -121,7 +167,9 @@ function Connected({
                   已加载 {s.replay.frames.length} 步
                   {s.replayNotice
                     ? ` · ${s.replayNotice}`
-                    : s.nextCursor ? " · 正在继续加载…" : " · 回放已完整加载"}
+                    : s.nextCursor
+                      ? " · 正在继续加载…"
+                      : " · 回放已完整加载"}
                 </span>
               )}
               {s.replay && s.nextCursor && (
@@ -196,6 +244,7 @@ function Connected({
       controller={c}
       state={s}
       product={product}
+      native={native}
     />
   );
 }

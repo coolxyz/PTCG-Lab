@@ -33,6 +33,8 @@ Python 依赖固定在 `apps/api/requirements.lock`，JavaScript 依赖固定在
 
 ## 发布边界
 
+移动原生依赖另由 `apps/mobile/src-tauri/Cargo.lock` 固定。E3 使用 `csv` 1.4.0、`csv-core` 0.1.13（Unlicense 或 MIT）解析交换文件，构建阶段使用 `swift-rs` 1.0.9（MIT 或 Apache-2.0）连接自有 Swift 桥接；UIKit/Foundation 由构建机 Apple SDK 提供，不复制 SDK 源码入库。实际移动二进制分发前，需按最终 Cargo/前端依赖闭包保留完整许可和署名，源码锁文件不代替二进制许可清单。
+
 非商业、研究用途、署名、非官方声明或由用户自行下载，都不等同于取得官方授权。源码开放与完整卡池/卡图再分发、公开托管对战服务、商业运营应分别评估；当前没有据此确认官方素材的再分发授权。公开展示宜使用自制示例素材。
 
 当前前端锁文件涉及 MIT、ISC、Apache-2.0、BSD-3-Clause 和 CC-BY-4.0 等许可；其中 React 为 MIT、lucide-react 为 ISC、构建依赖 caniuse-lite 为 CC-BY-4.0。发布构建产物时应以实际包含的组件为准保留所需版权、许可和署名，不能用根目录 MIT 代替全部依赖声明。

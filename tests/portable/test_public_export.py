@@ -31,6 +31,12 @@ def test_public_export_excludes_state_data_and_history():
         "THIRD_PARTY_NOTICES.md",
         "licenses/ptcg-engine-MIT.txt",
         "scripts/public/import_local_assets.py",
+        "docs/API公网部署与自动证书.md",
+        "docs/iOS开发与验收.md",
+        "apps/mobile/src-tauri/Cargo.lock",
+        "apps/mobile/src-tauri/Info.ios.plist",
+        "apps/mobile/src-tauri/ios/Sources/Documents.swift",
+        "tests/mobile/ios-ui/project.yml",
         "rulesets/cn-standard-2026-09-16.json",
     } <= set(names)
     assert all(Path(n).is_file() for n in names)

@@ -1,0 +1,19 @@
+{
+  "name": "@ptcg/mobile",
+  "version": "0.8.0-p8e.1",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "check": "tsc --noEmit",
+    "build": "tsc --noEmit && vite build",
+    "dev": "vite --host 127.0.0.1 --port 5193 --strictPort",
+    "tauri": "tauri"
+  },
+  "dependencies": {
+    "@ptcg/battle-ui": "0.3.0-p3b",
+    "@ptcg/platform-services": "0.8.0-p8a",
+    "react": "19.1.1",
+    "react-dom": "19.1.1",
+    "@ptcg/desktop-web": "0.5.0-p55d"
+  }
+}

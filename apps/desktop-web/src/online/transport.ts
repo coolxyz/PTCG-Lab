@@ -16,6 +16,7 @@ export interface OnlineAPI {
     assetVersion: string,
   ): Promise<{ cards: CardInfo[]; missing?: boolean }>;
   close(): Promise<void>;
+  lifecycle?(active: boolean): Promise<void>;
 }
 export async function authorizeProduct(code: string): Promise<void> {
   const r = await fetch("/authorize", {
