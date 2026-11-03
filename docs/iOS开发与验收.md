@@ -21,6 +21,12 @@ cargo +1.90.0 test --locked --manifest-path apps/mobile/src-tauri/Cargo.toml --n
 
 文件选择、分享和数据保护的 Swift 包位于 `src-tauri/ios`，通过标准 C FFI 与 Rust 连接；Cargo 的 iOS 原生构建会调用 SwiftPM 编译此静态库，无额外的远程 Swift 依赖。接口只接受卡组、收藏、展示资料几类产品操作，不开放路径或通用文件能力给 GUI。方式参照 [Tauri 的 iOS C FFI 说明](https://v2.tauri.app/develop/plugins/develop-mobile/#ios-2)。
 
+## App 图标
+
+移动端与桌面共用 `apps/native-shell/src-tauri/icons/icon-source.png`，即三张大师球牌背展开的主图。`candidate` 在 `tauri ios init` 之后生成全部尺寸，使用浅紫背景消除透明区域，并逐项替换 Xcode 的 `Assets.xcassets/AppIcon.appiconset`；仅设置 `bundle.icon` 或把图标生成到别的目录不会更新这个目录。流程会检查 iPhone、iPad 和 1024px 营销图标，缺失或尺寸不符时停止打包，输出 `ICON-SOURCE.json` 记录主图和各尺寸 SHA-256。
+
+不要提交 `gen/apple`，每次候选从主图重建。直接使用 Xcode 时也要先同步该图标目录，再编译；已经安装的旧包须重新构建并覆盖安装才会更新图标。参照 [Tauri 图标说明](https://v2.tauri.app/develop/icons/)。
+
 ## 展示资源与构建
 
 源库不附带卡表/原图/用户数据。指定合法取得、与当前随包索引匹配的批准资产目录；工具只读卡表及中文详情，不复制运行时或数据库。输出目录必须是新的独立目录。

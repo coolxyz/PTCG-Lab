@@ -8,6 +8,7 @@ from scripts.public.export_source import export_source
 from scripts.packaging.mobile_assets import build as resources
 from scripts.packaging.ios_inventory import generate as notices
 from scripts.packaging.ios_artifact import audit,archive,seal_simulator
+from scripts.packaging.ios_icons import install as install_icons, SOURCE as ICON_SOURCE, BACKGROUND as ICON_BACKGROUND
 from scripts.native.ios_acceptance import write_matrix
 
 def simulator_project(spec):
@@ -79,6 +80,12 @@ def candidate(assets,work,output,*,rust_bin,cargo_home,tools=None,gems=None,targ
         # Calling tauri.js with node directly generates an invalid `node tauri`.
         cli=['npm','run','tauri','--']
         command('project',[*cli,'ios','init','--ci','--skip-targets-install','--config',config],mobile)
+        # bundle.icon does not replace the generated iOS asset catalog. Custom
+        # --output also leaves that catalog untouched, so install every slot.
+        command('icons',[*cli,'icon',checkout/ICON_SOURCE,'--output',work/'icons','--ios-color',ICON_BACKGROUND],mobile)
+        phase='install-icons'
+        icon_report=install_icons(work/'icons/ios',mobile/'src-tauri/gen/apple',checkout/ICON_SOURCE)
+        record(output/'ICON-SOURCE.json',icon_report);completed.append(phase)
         if 'simulator' in targets:
             apple=mobile/'src-tauri/gen/apple';project=apple/'project.yml'
             spec=json.loads(command('simulator-project-spec',['xcodegen','dump','--type','json','--no-env','--spec',project],apple,capture=True))
@@ -101,7 +108,7 @@ def candidate(assets,work,output,*,rust_bin,cargo_home,tools=None,gems=None,targ
             packed=archive(app,output/target,target,expected_resources=work/'resources')
             write_matrix(output/target,packed['sha256'],source['publicSourceSha256'],target)
         shutil.copytree(work/'licenses',output/'licenses')
-        report={'schema':1,'status':'unsigned_candidates_built_runtime_pending','source':source,'targets':list(targets),'completed':completed,'codeSeals':seals,'distributionSigned':False,'licenseEvidenceComplete':inventory['evidenceComplete'],'licenseMissingCount':len(inventory['missingEvidence']),'signed':False,'runtimeAccepted':False,'releaseReady':False,'servicesChanged':False,'deviceOperations':'disabled'}
+        report={'schema':1,'status':'unsigned_candidates_built_runtime_pending','source':source,'icons':icon_report,'targets':list(targets),'completed':completed,'codeSeals':seals,'distributionSigned':False,'licenseEvidenceComplete':inventory['evidenceComplete'],'licenseMissingCount':len(inventory['missingEvidence']),'signed':False,'runtimeAccepted':False,'releaseReady':False,'servicesChanged':False,'deviceOperations':'disabled'}
         record(output/'BUILD-REPORT.json',report)
         return report
     except Exception as error:
