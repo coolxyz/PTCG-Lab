@@ -19,7 +19,7 @@ cd <包名>
 
 替换域名与邮箱。`setup` 自动离线加载镜像，使用镜像里的 Python 在无网络容器中生成全新 serverId、独立 Compose 项目及数据库随机密码，保存在 `state/deployment/`。它不启动服务，也不覆盖已有配置。`start` 启动数据库、迁移、API、Caddy，等待内部就绪；后续启动会复用原身份和数据库。不要将同一份已配置的 state 同时作为两个服务器运行。
 
-可以先 `./server.sh load` 单独导入镜像。脚本会核对 SHA-256、镜像 ID 与架构，已有正确镜像时跳过导入；不会拉取镜像或构建。`PTCG_ALLOW_EMULATION=1` 仅用于维护者的跨架构模拟验收，生产使用匹配架构。
+可以先 `./server.sh load` 单独导入镜像。脚本校验包内 SHA-256 和镜像架构，再核对归档中记录的配置摘要或 OCI 清单摘要，分别对应 Docker 的经典镜像存储和 containerd 镜像存储。已有正确镜像时跳过导入；不会拉取镜像或构建。旧包如果在 `docker load` 成功后报 `Wrong image ID or architecture`，请使用修正后的离线包或与旧包匹配的安装补丁，无需切换 Docker 的镜像存储。已有 `state/deployment/` 时保留原目录和数据卷，不要重新执行 `setup`。`PTCG_ALLOW_EMULATION=1` 仅用于维护者的跨架构模拟验收，生产使用匹配架构。
 
 ## 域名、证书及 App
 
@@ -27,7 +27,7 @@ cd <包名>
 
 `check` 只核验内部 API；生产证书签发后 `check-public` 通过系统 CA 验证 HTTPS `/readyz`。staging 证书不被系统信任，检查失败是预期。可在独立测试安装中给 `setup` 加 `--staging`；正式安装选择新目录重新 setup，不将测试 CA 导入日常 App。
 
-App 使用 `state/deployment/client.json` 的 HTTPS origin，无需填写额外 CA。仅分享 origin/该文件，不分享 private/ 或完整 state。
+App 使用 `state/deployment/client.json` 的 HTTPS origin，无需填写额外 CA。仅分享 origin 或该文件。macOS 和 Windows 的配置路径、已有服务器的切换步骤见项目《安装与使用手册》中的「离线 API 部署包连接桌面 App」。
 
 其他 setup 参数：`--port 443 --http-port 80 --bind 0.0.0.0 --proxy-subnet 172.30.80.0/28`。同机多个安装须使用不同端口和不冲突的私网；公网 ACME 验证仍需标准 80/443 正确路由，不是任意高端口即可签发。
 

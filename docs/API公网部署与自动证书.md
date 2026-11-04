@@ -32,7 +32,11 @@ python3 -B scripts/packaging/offline_server.py \
 
 域名/邮箱在服务器首次安装时填写。setup 使用已导入 API 镜像里的 Python、无网络容器生成私有 `state/deployment`、新身份和数据库秘密，不覆盖已有安装；`start` 自动迁移并等待就绪，所有服务禁用拉取。`load` 可单独导入，`status`/`logs` 查看状态，`stop` 只关闭本项目并保留卷。重新配置需独立安装/迁移计划，不删除 state 或卷来重置。
 
+离线包从同一单平台归档固定配置摘要与 OCI 清单摘要，兼容经典镜像存储和 Docker 29 默认的 containerd 镜像存储，仍校验文件 SHA-256 与目标架构。旧包如果在导入后报告 `Wrong image ID or architecture`，请使用更新后的离线包或对应补丁。对已配置的安装，保留 `state/deployment/` 和数据卷，无需重新执行 `setup`。
+
 “离线”指镜像导入及运行依赖不依赖仓库、pip、npm 或镜像站。ACME 自动签发/续期仍要求正确公网 DNS、TCP 80/443 和出站网络；本包不是断网环境的证书签发方案。该离线包的入口为 `server.sh`，后续章节的 `manage.py` 命令适用于原始固定配置 kit。
+
+离线部署的公开地址在 `state/deployment/client.json`。按桌面使用手册把其中的 `origin` 加到 macOS 或 Windows 本机的 `connection.json`。手册同时说明已有配置时如何保留旧条目并切换。[离线 API 部署包连接桌面 App](启动使用与跨系统迁移.md#离线-api-部署包连接桌面-app)
 
 ## 1. 公网主机准备
 
