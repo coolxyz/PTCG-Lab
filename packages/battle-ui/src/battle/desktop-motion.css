@@ -1,0 +1,149 @@
+/* Desktop overlays use board coordinates and never capture card clicks. */
+.tabletop-animation-controls {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: 6px;
+}
+.tabletop-animation-controls button[aria-label="动画速度"] {
+  min-width: 38px;
+  font-variant-numeric: tabular-nums;
+}
+
+.desktop-battle-motion .battle-strike-trail,
+.desktop-battle-motion .battle-impact {
+  position: absolute;
+}
+.desktop-battle-motion .battle-strike-trail {
+  width: var(--strike-length, 60px);
+  height: 11px;
+  border-radius: 999px;
+  background: linear-gradient(
+    90deg,
+    transparent,
+    #ffac70 46%,
+    #ffedb4 80%,
+    #fff
+  );
+  box-shadow: 0 0 12px #ee904f;
+  animation: desktop-battle-strike calc(370ms / var(--battle-motion-rate))
+    ease-in both;
+  animation-delay: calc(110ms / var(--battle-motion-rate));
+}
+.desktop-battle-motion .battle-impact {
+  --desktop-cue-color: #eb793f;
+  width: 62px;
+  height: 62px;
+  border: 3px solid var(--desktop-cue-color);
+  border-radius: 50%;
+  box-shadow:
+    0 0 0 6px #ffffffa0,
+    0 0 24px var(--desktop-cue-color);
+  animation: desktop-battle-wave calc(420ms / var(--battle-motion-rate))
+    ease-out both;
+}
+.desktop-battle-motion .battle-impact-charge {
+  --desktop-cue-color: #eca94a;
+  animation-name: desktop-battle-charge;
+  animation-duration: calc(310ms / var(--battle-motion-rate));
+}
+.desktop-battle-motion .battle-impact-heal {
+  --desktop-cue-color: #41ad79;
+}
+.desktop-battle-motion .battle-impact-arrival {
+  --desktop-cue-color: #3a9ec4;
+}
+.desktop-battle-motion .battle-impact-attach {
+  --desktop-cue-color: #ab74dc;
+}
+.desktop-battle-motion .arena-hp-change.battle-hp-float {
+  animation: desktop-battle-hp calc(550ms / var(--battle-motion-rate)) ease-out
+    both;
+  font-variant-numeric: tabular-nums;
+}
+.desktop-battle-motion .battle-hp-float.is-heal {
+  background: #21674b;
+  border-color: #9fdfb8;
+  color: #f2fff7;
+}
+.desktop-battle-motion .card-flight {
+  animation-name: desktop-battle-card-arc;
+  box-shadow: 0 7px 16px #25194565;
+}
+
+@keyframes desktop-battle-charge {
+  from {
+    opacity: 0;
+    transform: translate(-50%, -50%) scale(1.35);
+  }
+  45% {
+    opacity: 0.9;
+  }
+  to {
+    opacity: 0;
+    transform: translate(-50%, -50%) scale(0.65);
+  }
+}
+@keyframes desktop-battle-strike {
+  from {
+    opacity: 0;
+    transform: translate(-50%, -50%) rotate(var(--strike-angle)) scaleX(0.42);
+  }
+  30%,
+  80% {
+    opacity: 1;
+  }
+  to {
+    opacity: 0;
+    transform: translate(
+        calc(var(--strike-x) - 50%),
+        calc(var(--strike-y) - 50%)
+      )
+      rotate(var(--strike-angle)) scaleX(1.12);
+  }
+}
+@keyframes desktop-battle-wave {
+  from {
+    opacity: 0.95;
+    transform: translate(-50%, -50%) scale(0.55);
+  }
+  to {
+    opacity: 0;
+    transform: translate(-50%, -50%) scale(1.7);
+  }
+}
+@keyframes desktop-battle-hp {
+  from {
+    opacity: 0;
+    transform: translate(-50%, 5px) scale(0.9);
+  }
+  20%,
+  72% {
+    opacity: 1;
+  }
+  to {
+    opacity: 0;
+    transform: translate(-50%, -29px);
+  }
+}
+@keyframes desktop-battle-card-arc {
+  from {
+    opacity: 0;
+    transform: scale(0.82);
+  }
+  18%,
+  80% {
+    opacity: 1;
+  }
+  52% {
+    transform: translate(
+        calc(var(--fly-x) * 0.52),
+        calc(var(--fly-y) * 0.52 - 28px)
+      )
+      rotate(-8deg) scale(1.18);
+  }
+  to {
+    opacity: 0;
+    transform: translate(var(--fly-x), var(--fly-y));
+  }
+}

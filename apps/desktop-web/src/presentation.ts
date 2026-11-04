@@ -6,6 +6,7 @@ import type {
   OpponentSide,
   ReplayFrame,
   ReplayPage,
+  VisibleEvent,
 } from "@ptcg/battle-protocol";
 import type {
   BattleView,
@@ -14,6 +15,13 @@ import type {
   Option,
   Side,
 } from "@ptcg/battle-ui";
+
+export function publicActionType(entry: VisibleEvent) {
+  // This is the action label emitted by the server, before localization.
+  return entry.kind === "action" && /^攻击(?: · |$)/.test(entry.text)
+    ? "AttackAction"
+    : undefined;
+}
 
 /** Display adapter for an already validated, member-scoped v2 DTO.
  * This is not an authentication boundary or a JSON validator. P5 supplies those.
@@ -132,6 +140,7 @@ function display(
     },
     events: value.events.map((e) => ({
       ...e,
+      actionType: publicActionType(e),
       actor: e.actor ?? "system",
       cardGroups: e.cards?.length
         ? [{ label: "公开卡牌", cards: e.cards.map(card) }]

@@ -92,12 +92,14 @@ export function BattleLog({
   viewerSeat,
   opponentLabel,
   replay,
+  requestedEntry,
 }: {
   view: BattleView;
   cards: Record<string, CardInfo>;
   viewerSeat: PlayerSeat;
   opponentLabel: string;
   replay: boolean;
+  requestedEntry?: { seq: number; turn: number } | null;
 }) {
   const entries = [...(view.events || [])].sort((a, b) => b.seq - a.seq);
   const latest = entries[0]?.seq ?? -1;
@@ -110,6 +112,16 @@ export function BattleLog({
   );
   const [focus, setFocus] = useState<EngineCard | null>(null);
   const list = useRef<HTMLOListElement>(null);
+  useLayoutEffect(() => {
+    if (!requestedEntry) return;
+    const { seq, turn } = requestedEntry;
+    setFilter("opponent");
+    setCutoff(seq);
+    setPausedTurn(turn);
+    setExpanded(new Map([[seq, true]]));
+    list.current?.scrollTo({ top: 0 });
+    list.current?.focus({ preventScroll: true });
+  }, [requestedEntry]);
   const label = (actor: string) =>
     playerLabel(actor, viewerSeat, opponentLabel);
   const pending = entries.filter((e) => e.seq > (cutoff ?? latest)).length;
@@ -242,6 +254,7 @@ export function BattleLog({
       </div>
       <ol
         ref={list}
+        tabIndex={requestedEntry ? -1 : undefined}
         onScroll={(e) => {
           if (!replay && cutoff === null && e.currentTarget.scrollTop > 24)
             pause();

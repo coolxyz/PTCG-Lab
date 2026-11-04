@@ -11,7 +11,7 @@ import type {
   ReplayCheckpoint,
 } from "@ptcg/battle-ui";
 import { eventText, lookupCard } from "@ptcg/battle-ui/presentation";
-import { card } from "../presentation";
+import { card, publicActionType } from "../presentation";
 
 type Frame = ReplayFrame | MatchSnapshot;
 type Entry = NonNullable<BattleView["events"]>[number];
@@ -378,6 +378,8 @@ export function visibleHistory(
           : frame.observation.turnNumber,
       kind: event?.kind || (groups.length ? "reveal" : "changes"),
       text: title,
+      actionType: authoritative.some(publicActionType) ? "AttackAction" : undefined,
+      effects: frame.visualEffects,
       coins,
       cardGroups: groups,
       changes: [...new Set(changes)],

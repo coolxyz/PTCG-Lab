@@ -41,6 +41,17 @@ final class Acceptance: XCTestCase {
         reveal(value)
         value.tap()
     }
+    func openBattleMenu() {
+        let menu = button("对局菜单")
+        XCTAssertTrue(menu.waitForExistence(timeout: 15), app.debugDescription)
+        menu.tap()
+    }
+    func tapBattleActions() {
+        if button("收起操作").exists { return }
+        let actions = app.buttons.matching(NSPredicate(format: "label BEGINSWITH %@", "操作")).firstMatch
+        XCTAssertTrue(actions.waitForExistence(timeout: 15), app.debugDescription)
+        actions.tap()
+    }
     func saveThroughFiles() {
         let save = app.descendants(matching: .any).matching(
             NSPredicate(format: "label CONTAINS %@ OR label == %@", "存储到", "Save to Files")
@@ -143,6 +154,7 @@ final class Acceptance: XCTestCase {
         XCTAssertTrue(control.waitForExistence(timeout: 20))
         reveal(control)
         control.tap()
+        tapBattleActions()
         let end = app.staticTexts.matching(NSPredicate(format: "label CONTAINS %@ OR label CONTAINS %@", "你赢了！", "对手 获胜")).firstMatch
         let deadline = Date().addingTimeInterval(1200)
         var actions = 0
@@ -150,14 +162,11 @@ final class Acceptance: XCTestCase {
         while !end.exists && Date() < deadline {
             let seq=pairedSequence()
             if seq<0 || seq==lastSubmittedSequence {pairedWait(0.5);continue}
+            if app.staticTexts["轮到你操作"].exists { tapBattleActions() }
             let pass=app.buttons.matching(NSPredicate(format:"label == %@ AND enabled == true","结束回合")).firstMatch
             let first = button("选择先攻")
             let confirm = app.buttons.matching(NSPredicate(format: "label BEGINSWITH %@", "确认选择")).firstMatch
             if pass.exists {
-                let filter = app.textFields["筛选合法动作"]
-                if filter.exists && (filter.value as? String) != "结束回合" {
-                    reveal(filter); filter.tap(); filter.typeText("结束回合"); dismissKeyboard()
-                }
                 reveal(pass);lastSubmittedSequence=seq;pass.tap();actions += 1
                 let advanced=XCTNSPredicateExpectation(predicate:NSPredicate{_,_ in self.pairedSequence()>seq},object:nil)
                 XCTAssertEqual(XCTWaiter.wait(for:[advanced],timeout:25),.completed)
@@ -186,7 +195,7 @@ final class Acceptance: XCTestCase {
         }
         XCTAssertTrue(end.exists, app.buttons.allElementsBoundByIndex.map{$0.label}.joined(separator:" | "))
         capture("ios-natural-match-finished")
-        tap("逐步回放")
+        openBattleMenu(); tap("逐步回放")
         let complete = app.staticTexts.matching(NSPredicate(format: "label CONTAINS %@", "回放已完整加载")).firstMatch
         XCTAssertTrue(complete.waitForExistence(timeout: 120), app.debugDescription)
         print("IOS_REPLAY_STATUS",complete.label)
@@ -393,14 +402,11 @@ final class Acceptance: XCTestCase {
         return Int(source.substring(with:match.range(at:1)))!
     }
     func pairedPass() {
-        let filter = app.textFields["筛选合法动作"]
-        if filter.exists && (filter.value as? String) != "结束回合" {
-            reveal(filter); filter.tap(); filter.typeText("结束回合"); dismissKeyboard()
-        }
         tap("结束回合")
     }
     func test23ActualBackgroundAndMissedUpdateRecovery() throws {
         app.activate();tap("取得操作权")
+        tapBattleActions()
         let pass=button("结束回合")
         XCTAssertTrue(pass.waitForExistence(timeout:20));XCTAssertTrue(pass.isEnabled)
         let seq=pairedSequence();pairedPass();pairedWait(2)
@@ -418,6 +424,7 @@ final class Acceptance: XCTestCase {
     }
     func test24AcceptedUnknownCommandSurvivesProcessTermination() throws {
         app.activate();tap("取得操作权")
+        tapBattleActions()
         let ready=button("结束回合")
         let enabled=XCTNSPredicateExpectation(predicate:NSPredicate{_,_ in ready.exists && ready.isEnabled},object:nil)
         XCTAssertEqual(XCTWaiter.wait(for:[enabled],timeout:20),.completed,app.debugDescription)
@@ -426,24 +433,26 @@ final class Acceptance: XCTestCase {
         app.terminate();pairedMark("P8PAIR_TERMINATED_UNKNOWN");pairedWait(3)
         app.launch();XCTAssertTrue(button("对战").waitForExistence(timeout:45));button("对战").tap()
         let recover=button("恢复待确认操作")
-        if !recover.waitForExistence(timeout:8) {
+        if !button("对局菜单").waitForExistence(timeout:8) {
             let pending=app.buttons.matching(NSPredicate(format:"label BEGINSWITH %@","恢复待确认对局")).firstMatch
             if pending.exists {reveal(pending);pending.tap()} else {tap("继续对局")}
         }
+        openBattleMenu()
         XCTAssertTrue(recover.waitForExistence(timeout:20),app.debugDescription)
         XCTAssertFalse(button("创建游客身份").exists)
         capture("atomic-ios-original-pending-survived-process-exit")
         tap("恢复待确认操作");pairedWait(3)
         XCTAssertFalse(recover.exists,app.debugDescription)
+        button("关闭菜单").tap()
         XCTAssertGreaterThan(pairedSequence(),seq)
         tap("取得操作权");capture("atomic-ios-original-receipt-recovered")
         pairedMark("P8PAIR_ATOMIC_UNKNOWN_PASS \(seq) \(pairedSequence())")
     }
     func test25NativeNetworkOutageAndCursorRecovery() throws {
-        app.activate();tap("刷新局面");pairedWait(2);tap("取得操作权")
+        app.activate();openBattleMenu();tap("刷新局面");pairedWait(2);tap("取得操作权")
         let before=pairedSequence();XCTAssertGreaterThanOrEqual(before,0)
         pairedMark("P8PAIR_NETWORK_OUTAGE \(before)");pairedWait(2)
-        tap("刷新局面");pairedWait(9);tap("刷新局面");pairedWait(3)
+        openBattleMenu();tap("刷新局面");pairedWait(9);openBattleMenu();tap("刷新局面");pairedWait(3)
         XCTAssertGreaterThanOrEqual(pairedSequence(),before)
         XCTAssertFalse(button("创建游客身份").exists)
         tap("取得操作权");capture("atomic-ios-network-and-cursor-recovered")

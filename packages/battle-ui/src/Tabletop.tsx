@@ -1,5 +1,11 @@
 import { RetryImage } from "./RetryImage";
-import { useEffect, useRef, useState, type PointerEvent } from "react";
+import {
+  useCallback,
+  useEffect,
+  useRef,
+  useState,
+  type PointerEvent,
+} from "react";
 import { createPortal } from "react-dom";
 import type {
   BattleView,
@@ -9,12 +15,51 @@ import type {
   Side,
   PlayerSeat,
 } from "./battle/types";
-import { eventText, lookupCard, playerLabel, skillName } from "./battle/presentation";
+import {
+  eventText,
+  lookupCard,
+  playerLabel,
+  skillName,
+} from "./battle/presentation";
 import "./tabletop.css";
 import "./arena.css";
 import { EventPlayback } from "./EventPlayback";
 import { CoinResults } from "./CoinResults";
 import { CardDescription } from "./CardDescription";
+import { CardActionPopover } from "./battle/CardActionPopover";
+
+const energyLabels: Record<string, string> = {
+  GRASS: "草",
+  FIRE: "火",
+  WATER: "水",
+  LIGHTNING: "雷",
+  PSYCHIC: "超",
+  FIGHTING: "斗",
+  DARK: "恶",
+  METAL: "钢",
+  DRAGON: "龙",
+  COLORLESS: "无色",
+  FAIRY: "妖",
+  ANY: "任意",
+  PSYCHIC_DARK: "超／恶",
+};
+function energyGroups(energy: string[]) {
+  const counts = new Map<string, number>();
+  for (const raw of energy) {
+    const type = raw.toUpperCase();
+    counts.set(type, (counts.get(type) ?? 0) + 1);
+  }
+  return [...counts].map(([type, count]) => ({
+    type,
+    count,
+    label: energyLabels[type] ?? type,
+  }));
+}
+function energyText(energy: string[]) {
+  return energyGroups(energy)
+    .map(({ label, count }) => `${label}${count > 1 ? ` ×${count}` : ""}`)
+    .join("、");
+}
 
 type Props = {
   view: BattleView;
@@ -28,6 +73,7 @@ type Props = {
   viewerSeat?: PlayerSeat;
   animateEvents?: boolean;
   onCoinPlaying?: (playing: boolean) => void;
+  mobile?: boolean;
 };
 export function Tabletop({
   view,
@@ -41,14 +87,26 @@ export function Tabletop({
   viewerSeat = "PLAYER1",
   animateEvents = true,
   onCoinPlaying,
+  mobile,
 }: Props) {
   const [focus, setFocus] = useState<EngineCard | null>(null);
+  const [cardAnchor, setCardAnchor] = useState<{
+    card: EngineCard;
+    trigger: HTMLButtonElement;
+    epoch: string;
+  } | null>(null);
+  const closeCardActions = useCallback(() => setCardAnchor(null), []);
   const [choices, setChoices] = useState<Option[] | null>(null);
   const [drag, setDrag] = useState<string | null>(null);
   const [pointer, setPointer] = useState({ x: 0, y: 0 });
   const gesture = useRef<{
-    source: string; epoch: string; x: number; y: number;
-    active: boolean; pointerId: number; element: HTMLButtonElement;
+    source: string;
+    epoch: string;
+    x: number;
+    y: number;
+    active: boolean;
+    pointerId: number;
+    element: HTMLButtonElement;
   } | null>(null);
   const suppressClick = useRef(false);
   const [sort, setSort] = useState(false);
@@ -58,6 +116,8 @@ export function Tabletop({
   const options = decision?.kind === "options" ? decision.options : [];
   const cardInfo = (c: EngineCard) => lookupCard(c, cards);
   const name = (c: EngineCard) => cardInfo(c)?.cnName || c.name;
+  const toolText = (card: EngineCard) =>
+    card.tool?.map((tool) => cards[tool]?.cnName || tool).join("、");
   useEffect(() => {
     setFocus(null);
     setChoices(null);
@@ -75,6 +135,7 @@ export function Tabletop({
   // Drop gestures select only options already supplied by the current decision.
   // Pointer capture avoids WebView-specific HTML5/image dragging behavior.
   const epoch = `${view.matchId}:${view.stateVersion}:${decision?.id}:${locked}`;
+  const activeAnchor = cardAnchor?.epoch === epoch && !locked ? cardAnchor : null;
   const currentEpoch = useRef(epoch);
   currentEpoch.current = epoch;
   const targets = (ref: string, source = drag) =>
@@ -100,6 +161,7 @@ export function Tabletop({
   };
   useEffect(() => {
     cancelDrag();
+    setCardAnchor(null);
   }, [epoch]);
   useEffect(() => {
     const cancel = () => cancelDrag();
@@ -125,7 +187,7 @@ export function Tabletop({
   };
   const beginDrag = (e: PointerEvent<HTMLButtonElement>, card: EngineCard) => {
     suppressClick.current = false;
-    if (e.button !== 0 || !e.isPrimary || locked || !card.ref ||
+    if (mobile || e.button !== 0 || !e.isPrimary || locked || !card.ref ||
       (!actions(card).length && !candidate(card))) return;
     gesture.current = { source: card.ref, epoch, x: e.clientX, y: e.clientY,
       active: false, pointerId: e.pointerId, element: e.currentTarget };
@@ -163,12 +225,29 @@ export function Tabletop({
     decision?.kind === "selection"
       ? decision.candidates.find((c) => c.boardRef === card.ref && !!card.ref)
       : undefined;
-  const open = (card: EngineCard) => {
+  const selectable = (card: EngineCard) =>
+    (decision?.max ?? 0) > 0 ? candidate(card) : undefined;
+  const open = (card: EngineCard, trigger: HTMLButtonElement) => {
     const c = candidate(card);
-    if (!locked && c) toggle(c.ref);
-    else setFocus(card);
+    if (mobile && !locked && (actions(card).length > 0 || selectable(card))) {
+      setCardAnchor(
+        activeAnchor?.trigger === trigger ? null : { card, trigger, epoch },
+      );
+      return;
+    }
+    if (!mobile && !locked && c) toggle(c.ref);
+    else {
+      closeCardActions();
+      setFocus(card);
+    }
   };
-  function cardState(card: EngineCard) {
+  function cardState(card: EngineCard, compact = false) {
+    if (compact)
+      return card.hp === undefined ? null : (
+        <span className="card-state-content">
+          <span className="battle-hp">HP {Math.max(0, card.hp)}</span>
+        </span>
+      );
     return (
       <span className="card-state-content">
         {card.hp !== undefined && (
@@ -179,19 +258,15 @@ export function Tabletop({
           </span>
         )}
         {!!card.energy?.length && (
-          <span className="tabletop-energy" title={card.energy.join(" / ")}>
-            {card.energy.map((e, i) => (
-              <i key={i} data-type={e}>
-                {(
-                  {
-                    FIRE: "火",
-                    METAL: "钢",
-                    PSYCHIC: "超",
-                    ANY: "★",
-                    COLORLESS: "无",
-                    DARK: "恶",
-                  } as Record<string, string>
-                )[e] || e.slice(0, 1)}
+          <span
+            className="tabletop-energy"
+            title={`附着能量：${energyText(card.energy)}`}
+          >
+            <b>能量</b>
+            {energyGroups(card.energy).map(({ type, count, label }) => (
+              <i key={type} data-type={type}>
+                {label}
+                {count > 1 && `×${count}`}
               </i>
             ))}
           </span>
@@ -200,8 +275,8 @@ export function Tabletop({
           <span className="tabletop-stack">进化 ×{card.evolved.length}</span>
         )}
         {!!card.tool?.length && (
-          <span className="tabletop-tool">
-            道具：{card.tool.map((n) => cards[n]?.cnName || n).join("、")}
+          <span className="tabletop-tool" title={toolText(card)}>
+            道具：{toolText(card)}
           </span>
         )}
         {card.specialCondition && (
@@ -275,31 +350,53 @@ export function Tabletop({
       </span>
     );
   }
-  function picture(card: EngineCard, key: number | string) {
-    const location = card.ref?.split(":").slice(1).join(":");
+  function picture(
+    card: EngineCard,
+    key: number | string,
+    zone?: "hand" | "bench",
+    motionLocation?: string,
+  ) {
+    const location = motionLocation ?? card.ref?.split(":").slice(1).join(":");
     const info = cardInfo(card);
     const c = candidate(card);
-    const canUse = !locked && (actions(card).length > 0 || !!c);
+    const canUse =
+      !locked && (actions(card).length > 0 || !!(mobile ? selectable(card) : c));
+    const expanded =
+      mobile && canUse ? activeAnchor?.card.ref === card.ref : undefined;
+    const benchEnergy = mobile && zone === "bench" ? card.energy ?? [] : [];
+    const benchTypes = energyGroups(benchEnergy);
+    const benchToolCount =
+      mobile && zone === "bench" ? card.tool?.length ?? 0 : 0;
+    const attachmentLabel = [
+      benchEnergy.length ? `附着能量 ${energyText(benchEnergy)}` : "",
+      benchToolCount ? `道具 ${toolText(card)}` : "",
+    ].filter(Boolean).join(" · ");
     return (
       <div
         key={key}
         data-motion-card={location}
+        data-motion-name={card.name}
         className={`tabletop-slot ${ready(card.ref || "") ? "drop-ready" : ""}`}
         data-card-drop={card.ref}
       >
         <button
           className={`tabletop-card ${canUse ? "usable" : ""} ${c && selected.includes(c.ref) ? "chosen" : ""}`}
-          aria-label={`${name(card)}${card.hp !== undefined ? ` · HP ${Math.max(0, card.hp)}` : ""}`}
-          aria-pressed={c ? selected.includes(c.ref) : undefined}
+          aria-label={`${name(card)}${card.hp !== undefined ? ` · HP ${Math.max(0, card.hp)}` : ""}${attachmentLabel ? ` · ${attachmentLabel}` : ""}`}
+          aria-pressed={!mobile && c ? selected.includes(c.ref) : undefined}
+          aria-expanded={expanded}
+          aria-haspopup={mobile && !canUse ? "dialog" : undefined}
           draggable={false}
           onPointerDown={(e) => beginDrag(e, card)}
           onPointerMove={moveDrag}
           onPointerUp={endDrag}
           onPointerCancel={cancelDrag}
           onLostPointerCapture={cancelDrag}
-          onClick={() => {
-            if (suppressClick.current) { suppressClick.current = false; return; }
-            open(card);
+          onClick={(event) => {
+            if (suppressClick.current) {
+              suppressClick.current = false;
+              return;
+            }
+            open(card, event.currentTarget);
           }}
         >
           {info?.image.url && (
@@ -311,6 +408,24 @@ export function Tabletop({
             />
           )}
           <span className="card-fallback">{name(card)}</span>
+          {attachmentLabel && (
+            <span className="mobile-bench-attachments" aria-hidden="true">
+              {!!benchEnergy.length && (
+                <span>
+                  {benchTypes.length === 1 && benchTypes[0].label.length === 1
+                    ? benchTypes[0].label
+                    : "能"}
+                  {benchEnergy.length}
+                </span>
+              )}
+              {!!benchToolCount && <span className="mobile-bench-tool">具{benchToolCount}</span>}
+            </span>
+          )}
+          {mobile && zone === "bench" && card.hp !== undefined && (
+            <span className="mobile-bench-hp" aria-hidden="true">
+              HP {Math.max(0, card.hp)}
+            </span>
+          )}
           {card.hp !== undefined && !!card.maximumHp && (
             <span className="arena-health" aria-hidden="true">
               <i
@@ -321,6 +436,11 @@ export function Tabletop({
             </span>
           )}
         </button>
+        {mobile && zone === "hand" && (
+          <span className="mobile-hand-caption" aria-hidden="true">
+            {name(card)}
+          </span>
+        )}
         {(card.hp !== undefined ||
           !!card.tool?.length ||
           !!card.energy?.length) && (
@@ -330,14 +450,77 @@ export function Tabletop({
             onClick={() => setFocus(card)}
           >
             <strong className="card-state-name">{name(card)}</strong>
-            {cardState(card)}
+            {cardState(card, !!mobile && zone === "bench")}
             <span className="card-state-more">状态与效果 ›</span>
           </button>
         )}
       </div>
     );
   }
+  function prizes(side: Side, enemy: boolean) {
+    return (
+      <div
+        className="tabletop-prizes"
+        data-motion-zone={`${enemy ? "opponent" : "self"}:prize`}
+      >
+        <small>奖赏 · {side.prize_count}</small>
+        <div>
+          {Array.from({ length: side.prize_count }, (_, i) => {
+            const visible = side.faceUpPrizes?.find((c) => c.prizeIndex === i);
+            return visible ? (
+              <button
+                key={i}
+                className="face-up-prize"
+                aria-label={`正面奖赏 ${name(visible)}`}
+                onClick={(event) => open(visible, event.currentTarget)}
+              >
+                {name(visible)}
+              </button>
+            ) : !mobile ? (
+              <i key={i} className="cardback" aria-label="背面奖赏" />
+            ) : null;
+          })}
+        </div>
+      </div>
+    );
+  }
+  function piles(side: Side, enemy: boolean) {
+    return (
+      <div className="tabletop-piles">
+        {!mobile && (
+          <div
+            className="deck-pile cardback"
+            data-motion-zone={`${enemy ? "opponent" : "self"}:deck`}
+          >
+            <b>{side.deck_count}</b>
+            <small>牌库</small>
+          </div>
+        )}
+        {(
+          [
+            ["弃牌", "discard", side.discard],
+            ["放逐", "lost_zone", side.lost_zone],
+          ] as const
+        ).map(([label, zone, contents]) => (
+          <details
+            key={zone}
+            data-motion-zone={`${enemy ? "opponent" : "self"}:${zone}`}
+          >
+            <summary>
+              {label} {contents.length}
+            </summary>
+            <div className="pile-cards">
+              {contents.length || !mobile
+                ? contents.map((card, i) => picture(card, i))
+                : "暂无卡牌"}
+            </div>
+          </details>
+        ))}
+      </div>
+    );
+  }
   function side(side: Side, enemy: boolean) {
+    const player = enemy ? "opponent" : "self";
     return (
       <section
         className={`tabletop-player ${enemy ? "enemy" : "own"}`}
@@ -348,21 +531,38 @@ export function Tabletop({
             <i aria-hidden="true">{enemy ? opponentLabel : "你"}</i>
             <span>
               {enemy ? opponentLabel : "我的场面"}
-              <small>{enemy ? "OPPONENT" : "TRAINER"}</small>
+              {!mobile && <small>{enemy ? "OPPONENT" : "TRAINER"}</small>}
             </span>
           </strong>
+          <span className="tabletop-counts">
+            <span
+              data-motion-zone={
+                mobile ? `${enemy ? "opponent" : "self"}:deck` : undefined
+              }
+            >
+              牌库 {side.deck_count}
+            </span>
+            {" · "}
+            <span
+              data-motion-zone={
+                mobile && enemy ? "opponent:hand" : undefined
+              }
+            >
+              手牌 {side.hand_count}
+            </span>
+            {" · "}
+            <strong data-motion-zone={mobile ? `${enemy ? "opponent" : "self"}:prize` : undefined}>
+              奖赏 {side.prize_count}
+            </strong>
+          </span>
           {side.turnFlags?.itemsBlocked && (
             <span className="tabletop-condition">物品使用受限</span>
           )}
           {side.turnFlags?.attacksBlocked && (
             <span className="tabletop-condition">本回合无法使用招式</span>
           )}
-          <span>
-            牌库 {side.deck_count} · 手牌 {side.hand_count} · 奖赏{" "}
-            {side.prize_count}
-          </span>
         </header>
-        {enemy && (
+        {enemy && !mobile && (
           <div
             className="opponent-hand"
             data-motion-zone="opponent:hand"
@@ -375,31 +575,7 @@ export function Tabletop({
           </div>
         )}
         <div className="tabletop-field">
-          <div
-            className="tabletop-prizes"
-            data-motion-zone={`${enemy ? "opponent" : "self"}:prize`}
-          >
-            <small>奖赏 · {side.prize_count}</small>
-            <div>
-              {Array.from({ length: side.prize_count }, (_, i) => {
-                const visible = side.faceUpPrizes?.find(
-                  (c) => c.prizeIndex === i,
-                );
-                return visible ? (
-                  <button
-                    key={i}
-                    className="face-up-prize"
-                    aria-label={`正面奖赏 ${name(visible)}`}
-                    onClick={() => open(visible)}
-                  >
-                    {name(visible)}
-                  </button>
-                ) : (
-                  <i key={i} className="cardback" aria-label="背面奖赏" />
-                );
-              })}
-            </div>
-          </div>
+          {!mobile && prizes(side, enemy)}
           <div className="tabletop-center">
             <div
               className={`tabletop-active ${!enemy && ready("active") ? "drop-ready" : ""}`}
@@ -409,7 +585,9 @@ export function Tabletop({
               <small>战斗区</small>
               <div>
                 {side.active.length ? (
-                  side.active.map(picture)
+                  side.active.map((card, i) =>
+                    picture(card, i, undefined, `${player}:active:${i}`),
+                  )
                 ) : (
                   <span className="empty-slot">战斗宝可梦</span>
                 )}
@@ -424,44 +602,30 @@ export function Tabletop({
                 备战区 · {side.bench.length}/{side.benchCapacity || 5}
               </small>
               <div>
-                {side.bench.map(picture)}
-                {Array.from(
-                  {
-                    length: Math.max(
-                      0,
-                      (side.benchCapacity || 5) - side.bench.length,
-                    ),
-                  },
-                  (_, i) => (
-                    <span className="empty-slot" key={`empty-${i}`}>
-                      ＋
-                    </span>
-                  ),
+                {side.bench.map((card, i) =>
+                  picture(card, i, "bench", `${player}:bench:${i}`),
                 )}
+                {mobile && !side.bench.length && (
+                  <span className="mobile-empty-bench">暂无备战宝可梦</span>
+                )}
+                {!mobile &&
+                  Array.from(
+                    {
+                      length: Math.max(
+                        0,
+                        (side.benchCapacity || 5) - side.bench.length,
+                      ),
+                    },
+                    (_, i) => (
+                      <span className="empty-slot" key={`empty-${i}`}>
+                        ＋
+                      </span>
+                    ),
+                  )}
               </div>
             </div>
           </div>
-          <div className="tabletop-piles">
-            <div
-              className="deck-pile cardback"
-              data-motion-zone={`${enemy ? "opponent" : "self"}:deck`}
-            >
-              <b>{side.deck_count}</b>
-              <small>牌库</small>
-            </div>
-            <details
-              data-motion-zone={`${enemy ? "opponent" : "self"}:discard`}
-            >
-              <summary>弃牌 {side.discard.length}</summary>
-              <div className="pile-cards">{side.discard.map(picture)}</div>
-            </details>
-            <details
-              data-motion-zone={`${enemy ? "opponent" : "self"}:lost_zone`}
-            >
-              <summary>放逐 {side.lost_zone.length}</summary>
-              <div className="pile-cards">{side.lost_zone.map(picture)}</div>
-            </details>
-          </div>
+          {!mobile && piles(side, enemy)}
         </div>
       </section>
     );
@@ -469,51 +633,115 @@ export function Tabletop({
   const hand = [...(view.observation.self.hand || [])];
   if (sort) hand.sort((a, b) => name(a).localeCompare(name(b), "zh-CN"));
   const shownActions = choices || (focus ? actions(focus) : []);
+  const anchoredCandidate = activeAnchor && selectable(activeAnchor.card);
   const lastAction = view.events?.at(-1);
-  return (
-    <div
-      className={`tabletop arena ${motion && animateEvents ? "with-motion" : ""}`}
-    >
-      <div className="arena-scoreboard">
-        <span>
-          <small>对手剩余奖赏</small>
-          <b>{view.observation.opponent.prize_count}</b>
-        </span>
-        <div>
-          <small>回合 {view.observation.turn_number}</small>
-          <strong role="status">
-            {view.done ? "对局结束" : decision ? "等待你的操作" : "对手行动中"}
-          </strong>
-        </div>
-        <span>
-          <small>我的剩余奖赏</small>
-          <b>{view.observation.self.prize_count}</b>
-        </span>
-      </div>
-      <div className="tabletop-settings">
-        <span>点击卡牌操作 · 拖到高亮目标</span>
+  const playback = (
+    <EventPlayback
+      view={view}
+      cards={cards}
+      enabled={motion && animateEvents}
+      opponentLabel={opponentLabel}
+      viewerSeat={viewerSeat}
+      mobile={mobile}
+    />
+  );
+  const settings = (
+    <div className="tabletop-settings">
+      <span>
+        {mobile ? "点按卡牌查看状态或操作" : "点击卡牌操作 · 拖到高亮目标"}
+      </span>
+      <div className="tabletop-animation-controls">
+        {!mobile && playback}
         <button onClick={() => setMotion(!motion)}>
           {motion ? "关闭动画" : "开启动画"}
         </button>
       </div>
+    </div>
+  );
+  const cardActions = (
+    <div className="tabletop-actions">
+      {shownActions.map((o) => (
+        <button
+          key={o.id}
+          disabled={locked}
+          onClick={() => {
+            setFocus(null);
+            setChoices(null);
+            play(o.id);
+          }}
+        >
+          {describe(o)}
+        </button>
+      ))}
+      {!shownActions.length && !mobile && (
+        <p>当前没有可执行动作，可查看卡牌信息。</p>
+      )}
+    </div>
+  );
+  return (
+    <div
+      className={`tabletop arena ${motion && animateEvents ? "with-motion" : ""}`}
+    >
+      {!mobile && (
+        <div className="arena-scoreboard">
+          <span>
+            <small>对手剩余奖赏</small>
+            <b>{view.observation.opponent.prize_count}</b>
+          </span>
+          <div>
+            <small>回合 {view.observation.turn_number}</small>
+            <strong role="status">
+              {view.done
+                ? "对局结束"
+                : decision
+                  ? "等待你的操作"
+                  : "对手行动中"}
+            </strong>
+          </div>
+          <span>
+            <small>我的剩余奖赏</small>
+            <b>{view.observation.self.prize_count}</b>
+          </span>
+        </div>
+      )}
+      {!mobile && settings}
       {side(view.observation.opponent, true)}
-      <EventPlayback
-        view={view}
-        cards={cards}
-        enabled={motion && animateEvents}
-        opponentLabel={opponentLabel}
-      />
-      <div className={`tabletop-stadium ${ready("stadium") ? "drop-ready" : ""}`} data-card-drop="stadium">
+      {mobile && playback}
+      <div
+        className={`tabletop-stadium ${ready("stadium") ? "drop-ready" : ""}`}
+        data-card-drop="stadium"
+      >
         <span className="arena-stadium-label">竞技场</span>
         {view.observation.stadium.length ? (
-          view.observation.stadium.map(picture)
+          mobile ? (
+            view.observation.stadium.map((card, i) => (
+              <button
+                key={card.ref || i}
+                className="secondary"
+                aria-expanded={
+                  !locked && actions(card).length
+                    ? activeAnchor?.card.ref === card.ref
+                    : undefined
+                }
+                onClick={(event) => open(card, event.currentTarget)}
+              >
+                {name(card)}
+                {!locked && actions(card).length > 0 ? " · 可使用" : ""}
+              </button>
+            ))
+          ) : (
+            view.observation.stadium.map((card, i) => picture(card, i))
+          )
         ) : (
           <small>尚未放置</small>
         )}
-        <strong className="arena-versus" aria-hidden="true">
-          VS
-        </strong>
+        {!mobile && (
+          <strong className="arena-versus" aria-hidden="true">
+            VS
+          </strong>
+        )}
       </div>
+      {mobile && side(view.observation.self, false)}
       {lastAction && (
         <section
           className={`arena-action-banner ${playerLabel(lastAction.actor, viewerSeat, opponentLabel) === opponentLabel ? "is-ai" : ""}`}
@@ -525,7 +753,13 @@ export function Tabletop({
             <small>第 {lastAction.seq} 步</small>
           </span>
           <div>
-            <strong>{eventText(lastAction.text, cards, lastAction.cardGroups?.flatMap((g) => g.cards))}</strong>
+            <strong>
+              {eventText(
+                lastAction.text,
+                cards,
+                lastAction.cardGroups?.flatMap((g) => g.cards),
+              )}
+            </strong>
             <div className="arena-action-effects">
               {lastAction.effects
                 ?.filter(
@@ -588,20 +822,59 @@ export function Tabletop({
           </div>
         </section>
       )}
-      {side(view.observation.self, false)}
-      <div className={`tabletop-play-zone ${ready("play") ? "drop-ready" : ""}`} data-card-drop="play">
-        <strong>打出区</strong><span>物品、支援者或特性可拖到这里；有多个操作时再选择</span>
-      </div>
-      {drag && createPortal(
-        <div className="tabletop-drag-preview" style={{ left: pointer.x + 16, top: pointer.y + 16 }} aria-hidden="true">
-          {(() => {
-            const card = [...(view.observation.self.hand || []), ...view.observation.self.active,
-              ...view.observation.self.bench, ...view.observation.stadium].find((c) => c.ref === drag);
-            const image = card && cardInfo(card)?.image.url;
-            return <>{image && <RetryImage src={image} alt="" draggable={false} />}<span>{card ? name(card) : "卡牌"}</span></>;
-          })()}
-        </div>, document.body
+      {!mobile && side(view.observation.self, false)}
+      {!mobile && (
+        <div
+          className={`tabletop-play-zone ${ready("play") ? "drop-ready" : ""}`}
+          data-card-drop="play"
+        >
+          <strong>打出区</strong>
+          <span>物品、支援者或特性可拖到这里；有多个操作时再选择</span>
+        </div>
       )}
+      {mobile && (
+        <details className="mobile-battle-zones">
+          <summary>查看奖赏、弃牌与放逐区</summary>
+          {(
+            [
+              ["我方", view.observation.self, false],
+              [opponentLabel, view.observation.opponent, true],
+            ] as const
+          ).map(([label, player, enemy]) => (
+            <section key={String(enemy)} aria-label={`${label}其他区域`}>
+              <strong>{label}</strong>
+              {prizes(player, enemy)}
+              {piles(player, enemy)}
+            </section>
+          ))}
+        </details>
+      )}
+      {mobile && settings}
+      {drag &&
+        createPortal(
+          <div
+            className="tabletop-drag-preview"
+            style={{ left: pointer.x + 16, top: pointer.y + 16 }}
+            aria-hidden="true"
+          >
+            {(() => {
+              const card = [
+                ...(view.observation.self.hand || []),
+                ...view.observation.self.active,
+                ...view.observation.self.bench,
+                ...view.observation.stadium,
+              ].find((c) => c.ref === drag);
+              const image = card && cardInfo(card)?.image.url;
+              return (
+                <>
+                  {image && <RetryImage src={image} alt="" draggable={false} />}
+                  <span>{card ? name(card) : "卡牌"}</span>
+                </>
+              );
+            })()}
+          </div>,
+          document.body,
+        )}
       <CoinResults
         key={`coins:${view.matchId}:${lastAction?.seq}`}
         coins={lastAction?.coins || []}
@@ -619,19 +892,28 @@ export function Tabletop({
             {sort ? "恢复手牌顺序" : "按名称整理"}
           </button>
         </header>
-        <div>{hand.map(picture)}</div>
+        {mobile && !hand.length ? (
+          <p>当前没有可显示的手牌。</p>
+        ) : (
+          <div>{hand.map((card, i) => picture(card, i, "hand"))}</div>
+        )}
       </section>
-      <div
-        className="tabletop-feedback"
-        key={`dialog:${view.matchId}:${view.stateVersion}`}
-        aria-live="polite"
-      >
-        {view.events?.at(-1)?.text ||
-          (decision ? "轮到你选择" : `等待${opponentLabel}操作`)}
-      </div>
+      {!mobile && (
+        <div
+          className="tabletop-feedback"
+          key={`dialog:${view.matchId}:${view.stateVersion}`}
+          aria-live="polite"
+        >
+          {view.events?.at(-1)?.text ||
+            (decision ? "轮到你选择" : `等待${opponentLabel}操作`)}
+        </div>
+      )}
       <dialog
         ref={dialog}
         className="tabletop-dialog"
+        aria-label={
+          mobile ? (focus ? name(focus) : "选择卡牌操作") : undefined
+        }
         onCancel={() => {
           setFocus(null);
           setChoices(null);
@@ -670,25 +952,21 @@ export function Tabletop({
               <h2>{name(focus)}</h2>
               <section className="card-state-detail" aria-label="卡牌当前状态">
                 <h3>当前状态</h3>
+                {focus.retreatCost !== undefined && (
+                  <p className="tabletop-retreat-cost">
+                    撤退所需能量：
+                    {focus.retreatCost.length
+                      ? energyText(focus.retreatCost)
+                      : "无需能量"}
+                  </p>
+                )}
                 {cardState(focus)}
               </section>
               <p>{cardInfo(focus)?.reviewNote}</p>
               {!!cardInfo(focus)?.chineseDetails?.sections?.length && (
                 <CardDescription
                   details={cardInfo(focus)?.chineseDetails}
-                  types={{
-                    GRASS: "草",
-                    FIRE: "火",
-                    WATER: "水",
-                    LIGHTNING: "雷",
-                    PSYCHIC: "超",
-                    FIGHTING: "斗",
-                    DARK: "恶",
-                    METAL: "钢",
-                    DRAGON: "龙",
-                    COLORLESS: "无",
-                    FAIRY: "妖",
-                  }}
+                  types={energyLabels}
                 />
               )}
               {!cardInfo(focus)?.chineseDetails?.sections?.length &&
@@ -708,12 +986,6 @@ export function Tabletop({
                   {focus.evolved.map((n) => cards[n]?.cnName || n).join(" → ")}
                 </p>
               )}
-              {!!focus.tool?.length && (
-                <p>
-                  道具：
-                  {focus.tool.map((n) => cards[n]?.cnName || n).join("、")}
-                </p>
-              )}
               {!cardInfo(focus)?.chineseDetails?.sections?.length &&
                 focus.abilities?.map((a) => (
                   <p key={a.name}>
@@ -725,23 +997,56 @@ export function Tabletop({
             </div>
           </div>
         )}
-        <div className="tabletop-actions">
-          {shownActions.map((o) => (
+        {!mobile && cardActions}
+      </dialog>
+      {activeAnchor && (
+        <CardActionPopover
+          trigger={activeAnchor.trigger}
+          name={name(activeAnchor.card)}
+          onClose={closeCardActions}
+        >
+          {actions(activeAnchor.card).map((option) => (
             <button
-              key={o.id}
-              disabled={locked}
+              key={option.id}
               onClick={() => {
-                setFocus(null);
-                setChoices(null);
-                play(o.id);
+                activeAnchor.trigger.focus({ preventScroll: true });
+                closeCardActions();
+                play(option.id);
               }}
             >
-              {describe(o)}
+              {describe(option)}
             </button>
           ))}
-          {!shownActions.length && <p>当前没有可执行动作，可查看卡牌信息。</p>}
-        </div>
-      </dialog>
+          {anchoredCandidate && (
+            <button
+              disabled={
+                !selected.includes(anchoredCandidate.ref) &&
+                selected.length >= (decision?.max ?? 0)
+              }
+              onClick={() => {
+                toggle(anchoredCandidate.ref);
+                activeAnchor.trigger.focus({ preventScroll: true });
+                closeCardActions();
+              }}
+            >
+              {selected.includes(anchoredCandidate.ref)
+                ? "取消选择此卡"
+                : "选择此卡"}
+            </button>
+          )}
+          <button
+            className="secondary"
+            aria-haspopup="dialog"
+            onClick={() => {
+              activeAnchor.trigger.focus({ preventScroll: true });
+              setFocus(activeAnchor.card);
+              closeCardActions();
+            }}
+          >
+            查看卡牌详情
+          </button>
+        </CardActionPopover>
+      )}
     </div>
   );
 }

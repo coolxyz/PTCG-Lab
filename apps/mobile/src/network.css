@@ -69,10 +69,6 @@
 .mobile-network code {
   overflow-wrap: anywhere;
 }
-.battle-screen {
-  padding-top: max(18px, env(safe-area-inset-top)) !important;
-  padding-bottom: max(28px, env(safe-area-inset-bottom)) !important;
-}
 @media (min-width: 850px) {
   .mobile-network .lobby-play-grid {
     grid-template-columns: repeat(2, minmax(0, 1fr));

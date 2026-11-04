@@ -26,6 +26,7 @@ export type EngineCard = {
   retaliationCounters?: number;
   energy?: string[];
   tool?: string[];
+  retreatCost?: string[];
   specialCondition?: string;
   retreatBlocked?: boolean;
   attackBlocked?: boolean;

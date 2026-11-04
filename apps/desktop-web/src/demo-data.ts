@@ -101,16 +101,27 @@ export function demoStadiumHistory(seat: Seat, count = 3): MatchSnapshot[] {
   const stadium: CardIdentity = { cardId: "demo-stadium", name: "演示竞技场" };
   return demoPublicHistory(seat, count).map((frame, seq) => {
     const first = demoSnapshot(seat);
-    frame.observation = { ...structuredClone(first.observation),
+    frame.observation = {
+      ...structuredClone(first.observation),
       viewer: seat === "PLAYER1" ? "player1" : "player2",
       turn: seat === "PLAYER1" ? "PLAYER2" : "PLAYER1",
       stadium: [{ ref: "demo-stadium-ref", card: stadium }],
     };
     frame.publicReveals = [];
-    frame.events = seq ? [{ seq, actor: frame.observation.turn, kind: "action",
-      text: seq === 1 ? "使用竞技场效果 · 演示竞技场" : "竞技场效果 · 演示竞技场 · 完成选牌",
-      cards: [stadium],
-    }] : [];
+    frame.events = seq
+      ? [
+          {
+            seq,
+            actor: frame.observation.turn,
+            kind: "action",
+            text:
+              seq === 1
+                ? "使用竞技场效果 · 演示竞技场"
+                : "竞技场效果 · 演示竞技场 · 完成选牌",
+            cards: [stadium],
+          },
+        ]
+      : [];
     return frame;
   });
 }
@@ -261,6 +272,53 @@ export function demoReplay(seat: Seat): ReplayPage {
         decision,
         ...frame
       } = demoSnapshot(seat);
+      const attacker = frame.observation.opponent.active[0].card;
+      if (seq > 0) frame.observation.self.active[0].hp = 60;
+      if (seq === 2) {
+        const played = frame.observation.self.hand.shift()!;
+        frame.observation.self.handCount--;
+        frame.observation.self.bench.push({ ref: "demo-bench", card: played });
+        frame.visualEffects = [
+          {
+            kind: "move",
+            side: "self",
+            fromZone: "hand",
+            zone: "bench",
+            cardName: played.name,
+            label: "上场",
+            before: 0,
+            after: 1,
+          },
+        ];
+        frame.events = [
+          {
+            seq,
+            actor: seat,
+            kind: "action",
+            text: `放置宝可梦 · ${played.name}`,
+          },
+        ];
+      } else if (seq === 1) {
+        frame.visualEffects = [
+          {
+            kind: "hp",
+            side: "self",
+            zone: "active",
+            index: 0,
+            before: 90,
+            after: 60,
+          },
+        ];
+        frame.events = [
+          {
+            seq,
+            actor: seat === "PLAYER1" ? "PLAYER2" : "PLAYER1",
+            kind: "action",
+            text: `攻击 · ${attacker.name} · 演示招式`,
+            cards: [attacker],
+          },
+        ];
+      }
       return {
         ...frame,
         frameSeq: seq,

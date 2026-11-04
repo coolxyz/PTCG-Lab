@@ -103,6 +103,48 @@ test("replay navigation is read-only and timer stays in mode host", async ({
   await page.getByRole("button", { name: "返回大厅", exact: true }).click();
   await expect(page.getByLabel("演示选择回调")).toHaveText("尚未选择");
 });
+test("desktop battle effects keep the board steady and the toolbar can skip them", async ({
+  page,
+}) => {
+  await open(page);
+  await page.getByRole("button", { name: "逐步回放", exact: true }).click();
+  const next = page.getByRole("button", { name: "回放下一步", exact: true });
+  const skip = page.getByRole("button", { name: "跳过反馈", exact: true });
+  const speed = page.getByRole("button", { name: "动画速度", exact: true });
+  const overlay = page.locator(".desktop-battle-motion");
+  await expect(skip).toBeDisabled();
+  await next.click();
+  await expect(overlay.locator(".battle-impact-charge")).toHaveCSS(
+    "animation-name",
+    "desktop-battle-charge",
+  );
+  await expect(overlay.locator(".battle-strike-trail")).toHaveCSS(
+    "animation-name",
+    "desktop-battle-strike",
+  );
+  await expect(overlay.locator(".battle-hp-float")).toHaveText("-30 HP");
+  const active = page.locator(
+    ".tabletop-player.own .tabletop-active .tabletop-card",
+  );
+  const position = await active.boundingBox();
+  await skip.click();
+  await expect(overlay).toHaveCount(0);
+  expect(await active.boundingBox()).toEqual(position);
+  await speed.click();
+  await expect(speed).toHaveText("2×");
+  await next.click();
+  await expect(overlay.locator(".card-flight")).toHaveCSS(
+    "animation-name",
+    "desktop-battle-card-arc",
+  );
+  await expect(overlay.locator(".card-flight")).toHaveCSS(
+    "animation-duration",
+    "0.3s",
+  );
+  await page.emulateMedia({ reducedMotion: "reduce" });
+  await expect(overlay).toHaveCount(0);
+  await expect(speed).toBeDisabled();
+});
 test("fullscreen failure falls back and card dialog stays usable", async ({
   page,
 }) => {
@@ -431,14 +473,20 @@ for (const seat of ["PLAYER1", "PLAYER2"])
     ).toBeVisible();
     await expect(log.getByText("结束回合", { exact: true })).toHaveCount(0);
     // Inspecting another card while paused must not advance the frozen list.
-    await log.getByRole("button", {
-      name: "查看记录卡牌：演示公开宝可梦丙", exact: true,
-    }).click();
+    await log
+      .getByRole("button", {
+        name: "查看记录卡牌：演示公开宝可梦丙",
+        exact: true,
+      })
+      .click();
     await page.keyboard.press("Escape");
     await expect(log.getByText("结束回合", { exact: true })).toHaveCount(0);
-    await expect(log.getByRole("button", {
-      name: "1 条新记录 · 查看最新", exact: true,
-    })).toBeVisible();
+    await expect(
+      log.getByRole("button", {
+        name: "1 条新记录 · 查看最新",
+        exact: true,
+      }),
+    ).toBeVisible();
     await log
       .getByRole("button", { name: "1 条新记录 · 查看最新", exact: true })
       .click();
@@ -467,29 +515,55 @@ for (const seat of ["PLAYER1", "PLAYER2"])
     });
   });
 
-
-test("legacy records show useful collapsed headlines without inventing played cards", async ({ page }) => {
+test("legacy records show useful collapsed headlines without inventing played cards", async ({
+  page,
+}) => {
   await open(page, "legacy-history", "PLAYER1");
   const log = page.getByRole("region", { name: "对局信息", exact: true });
   const outcome = log.getByRole("button", { name: /#2 · 系统.*HP：90 → 30/ });
   await expect(outcome).toBeVisible();
-  const reveal = log.getByRole("button", { name: /#1 · 系统.*按效果展示卡牌：演示公开宝可梦丙/ });
+  const reveal = log.getByRole("button", {
+    name: /#1 · 系统.*按效果展示卡牌：演示公开宝可梦丙/,
+  });
   await expect(reveal).toHaveAttribute("aria-expanded", "false");
   await expect(log.getByText("可见局面更新", { exact: true })).toHaveCount(0);
-  await expect(log.getByText("使用物品 · 演示检索物品", { exact: true })).toHaveCount(0);
+  await expect(
+    log.getByText("使用物品 · 演示检索物品", { exact: true }),
+  ).toHaveCount(0);
   await reveal.click();
   await expect(log.getByText("对手弃牌区新增", { exact: true })).toBeVisible();
-  await expect(log.getByText("此步未保存动作声明，仅展示已确认的可见信息。", { exact: true }).first()).toBeVisible();
-  await page.screenshot({ path: "var/p55events/information-titles.png", fullPage: true });
+  await expect(
+    log
+      .getByText("此步未保存动作声明，仅展示已确认的可见信息。", {
+        exact: true,
+      })
+      .first(),
+  ).toBeVisible();
+  await page.screenshot({
+    path: "var/p55events/information-titles.png",
+    fullPage: true,
+  });
 });
 
-
-test("stadium activation and its selection step retain public context without a visible delta", async ({ page }) => {
+test("stadium activation and its selection step retain public context without a visible delta", async ({
+  page,
+}) => {
   await open(page, "stadium-history", "PLAYER2");
   const log = page.getByRole("region", { name: "对局信息", exact: true });
-  await expect(log.getByRole("button", { name: /#1 · 对手.*使用竞技场效果 · 演示竞技场/ })).toBeVisible();
-  await expect(log.getByRole("button", { name: /#2 · 对手.*竞技场效果 · 演示竞技场 · 完成选牌/ })).toBeVisible();
-  await expect(log.getByRole("button", { name: "查看记录卡牌：演示竞技场", exact: true })).toBeVisible();
+  await expect(
+    log.getByRole("button", { name: /#1 · 对手.*使用竞技场效果 · 演示竞技场/ }),
+  ).toBeVisible();
+  await expect(
+    log.getByRole("button", {
+      name: /#2 · 对手.*竞技场效果 · 演示竞技场 · 完成选牌/,
+    }),
+  ).toBeVisible();
+  await expect(
+    log.getByRole("button", { name: "查看记录卡牌：演示竞技场", exact: true }),
+  ).toBeVisible();
   await expect(log).not.toContainText("无新增公开结果");
-  await page.screenshot({ path: "var/p55events/stadium-information.png", fullPage: true });
+  await page.screenshot({
+    path: "var/p55events/stadium-information.png",
+    fullPage: true,
+  });
 });

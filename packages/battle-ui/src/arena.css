@@ -298,11 +298,6 @@
   border: 1px solid #6786ab;
   max-width: min(300px, 65vw);
 }
-.arena .event-playback {
-  background: #13253bed;
-  border-color: #688bb9;
-  box-shadow: 0 8px 24px #0005;
-}
 .arena .settlement-attack {
   animation: arena-impact 0.45s ease-out;
 }
@@ -567,10 +562,22 @@
 .arena .card-state-content .tabletop-energy,
 .tabletop-dialog .card-state-content .tabletop-energy {
   display: flex;
+  align-items: center;
   flex-wrap: wrap;
   gap: 3px;
   max-width: 100%;
   background: transparent;
+}
+.card-state-content .tabletop-energy i {
+  width: auto;
+  min-width: 16px;
+  height: auto;
+  padding-inline: 3px;
+  border-radius: 8px;
+}
+.tabletop-detail .tabletop-retreat-cost {
+  margin: 0 0 6px;
+  font-weight: 650;
 }
 .arena .card-state-content .tabletop-tool,
 .tabletop-dialog .card-state-content .tabletop-tool {
@@ -881,7 +888,6 @@
   :is(
     .card-state-panel,
     .pile-cards,
-    .event-playback,
     .tabletop-feedback,
     .arena-action-banner,
     .coin-results
@@ -902,13 +908,9 @@
   color: #7854b2;
   border-color: #d6c4e8;
 }
-.battle-screen .arena :is(.arena-action-effects span, .event-delta) {
+.battle-screen .arena .arena-action-effects span {
   background: #f2eafa;
   color: #7854b2;
-}
-.battle-screen .arena .event-delta.hp {
-  background: #fae4d9;
-  color: #7b382b;
 }
 .battle-screen .arena .arena-action-banner.is-ai {
   background: #fcf2f9;
@@ -925,7 +927,11 @@
   color: #205333;
   background: #e2f0dc;
 }
-.battle-screen .arena .card-state-content .tabletop-tool {
+.battle-screen .tabletop-dialog .card-state-content .tabletop-energy {
+  color: var(--ptcg-ink);
+}
+.battle-screen .arena .card-state-content .tabletop-tool,
+.battle-screen .tabletop-dialog .card-state-content .tabletop-tool {
   color: #24526d;
   background: #dfedf6;
 }

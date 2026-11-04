@@ -567,41 +567,6 @@
     width: 16px;
   }
 }
-.event-playback {
-  position: absolute;
-  top: 42px;
-  right: 12px;
-  width: min(300px, calc(100% - 24px));
-  max-height: 150px;
-  overflow: auto;
-  box-sizing: border-box;
-  z-index: 12;
-  pointer-events: none;
-  padding: 10px;
-  margin: 8px 0;
-  border: 1px solid #66887e;
-  border-radius: 8px;
-  background: #193d3b;
-  color: #f3f7ed;
-  font-size: 12px;
-}
-.event-playback-step {
-  animation: feedback-in 0.3s ease-out;
-}
-.event-delta {
-  display: inline-block;
-  padding: 5px;
-  margin: 4px;
-  border-radius: 5px;
-  background: #284e46;
-}
-.event-delta.hp {
-  background: #704432;
-}
-.event-playback button {
-  margin-top: 6px;
-  pointer-events: auto;
-}
 .card-flight-layer {
   position: absolute;
   inset: 0;

@@ -144,6 +144,7 @@ function Connected({
     return (
       <>
         <BattleArena
+          mobile={native}
           appearanceStorage={browserAppearanceStorage}
           view={{
             ...snapshotView(s.view),
@@ -180,6 +181,11 @@ function Connected({
             </div>
           }
           onSubmit={s.lease && !s.replay && !s.pending ? c.submit : undefined}
+          onAcquireControl={
+            native && !s.lease && !s.pending && !s.replay
+              ? c.control
+              : undefined
+          }
           onRetry={s.pending ? c.recover : c.refresh}
           onRefresh={c.refresh}
           onLeave={c.leave}
@@ -192,7 +198,7 @@ function Connected({
                 <summary>对局编号</summary>
                 <code>{s.view.matchId}</code>
               </details>
-              {!s.view.done && (
+              {!native && !s.view.done && (
                 <button
                   disabled={s.busy || s.pending || !!s.replay}
                   onClick={c.control}

@@ -1,11 +1,18 @@
-import { useEffect, useState, type ReactNode } from "react";
-import { History, ChevronLeft, ChevronRight, Flag } from "lucide-react";
+import { useEffect, useLayoutEffect, useRef, useState, type ReactNode } from "react";
+import {
+  ChevronLeft,
+  ChevronRight,
+  Flag,
+  History,
+  ListChecks,
+  Swords,
+} from "lucide-react";
 import { Tabletop } from "../Tabletop";
 import { DeckBrowser } from "../DeckBrowser";
 import { BattleScreen } from "./BattleScreen";
 import { BattleLog } from "./BattleLog";
 import type { AppearanceStorage } from "./appearance";
-import { lookupCard, playerLabel, skillName } from "./presentation";
+import { eventText, lookupCard, playerLabel, skillName } from "./presentation";
 import type {
   BattleView,
   CardInfo,
@@ -31,6 +38,7 @@ export type ReplayDisplay = {
 };
 
 export type BattleArenaProps = {
+  mobile?: boolean;
   appearanceStorage?: AppearanceStorage;
   view: BattleView;
   cards: Record<string, CardInfo>;
@@ -45,12 +53,18 @@ export type BattleArenaProps = {
   modeControls?: ReactNode;
   onSubmit?: (choice: Command["choice"]) => void;
   onRetry?: () => void;
+  onAcquireControl?: () => void;
   onRefresh: () => void;
   onLeave: () => void;
   onOpenReplay?: () => void;
   onResign?: () => void | Promise<void>;
   onCoinPlaying?: (playing: boolean) => void;
 };
+const mobilePanels = [
+  ["board", "场面", Swords],
+  ["log", "记录", History],
+] as const;
+type MobilePanel = (typeof mobilePanels)[number][0];
 
 const actionNames: Record<string, string> = {
   PlayPokemonAction: "放置宝可梦",
@@ -78,6 +92,7 @@ const phases: Record<string, string> = {
 };
 /** Shared display boundary: no API calls, storage, AI scheduling or game rules. */
 export function BattleArena({
+  mobile = false,
   appearanceStorage,
   view,
   cards: names,
@@ -91,6 +106,7 @@ export function BattleArena({
   modeControls,
   onSubmit,
   onRetry,
+  onAcquireControl,
   onRefresh,
   onLeave,
   onOpenReplay,
@@ -100,6 +116,12 @@ export function BattleArena({
   const [selected, setSelected] = useState<string[]>([]);
   const [filter, setFilter] = useState("");
   const [resignConfirm, setResignConfirm] = useState(false);
+  const [panel, setPanel] = useState<MobilePanel>("board");
+  const [logRequest, setLogRequest] = useState<{ seq: number; turn: number } | null>(null);
+  const [menuOpen, setMenuOpen] = useState(false);
+  const [actionsOpen, setActionsOpen] = useState(false);
+  const actionsDialog = useRef<HTMLDialogElement>(null);
+  const prompted = useRef<string | undefined>(undefined);
   const frame = replay?.frame;
   const shown = frame || view;
   const d = shown.decision;
@@ -116,13 +138,56 @@ export function BattleArena({
     shown.done ||
     !onSubmit ||
     (!!d?.actor && d.actor !== viewerSeat);
+  const forcedDecision =
+    mobile &&
+    !readOnly &&
+    d &&
+    (shown.phase !== "playing" ||
+      d.kind === "selection" ||
+      d.options.some((o) =>
+        ["NumberOption", "ChooseCardAction"].includes(o.actionType),
+      ))
+      ? d.id
+      : undefined;
+  useEffect(() => {
+    prompted.current = undefined;
+    setPanel("board");
+    setLogRequest(null);
+    setMenuOpen(false);
+    setActionsOpen(false);
+  }, [shown.matchId, !!frame, viewerSeat]);
+  useEffect(() => {
+    if (!menuOpen && forcedDecision && prompted.current !== forcedDecision) {
+      prompted.current = forcedDecision;
+      setActionsOpen(true);
+    }
+  }, [forcedDecision, menuOpen]);
+  useLayoutEffect(() => {
+    const dialog = actionsDialog.current;
+    if (!dialog) return;
+    if (actionsOpen && !frame && !shown.done) dialog.showModal();
+    else dialog.close();
+  }, [actionsOpen, !!frame, shown.done]);
   const cn = (name: string | undefined) =>
     name ? names[name]?.cnName || name : "";
   const actorName = (actor: string | null) =>
     playerLabel(actor, viewerSeat, opponentLabel);
+  const opponentEvents = mobile && !frame
+    ? (shown.events ?? []).filter((event) => actorName(event.actor) === opponentLabel)
+    : [];
+  const lastOpponentEvent = opponentEvents.at(-1);
+  const opponentAction = opponentEvents.filter(
+    (event) =>
+      event.turn === lastOpponentEvent?.turn &&
+      event.actionType !== "PassTurn" &&
+      event.text !== "结束回合" &&
+      event.kind !== "result",
+  ).at(-1) ?? lastOpponentEvent;
   const showReplay = (seq: number) => replay?.onSeek(seq);
   const submit = (choice: Command["choice"]) => {
-    if (!readOnly) onSubmit?.(choice);
+    if (readOnly) return;
+    if (mobile) setActionsOpen(false);
+    onSubmit?.(choice);
   };
   useEffect(() => {
     setSelected([]);
@@ -180,11 +245,406 @@ export function BattleArena({
   const previousTurn = timeline.filter((point) => point.seq < replaySeq).at(-1);
   const nextTurn = timeline.find((point) => point.seq > replaySeq);
   const currentTurn = timeline.filter((point) => point.seq <= replaySeq).at(-1);
+  const passTurn =
+    mobile && !frame && d?.kind === "options"
+      ? d.options.find((o) => o.actionType === "PassTurn")
+      : undefined;
+  const turnActor = actorName(shown.observation.turn);
+  const stepLabel = frame
+    ? `回放 · 第 ${replaySeq} 步`
+    : `${phases[shown.phase] || shown.phase} · 回合 ${shown.observation.turn_number} · 第 ${shown.matchSeq ?? shown.stateVersion} 步`;
+  const turnLabel = frame
+    ? "只读回放"
+    : shown.done
+      ? "对局结束"
+      : pendingCommand
+        ? "操作待确认"
+        : busy
+          ? "正在同步…"
+          : !onSubmit
+            ? `只读观察${turnActor === "系统" ? "" : ` · ${turnActor === "你" ? "我方" : turnActor}回合`}`
+            : d && !readOnly
+              ? "轮到你操作"
+              : turnActor === opponentLabel
+                ? `${opponentLabel}回合`
+                : turnActor === "你"
+                  ? "等待局面更新"
+                  : `等待${opponentLabel}操作`;
+  function changeMenu(open: boolean) {
+    setMenuOpen(open);
+    setResignConfirm(false);
+  }
+  const matchActions = (
+    <>
+      <button className="secondary" disabled={busy} onClick={onLeave}>
+        返回大厅
+      </button>
+      {(!mobile || !frame) && (
+        <button
+          className="secondary"
+          disabled={busy || !onOpenReplay}
+          onClick={() => {
+            if (mobile) changeMenu(false);
+            onOpenReplay?.();
+          }}
+        >
+          <History size={14} aria-hidden="true" /> 逐步回放
+        </button>
+      )}
+      {onResign && !view.done && !frame && (
+        <button
+          className="secondary"
+          disabled={busy}
+          onClick={() => setResignConfirm(true)}
+        >
+          <Flag size={14} aria-hidden="true" /> 认输
+        </button>
+      )}
+    </>
+  );
+  const resignPrompt = resignConfirm && onResign && (
+    <div className="battle-confirm" role="alert">
+      确认认输并结束本局？
+      <button
+        disabled={busy}
+        onClick={async () => {
+          if (mobile) changeMenu(false);
+          await onResign();
+          setResignConfirm(false);
+        }}
+      >
+        确认认输
+      </button>
+      <button onClick={() => setResignConfirm(false)}>继续对战</button>
+    </div>
+  );
+  const publicRecords = (
+    <>
+      {!!shown.setupEvents?.some((e) => e.kind === "mulligan") && (
+        <details className="battle-public">
+          <summary>开局重抽公开记录</summary>
+          {shown.setupEvents
+            .filter((e) => e.kind === "mulligan")
+            .map((e, i) => (
+              <p key={i}>
+                {Object.entries(e.hands)
+                  .map(
+                    ([p, c]: any) =>
+                      `${actorName(p)}：${c.map((x: any) => cn(x.name)).join("、")}`,
+                  )
+                  .join("；")}
+              </p>
+            ))}
+        </details>
+      )}
+      {!!shown.publicReveals?.length && (
+        <details className="battle-public">
+          <summary>已公开检索卡牌</summary>
+          {shown.publicReveals.map((e, i) => (
+            <p key={i}>
+              {actorName(e.actor)}：
+              {e.cards.map((c: any) => cn(c.name)).join("、")}
+            </p>
+          ))}
+        </details>
+      )}
+    </>
+  );
+  const decisionPanel = (
+    <section
+      className="decision-panel"
+      aria-label="当前决策"
+    >
+      <div className="decision-heading">
+        <h2>
+          {frame
+            ? "历史决策（只读）"
+            : shown.done
+              ? "本局已结束"
+              : mobile && readOnly && !busy && !pendingCommand && d
+                ? "当前动作（只读）"
+                : d?.kind === "selection" && d.max === 0
+                  ? "查看卡牌"
+                  : d
+                    ? "轮到你选择"
+                    : `${opponentLabel} 正在操作…`}
+        </h2>
+        {passTurn && (
+          <button
+            className="secondary"
+            disabled={readOnly}
+            onClick={() => submit({ optionId: passTurn.id })}
+          >
+            结束回合
+          </button>
+        )}
+      </div>
+      {d?.kind === "selection" && (
+        <>
+          <p>
+            {d.instruction || phases[shown.phase]}
+            {d.source ? " · " + cn(d.source) : ""}
+          </p>
+          {d.max === 0 ? (
+            <p>以下是本次效果查看到的卡牌，无需选牌。查看完毕后继续。</p>
+          ) : (
+            <p>
+              请选择 {d.min === d.max ? d.min : `${d.min}–${d.max}`} 张。
+              {d.hidden
+                ? "卡牌身份隐藏。"
+                : "选择后，后续效果会继续提示。"}
+            </p>
+          )}
+          {d.deckInspection && (
+            <DeckBrowser
+              key={d.id}
+              inspection={d.deckInspection}
+              names={names}
+              selectedCount={selected.length}
+            />
+          )}
+          {d.source === "Tatsugiri" && !d.hidden && (
+            <p className="inspection-summary" role="status">
+              {d.max === 0
+                ? `这 ${d.candidates.length} 张中有 ${d.candidates.filter((c) => c.card?.trainerType === "SUPPORTER").length} 张支援者${
+                    d.candidates.some(
+                      (c) => c.card?.trainerType === "SUPPORTER",
+                    )
+                      ? `：${d.candidates
+                          .filter(
+                            (c) => c.card?.trainerType === "SUPPORTER",
+                          )
+                          .map((c) => cn(c.card?.name))
+                          .join("、")}。继续后可从中选择一张。`
+                      : "。继续后洗牌，不加入手牌。"
+                  }`
+                : "仅从刚才查看的卡牌中选择支援者，不会另外检索牌库。"}
+            </p>
+          )}
+          {d.max === 0 ? (
+            <ul className="inspection-cards" aria-label="本次查看的卡牌">
+              {d.candidates.map((c, i) => (
+                <li
+                  key={c.ref}
+                  className={
+                    !d.hidden && c.card?.trainerType === "SUPPORTER"
+                      ? "inspection-supporter"
+                      : ""
+                  }
+                >
+                  <strong>
+                    {d.hidden ? `背面卡牌 ${i + 1}` : cn(c.card?.name)}
+                  </strong>
+                  {!d.hidden && (
+                    <span>
+                      {c.card?.trainerType === "SUPPORTER"
+                        ? "支援者"
+                        : c.card?.trainerType === "ITEM"
+                          ? "物品"
+                          : c.card?.trainerType === "TOOL"
+                            ? "宝可梦道具"
+                            : c.card?.superType === "ENERGY"
+                              ? "能量"
+                              : c.card?.superType === "POKEMON"
+                                ? "宝可梦"
+                                : ""}
+                    </span>
+                  )}
+                </li>
+              ))}
+            </ul>
+          ) : (
+            <div className="decision-candidates">
+              {d.candidates.map((c, i) => (
+                <button
+                  key={c.ref}
+                  className={selected.includes(c.ref) ? "selected" : ""}
+                  disabled={
+                    readOnly ||
+                    (!selected.includes(c.ref) &&
+                      selected.length >= d.max)
+                  }
+                  aria-pressed={selected.includes(c.ref)}
+                  onClick={() =>
+                    setSelected((s) =>
+                      s.includes(c.ref)
+                        ? s.filter((x) => x !== c.ref)
+                        : [...s, c.ref],
+                    )
+                  }
+                >
+                  {d.hidden ? (
+                    c.card &&
+                    c.revealedPrizeIndex !== undefined &&
+                    c.revealedPrizeSide ? (
+                      `明示奖赏 ${c.revealedPrizeIndex + 1} · ${cn(c.card.name)}`
+                    ) : (
+                      `背面卡牌 ${i + 1}`
+                    )
+                  ) : (
+                    <>
+                      {cn(c.card?.name)}
+                      {c.side
+                        ? c.side === "self"
+                          ? " · 我方"
+                          : " · 对方"
+                        : ""}
+                      {c.position?.endsWith("BENCH")
+                        ? ` · 备战 ${c.index}`
+                        : c.position?.endsWith("ACTIVE")
+                          ? " · 战斗区"
+                          : ""}
+                      {c.card?.hp !== undefined
+                        ? ` · HP ${Math.max(0, c.card.hp)}${c.card.hp <= 0 ? "（等待效果结算）" : ""}`
+                        : ""}
+                    </>
+                  )}
+                </button>
+              ))}
+            </div>
+          )}
+          <div className="decision-confirmation">
+            <button
+              className="primary"
+              disabled={
+                readOnly ||
+                selected.length < d.min ||
+                selected.length > d.max
+              }
+              onClick={() => submit({ selectedRefs: selected })}
+            >
+              {d.max === 0
+                ? "已查看，继续结算"
+                : `确认选择 ${selected.length} 张`}
+            </button>
+            {d.max === 0 && (
+              <small>
+                这些卡牌仅供查看，无需选中。确认后继续处理效果。
+              </small>
+            )}
+            {d.min === 0 && d.max > 0 && (
+              <small>允许不选，点击“确认选择 0 张”继续。</small>
+            )}
+          </div>
+        </>
+      )}
+      {d?.kind === "options" &&
+        d.options.length > 0 &&
+        d.options.every((o) => o.actionType === "NumberOption") && (
+          <p>请选择要执行的效果。</p>
+        )}
+      {d?.kind === "options" &&
+        d.options.some((o) => o.id !== passTurn?.id) && (
+          <>
+            <input
+              aria-label="筛选合法动作"
+              placeholder="筛选卡名或动作"
+              value={filter}
+              onChange={(e) => setFilter(e.target.value)}
+            />
+            <div className="decision-options">
+              {d.options
+                .filter(
+                  (o) =>
+                    o.id !== passTurn?.id &&
+                    optionText(o)
+                      .toLowerCase()
+                      .includes(filter.toLowerCase()),
+                )
+                .map((o) => (
+                  <button
+                    key={o.id}
+                    disabled={readOnly}
+                    onClick={() => submit({ optionId: o.id })}
+                  >
+                    {optionText(o)}
+                  </button>
+                ))}
+            </div>
+          </>
+        )}
+      {!d && !shown.done && (
+        <p>当前等待{opponentLabel}操作，轮到你时会显示可选动作。</p>
+      )}
+    </section>
+  );
   return (
     <BattleScreen
       busy={busy}
       onRefresh={onRefresh}
       appearanceStorage={appearanceStorage}
+      mobile={
+        mobile
+          ? {
+              panelKey: `${shown.matchId}:${!!frame}:${panel}`,
+              summary: (
+                <div className="mobile-battle-status">
+                  <h1>对战平台</h1>
+                  <strong>{stepLabel}</strong>
+                  <span data-ready={!!d && !readOnly} role="status">
+                    {turnLabel}
+                  </span>
+                </div>
+              ),
+              activity: panel === "board" && opponentAction && (
+                <button
+                  className="mobile-battle-activity"
+                  onClick={() => {
+                    setLogRequest({
+                      seq: opponentAction.seq,
+                      turn: shown.observation.turn_number,
+                    });
+                    setPanel("log");
+                  }}
+                >
+                  <span className="mobile-battle-activity-label">{opponentLabel}动作</span>
+                  <span className="mobile-battle-activity-text" aria-live="polite">
+                    {eventText(
+                      opponentAction.text,
+                      names,
+                      opponentAction.cardGroups?.flatMap((group) => group.cards),
+                    )}
+                  </span>
+                  <ChevronRight size={16} aria-hidden="true" />
+                </button>
+              ),
+              menuOpen,
+              onMenuChange: changeMenu,
+              menu: (
+                <>
+                  {!frame && statusLabel}
+                  {!frame && modeControls}
+                  {resignPrompt || (
+                    <div className="mobile-battle-menu-tools">
+                      {matchActions}
+                    </div>
+                  )}
+                </>
+              ),
+              footer: (
+                <nav className="mobile-battle-nav" aria-label="对战视图">
+                  {mobilePanels.map(([key, label, Icon]) => (
+                    <button key={key} aria-pressed={panel === key} onClick={() => setPanel(key)}>
+                      <Icon size={19} aria-hidden="true" />
+                      <span>{label}</span>
+                    </button>
+                  ))}
+                  {!frame && !shown.done && (
+                    <button aria-haspopup="dialog" onClick={() => setActionsOpen(true)}>
+                      <ListChecks size={19} aria-hidden="true" />
+                      <span>
+                        操作
+                        {!readOnly && d?.kind === "selection" && d.max > 0 && (
+                          <small>{selected.length}/{d.max}</small>
+                        )}
+                      </span>
+                    </button>
+                  )}
+                </nav>
+              ),
+            }
+          : undefined
+      }
     >
       {error && (
         <div role="alert" className="error-banner">
@@ -196,52 +656,39 @@ export function BattleArena({
           )}
         </div>
       )}
-      <div className="battle-toolbar">
-        {statusLabel}
-        <strong>
-          {frame
-            ? `回放 · 第 ${replaySeq} 步`
-            : `${phases[shown.phase] || shown.phase} · 回合 ${shown.observation.turn_number} · 第 ${shown.matchSeq ?? shown.stateVersion} 步`}
-        </strong>
-        <div>
-          {!frame && modeControls}
-          <button className="secondary" disabled={busy} onClick={onLeave}>
-            返回大厅
+      {mobile && pendingCommand && !busy && !error && onRetry && !frame && (
+        <div className="mobile-battle-control">
+          <span>上一条操作还未确认</span>
+          <button className="secondary" onClick={onRetry}>
+            恢复待确认操作
           </button>
-          <button
-            className="secondary"
-            disabled={busy || !onOpenReplay}
-            onClick={onOpenReplay}
-          >
-            <History size={14} />
-            逐步回放
-          </button>
-          {onResign && !view.done && !frame && (
-            <button
-              className="secondary"
-              disabled={busy}
-              onClick={() => setResignConfirm(true)}
-            >
-              <Flag size={14} />
-              认输
-            </button>
-          )}
         </div>
-      </div>
-      {resignConfirm && (
-        <div className="battle-confirm" role="alert">
-          确认认输并结束本局？
+      )}
+      {mobile && onAcquireControl && !shown.done && !frame && (
+        <div className="mobile-battle-control">
+          <span>取得操作权后可出牌</span>
           <button
+            className="primary"
             disabled={busy}
-            onClick={async () => {
-              await onResign?.();
-              setResignConfirm(false);
-            }}
+            onClick={onAcquireControl}
           >
-            确认认输
+            取得操作权
           </button>
-          <button onClick={() => setResignConfirm(false)}>继续对战</button>
         </div>
+      )}
+      {!mobile && (
+        <div className="battle-toolbar">
+          {statusLabel}
+          <strong>{stepLabel}</strong>
+          <div>
+            {!frame && modeControls}
+            {matchActions}
+          </div>
+        </div>
+      )}
+      {!mobile && resignPrompt}
+      {mobile && frame && (
+        <div className="mobile-battle-replay-status">{statusLabel}</div>
       )}
       {frame && (
         <div className="battle-replay">
@@ -356,11 +803,17 @@ export function BattleArena({
         </div>
       )}
       <div className="battle-layout">
-        <div className="battle-table">
+        <div
+          className="battle-table"
+          hidden={mobile && panel !== "board"}
+        >
           <Tabletop
             key={`${shown.matchId}:${frame ? "replay" : "live"}`}
             view={shown}
-            animateEvents={!frame || animateReplay}
+            mobile={mobile}
+            animateEvents={
+              (!frame || animateReplay) && (!mobile || panel === "board")
+            }
             cards={names}
             onCoinPlaying={onCoinPlaying}
             opponentLabel={opponentLabel}
@@ -379,241 +832,49 @@ export function BattleArena({
             play={(id) => submit({ optionId: id })}
             describe={optionText}
           />
-          {!!shown.setupEvents?.filter((e) => e.kind === "mulligan").length && (
-            <details className="battle-public">
-              <summary>开局重抽公开记录</summary>
-              {shown.setupEvents
-                .filter((e) => e.kind === "mulligan")
-                .map((e, i) => (
-                  <p key={i}>
-                    {Object.entries(e.hands)
-                      .map(
-                        ([p, c]: any) =>
-                          `${actorName(p)}：${c.map((x: any) => cn(x.name)).join("、")}`,
-                      )
-                      .join("；")}
-                  </p>
-                ))}
-            </details>
-          )}
-          {!!shown.publicReveals?.length && (
-            <details className="battle-public">
-              <summary>已公开检索卡牌</summary>
-              {shown.publicReveals.map((e, i) => (
-                <p key={i}>
-                  {actorName(e.actor)}：
-                  {e.cards.map((c: any) => cn(c.name)).join("、")}
-                </p>
-              ))}
-            </details>
-          )}
+          {!mobile && publicRecords}
         </div>
-        <aside className="battle-controls">
-          <section className="decision-panel" aria-label="当前决策">
-            <h2>
-              {frame
-                ? "历史决策（只读）"
-                : shown.done
-                  ? "本局已结束"
-                  : d?.kind === "selection" && d.max === 0
-                    ? "查看卡牌"
-                    : d
-                      ? "轮到你选择"
-                      : `${opponentLabel} 正在操作…`}
-            </h2>
-            {d?.kind === "selection" && (
-              <>
-                <p>
-                  {d.instruction || phases[shown.phase]}
-                  {d.source ? " · " + cn(d.source) : ""}
-                </p>
-                {d.max === 0 ? (
-                  <p>以下是本次效果查看到的卡牌，无需选牌。查看完毕后继续。</p>
-                ) : (
-                  <p>
-                    请选择 {d.min === d.max ? d.min : `${d.min}–${d.max}`} 张。
-                    {d.hidden
-                      ? "卡牌身份隐藏。"
-                      : "选择后，后续效果会继续提示。"}
-                  </p>
-                )}
-                {d.deckInspection && (
-                  <DeckBrowser
-                    key={d.id}
-                    inspection={d.deckInspection}
-                    names={names}
-                    selectedCount={selected.length}
-                  />
-                )}
-                {d.source === "Tatsugiri" && !d.hidden && (
-                  <p className="inspection-summary" role="status">
-                    {d.max === 0
-                      ? `这 ${d.candidates.length} 张中有 ${d.candidates.filter((c) => c.card?.trainerType === "SUPPORTER").length} 张支援者${
-                          d.candidates.some(
-                            (c) => c.card?.trainerType === "SUPPORTER",
-                          )
-                            ? `：${d.candidates
-                                .filter(
-                                  (c) => c.card?.trainerType === "SUPPORTER",
-                                )
-                                .map((c) => cn(c.card?.name))
-                                .join("、")}。继续后可从中选择一张。`
-                            : "。继续后洗牌，不加入手牌。"
-                        }`
-                      : "仅从刚才查看的卡牌中选择支援者，不会另外检索牌库。"}
-                  </p>
-                )}
-                {d.max === 0 ? (
-                  <ul className="inspection-cards" aria-label="本次查看的卡牌">
-                    {d.candidates.map((c, i) => (
-                      <li
-                        key={c.ref}
-                        className={
-                          !d.hidden && c.card?.trainerType === "SUPPORTER"
-                            ? "inspection-supporter"
-                            : ""
-                        }
-                      >
-                        <strong>
-                          {d.hidden ? `背面卡牌 ${i + 1}` : cn(c.card?.name)}
-                        </strong>
-                        {!d.hidden && (
-                          <span>
-                            {c.card?.trainerType === "SUPPORTER"
-                              ? "支援者"
-                              : c.card?.trainerType === "ITEM"
-                                ? "物品"
-                                : c.card?.trainerType === "TOOL"
-                                  ? "宝可梦道具"
-                                  : c.card?.superType === "ENERGY"
-                                    ? "能量"
-                                    : c.card?.superType === "POKEMON"
-                                      ? "宝可梦"
-                                      : ""}
-                          </span>
-                        )}
-                      </li>
-                    ))}
-                  </ul>
-                ) : (
-                  <div className="decision-candidates">
-                    {d.candidates.map((c, i) => (
-                      <button
-                        key={c.ref}
-                        className={selected.includes(c.ref) ? "selected" : ""}
-                        disabled={
-                          readOnly ||
-                          (!selected.includes(c.ref) &&
-                            selected.length >= d.max)
-                        }
-                        aria-pressed={selected.includes(c.ref)}
-                        onClick={() =>
-                          setSelected((s) =>
-                            s.includes(c.ref)
-                              ? s.filter((x) => x !== c.ref)
-                              : [...s, c.ref],
-                          )
-                        }
-                      >
-                        {d.hidden ? (
-                          c.card &&
-                          c.revealedPrizeIndex !== undefined &&
-                          c.revealedPrizeSide ? (
-                            `明示奖赏 ${c.revealedPrizeIndex + 1} · ${cn(c.card.name)}`
-                          ) : (
-                            `背面卡牌 ${i + 1}`
-                          )
-                        ) : (
-                          <>
-                            {cn(c.card?.name)}
-                            {c.side
-                              ? c.side === "self"
-                                ? " · 我方"
-                                : " · 对方"
-                              : ""}
-                            {c.position?.endsWith("BENCH")
-                              ? ` · 备战 ${c.index}`
-                              : c.position?.endsWith("ACTIVE")
-                                ? " · 战斗区"
-                                : ""}
-                            {c.card?.hp !== undefined
-                              ? ` · HP ${Math.max(0, c.card.hp)}${c.card.hp <= 0 ? "（等待效果结算）" : ""}`
-                              : ""}
-                          </>
-                        )}
-                      </button>
-                    ))}
-                  </div>
-                )}
-                <button
-                  className="primary"
-                  disabled={
-                    readOnly ||
-                    selected.length < d.min ||
-                    selected.length > d.max
-                  }
-                  onClick={() => submit({ selectedRefs: selected })}
-                >
-                  {d.max === 0
-                    ? "已查看，继续结算"
-                    : `确认选择 ${selected.length} 张`}
-                </button>
-                {d.max === 0 && (
-                  <small>
-                    这些卡牌仅供查看，无需选中。确认后继续处理效果。
-                  </small>
-                )}
-                {d.min === 0 && d.max > 0 && (
-                  <small>允许不选，点击“确认选择 0 张”继续。</small>
-                )}
-              </>
-            )}
-            {d?.kind === "options" &&
-              d.options.length > 0 &&
-              d.options.every((o) => o.actionType === "NumberOption") && (
-                <p>请选择要执行的效果。</p>
-              )}
-            {d?.kind === "options" && (
-              <>
-                <input
-                  aria-label="筛选合法动作"
-                  placeholder="筛选卡名或动作"
-                  value={filter}
-                  onChange={(e) => setFilter(e.target.value)}
-                />
-                <div className="decision-options">
-                  {d.options
-                    .filter((o) =>
-                      optionText(o)
-                        .toLowerCase()
-                        .includes(filter.toLowerCase()),
-                    )
-                    .map((o) => (
-                      <button
-                        key={o.id}
-                        disabled={readOnly}
-                        onClick={() => submit({ optionId: o.id })}
-                      >
-                        {optionText(o)}
-                      </button>
-                    ))}
-                </div>
-              </>
-            )}
-            {!d && !shown.done && (
-              <p>当前等待{opponentLabel}操作，轮到你时会显示可选动作。</p>
-            )}
-          </section>
-          <BattleLog
-            key={`${shown.matchId}:${frame ? "replay" : "live"}`}
-            view={shown}
-            cards={names}
-            viewerSeat={viewerSeat}
-            opponentLabel={opponentLabel}
-            replay={!!frame}
-          />
+        <aside
+          className="battle-controls"
+          hidden={mobile && panel !== "log"}
+        >
+          {!mobile && decisionPanel}
+          <div className="battle-records" hidden={mobile && panel !== "log"}>
+            {mobile && publicRecords}
+            <BattleLog
+              key={`${shown.matchId}:${frame ? "replay" : "live"}`}
+              view={shown}
+              cards={names}
+              viewerSeat={viewerSeat}
+              opponentLabel={opponentLabel}
+              replay={!!frame}
+              requestedEntry={frame ? null : logRequest}
+            />
+          </div>
         </aside>
       </div>
+      {mobile && (
+        <dialog
+          ref={actionsDialog}
+          className="mobile-battle-actions"
+          aria-label="对局操作"
+          onCancel={(event) => {
+            event.preventDefault();
+            setActionsOpen(false);
+          }}
+        >
+          <header className="mobile-battle-actions-header">
+            <div>
+              <strong>对局操作</strong>
+              <small>{stepLabel}</small>
+            </div>
+            <button className="secondary" onClick={() => setActionsOpen(false)}>
+              收起操作
+            </button>
+          </header>
+          {decisionPanel}
+        </dialog>
+      )}
     </BattleScreen>
   );
 }
