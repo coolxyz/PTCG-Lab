@@ -8,12 +8,9 @@ from ptcg.core.enums import CardPosition, PokemonPosition, CardType, Stage, Spec
 from ptcg.core.action import AttackAction, UseItemAction, RetreatAction
 from test_effects import context,zone,drive,energy
 
-ROWS={str(r['sourceCardId']):r for r in read('artifacts/sync/reuse-support-summary.json')['remaining']}
+IMPLEMENTATIONS = read('data/sync/implementations.json')['cards']
 def card(cid):
-    rh=ROWS[str(cid)]['ruleHash']
-    specs=read('data/cardpool/plain-pokemon.json')
-    spec=next(c for k in ('cards','trainers','specialEnergies') for c in specs[k] if c.get('sourceRuleHash')==rh)
-    return registry.get(spec['effectKey'])()
+    return registry.get(IMPLEMENTATIONS[str(cid)]['effectKey'])()
 def board(cid,index=0):
     s,p,o=context();c=card(cid);zone(p,'active',[c]);zone(o,'bench',[])
     return s,p,o,c,o.active[0],AttackAction(p.id,c,c.attacks[index],o.active[0])

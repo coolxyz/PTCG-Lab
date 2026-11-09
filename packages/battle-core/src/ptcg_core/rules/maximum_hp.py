@@ -16,6 +16,7 @@ def reconcile(state):
     normalize(state)
     from ptcg_core.rules.modifiers import rules, owner_of
     from ptcg_core.rules.core_fixes import refresh_energy
+    from ptcg_core.rules.energy_units import matches
 
     from ptcg_core.rules.field_capacity import refresh
     refresh(state)
@@ -44,10 +45,13 @@ def reconcile(state):
     for card in cards:
         owner = owner_of(card, state)
         opponent = state.player2 if owner is state.player1 else state.player1
+        modifiers = rules(card, state)
         extra = sum(
             r.get("hp", 0) + r.get("hpPerOpponentPrize", 0) * (6 - len(opponent.prize))
-            for r in rules(card, state)
+            for r in modifiers
         )
+        extra += sum(r['hpPerEnergy']['amount'] * sum(matches(unit, r['hpPerEnergy']['type']) for unit in card.energy)
+                     for r in modifiers if r.get('hpPerEnergy'))
         values.append((card, type(card)().hp + extra))
     for card, value in values:
         previous = maximum(card)
@@ -64,7 +68,7 @@ def affected(state):
         hasattr(c, "maximum_hp")
         or hasattr(c, "delayed_prize_bonus")
         or any(
-            r.get("hp") or r.get("hpPerOpponentPrize") or r.get("kind") == "knockout_prizes"
+            r.get("hp") or r.get("hpPerOpponentPrize") or r.get("hpPerEnergy") or r.get("kind") == "knockout_prizes"
             for r in (getattr(c, "spec", None) or {}).get("abilities", [])
         )
         or any(

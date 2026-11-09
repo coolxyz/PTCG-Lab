@@ -1,15 +1,14 @@
 # 桌面产品 Windows x64 预览程序验收
 
 
-本手顺适用于完整 MSVC AMD64 GUI EXE、Python 3.14.10、锁定依赖、当前规则、资料和统一产品 GUI。macOS 使用 cargo-xwin 0.23.1、Rust 1.90.0、LLVM/LLD 23.1.4 及 Microsoft CRT/SDK 交叉编译；SDK 仅参与构建，不放入交付包。2026-11-03 用户确认原生 Windows 及升级安装人工测试通过；下表继续作为新构建的空白检查模板，不表示本轮仍被整体阻塞。交叉编译与 PE 静态核对不替代原生自动化、DPAPI、Job Object 或 WebView2 实机验收。
+本手顺适用于 Windows x64 Setup.exe 和完整便携 ZIP。每个构建按实际制品 SHA-256 记录原生 WebView2、DPAPI、Job Object 和升级结果。2026-11-03 的人工确认对应当时的制品。后续 `b5164fb7` Setup.exe 的交付记录为交叉构建、解包校验及 42 项相关回归通过，实机安装和升级待验。
 
 ## 准备与校验
 
-1. 使用 Windows 10/11 x64、普通用户及本地 NTFS 目录。准备 Microsoft 官方 Edge WebView2 Runtime；无需 WSL2、Python、Node、Git 或 Rust。记录 Windows build、CPU、WebView2 版本及是否干净机。最低系统保留声明，本轮无需实机测试，不把免测写成实测。
-2. 从同批交付记录核对 ZIP 的 SHA-256：`Get-FileHash .\PTCG-Lab-Windows-x64-preview.zip -Algorithm SHA256`。完整解压到新目录，建议 `C:\PTCG-Lab`，不要覆盖旧 APP 或复制进旧数据目录。
-3. 阅读 `Verify.ps1` 后在允许执行本地审核脚本的 PowerShell 中运行 `& .\Verify.ps1`。保持系统执行策略；如组织策略禁止脚本，使用签名审核流程或逐项运行脚本中的命令，不使用 Bypass。它核对精确文件清单与哈希，并以随包 Python 执行后台探针，写到 stdout 的结果不包含身份密钥。
-4. 双击 `PTCG Lab Preview.exe`。这是未签名 preview；遇到来源警告时核对哈希并由测试人员按本机策略决定，不能关闭 SmartScreen、杀毒或其他系统保护。
-5. 默认数据目录为 `%LOCALAPPDATA%\org.ptcglab.desktop.preview`（精确路径以错误提示或本机平台实现为准）。已有 preview 数据时先关闭 APP 并完整备份，按安装升级文档操作；出现 `DESKTOP_INSTALL_REQUIRED` 是保护提示，不要删除数据库、安装标记或凭据来跳过迁移。
+1. 使用 Windows 10/11 x64、普通用户及本地 NTFS 目录。准备 Microsoft 官方 Edge WebView2 Runtime；无需 WSL2、Python、Node、Git 或 Rust。记录 Windows build、CPU、WebView2 版本及是否干净机。最低系统保留声明，免测项目单独记录。
+2. 从同批交付记录核对实际 Setup.exe 或 ZIP 的 SHA-256，例如 `Get-FileHash .\PTCG-Lab-Setup.exe -Algorithm SHA256`。记录测试账号、现有安装路径、资料路径和备份位置。
+3. Setup.exe 由原用户在 App 退出后运行，再从开始菜单启动。便携 ZIP 完整解压到新目录后，在本机策略允许的 PowerShell 中运行 `& .\Verify.ps1`，通过后双击 `PTCG Lab Preview.exe`。遇到未签名提示，按本机策略核对来源。
+4. 默认资料目录为 `%LOCALAPPDATA%\org.ptcglab.desktop.preview`。已有资料先完整备份，遇到保护提示时保留原资料和报错。 [Windows 原地升级流程](安装升级与迁移.md#windows-x64-原地升级)
 
 ## 本机产品
 
@@ -30,6 +29,12 @@
 
 自然终局要求通过合法操作到达正常胜负，不以认输、超时截断、修改存档或人工写入结果代替。记录每局策略、命令数与终局原因；不要将私有 seed、对手手牌、token 或完整 profile 放进报告。
 
+## 连续升级与回退
+
+1. 用同一 Windows 测试用户在旧版留下收藏、冻结卡组、卡图来源与缓存、在线身份、本地对局和活动同步发布。退出并备份，再用新版 Setup.exe 覆盖安装。另用干净资料目录验收首次安装。
+2. 在新版核对数据和身份仍可用，检查实际活动规则并用新增卡开一局人机。保存自定义桌垫和外观，正常退出后重开，再用下一版重复升级，检查设置仍能读回。
+3. 同规则版本验证续局、本人回放及身份重连。变更规则时另验旧局只读回放与新局准入。对运行中安装、异常中断和回退分别记录实际结果。回退用配套旧整包及同一截点的备份。
+
 ## Mac 与 Windows 网络对局
 
 1. 两端配置**同一当前规则**的独立测试 API kit，先核对服务 origin、TLS CA 与规则 pin。在 Windows 关闭 APP 后运行：`.\configure-server.cmd --client-kit "C:\path\to\client-kit"`。使用 kit 的受信 CA，不关闭证书验证，不复用无关线上身份。
@@ -45,4 +50,4 @@
 
 已有身份转移按 `identity.cmd --help` 对应的加密导入流程进行，口令在隐藏输入中提供。保留同规则恢复与升级/回退要求，不直接复制其他用户的 DPAPI 密文。旧规则对局不能继续执行，可以保留已存公开回放。
 
-将环境、包 ZIP/EXE 哈希、每项结果、去敏错误码、自然对局与故障恢复证据填写为独立记录。新构建未执行的项目保留原始状态，不伪造证据。本轮 Windows 通过依据用户确认；Intel Mac 暂不支持，最低系统实机测试免除，桌面开源分发不要求维护者代码签名/公证。可选安装器或签名工具的检查只在采用对应分发方式时执行。
+将环境、安装包及 EXE 哈希、每项结果、去敏错误码、自然对局与升级和回退证据填写为独立记录。新构建按实际完成的项目标记状态。最低系统保留声明，分发签名按所采用的交付方式验证。

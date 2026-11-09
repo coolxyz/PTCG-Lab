@@ -32,6 +32,7 @@ def rules(card, state):
             "stage2": card.stage == Stage.STAGE_2,
             "more_prizes": len(owner.prize) > len(opponent.prize),
             "hop": card.name.startswith("Hop's "),
+            "rocket": card.name.startswith("Team Rocket's "),
             "basic": card.stage == Stage.BASIC,
             "cynthia": card.name.startswith("Cynthia's "),
             "lillie": card.name.startswith("Lillie's "),

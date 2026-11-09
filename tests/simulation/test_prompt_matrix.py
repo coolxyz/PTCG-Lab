@@ -97,6 +97,10 @@ def scene(source_id, action_type, mode="normal", chance_seed=None):
             p.active[0].name = "Team Rocket's Fixture"
             p.bench[0].name = "Team Rocket's Fixture"
             o.active[0].attachment = [card("P01-004")]
+            if rule['op'] == 'strip_tools':
+                o.active[0].attachment.append(card('TEF-159'))
+            if rule['op'] == 'bench_energy_to_active':
+                p.bench[0].attachment = [card('SVE-008')]
             if rule["op"] == "briar":
                 put(o,"prize",o.prize[:2])
             if rule["op"] in ("pokemon_exchange", "hp_guess"):
@@ -170,6 +174,10 @@ def scene(source_id, action_type, mode="normal", chance_seed=None):
             put(p, "discard", [card(spec["effectKey"])])
     if source_id.startswith("P4P-") and action_type == "UseAbilityAction":
         put(p, "hand", p.hand + [card("P4E-001"), card("SVE-005")])
+        if any(r.get('effect', {}).get('op') == 'devolve_opponent' for r in source.spec.get('abilities', [])):
+            evolution = card('TWM-129')
+            evolution.evolved = [o.active[0]]
+            put(o, 'active', [evolution])
         energies = {
             "GRASS": "P4E-001",
             "FIRE": "SVE-002",
@@ -381,6 +389,13 @@ def scene(source_id, action_type, mode="normal", chance_seed=None):
     if mode in ZONE_KINDS | NEW_KINDS:
         o.active[0].hp = 1000
         o.active[0].attachment = [card("P4E-003"), card("SVE-008")]
+        if mode == 'discard_opponent_energy':
+            energies = dict(zip(('GRASS', 'FIRE', 'WATER', 'LIGHTNING', 'PSYCHIC', 'FIGHTING', 'DARK', 'METAL'),
+                                ('P4E-001', 'SVE-002', 'P4E-003', 'P4E-004', 'SVE-005', 'P4E-006', 'P4E-007', 'SVE-008'), strict=True))
+            for attack in source.spec['attacks']:
+                rule = attack.get('mechanic', {})
+                if rule.get('kind') == mode and rule.get('type'):
+                    o.active[0].attachment.append(card(energies[rule['type']]))
         if mode == "search_attach":
             put(
                 p,

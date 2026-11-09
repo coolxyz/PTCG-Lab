@@ -1585,6 +1585,38 @@ function App() {
                 : "效果待验证 · 暂不可对战"}
             </span>
           </div>
+          <CardDescription details={detail.chineseDetails} types={typeLabels} />
+          {detail.catalogStatus === "source-conflict" && (
+            <p className="notice" role="note">
+              编号存在来源冲突：原站的同一编号指向不同卡牌，现分别保留资料，具体印刷尚待核对。
+            </p>
+          )}
+          {detail.pendingSourceException && <p className="notice" role="note">待核实例外：保留原始资料，暂不开放对战，不计入已支持卡牌。</p>}
+          {detail.identityKind === "source-record" && (
+            <p className="muted">
+              原表标记：{detail.printedNumber || "未提供编号"}。此条目按来源区分，不代表已经确认的正式卡号。
+            </p>
+          )}
+          <hr />
+          <h3>
+            {detail.identityKind === "basic-energy"
+              ? "能量储备 · 未指定收藏版次"
+              : "我的收藏"}
+          </h3>
+          {detail.identityKind === "basic-energy" && (
+            <p className="notice">
+              可登记用于构筑的基本能量数量；这不代表已确认某个收藏印刷版本。
+            </p>
+          )}
+          <HoldingEditor
+            key={detail.printingId + ":" + collection.version}
+            card={detail}
+            holdings={collection.entries.filter(
+              (e) => e.printingId === detail.printingId,
+            )}
+            busy={busy}
+            save={(r) => act(() => saveHold(r))}
+          />
           <CardVariants id={detail.printingId} version={collection.version} onChange={refreshCollection} />
           <button
             className={

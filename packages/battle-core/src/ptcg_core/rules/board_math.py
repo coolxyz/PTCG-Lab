@@ -25,6 +25,11 @@ TERMS = {
     "self_undamaged",
     "rocket_supporters",
     "equal_energy",
+    "field_attack_name",
+    "discard_item_count",
+    "discard_typed_basic_energy",
+    "bench_typed_counters",
+    "target_resistance",
 }
 
 
@@ -33,6 +38,18 @@ def value(r, source, target, p, o, state):
     from ptcg_core.rules.maximum_hp import maximum
 
     term = r["term"]
+    if term == "field_attack_name":
+        return sum(any(a.name == r.get('englishName') or getattr(a, 'compiled_rule', {}).get('cnName', a.name) == r['name'] for a in c.attacks) for c in p.active + p.bench)
+    if term == "discard_item_count":
+        from ptcg.core.card import ItemCard
+        return sum(isinstance(c, ItemCard) for c in o.discard)
+    if term == "discard_typed_basic_energy":
+        from ptcg.core.enums import EnergyType
+        return sum(isinstance(c, EnergyCard) and c.energyType == EnergyType.BASIC and c.cardType.name == r['type'] for c in p.discard)
+    if term == "bench_typed_counters":
+        return sum(counters(c) for c in p.bench if has_type(c, r['type'], state))
+    if term == "target_resistance":
+        return any(t.name == r['type'] for t in target.resistance)
     if term == "opponent_exact_prizes":
         return int(len(o.prize) == r["number"])
     if term == "opponent_max_prizes":
@@ -134,6 +151,7 @@ def value(r, source, target, p, o, state):
             isinstance(c, PokemonCard)
             and (not r.get("type") or has_type(c, r["type"]))
             and (not r.get("stage") or c.stage.name == r["stage"])
+            and (not r.get('evolved') or c.stage.name != 'BASIC')
             and (not r.get("trait") or c.pokemonRule.name == r["trait"])
             and (not r.get("name") or c.name == r["name"])
             and (not r.get("names") or c.name in r["names"])

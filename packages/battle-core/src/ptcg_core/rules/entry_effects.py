@@ -203,7 +203,13 @@ def effect(source, rule, state):
     elif kind == "status":
         if o.active:
             from ptcg_core.rules.status_immunity import apply_status
-            apply_status(o.active[0], SpecialCondition[rule["status"]])
+            from ptcg_core.rules.ability_protection import blocked
+            target = o.active[0]
+            if not blocked(target, source, state):
+                if rule['status'] == 'BURNED':
+                    target.burned = True
+                else:
+                    apply_status(target, SpecialCondition[rule["status"]])
     elif kind == "heal":
         candidates = list(
             p.active if rule["target"] == "active" else p.active + p.bench

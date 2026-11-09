@@ -254,7 +254,7 @@ test("expanded pool pagination, unverified detail and local CN artwork", async (
   await expect
     .poll(() => image.evaluate((img: HTMLImageElement) => img.naturalWidth))
     .toBeGreaterThan(300);
-  await expect(page.locator(".image-label")).toContainText("在线卡图");
+  await expect(page.locator(".image-label")).toContainText("本机资源");
   await page.getByLabel("系列").selectOption("CSM1aC");
   await page.getByLabel("搜索卡牌").fill("CN:CSM1aC:001");
   await page.getByLabel("效果状态").selectOption("verified");

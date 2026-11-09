@@ -132,7 +132,7 @@
     "data/simulation/effects.json",
     "artifacts/engine/overlay-hashes.json"
   ],
-  "environmentHash": "0b2ca497e0a27bc8d3d2d96a5f23e4b362102e4391ac72b439d00e56f9cef3c9",
+  "environmentHash": "2a140bfcb72caeef5ca7f91bcdcb305fcc278c68c8128d837efb4376693e4b7c",
   "parent": "h2-visible-tempo-v4-app-v1",
   "parentHash": "54a24bedb49432cf34ce13691b2a43acd24101d911fc9e905f9395f5f41dd5cc",
   "roles": {

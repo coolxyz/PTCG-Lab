@@ -50,9 +50,11 @@ def resolve(r, action, state):
     elif op == "return_own_bench":
         from ptcg_core.rules.field_moves import return_stack
         cards = yield from choice(source,list(p.bench),state)
+        destination = r.get('destination', 'left')
         for c in cards:
-            return_stack(c,p,"left")
-        shuffle_cards(p.left,state)
+            return_stack(c, p, destination)
+        if destination == 'left':
+            shuffle_cards(p.left,state)
     elif op == "opponent_reset":
         move_cards(list(o.hand),(o.id,CardPosition.HAND),(o.id,CardPosition.LEFT),state)
         shuffle_cards(o.left,state)

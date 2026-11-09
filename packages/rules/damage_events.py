@@ -47,7 +47,8 @@ def deal(source, target, amount, state):
     if amount > 0 and owner is not None and attacker is not None and owner is not attacker:
         target.damage_history = [e for e in getattr(target, "damage_history", []) if e["turn"] >= state.turn_number-1] + [{"turn": state.turn_number, "amount": amount}]
     team_reactions = owner and any(r.get("team") and r["kind"] == "damage_choice" for c in owner.active + owner.bench for r in (getattr(c, "spec", None) or {}).get("abilities", []))
-    if amount > 0 and owner and (team_reactions or any(r["kind"] in KINDS for r in rules(target, state)) or getattr(attacker,"tera_bonus_prize_turn",None) == state.turn_number):
+    prize_on_damage = attacker is not None and any(r['kind'] == 'attack_knockout_prize' for r in rules(source))
+    if amount > 0 and owner and (team_reactions or any(r["kind"] in KINDS for r in rules(target, state)) or getattr(attacker,"tera_bonus_prize_turn",None) == state.turn_number or prize_on_damage):
         if not hasattr(state, "pending_damage_events"):
             state.pending_damage_events = []
         state.pending_damage_events.append(
@@ -107,6 +108,11 @@ def finish(state):
                     setattr(source, rule["status"].lower(), True)
                     if rule["status"] == "POISONED":
                         source.poison_damage = 10
+                if rule.get('status') == 'ASLEEP' and source in source_owner.active:
+                    from ptcg.core.enums import SpecialCondition
+                    from packages.rules.status_immunity import apply_status
+
+                    apply_status(source, SpecialCondition.ASLEEP)
                 if rule.get("counterPerFamily"):
                     source.hp -= rule["counterPerFamily"] * sum(
                         c.name in rule["names"] for c in owner.active + owner.bench
@@ -133,6 +139,7 @@ def finish(state):
                 if hasattr(target, "knockout_bonus_prizes"):
                     del target.knockout_bonus_prizes
     # Prize reductions inspect the field before any simultaneous KO is removed.
+    bonus_targets = set()
     for event in events:
         from packages.rules.reaction_choices import capture
         capture(event, state)
@@ -148,6 +155,11 @@ def finish(state):
         attacker = state.player1 if event["sourceOwner"] == state.player1.id else state.player2
         if event["wasActive"] and getattr(attacker,"tera_bonus_prize_turn",None) == state.turn_number and source.pokemonRule.name == "TERA":
             target.knockout_bonus_prizes = getattr(target,"knockout_bonus_prizes",0)+1
+        if id(target) not in bonus_targets and target.stage.name == 'BASIC' and enabled(source, state):
+            bonus = sum(r['count'] for r in rules(source) if r['kind'] == 'attack_knockout_prize')
+            if bonus:
+                target.knockout_bonus_prizes = getattr(target, 'knockout_bonus_prizes', 0) + bonus
+                bonus_targets.add(id(target))
         reduction = 0
         for r in rules(target, state, active_only=True):
             if r["kind"] == "knockout_retaliate":

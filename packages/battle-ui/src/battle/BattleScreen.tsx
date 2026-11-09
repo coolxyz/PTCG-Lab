@@ -66,16 +66,34 @@ export function BattleScreen({
     if (menuOpen) element?.showModal();
     else element?.close();
   }, [menuOpen]);
-  function saveAppearance(value: Appearance) {
+  const appearanceChange = useRef(0);
+  useEffect(() => {
+    const revision = appearanceChange.current;
+    let mounted = true;
+    void appearanceStorage?.restore?.().then(
+      (value) => {
+        if (mounted && appearanceChange.current === revision) setAppearance(value);
+      },
+      () => {
+        if (mounted && appearanceChange.current === revision)
+          setAppearanceMessage("无法读取已保存的外观设置。");
+      },
+    );
+    return () => {
+      mounted = false;
+    };
+  }, [appearanceStorage]);
+
+  async function saveAppearance(value: Appearance) {
+    const revision = ++appearanceChange.current;
     setAppearance(value);
     setSettingsOpen(false);
+    setAppearanceMessage("");
     try {
-      appearanceStorage?.save(value);
-      setAppearanceMessage("");
+      await appearanceStorage?.save(value);
     } catch {
-      setAppearanceMessage(
-        "外观已应用到当前窗口，但浏览器未能保存设置；重新打开后可能恢复默认。请检查浏览器存储空间或隐私设置。",
-      );
+      if (appearanceChange.current === revision)
+        setAppearanceMessage("外观已应用到当前窗口，但未能保存设置。");
     }
   }
 

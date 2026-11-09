@@ -59,7 +59,13 @@ def playable(r, p, o):
         return any(removable(e) for c in o.active + o.bench for e in c.attachment) or r.get("all", False)
     if op in ("draw_gust", "draw_recover"):
         return bool(p.left or (o.bench if op == "draw_gust" else any(matches(c,"basic_energy") for c in p.discard)))
-    return bool(p.left) if op in {"falkner","top_order","coin_search","student","love_ball","distinct_energy","look_pair","brock","draw_threshold"} else True
+    if op == 'strip_tools':
+        return any(isinstance(c, ToolCard) for owner in (p, o) for holder in owner.active + owner.bench for c in holder.attachment)
+    if op == 'bench_energy_to_active':
+        return bool(p.active and any(isinstance(c, EnergyCard) for holder in p.bench for c in holder.attachment))
+    if op == 'coin_redraw_both':
+        return bool(len(p.hand) > 1 or p.left or o.hand or o.left)
+    return bool(p.left) if op in {"falkner","top_order","coin_search","student","love_ball","distinct_energy","look_pair","brock","draw_threshold", "double_heads_attach"} else True
 
 
 def removable(c):
@@ -329,6 +335,35 @@ def resolve(source, r, s):
         if r.get("all"):
             for c in list(s.stadium):
                 yield from c.reduce_action(DiscardStadiumAction(c.playedFrom,c),s)
+    elif op == 'strip_tools':
+        from packages.rules.zone_effects import discard_attached
+
+        pairs = [(owner, holder, card) for owner in (p, o) for holder in owner.active + owner.bench
+                 for card in holder.attachment if isinstance(card, ToolCard)]
+        selected = yield from choice(source, [card for _, _, card in pairs], s, 1, r['count'])
+        for owner, holder, card in pairs:
+            if card in selected:
+                discard_attached(holder, [card], owner)
+    elif op == 'bench_energy_to_active':
+        from packages.rules.entry_effects import transfer
+
+        pairs = [(holder, card) for holder in p.bench for card in holder.attachment if isinstance(card, EnergyCard)]
+        selected = yield from choice(source, [card for _, card in pairs], s, 1, r['count'])
+        for holder, card in pairs:
+            if card in selected:
+                transfer(holder, p.active[0], [card])
+    elif op == 'coin_redraw_both':
+        for owner in (p, o):
+            move_cards(list(owner.hand), (owner.id, CardPosition.HAND), (owner.id, CardPosition.LEFT), s)
+            shuffle_cards(owner.left, s)
+        heads = flip_coin(s) == Coin.HEAD
+        draw(p, 5 if heads else 3, s)
+        draw(o, 3 if heads else 5, s)
+    elif op == 'double_heads_attach':
+        from packages.rules.attachment_effects import resolve as attach
+
+        if sum(flip_coin(s) == Coin.HEAD for _ in range(2)) == 2:
+            yield from attach(source, {'origin': 'left', 'basic': True, 'count': 1}, s)
     elif op == "armor":
         p.timed_modifiers = [x for x in getattr(p,"timed_modifiers",[]) if x.get("origin") != source.name]
         p.timed_modifiers.append({"turn":s.turn_number+1,"armor":30,"origin":source.name})

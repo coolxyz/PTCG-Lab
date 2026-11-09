@@ -27,6 +27,9 @@ def value(rule, source, target, p, o, state):
         from ptcg.core.card import SupporterCard
         names = {c.name for c in p.deck+p.discard if isinstance(c,SupporterCard) and (not rule.get("trait") or getattr(getattr(c,"pokemonRule",None),"name",None) == rule["trait"])}
         return int(any(a.get("action_type")=="UseSupporterAction" and (not rule.get("name") or a.get("source")==rule["name"]) and (not rule.get("trait") or a.get("source") in names) for a in p.current_turn_actions))
+    if term == 'played_supporter_prefix':
+        return any(a.get('action_type') == 'UseSupporterAction' and (a.get('source') or '').startswith(rule['prefix'])
+                   for a in p.current_turn_actions)
     if term == "field_energy_minimum":
         return int(sum(len(c.energy) for c in p.active+p.bench)>=rule["number"])
     if term == "opponent_hand_trainers":

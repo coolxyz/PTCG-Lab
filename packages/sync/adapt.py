@@ -87,6 +87,8 @@ def adapt(migration, normalized, effect_release, plain, rules, scope, as_of, pre
         status, reason = "outside-environment", env
         if env == "eligible":
             if reviewed:
+                if implementation.get('nameLimitKey'):
+                    facts['nameLimitKey'] = implementation['nameLimitKey']
                 status, reason = "implementation-candidate", "完整卡面复用已核验，字段和效果一并等待发布验证"
                 proposals[c["printingId"]] = {"effectKey":implementation["effectKey"], "path":"C", "cardId":cid, "engineLine":implementation["engineLine"], "testFiles":implementation["testFiles"], "reviewedFacts":facts}
             elif c.get("effectStatus") == "verified" and c.get("engineId") in known:

@@ -6,7 +6,7 @@ from ptcg.utils.utils import current_player, opponent_player, move_cards, shuffl
 from packages.rules.entry_effects import choice, transfer, reveal
 from packages.rules.protection import blocked
 
-OPERATIONS = {"transfer_counters", "transfer_energy", "strip_attached", "search_top", "window_bench", "opponent_hand_bench", "optional_push", "search_bench_transfer"}
+OPERATIONS = {"transfer_counters", "transfer_energy", "strip_attached", "search_top", "window_bench", "opponent_hand_bench", "optional_push", "search_bench_transfer", "move_field_energy"}
 
 
 def resolve(r, action, state):
@@ -48,8 +48,10 @@ def resolve(r, action, state):
                 donor.hp += amount
                 # Moving onto a protected recipient still removes counters
                 # from the donor (official Advanced Manual, C-08).
-                if not blocked(target, state, "counters", source):
-                    target.hp -= amount
+                recipients = (yield from choice(source, list(o.active + o.bench), state)) if r.get('chooseRecipient') else [target]
+                for recipient in recipients:
+                    if not blocked(recipient, state, "counters", source):
+                        recipient.hp -= amount
         else:
             budget = {c: counters(c) for c in donors}
             recipients = list(o.active + o.bench) if r.get("anywhere") else [target]
@@ -70,7 +72,11 @@ def resolve(r, action, state):
         if r.get("fromSelf"):
             if p.bench:
                 from packages.rules.energy_selection import choose_units
-                cards = yield from choose_units(source, r["count"], action, state)
+                if r.get('basic'):
+                    pool = [e for e in source.attachment if isinstance(e, EnergyCard) and e.energyType == EnergyType.BASIC]
+                    cards = yield from choice(source, pool, state)
+                else:
+                    cards = yield from choose_units(source, r['count'], action, state)
                 if cards:
                     recipient = (yield from choice(source, list(p.bench), state))[0]
                     transfer(source, recipient, cards)
@@ -91,6 +97,15 @@ def resolve(r, action, state):
                 recipient = (yield from choice(source, [c for c in p.active + p.bench if c is not donor], state))[0]
                 transfer(donor, recipient, [energy])
                 original = [(c, e) for c, e in original if e is not energy]
+    elif op == "move_field_energy":
+        pool = list(o.active + o.bench)
+        pairs = [(c, e) for c in pool for e in c.attachment if isinstance(e, EnergyCard)]
+        if len(pool) > 1 and pairs:
+            energy = (yield from choice(source, [e for _, e in pairs], state))[0]
+            donor = next(c for c, e in pairs if e is energy)
+            recipient = (yield from choice(source, [c for c in pool if c is not donor], state))[0]
+            if not blocked(donor, state, 'effects', source) and not blocked(recipient, state, 'effects', source):
+                transfer(donor, recipient, [energy])
     elif op == "strip_attached":
         from packages.rules.zone_effects import discard_attached
         from ptcg.core.enums import PokemonType

@@ -10,6 +10,9 @@ def jobs(state):
     p = current_player(state)
     result = []
     for card in p.active + p.bench:
+        for energy in card.attachment:
+            if (getattr(energy, "spec", None) or {}).get("mechanic", {}).get("discardAtOwnTurnEnd"):
+                result.append((card, {"discardEnergy": energy, "name": energy.name}))
         result.extend((card, r) for r in getattr(card, "delayed_attacks", []) if r["turn"] == state.turn_number)
         if enabled(card, state):
             result.extend((card, rule) for rule in (getattr(card, "spec", None) or {}).get("abilities", [])
@@ -43,6 +46,14 @@ def finish(state):
             selected = yield (state.get_obs(p.id), 0, False, {"raw_available_actions": options})
             index = selected.value
         card, rule = queue.pop(index)
+        if energy := rule.get("discardEnergy"):
+            if card in p.active + p.bench and energy in card.attachment:
+                from ptcg_core.rules.zone_effects import discard_attached
+                from ptcg_core.rules.maximum_hp import settle
+
+                discard_attached(card, [energy], p)
+                yield from settle(state)
+            continue
         if card and not rule.get("delayed") and ((not rule.get("tool") and not enabled(card, state)) or rule.get("activeOnly") and card not in p.active):
             continue
         if rule.get("tool"):

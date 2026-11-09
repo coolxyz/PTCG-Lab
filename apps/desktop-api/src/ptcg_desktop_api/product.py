@@ -10,6 +10,7 @@ from starlette.applications import Starlette
 from starlette.concurrency import run_in_threadpool
 from starlette.responses import JSONResponse
 from .api import PREFIX
+from .host import APPEARANCE_PATH
 
 
 class ProductHost:
@@ -26,7 +27,11 @@ class ProductHost:
             "/online/",
         }:
             return True
-        if path.startswith(PREFIX) or path.startswith("/resources/"):
+        if (
+            path == APPEARANCE_PATH
+            or path.startswith(PREFIX)
+            or path.startswith("/resources/")
+        ):
             return True
         # Serve the separately built online assets at the same origin. A missing
         # asset falls through to the product app; no second HTTP listener/proxy.

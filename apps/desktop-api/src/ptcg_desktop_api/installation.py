@@ -1,12 +1,16 @@
-"""Native startup guard only; product backup/migration is an operator tool.
+"""Check the native profile before starting the product database.
 
-No SQLite, product imports, installation endpoint or update authority lives in
-this bridge package. The payload manifest binds one currently installed build.
+The macOS installer pairs the profile with a particular bundle. Portable
+Windows builds share the same private profile while its format is compatible.
 """
 
+from contextlib import closing
 from hashlib import file_digest
 import json
+import os
 from pathlib import Path
+import re
+import sqlite3
 import stat
 import sys
 from .sealed_file import access
@@ -86,27 +90,82 @@ def browser_cache_entries(state, *, platform=None):
     return {"webview"}
 
 
-def startup_guard(state, payload):
+def windows_profile_database(state):
+    database = state / "app.sqlite"
+    sidecars = [
+        database.with_name(database.name + suffix)
+        for suffix in ("-wal", "-shm", "-journal")
+    ]
+    if not os.path.lexists(database):
+        if any(os.path.lexists(sidecar) for sidecar in sidecars):
+            fail("DESKTOP_INSTALL_REQUIRED")
+        return False
+    regular(database)
+    for sidecar in sidecars:
+        if os.path.lexists(sidecar):
+            regular(sidecar)
+    try:
+        # Allow SQLite to recover its own journal under native.lock. mode=rw
+        # ensures a failed check can never create an empty replacement database.
+        with closing(sqlite3.connect(database.as_uri() + "?mode=rw", uri=True)) as db:
+            version = db.execute("PRAGMA user_version").fetchone()[0]
+            if version != CONTRACT["profileSchema"]:
+                fail("DESKTOP_SCHEMA_UNSUPPORTED")
+            tables = {
+                name
+                for (name,) in db.execute(
+                    "SELECT name FROM sqlite_schema WHERE type='table'"
+                )
+            }
+    except sqlite3.DatabaseError:
+        fail("DESKTOP_INSTALL_REQUIRED")
+    if not {"collection", "decks", "revisions"} <= tables:
+        fail("DESKTOP_INSTALL_REQUIRED")
+    return True
+
+
+def startup_guard(state, payload, *, platform=None):
     """Called under native.lock, before creating any application database."""
     state = Path(state)
     marker, record = state / MARKER, state / RECORD
-    if marker.exists() or marker.is_symlink():
+    if os.path.lexists(marker):
         fail("DESKTOP_RECOVERY_REQUIRED")
     expected = payload_record(payload)
-    if record.exists() or record.is_symlink():
+    windows = (sys.platform if platform is None else platform) == "win32"
+    if os.path.lexists(record):
         saved = read(record)
-        if not isinstance(saved, dict) or saved.get("profileSchema") != 1:
+        if (
+            not isinstance(saved, dict)
+            or saved.get("profileSchema") != CONTRACT["profileSchema"]
+        ):
             fail("DESKTOP_SCHEMA_UNSUPPORTED")
-        if saved != expected:
+        if windows:
+            # Older releases recorded the payload hash at first launch. The
+            # shell verifies the current payload separately before startup.
+            previous_hash = saved.get("payloadSha256")
+            if (
+                set(saved) != set(expected)
+                or any(
+                    type(saved[key]) is not type(value) or saved[key] != value
+                    for key, value in CONTRACT.items()
+                )
+                or not isinstance(previous_hash, str)
+                or not re.fullmatch(r"[a-f0-9]{64}", previous_hash)
+            ):
+                fail("DESKTOP_INSTALL_REQUIRED")
+            windows_profile_database(state)
+        elif saved != expected:
             fail("DESKTOP_INSTALL_REQUIRED")
-    else:
-        # Empty first launch is safe. Existing C2/user data needs explicit
-        # adoption with a backup; never upgrade it merely by double-clicking.
-        allowed = (
-            SKIP
-            | {"connection.json", ".ptcg-acceptance.json"}
-            | browser_cache_entries(state)
-        )
-        if any(p.name not in allowed for p in state.iterdir()):
+        return
+    allowed = (
+        SKIP
+        | {"connection.json", ".ptcg-acceptance.json"}
+        | browser_cache_entries(state, platform=platform)
+    )
+    if any(p.name not in allowed for p in state.iterdir()):
+        # A pre-record Windows profile can be recognized by its existing
+        # product database. Leave it in place, including DPAPI path bindings.
+        if not windows or not windows_profile_database(state):
             fail("DESKTOP_INSTALL_REQUIRED")
-        access(record, data=json.dumps(expected, sort_keys=True).encode())
+        return
+    access(record, data=json.dumps(expected, sort_keys=True).encode())

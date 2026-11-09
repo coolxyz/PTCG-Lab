@@ -40,6 +40,23 @@ def available(source, rule, state):
         return False
     effect = rule["effect"]
     kind = effect["kind"]
+    if kind == 'expanded_entry':
+        op = effect['op']
+        if op == 'deploy_opponent' and effect.get('count'):
+            if effect.get('fromDiscard'):
+                from ptcg.core.card import PokemonCard
+                from ptcg.core.enums import Stage
+
+                return len(p.bench) < p.benchSize and any(isinstance(c, PokemonCard) and c.stage == Stage.BASIC and c.hp <= effect['maximumHP'] for c in p.discard)
+            return bool(o.hand and len(o.bench) < o.benchSize)
+        if op == 'devolve_opponent':
+            return any(getattr(c, 'evolved', ()) for c in o.active + o.bench)
+        if op == 'switch_both':
+            return bool(p.active and p.bench)
+        if op == 'opponent_redraw':
+            return bool(o.hand or o.left)
+    if kind == 'search':
+        return bool(p.left)
     if kind in KINDS:
         return primitive_available(source, effect, state)
     if kind == "discard_hand_draw":

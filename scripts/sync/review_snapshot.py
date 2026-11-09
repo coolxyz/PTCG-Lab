@@ -141,6 +141,8 @@ def prepare(root, snapshot, as_of):
             'engineLine': f"{effect['name']} {set_name} {number}",
             'testFiles': ['tests/sync/test_reviewed_support.py', 'tests/cardpool/test_upstream_october.py'],
         }
+        if proof.get('nameLimitKey'):
+            implementations['cards'][cid]['nameLimitKey'] = proof['nameLimitKey']
         rows.append({'cardId': cid, 'name': f['name'], 'effectKey': key, 'method': proof['method']})
     effects['effects'] = list(known.values())
     return {

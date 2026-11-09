@@ -61,20 +61,28 @@ def normalize(raw, tree=None, corrections=None):
             if correction:
                 if correction.get("sourceHash") != digest(original):
                     raise SyncError("SOURCE_CORRECTION_STALE", f"卡牌 {cid} 的上游内容已变化，请重新核对本地修正")
-                if not correction.get("evidence") or set(correction.get("set", {})) - {"pokemonType", "trainerType", "specialCard", "retreatCost"}:
+                if not correction.get("evidence") or set(correction.get("set", {})) - {"pokemonType", "trainerType", "specialCard", "retreatCost", "weaknessType"}:
                     raise SyncError("SOURCE_CORRECTION_INVALID", "来源修正必须有证据且仅修改已审核字段")
+                if "weaknessType" in correction["set"] and (correction["set"]["weaknessType"] is not None or original.get("weaknessFormula")):
+                    raise SyncError("SOURCE_CORRECTION_INVALID", "仅允许移除没有倍率且已核实为误录的弱点")
                 d = {**original, **correction["set"]}
                 if "retreatCost" in correction["set"] and (type(d["retreatCost"]) is not int or d["retreatCost"] < 0):
                     raise SyncError("SOURCE_CORRECTION_INVALID", "撤退费用必须是非负整数")
-                if correction.get("attackTexts"):
+                if correction.get("attackTexts") or correction.get("attackCosts"):
                     d["abilityItemList"] = [dict(a) for a in original.get("abilityItemList", [])]
-                    for replacement in correction["attackTexts"]:
-                        index = replacement.get("index")
-                        if (type(index) is not int or not 0 <= index < len(d["abilityItemList"])
-                                or d["abilityItemList"][index].get("abilityText") != replacement.get("before")
-                                or not isinstance(replacement.get("after"), str) or not replacement["after"]):
-                            raise SyncError("SOURCE_CORRECTION_INVALID", "招式文字修正必须匹配原文并提供确认后的文字")
-                        d["abilityItemList"][index]["abilityText"] = replacement["after"]
+                    for section, field in (("attackTexts", "abilityText"), ("attackCosts", "abilityCost")):
+                        for replacement in correction.get(section, []):
+                            index = replacement.get("index")
+                            after = replacement.get("after")
+                            if (type(index) is not int or not 0 <= index < len(d["abilityItemList"])
+                                    or d["abilityItemList"][index].get(field) != replacement.get("before")
+                                    or not isinstance(after, str) or not after):
+                                message = ("招式文字修正必须匹配原文并提供确认后的文字" if field == "abilityText"
+                                           else "招式费用修正必须匹配原始费用并提供核对后的费用")
+                                raise SyncError("SOURCE_CORRECTION_INVALID", message)
+                            if field == "abilityCost" and any(code not in dictionaries["ability_cost"] for code in after.split(',')):
+                                raise SyncError("SOURCE_CORRECTION_INVALID", "招式费用修正包含未知能量")
+                            d["abilityItemList"][index][field] = after
             issues = []
             if set(d) - COSMETIC - KNOWN_RULE_FIELDS:
                 issues.append("UNKNOWN_RULE_FIELDS")

@@ -3,6 +3,8 @@
 import asyncio
 from contextlib import asynccontextmanager
 import html
+import json
+import os
 from pathlib import Path
 import re
 import secrets
@@ -15,10 +17,15 @@ from starlette.responses import Response, RedirectResponse, FileResponse
 from .api import BridgeAPI, PREFIX, response
 from .bridge import BridgeError
 from .platform_files import private_directory
+from .sealed_file import access
+
+APPEARANCE_PATH = "/api/desktop/appearance/v1"
+APPEARANCE_LIMIT = 1_510_000
+PLAYMAT_IMAGE = re.compile(r"data:image/(?:jpeg|png|webp);base64,[A-Za-z0-9+/]+={0,2}")
 
 
 class Host:
-    def __init__(self, owner, origin, build, resources, launch_dir):
+    def __init__(self, owner, origin, build, resources, launch_dir, *, appearance=None):
         self.owner, self.origin, self.resources = owner, origin, resources
         self.api = BridgeAPI(owner, origin)
         self.build, self.launch_dir = Path(build).resolve(), Path(launch_dir)
@@ -29,6 +36,7 @@ class Host:
         self.active = 0
         self.product_mode = False
         self.codes = {}
+        self.appearance = appearance
 
     def activation_code(self):
         """Native terminal only. HTTP can consume a code but cannot mint one."""
@@ -140,6 +148,48 @@ class Host:
         finally:
             self.active -= 1
 
+    def local_session(self, headers):
+        cookie = headers.get(b"cookie", b"").decode()
+        parts = [s.strip().split("=", 1) for s in cookie.split(";") if s.strip()]
+        if any(len(part) != 2 for part in parts):
+            raise BridgeError("LOCAL_AUTH_REQUIRED", 403)
+        keys = [value for key, value in parts if key == "ptcg-local"]
+        self._prune()
+        session = self.sessions.get(keys[0]) if len(keys) == 1 else None
+        if session is None:
+            raise BridgeError("LOCAL_AUTH_REQUIRED", 403)
+        return session
+
+    def read_appearance(self):
+        if not os.path.lexists(self.appearance):
+            return None
+        return json.loads(access(self.appearance, limit=APPEARANCE_LIMIT))
+
+    def save_appearance(self, value):
+        preset, image = value.get("preset"), value.get("customImage")
+        if (
+            set(value) - {"preset", "customImage"}
+            or not isinstance(preset, str)
+            or not re.fullmatch(r"[a-z][a-z0-9-]{0,31}", preset)
+            or (preset == "custom" and image is None)
+            or (
+                "customImage" in value
+                and (
+                    not isinstance(image, str)
+                    or len(image) > 1_500_000
+                    or not PLAYMAT_IMAGE.fullmatch(image)
+                )
+            )
+        ):
+            raise BridgeError("INVALID_REQUEST")
+        self.read_appearance()  # Refuse an unsafe existing file before replacing it.
+        temp = self.appearance.with_name(".appearance-" + secrets.token_hex(16))
+        try:
+            access(temp, data=json.dumps(value).encode(), limit=APPEARANCE_LIMIT)
+            os.replace(temp, self.appearance)
+        finally:
+            temp.unlink(missing_ok=True)
+
     async def handle(self, scope, receive, send):
         if scope["type"] != "http":
             if scope["type"] == "websocket":
@@ -151,7 +201,29 @@ class Host:
             return
         try:
             headers = self.base(scope)
-            if path == "/launch" and scope["method"] == "POST":
+            if path == APPEARANCE_PATH and self.appearance is not None:
+                method = scope["method"]
+                if headers.get(b"sec-fetch-site", b"same-origin") != b"same-origin":
+                    raise BridgeError("LOCAL_AUTH_REQUIRED", 403)
+                with self.lock:
+                    self.local_session(headers)
+                if method == "GET":
+                    reply = response(await run_in_threadpool(self.read_appearance))
+                elif method == "PUT":
+                    if (
+                        headers.get(b"origin", b"").decode() != self.origin
+                        or headers.get(b"content-type") != b"application/json"
+                        or b"content-encoding" in headers
+                    ):
+                        raise BridgeError("LOCAL_AUTH_REQUIRED", 403)
+                    value = await asyncio.wait_for(
+                        self.api.read(receive, limit=APPEARANCE_LIMIT), 5
+                    )
+                    await run_in_threadpool(self.save_appearance, value)
+                    reply = response({"saved": True})
+                else:
+                    raise BridgeError("NOT_FOUND", 404)
+            elif path == "/launch" and scope["method"] == "POST":
                 if (
                     headers.get(b"origin") != b"null"
                     or headers.get(b"content-type")
@@ -246,16 +318,8 @@ class Host:
                     or not re.fullmatch(r"[a-f0-9-]{36}", body["windowId"])
                 ):
                     raise BridgeError("INVALID_REQUEST")
-                cookie = headers.get(b"cookie", b"").decode()
-                parts = [
-                    s.strip().split("=", 1) for s in cookie.split(";") if s.strip()
-                ]
-                keys = [v for k, v in parts if k == "ptcg-local"]
                 with self.lock:
-                    self._prune()
-                    session = self.sessions.get(keys[0]) if len(keys) == 1 else None
-                    if not session:
-                        raise BridgeError("LOCAL_AUTH_REQUIRED", 403)
+                    session = self.local_session(headers)
                     windows = session["windows"]
                     if body["windowId"] in windows:
                         self.owner.revoke_window(windows.pop(body["windowId"]))

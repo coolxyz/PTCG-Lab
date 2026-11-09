@@ -74,6 +74,8 @@ class RulesPlayer(Player):
                     continue
                 if rule.get('secondFirstTurn') and not (self.firstTurn and self.id != state.starting_player):
                     continue
+                if rule.get('partner') and not any(c.name == rule['partner'] for c in self.active + self.bench):
+                    continue
                 for card in self.hand:
                     if not isinstance(card,PokemonCard) or card.stage == Stage.BASIC:
                         continue
@@ -85,7 +87,13 @@ class RulesPlayer(Player):
                         actions.append(EvolvePokemonAction(self.id,card,target))
         if self.firstTurn and self.id == state.starting_player:
             for card in self.active:
-                actions.extend(a for a in card.get_actions(state) if isinstance(a, AttackAction) and getattr(a.attack_template, "compiled_rule", {}).get("mechanic", {}).get("allowFirstTurn"))
+                first_turn_ability = enabled(card, state) and any(
+                    rule['kind'] == 'first_turn_attack'
+                    for rule in (getattr(card, 'spec', None) or {}).get('abilities', [])
+                )
+                actions.extend(a for a in card.get_actions(state) if isinstance(a, AttackAction) and (
+                    first_turn_ability or getattr(a.attack_template, "compiled_rule", {}).get("mechanic", {}).get("allowFirstTurn")
+                ))
             for card in self.hand:
                 if getattr(card, 'spec', {}).get('mechanic', {}).get('allowFirstTurn'):
                     actions.extend(a for a in card.get_actions(state) if not any(type(b) is type(a) and b.source is a.source for b in actions))

@@ -50,6 +50,10 @@ KINDS = {
 
 
 def matches(card, kind):
+    if kind.startswith('evolved:'):
+        return isinstance(card, PokemonCard) and card.stage != Stage.BASIC and has_type(card, kind[8:])
+    if kind.startswith('either:'):
+        return any(matches(card, category) for category in kind[7:].split('|'))
     if kind == "pokemon_or_energy":
         return matches(card,"pokemon") or matches(card,"basic_energy")
     if kind.startswith("prefix:"):

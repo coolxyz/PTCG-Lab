@@ -30,7 +30,8 @@ export const PLAYMATS = [
 export type Appearance = { preset: string; customImage?: string };
 export type AppearanceStorage = {
   load: () => Appearance;
-  save: (value: Appearance) => void;
+  restore?: () => Promise<Appearance>;
+  save: (value: Appearance) => void | Promise<void>;
 };
 export const DEFAULT_APPEARANCE: Appearance = { preset: "lavender" };
 

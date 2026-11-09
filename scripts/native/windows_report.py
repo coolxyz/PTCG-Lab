@@ -21,6 +21,7 @@ REQUIRED = {
     "test_real_windows_identity_refuses_running_target_and_unsafe_destination",
     "test_real_windows_unicode_and_long_private_path_reopens_exact_pending",
     "test_real_windows_first_launch_accepts_only_private_webview_cache",
+    "test_real_windows_upgrade_reopens_dpapi_and_original_database",
 }
 
 

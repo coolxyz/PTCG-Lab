@@ -161,14 +161,14 @@ class BridgeAPI:
             raise BridgeError("PAYLOAD_TOO_LARGE", 413)
         return token
 
-    async def read(self, receive):
+    async def read(self, receive, *, limit=MAX_BODY):
         data = bytearray()
         while True:
             message = await receive()
             if message["type"] != "http.request":
                 raise BridgeError("REQUEST_ABORTED")
             data.extend(message.get("body", b""))
-            if len(data) > MAX_BODY:
+            if len(data) > limit:
                 raise BridgeError("PAYLOAD_TOO_LARGE", 413)
             if not message.get("more_body", False):
                 break

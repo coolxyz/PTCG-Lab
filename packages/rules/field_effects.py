@@ -156,6 +156,8 @@ def resolve(mechanic, action, state):
             discard_card(owner, stadium)
     elif kind == "heal_field":
         targets = [c for c in (p.bench if mechanic.get("zone") == "bench" else p.active + p.bench) if c.hp < maximum(c) and (not mechanic.get("trait") or c.pokemonRule.name == mechanic["trait"])]
+        if mechanic.get('stage'):
+            targets = [c for c in targets if c.stage.name == mechanic['stage']]
         if mechanic["target"] == "one" and targets:
             targets = yield from reduce_choose_card_actions(
                 choose_card_actions(p.id, p.id, 1, 1, targets, source=action.source),
@@ -178,15 +180,18 @@ def resolve(mechanic, action, state):
     elif kind == "bench_damage":
         candidates = [c for c in o.bench if not mechanic.get('damaged') or c.hp < maximum(c)]
         if candidates:
-            count = min(mechanic.get("count", 1), len(candidates))
-            chosen = yield from reduce_choose_card_actions(
-                choose_card_actions(
-                    p.id, p.id, count, count, candidates, source=action.source
-                ),
-                state,
-            )
+            if mechanic.get('all'):
+                chosen = candidates
+            else:
+                count = min(mechanic.get("count", 1), len(candidates))
+                chosen = yield from reduce_choose_card_actions(
+                    choose_card_actions(p.id, p.id, count, count, candidates, source=action.source), state
+                )
+            printed = mechanic['amount']
+            if mechanic.get('perOpponentPrize'):
+                printed *= 6 - len(o.prize)
             for target in chosen:
-                amount = shield_damage(target, attack_damage(action.source, target, mechanic["amount"], state), state, action.source)
+                amount = shield_damage(target, attack_damage(action.source, target, printed, state), state, action.source)
                 deal(action.source, target, amount, state)
                 p.reward.apply_damage_dealt_reward(amount)
             action.group_damage_targets = [action.target] + list(chosen)

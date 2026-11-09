@@ -105,9 +105,7 @@ def test_isolated_shell_acceptance_marker_is_not_user_data(setup):
     assert (i.state / RECORD).is_file()
 
 
-def test_windows_first_launch_cache_does_not_require_product_migration(
-    setup, monkeypatch
-):
+def test_windows_first_launch_cache_does_not_require_product_migration(setup):
     from ptcg_desktop_api import installation as module
 
     i, a, _ = setup
@@ -117,21 +115,14 @@ def test_windows_first_launch_cache_does_not_require_product_migration(
     helper = module.browser_cache_entries
     assert helper(i.state, platform="darwin") == set()
     assert helper(i.state, platform="win32") == {"webview"}
-    monkeypatch.setattr(
-        module, "browser_cache_entries", lambda state: helper(state, platform="win32")
-    )
-    startup_guard(i.state, a / "Contents/Resources/backend")
+    startup_guard(i.state, a / "Contents/Resources/backend", platform="win32")
     assert (i.state / RECORD).is_file() and (cache / "runtime-cache").is_file()
 
 
 @pytest.mark.parametrize(
     "kind", ["database", "credentials", "file", "link", "permissions"]
 )
-def test_windows_cache_exception_keeps_real_data_and_unsafe_paths_blocked(
-    setup, monkeypatch, kind
-):
-    from ptcg_desktop_api import installation as module
-
+def test_windows_cache_exception_keeps_real_data_and_unsafe_paths_blocked(setup, kind):
     i, a, _ = setup
     cache = i.state / "webview"
     if kind == "file":
@@ -144,15 +135,60 @@ def test_windows_cache_exception_keeps_real_data_and_unsafe_paths_blocked(
             (i.state / "app.sqlite").write_bytes(b"retained product")
         if kind == "credentials":
             (i.state / "credentials").mkdir(mode=0o700)
-    helper = module.browser_cache_entries
-    monkeypatch.setattr(
-        module, "browser_cache_entries", lambda state: helper(state, platform="win32")
-    )
     with pytest.raises(
         (InstallError, ValueError), match="INSTALL_UNSAFE_PATH|DESKTOP_INSTALL_REQUIRED"
     ):
-        startup_guard(i.state, a / "Contents/Resources/backend")
+        startup_guard(i.state, a / "Contents/Resources/backend", platform="win32")
     assert not (i.state / RECORD).exists()
+
+
+@pytest.mark.parametrize("recorded", [False, True])
+def test_windows_successive_payloads_reuse_existing_profile(setup, tmp_path, recorded):
+    i, a, b = setup
+    c = app(tmp_path / "C.app", "C")
+    if recorded:
+        startup_guard(i.state, a / "Contents/Resources/backend", platform="win32")
+    seed(i.state)
+    with sqlite3.connect(i.state / "app.sqlite") as db:
+        db.executescript(
+            "ALTER TABLE deck RENAME TO decks;"
+            "CREATE TABLE collection(id TEXT); CREATE TABLE revisions(id TEXT);"
+        )
+    (i.state / "connection.json").write_text('{"servers":{"lan":"kept"}}')
+    (i.state / "appearance.json").write_text('{"preset":"plum"}')
+    before = tree(i.state, profile=True)
+    for version in (b, c, c):
+        startup_guard(i.state, version / "Contents/Resources/backend", platform="win32")
+        assert tree(i.state, profile=True) == before
+    with sqlite3.connect(i.state / "app.sqlite") as db:
+        assert db.execute("SELECT * FROM decks").fetchall() == [
+            ("unchanged-id", "my deck")
+        ]
+
+
+@pytest.mark.parametrize(
+    "condition", ["future-db", "future-record", "bad-digest", "maintenance"]
+)
+def test_windows_upgrade_rejects_incompatible_or_unfinished_profile(setup, condition):
+    i, a, b = setup
+    old = a / "Contents/Resources/backend"
+    startup_guard(i.state, old, platform="win32")
+    code = "DESKTOP_SCHEMA_UNSUPPORTED"
+    if condition == "future-db":
+        with sqlite3.connect(i.state / "app.sqlite") as db:
+            db.execute("PRAGMA user_version=2")
+    elif condition == "future-record":
+        write(i.state / RECORD, {**payload_record(old), "profileSchema": 2})
+    elif condition == "bad-digest":
+        write(i.state / RECORD, {**payload_record(old), "payloadSha256": "invalid"})
+        code = "DESKTOP_INSTALL_REQUIRED"
+    else:
+        write(i.state / MARKER, {})
+        code = "DESKTOP_RECOVERY_REQUIRED"
+    before = tree(i.state)
+    with pytest.raises(InstallError, match=code):
+        startup_guard(i.state, b / "Contents/Resources/backend", platform="win32")
+    assert tree(i.state) == before
 
 
 def test_legacy_data_needs_explicit_adoption_and_keeps_exact_backup(setup):

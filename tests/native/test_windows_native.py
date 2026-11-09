@@ -57,6 +57,65 @@ def test_real_windows_first_launch_accepts_only_private_webview_cache(tmp_path):
         assert (state / "webview/cache-fixture").is_file()
 
 
+def test_real_windows_upgrade_reopens_dpapi_and_original_database(tmp_path, server):
+    from contextlib import closing
+    import json
+    import sqlite3
+
+    from ptcg_desktop_api.installation import CONTRACT, RECORD, startup_guard
+    from ptcg_desktop_api.native import StateLock
+    from ptcg_desktop_api.windows_storage import windows_vault
+
+    state = tmp_path / "资料目录 with spaces"
+    payload = tmp_path / "synthetic-payload"
+    payload.mkdir()
+    (payload / "INSTALLATION.json").write_text(json.dumps(CONTRACT))
+    manifest = payload / "manifest.json"
+    manifest.write_text('{"version":"before"}')
+    lock = StateLock(state)
+    try:
+        startup_guard(state, payload)
+        original_record = (state / RECORD).read_bytes()
+        with closing(sqlite3.connect(state / "app.sqlite")) as db:
+            db.executescript(
+                "PRAGMA user_version=1; CREATE TABLE collection(id TEXT);"
+                "CREATE TABLE decks(id TEXT); CREATE TABLE revisions(id TEXT);"
+                "INSERT INTO decks VALUES('original-deck');"
+            )
+        vault = windows_vault(state / "credentials", server)
+        try:
+            with vault.transaction() as data:
+                data["credentials"] = {"refreshToken": "synthetic-upgrade-token"}
+                vault.save()
+            ciphertext = vault.path.read_bytes()
+        finally:
+            vault.close()
+    finally:
+        lock.close()
+
+    for version in ("next", "later"):
+        manifest.write_text(json.dumps({"version": version}))
+        lock = StateLock(state)
+        try:
+            startup_guard(state, payload)
+            assert (state / RECORD).read_bytes() == original_record
+            with closing(sqlite3.connect(state / "app.sqlite")) as db:
+                assert db.execute("SELECT id FROM decks").fetchall() == [
+                    ("original-deck",)
+                ]
+            vault = windows_vault(state / "credentials", server, require_existing=True)
+            try:
+                assert vault.path.read_bytes() == ciphertext
+                assert (
+                    vault.state["credentials"]["refreshToken"]
+                    == "synthetic-upgrade-token"
+                )
+            finally:
+                vault.close()
+        finally:
+            lock.close()
+
+
 def test_real_dpapi_encrypted_journal_reopens_in_another_process(tmp_path, server):
     from ptcg_desktop_api.windows_storage import MAGIC, windows_vault
 

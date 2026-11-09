@@ -130,6 +130,9 @@ fn main() {
                         let _ = window.set_title(&format!("PTCG Lab — {code}"));
                         let message = match code {
                             "DESKTOP_RECOVERY_REQUIRED" => "上次安装或回退尚未完成。请关闭窗口，使用安装工具完成恢复后重新打开；现有数据和备份已保留。",
+                            #[cfg(windows)]
+                            "DESKTOP_INSTALL_REQUIRED" => "无法确认本机资料的格式或安装记录。请关闭窗口，保留资料目录和备份，并核对所用的完整安装包。",
+                            #[cfg(not(windows))]
                             "DESKTOP_INSTALL_REQUIRED" => "此版本尚未迁移本机数据。请关闭窗口，通过安装工具备份并切换版本后重新打开。",
                             "DESKTOP_SCHEMA_UNSUPPORTED" => "此版本不支持本机数据格式。请使用匹配的安装版本，或显式恢复匹配的整套备份。",
                             _ => "本机后台启动失败。请关闭后重试；安装包校验失败时请重新安装。",

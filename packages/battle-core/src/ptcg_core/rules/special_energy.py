@@ -33,6 +33,10 @@ class CompiledEnergy(EnergyCard):
 
     def effective_provides(self, target, state=None):
         r = self.spec["mechanic"]
+        if r.get("basicWildcard") and target.stage == Stage.BASIC:
+            return [CardType.ANY]
+        if r.get("evolvedUnits") and target.stage != Stage.BASIC:
+            return [CardType[r["provides"]]] * r["evolvedUnits"]
         if r.get("rocket"):
             return [CardType.PSYCHIC_DARK] * 2 if target.name.startswith("Team Rocket's ") else []
         if r.get("luminous") and any(

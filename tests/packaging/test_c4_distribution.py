@@ -155,7 +155,8 @@ def test_windows_installer_schema_and_pending_migration_are_explicit():
     assert c["bundle"]["windows"]["nsis"]["installMode"] == "currentUser"
     assert c["bundle"]["windows"]["allowDowngrades"] is False
     assert c["bundle"]["windows"]["webviewInstallMode"] == {"type": "skip"}
-    assert "Abort" in HOOK and "RMDir" not in HOOK and "Delete" not in HOOK
+    assert ".desktop-maintenance.json" in HOOK and "Abort" in HOOK
+    assert "app.sqlite" not in HOOK and "RMDir" not in HOOK and "Delete" not in HOOK
 
 
 @pytest.mark.parametrize(

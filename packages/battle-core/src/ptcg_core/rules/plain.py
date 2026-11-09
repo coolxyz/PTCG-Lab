@@ -169,9 +169,20 @@ class PlainPokemon(PokemonCard):
                 from ptcg_core.rules.attack_math import damage as expression_damage
                 rule = mechanic["condition"]
                 count = expression_damage({**rule, "mode": "multiply", "factor": 1}, action, state)
-                succeeds = count < rule["lessThan"] if "lessThan" in rule else count in rule["in"] if "in" in rule else count > 0
+                if 'atLeast' in rule:
+                    succeeds = count >= rule['atLeast']
+                elif 'lessThan' in rule:
+                    succeeds = count < rule['lessThan']
+                elif 'in' in rule:
+                    succeeds = count in rule['in']
+                else:
+                    succeeds = count > 0
                 if succeeds:
-                    yield from reduce_attack_action(action, state)
+                    if mechanic.get('ignoreWeaknessResistance'):
+                        yield from reduce_attack_damage(action, state, apply_weakness_resistance=False)
+                        next_turn(state)
+                    else:
+                        yield from reduce_attack_action(action, state)
                 else:
                     next_turn(state)
                 return

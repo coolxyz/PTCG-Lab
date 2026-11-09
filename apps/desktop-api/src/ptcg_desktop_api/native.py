@@ -143,7 +143,14 @@ def main(*, build, local_factory=None, preflight=None):
         sock.bind(("127.0.0.1", 0))
         origin = f"http://127.0.0.1:{sock.getsockname()[1]}"
         owner = Bridge(profiles, state / "credentials", allow_offline=True, client_factory=native_client)
-        host = Host(owner, origin, build, resources, state / "launch")
+        appearance = (
+            state / "appearance.json"
+            if sys.platform == "win32" and local_factory
+            else None
+        )
+        host = Host(
+            owner, origin, build, resources, state / "launch", appearance=appearance
+        )
         if local_factory:
             from .product import create_product_app
 

@@ -7,7 +7,10 @@ import { onlineStorage, type OnlineStorage } from "./storage";
 import "./online.css";
 import { OnlineLobby } from "./OnlineLobby";
 import { visibleHistory, replayTimeline } from "./history";
-import { browserAppearanceStorage } from "../appearance-storage";
+import {
+  browserAppearanceStorage,
+  productAppearanceStorage,
+} from "../appearance-storage";
 
 export function OnlineApp({
   product = false,
@@ -145,7 +148,7 @@ function Connected({
       <>
         <BattleArena
           mobile={native}
-          appearanceStorage={browserAppearanceStorage}
+          appearanceStorage={product ? productAppearanceStorage : browserAppearanceStorage}
           view={{
             ...snapshotView(s.view),
             events: visibleHistory(s.history, s.cards),

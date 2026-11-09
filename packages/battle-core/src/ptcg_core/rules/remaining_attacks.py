@@ -120,6 +120,21 @@ def resolve(r, action, state):
         pool = list(p.bench if r.get("zone") == "bench" else p.active + p.bench)
         if r.get("type"):
             pool = [c for c in pool if has_type(c, r["type"])]
+        if r.get('searchEvolutionFirst'):
+            pool = [c for c in pool if getattr(c, 'evolution_blocked_turn', None) != state.turn_number]
+            if getattr(p, 'evolution_blocked_turn', None) == state.turn_number:
+                pool = []
+            targets = {card.name for card in pool}
+            candidates = [c for c in p.left if isinstance(c, PokemonCard) and permitted(c)
+                          and any(name in targets for name in getattr(c, 'evolveFrom', ())[:1])]
+            chosen = yield from choice(source, candidates, state, 0, 1, deck_owner=p)
+            if chosen:
+                evolution = chosen[0]
+                recipient = (yield from choice(source, [c for c in pool if c.name == evolution.evolveFrom[0]], state))[0]
+                move_cards(evolution, (p.id, CardPosition.LEFT), (p.id, CardPosition.HAND), state)
+                reduce_evolve_pokemon_action(EvolvePokemonAction(p.id, evolution, recipient), state)
+            shuffle_cards(p.left, state)
+            return
         if not r.get("all"):
             pool = yield from choice(source, pool, state, 0, r.get("count", 1))
         for card in pool:

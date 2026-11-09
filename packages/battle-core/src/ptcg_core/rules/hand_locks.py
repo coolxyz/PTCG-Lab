@@ -1,6 +1,6 @@
 """Field abilities restricting cards played from the opponent's hand."""
 
-from ptcg.core.action import UseItemAction, PutStadiumAction, PlayPokemonAction, EvolvePokemonAction
+from ptcg.core.action import UseItemAction, UseToolAction, PutStadiumAction, PlayPokemonAction, EvolvePokemonAction
 from ptcg.core.card import ToolCard
 from ptcg_core.rules.abilities import enabled
 
@@ -23,7 +23,9 @@ def allowed(action, player, state):
             if rule.get("requiresTool") and not any(isinstance(c,ToolCard) for c in holder.attachment):
                 continue
             mode = rule["cards"]
-            if mode == "item" and isinstance(action,UseItemAction):
+            if mode in ("item", "item_and_tool") and isinstance(action, UseItemAction):
+                return False
+            if mode == "item_and_tool" and isinstance(action, UseToolAction) and action.source in player.hand:
                 return False
             if mode == "stadium" and isinstance(action,PutStadiumAction):
                 return False

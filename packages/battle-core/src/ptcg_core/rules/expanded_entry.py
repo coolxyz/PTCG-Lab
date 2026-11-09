@@ -42,13 +42,39 @@ def resolve(source,r,state):
             target.hp=value(target,r['amount'],state,record=True)
             yield from cure_one(source,target,state)
     elif op=='deploy_opponent':
-        yield from inspect(source,o.hand,state,o)
-        cards=[c for c in o.hand if isinstance(c,PokemonCard) and c.stage==Stage.BASIC]
-        selected=yield from choice(source,cards,state,0,max(0,o.benchSize-len(o.bench)))
-        move_cards(selected,(o.id,CardPosition.HAND),(o.id,CardPosition.BENCH),state)
+        owner = p if r.get('fromDiscard') else o
+        origin = 'discard' if r.get('fromDiscard') else 'hand'
+        pool = getattr(owner, origin)
+        if owner is o:
+            yield from inspect(source, pool, state, o)
+        cards = [c for c in pool if isinstance(c, PokemonCard) and c.stage == Stage.BASIC and c.hp <= r.get('maximumHP', float('inf'))]
+        count = min(r.get('count', owner.benchSize), max(0, owner.benchSize - len(owner.bench)))
+        selected = yield from choice(source, cards, state, int(r.get('required', False)), count)
+        move_cards(selected, (owner.id, CardPosition[origin.upper()]), (owner.id, CardPosition.BENCH), state)
         for c in selected:
             c.firstTurnPlayed=True
             c.position=PokemonPosition.BENCH
+    elif op == 'devolve_opponent':
+        from ptcg_core.rules.ability_protection import blocked
+        from ptcg_core.rules.evolution_effects import devolve
+
+        targets = [c for c in o.active + o.bench if getattr(c, 'evolved', ())]
+        chosen = yield from choice(source, targets, state)
+        if chosen and not blocked(chosen[0], source, state):
+            devolve(chosen[0], o, 'hand', state)
+    elif op == 'switch_both':
+        from ptcg.utils.utils import switch_pokemon
+
+        for player in (p, o):
+            if player.active and player.bench:
+                selected = yield from reduce_choose_card_actions(
+                    choose_card_actions(player.id, player.id, 1, 1, list(player.bench), source=source), state
+                )
+                switch_pokemon(player.active[0], selected[0], player)
+    elif op == 'opponent_redraw':
+        move_cards(list(o.hand), (o.id, CardPosition.HAND), (o.id, CardPosition.LEFT), state)
+        shuffle_cards(o.left, state)
+        move_cards(list(o.left[:r['count']]), (o.id, CardPosition.LEFT), (o.id, CardPosition.HAND), state)
     elif op=='attach_tool':
         if can_attach_tool(source):
             cards=[c for c in p.left if isinstance(c,ToolCard)]

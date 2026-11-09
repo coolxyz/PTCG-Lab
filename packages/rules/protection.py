@@ -52,6 +52,12 @@ def blocked(target, state, kind, source=None):
             if target.pokemonType != PokemonType.NORMAL or target.pokemonRule in (PokemonRule.RADIANT, PokemonRule.TERA) or getattr(target, "isRadiant", False):
                 continue
         criterion = rule.get("source", "any")
+        if criterion == "special_energy":
+            from ptcg.core.card import EnergyCard
+            from ptcg.core.enums import EnergyType
+
+            if not any(isinstance(c, EnergyCard) and c.energyType == EnergyType.SPECIAL for c in attacker.attachment):
+                continue
         if rule.get("sourceType") and not has_type(attacker, rule["sourceType"]):
             continue
         if rule.get("sourceTrait") and attacker.pokemonRule.name != rule["sourceTrait"]:

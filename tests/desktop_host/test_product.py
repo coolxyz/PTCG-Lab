@@ -8,7 +8,7 @@ from starlette.responses import JSONResponse, HTMLResponse
 from starlette.routing import Route
 from starlette.testclient import TestClient
 from ptcg_desktop_api.bridge import Bridge
-from ptcg_desktop_api.host import Host
+from ptcg_desktop_api.host import APPEARANCE_PATH, Host
 from ptcg_desktop_api.product import create_product_app
 from ptcg_desktop_api.resources import Resources
 from ptcg_online_client.transport import Server
@@ -16,7 +16,7 @@ from ptcg_online_client.transport import Server
 ORIGIN = "http://127.0.0.1:18789"
 
 
-def make(tmp_path, *, fail=False):
+def make(tmp_path, *, fail=False, origin=ORIGIN, appearance=None):
     events = []
 
     @asynccontextmanager
@@ -41,18 +41,64 @@ def make(tmp_path, *, fail=False):
         lifespan=lifespan,
     )
     build = tmp_path / "web"
-    (build / "assets").mkdir(parents=True)
+    (build / "assets").mkdir(parents=True, exist_ok=True)
     (build / "online.html").write_text("online shell")
     (build / "assets/online-test.js").write_text("const online=true;")
     owner = Bridge({"lan": Server("https://example.test")}, tmp_path / "credentials")
     online = Host(
-        owner, ORIGIN, build, Resources(tmp_path / "resources"), tmp_path / "launch"
+        owner,
+        origin,
+        build,
+        Resources(tmp_path / "resources"),
+        tmp_path / "launch",
+        appearance=appearance,
     )
     return create_product_app(local, online), online, events
 
 
 def web(app):
     return TestClient(app, base_url=ORIGIN, client=("127.0.0.1", 1234))
+
+
+def test_native_appearance_survives_backend_restart_at_another_origin(tmp_path):
+    profile = tmp_path / "profile"
+    profile.mkdir(mode=0o700)
+    path = profile / "appearance.json"
+    app, host, _ = make(tmp_path, appearance=path)
+    value = {
+        "preset": "custom",
+        "customImage": "data:image/png;base64," + "AA" * 30_000,
+    }
+    with web(app) as browser:
+        assert browser.get(APPEARANCE_PATH).status_code == 403
+        browser.cookies.set("ptcg-local", host.native_session())
+        assert browser.get(APPEARANCE_PATH).json() is None
+        assert browser.put(APPEARANCE_PATH, json=value).status_code == 403
+        assert (
+            browser.put(
+                APPEARANCE_PATH, json=value, headers={"Origin": ORIGIN}
+            ).status_code
+            == 200
+        )
+        assert (
+            browser.put(
+                APPEARANCE_PATH,
+                json={"preset": "custom", "customImage": "https://example.test/image"},
+                headers={"Origin": ORIGIN},
+            ).status_code
+            == 400
+        )
+    new_origin = "http://127.0.0.1:18790"
+    app, host, _ = make(tmp_path, appearance=path, origin=new_origin)
+    with TestClient(app, base_url=new_origin, client=("127.0.0.1", 1234)) as browser:
+        browser.cookies.set("ptcg-local", host.native_session())
+        assert browser.get(APPEARANCE_PATH).json() == value
+        assert (
+            browser.get(
+                APPEARANCE_PATH, headers={"Sec-Fetch-Site": "cross-site"}
+            ).status_code
+            == 403
+        )
 
 
 def test_one_app_product_online_assets_and_same_origin_session(tmp_path):

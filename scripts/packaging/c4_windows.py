@@ -18,10 +18,7 @@ from scripts.packaging.common import new_output, record, write, file_hash  # noq
 from scripts.packaging.source_identity import source_digest  # noqa: E402
 
 HOOK = r"""!macro NSIS_HOOK_PREINSTALL
-  ; Do not modify existing profile data while native C3 migration is pending.
-  IfFileExists "$LOCALAPPDATA\org.ptcglab.desktop.preview\app.sqlite" 0 +3
-  MessageBox MB_OK|MB_ICONSTOP "Close PTCG Lab and use the approved C3 migration tool before upgrading."
-  Abort
+  ; The private profile lives outside INSTDIR and survives upgrades.
   IfFileExists "$LOCALAPPDATA\org.ptcglab.desktop.preview\.desktop-maintenance.json" 0 +3
   MessageBox MB_OK|MB_ICONSTOP "A previous migration requires recovery. Existing data was preserved."
   Abort

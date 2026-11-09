@@ -29,9 +29,14 @@ def generated_decks():
     energy={c['basicEnergyType']:c for c in legal if c.get('basicEnergyType') in ('grass','fire','water','lightning','psychic','fighting','darkness','metal')}
     assert len(energy)==8, 'Eight source-owned basic energies are required'
     translated={'GRASS':'grass','FIRE':'fire','WATER':'water','LIGHTNING':'lightning','PSYCHIC':'psychic','FIGHTING':'fighting','DARK':'darkness','METAL':'metal'}
-    proof_path=Path(__import__('packages.collection.domain',fromlist=['ROOT']).ROOT)/'data/sync/reviewed-equivalence.json'
-    reviewed={p['effectKey'] for p in json.loads(proof_path.read_text(encoding='utf-8'))['proofs'].values()} if proof_path.exists() else set()
-    requested=sorted(k for k in by_effect if k in reviewed or k.startswith('P4P-SYNC'))
+    from packages.collection.domain import ROOT
+    proof_path = ROOT / 'data/sync/reviewed-equivalence.json'
+    proofs = json.loads(proof_path.read_text(encoding='utf-8'))['proofs'].values() if proof_path.exists() else ()
+    reviewed = {p['effectKey'] for p in proofs}
+    manifest = ROOT / 'manifest.json'
+    commit = json.loads(manifest.read_text(encoding='utf-8'))['metadata'].get('commit') if manifest.is_file() else None
+    changed = {p['effectKey'] for p in proofs if commit and p.get('commit') == commit}
+    requested = sorted((k for k in by_effect if k in reviewed or k.startswith('P4P-SYNC')), key=lambda key: (key not in changed, key))
     if not requested:
         requested=sorted(k for k,c in by_effect.items() if c.get('isBasicPokemon'))[:2]
     decks = []
