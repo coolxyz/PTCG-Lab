@@ -63,6 +63,7 @@ FILES = (
     "apps/native-shell/src-tauri/icons/128x128.png",
     "apps/native-shell/src-tauri/icons/128x128@2x.png",
     "ops/online/Dockerfile.dockerignore",
+    "scripts/packaging/windows_setup.nsi",
 )
 EXCLUDED = {
     ".git",

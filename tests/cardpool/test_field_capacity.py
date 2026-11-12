@@ -1,10 +1,49 @@
+from ptcg.core.action import PlayPokemonAction
 from ptcg.core.card_registry import registry
-from ptcg.core.enums import PokemonRule
+from ptcg.core.enums import PokemonPosition, PokemonRule
 from ptcg.utils.utils import can_attach_tool
+from packages.battle.runtime import view
+from packages.rules.adapter import Adapter
 from packages.rules.field_capacity import refresh, settle
 from tests.cardpool.test_checkup import board
 from tests.cardpool.test_stadiums import stadium
 from test_effects import zone, drive
+from test_rules import finish_setup
+
+
+def test_area_zero_can_play_through_eight_and_projects_free_slots():
+    game = Adapter(0)
+    finish_setup(game)
+    env = game.env
+    state = env.gamestate
+    player = next(p for p in env.get_players() if p.id == state.turn)
+    player.active[0].pokemonRule = PokemonRule.TERA
+    field = stadium("Area Zero Underdepths")
+    field.playedFrom = player.id
+    state.stadium = [field]
+    basic = registry.get("P01-005")
+    zone(player, "bench", [basic() for _ in range(5)])
+    zone(player, "hand", [basic() for _ in range(4)])
+    env.cur_available_actions = env.get_actions(state)
+
+    assert view(game, player.id)["observation"]["self"]["benchCapacity"] == 8
+    assert view(game, player.id)["observation"]["opponent"]["benchCapacity"] == 5
+    for count in (6, 7, 8):
+        play = next(
+            action for action in env.cur_available_actions
+            if isinstance(action, PlayPokemonAction)
+            and action.position == PokemonPosition.BENCH
+        )
+        game.obs, _, game.done, game.info = env.step(play)
+        own = view(game, player.id)["observation"]["self"]
+        assert len(own["bench"]) == count
+        assert own["benchCapacity"] == 8
+
+    assert not any(
+        isinstance(action, PlayPokemonAction)
+        and action.position == PokemonPosition.BENCH
+        for action in env.cur_available_actions
+    )
 
 
 def test_area_zero_expands_to_eight_and_removed_stadium_owner_discards_first():

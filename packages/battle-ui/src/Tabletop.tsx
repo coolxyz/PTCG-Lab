@@ -520,6 +520,8 @@ export function Tabletop({
     );
   }
   function side(side: Side, enemy: boolean) {
+    const benchCapacity = side.benchCapacity ?? 5;
+    const emptyBenchSlots = Math.max(0, benchCapacity - side.bench.length);
     const player = enemy ? "opponent" : "self";
     return (
       <section
@@ -599,25 +601,24 @@ export function Tabletop({
               data-motion-zone={`${enemy ? "opponent" : "self"}:bench`}
             >
               <small>
-                备战区 · {side.bench.length}/{side.benchCapacity || 5}
+                备战区 · {side.bench.length}/{benchCapacity}
               </small>
               <div>
                 {side.bench.map((card, i) =>
                   picture(card, i, "bench", `${player}:bench:${i}`),
                 )}
-                {mobile && !side.bench.length && (
+                {mobile && benchCapacity <= 5 && !side.bench.length && (
                   <span className="mobile-empty-bench">暂无备战宝可梦</span>
                 )}
-                {!mobile &&
+                {(!mobile || benchCapacity > 5) &&
                   Array.from(
-                    {
-                      length: Math.max(
-                        0,
-                        (side.benchCapacity || 5) - side.bench.length,
-                      ),
-                    },
+                    { length: emptyBenchSlots },
                     (_, i) => (
-                      <span className="empty-slot" key={`empty-${i}`}>
+                      <span
+                        className="empty-slot"
+                        key={`empty-${i}`}
+                        aria-hidden="true"
+                      >
                         ＋
                       </span>
                     ),

@@ -10,6 +10,12 @@ test("practice scheduling, pause, single step, replay and navigation do not dupl
     decision: null,
     aiStrategy: { id: "demo-h2", version: "1", name: "合成 H2 策略" },
   };
+  const own = view.observation.self;
+  own.benchCapacity = 8;
+  own.bench = Array.from({ length: 5 }, (_, i) => ({
+    ...own.active[0],
+    ref: `demo-bench-${i}`,
+  }));
   let creates = 0,
     advances = 0,
     sessions = 0;
@@ -49,6 +55,9 @@ test("practice scheduling, pause, single step, replay and navigation do not dupl
   await expect(page.getByLabel("AI 策略", { exact: true })).toHaveValue("H2");
   await page.getByRole("button", { name: "开始人机对战", exact: true }).click();
   await expect(page.getByLabel("当前 AI 策略")).toHaveText("合成 H2 策略");
+  const bench = page.locator('[data-motion-zone="self:bench"]');
+  await expect(bench.getByText("备战区 · 5/8")).toBeVisible();
+  await expect(bench.locator(".empty-slot")).toHaveCount(3);
   await page.getByRole("button", { name: "暂停 AI", exact: true }).click();
   await page.clock.runFor(6000);
   expect(advances).toBe(0);

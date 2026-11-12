@@ -38,8 +38,10 @@ def build(update, previous, output):
         ):
             raise ValueError("Expected pinned execution and manifest identities.")
     output = new_output(output)
+    # Rule-only releases can follow an update with the same upstream commit.
+    update_id = new["ruleManifestSha256"][:12] if old.get("upstreamCommit") == commit else commit[:8]
     constants = {
-        "UPDATE_ID": commit[:8], "PLATFORM": new["platform"], "IMAGE": image["tag"],
+        "UPDATE_ID": update_id, "PLATFORM": new["platform"], "IMAGE": image["tag"],
         "IMAGE_ID": image["id"], "IMAGE_MANIFEST_ID": image["manifestId"],
         "OLD_RULE": old["ruleReleaseId"], "OLD_PIN": old["ruleManifestSha256"],
         "RULE": new["ruleReleaseId"], "PIN": new["ruleManifestSha256"],

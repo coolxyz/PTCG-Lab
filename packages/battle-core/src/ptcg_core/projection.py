@@ -17,7 +17,8 @@ def view(game, viewer):
                 ref = f"v{game.version}:{side}:{zone}:{index}"
                 dto["ref"] = ref
                 locations[id(obj)] = ref
-        result["observation"][side]["benchCapacity"] = max(5, len(player.bench))
+        # Keep occupied slots visible while an overflow discard is pending.
+        result["observation"][side]["benchCapacity"] = max(player.benchSize, len(player.bench))
     for index, (dto, obj) in enumerate(
         zip(result["observation"].get("stadium", []), game.env.gamestate.stadium)
     ):

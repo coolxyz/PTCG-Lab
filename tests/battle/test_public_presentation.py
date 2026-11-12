@@ -92,6 +92,7 @@ def test_runtime_exports_only_attached_public_tool_metadata():
             id=seat,
             active=[holder] if seat == rt.PlayerId.PLAYER1 else [],
             bench=[],
+            benchSize=5,
             hand=[],
             discard=[],
         )

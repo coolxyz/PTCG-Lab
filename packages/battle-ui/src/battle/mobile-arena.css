@@ -411,8 +411,11 @@
   gap: 6px;
   padding: 5px;
 }
-.battle-screen-mobile .arena .tabletop-bench .tabletop-slot {
+.battle-screen-mobile .arena .tabletop-bench :is(.tabletop-slot, .empty-slot) {
   flex: none;
+}
+.battle-screen-mobile .arena .tabletop-bench .empty-slot {
+  height: 54px;
 }
 .battle-screen-mobile .arena .tabletop-bench .tabletop-card {
   height: 54px;
@@ -735,7 +738,7 @@
   .battle-screen-mobile .arena .tabletop-bench .card-state-panel {
     display: none;
   }
-  .battle-screen-mobile .arena .tabletop-bench .tabletop-card {
+  .battle-screen-mobile .arena .tabletop-bench :is(.tabletop-card, .empty-slot) {
     height: 58px;
   }
   .battle-screen-mobile .mobile-bench-hp {
@@ -766,7 +769,7 @@
   .battle-screen-mobile .arena .tabletop-bench {
     --card-w: 74px;
   }
-  .battle-screen-mobile .arena .tabletop-bench .tabletop-card {
+  .battle-screen-mobile .arena .tabletop-bench :is(.tabletop-card, .empty-slot) {
     height: 64px;
   }
   .battle-screen-mobile .arena .tabletop-bench > div {

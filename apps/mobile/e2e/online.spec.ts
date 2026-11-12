@@ -11,9 +11,14 @@ const initial = corpus.find(
 ).value;
 const replay = corpus.find((r: any) => r.kind === "ReplayPage").value;
 
-async function fixture(page: Page, longLabels = false, battleFlow = false) {
+async function fixture(
+  page: Page,
+  longLabels = false,
+  battleFlow = false,
+  expandedBench = false,
+) {
   await page.addInitScript(
-    ({ initial, replay, longLabels, battleFlow }) => {
+    ({ initial, replay, longLabels, battleFlow, expandedBench }) => {
       const profile = "p" + "1".repeat(24),
         mid = "a".repeat(32),
         rid = "b".repeat(32),
@@ -74,6 +79,7 @@ async function fixture(page: Page, longLabels = false, battleFlow = false) {
             v.observation.self.handCount = v.observation.self.hand.length;
             for (const side of ["self", "opponent"]) {
               const player = v.observation[side];
+              if (expandedBench) player.benchCapacity = 8;
               player.active = [
                 {
                   ref: `v${v.stateVersion}:${side}:active:0`,
@@ -88,7 +94,7 @@ async function fixture(page: Page, longLabels = false, battleFlow = false) {
                 },
               ];
               player.bench = Array.from(
-                { length: side === "self" ? 5 : 4 },
+                { length: side === "self" ? 5 : expandedBench ? 8 : 4 },
                 (_, i) => ({
                   ref: `v${v.stateVersion}:${side}:bench:${i}`,
                   card: identity(`bench-${i}`, `备战宝可梦 ${i + 1}`),
@@ -364,7 +370,7 @@ async function fixture(page: Page, longLabels = false, battleFlow = false) {
         },
       } as any;
     },
-    { initial, replay, longLabels, battleFlow },
+    { initial, replay, longLabels, battleFlow, expandedBench },
   );
 }
 
@@ -492,15 +498,9 @@ test("XR portrait enters a restored lobby with history without horizontal blank 
   );
 });
 
-test("phone plays from the hand, confirms a search and opens private replay via native IPC", async ({
-  page,
-}) => {
+async function openPhoneBattle(page: Page, expandedBench = false) {
   await page.setViewportSize({ width: 320, height: 640 });
-  await fixture(page, false, true);
-  const remote: string[] = [];
-  page.on("request", (r) => {
-    if (!r.url().startsWith("http://127.0.0.1:5193")) remote.push(r.url());
-  });
+  await fixture(page, false, true, expandedBench);
   await page.goto("/");
   await page.getByRole("button", { name: "对战", exact: true }).click();
   await page.getByLabel("服务器地址").fill("https://battle.example.test");
@@ -511,16 +511,45 @@ test("phone plays from the hand, confirms a search and opens private replay via 
   await page.getByRole("button", { name: /校验并使用此版本/ }).click();
   await page.getByRole("button", { name: /创建邀请房间/ }).click();
   await expect(page.getByText("ABCDEFGH23", { exact: true })).toBeVisible();
-  await page.screenshot({
-    path: "var/p8e-ios/e2/phone-lobby.png",
-    fullPage: true,
-  });
+  if (!expandedBench)
+    await page.screenshot({
+      path: "var/p8e-ios/e2/phone-lobby.png",
+      fullPage: true,
+    });
   await page.getByRole("button", { name: "准备对战", exact: true }).click();
   await expect(
     page.getByRole("button", { name: "取得操作权", exact: true }),
   ).toBeVisible();
   await page.getByRole("button", { name: "取得操作权", exact: true }).click();
-  const arena = page.getByRole("main", { name: "对战与回放" });
+  return page.getByRole("main", { name: "对战与回放" });
+}
+
+test("phone shows expanded Bench slots and can open the eighth Pokémon", async ({
+  page,
+}) => {
+  const arena = await openPhoneBattle(page, true);
+  const ownBench = arena.locator('[data-motion-zone="self:bench"]');
+  const opponent = arena.getByRole("region", { name: "对手 场面" });
+  await expect(ownBench.getByText("备战区 · 5/8")).toBeVisible();
+  await expect(ownBench.locator(".empty-slot")).toHaveCount(3);
+  await expect(opponent.getByText("备战区 · 8/8")).toBeVisible();
+  expect(
+    await arena.locator(".mobile-battle-body").evaluate((e) => e.scrollWidth),
+  ).toBeLessThanOrEqual(320);
+  await opponent.getByRole("button", { name: /备战宝可梦 8 · HP 60/ }).click();
+  await expect(
+    arena.getByRole("dialog", { name: "备战宝可梦 8", exact: true }),
+  ).toBeVisible();
+});
+
+test("phone plays from the hand, confirms a search and opens private replay via native IPC", async ({
+  page,
+}) => {
+  const remote: string[] = [];
+  page.on("request", (r) => {
+    if (!r.url().startsWith("http://127.0.0.1:5193")) remote.push(r.url());
+  });
+  const arena = await openPhoneBattle(page);
   const nav = arena.getByRole("navigation", { name: "对战视图" });
   await expect(arena.getByText("轮到你操作", { exact: true })).toBeVisible();
   await expect(
