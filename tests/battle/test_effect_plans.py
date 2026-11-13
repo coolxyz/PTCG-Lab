@@ -14,8 +14,8 @@ from ptcg.core.card_registry import registry
 from ptcg.core.enums import CardPosition
 from ptcg.utils.utils import move_cards
 from test_effects import zone
-from test_llm import setup
 from test_rules import finish_setup, pass_turn
+from tests.battle.test_llm import setup
 
 
 ENERGIES = [
