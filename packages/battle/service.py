@@ -31,7 +31,7 @@ from packages.collection.domain import (
     DomainError,
 )
 from packages.collection.store import now
-from packages.battle import agent, h2
+from packages.battle import agent, allocations, effect_plans, h2, llm
 from packages.battle.presets import PRESETS
 from packages.battle.decision import decide
 from packages.battle.presentation import TOOL_SOURCE_LABEL, tool_attack_event
@@ -58,6 +58,8 @@ class MatchService:
         self.path = store.path
         self.lock = threading.RLock()
         self.cache = OrderedDict()
+        self.llm_in_flight = set()
+        self.llm_client = None
         self.release_id = lambda: os.environ.get("PTCG_RELEASE_ID")
         with self.db() as db:
             db.executescript("""
@@ -66,7 +68,13 @@ class MatchService:
             CREATE TABLE IF NOT EXISTS match_frames(match_id TEXT NOT NULL,seq INTEGER NOT NULL,body TEXT NOT NULL,event TEXT NOT NULL,PRIMARY KEY(match_id,seq));
             CREATE TABLE IF NOT EXISTS match_commands(match_id TEXT NOT NULL,command_id TEXT NOT NULL,request_hash TEXT NOT NULL,receipt TEXT NOT NULL,PRIMARY KEY(match_id,command_id));
             CREATE TABLE IF NOT EXISTS match_ai_views(match_id TEXT NOT NULL,seq INTEGER NOT NULL,body TEXT NOT NULL,PRIMARY KEY(match_id,seq));
+            CREATE TABLE IF NOT EXISTS match_llm_steps(match_id TEXT NOT NULL,seq INTEGER NOT NULL,body TEXT NOT NULL,PRIMARY KEY(match_id,seq));
             """)
+
+    def close(self):
+        if self.llm_client is not None:
+            self.llm_client.close()
+            self.llm_client = None
 
     @contextmanager
     def db(self, write=False):
@@ -142,6 +150,11 @@ class MatchService:
             row["engine_version"] == runtime().ENGINE_VERSION
             and provenance.get("effectReleaseVersion") == RELEASE_VERSION
             and provenance.get("syncReleaseId") == self.release_id()
+            and not (
+                row["status"] == "playing"
+                and provenance.get("llmStrategy")
+                and provenance.get("aiVersion") != llm.VERSION
+            )
         )
 
     def revisions(self):
@@ -164,6 +177,10 @@ class MatchService:
                     }
                 )
         return result
+
+    def llm_opponent(self):
+        config = llm.settings(self.path)
+        return config.public() if config else None
 
     def _admit(self, db, rid):
         r = db.execute("SELECT * FROM revisions WHERE id=?", (rid,)).fetchone()
@@ -245,20 +262,30 @@ class MatchService:
                 )
                 opponent = {"entries": template["entries"]}
                 opponent_key = template["id"]
-            require(ai_level in ("A1", "H2", "A2"), "BAD_AI_LEVEL", "请选择 A1、H2或 A2")
+            versions = {"A1": agent.VERSION, "H2": h2.VERSION, "A2": A2_VERSION, "LLM": llm.VERSION}
+            require(ai_level in versions, "BAD_AI_LEVEL", "请选择可用的 AI 策略")
             provenance = {
                 "syncReleaseId": __import__("os").getenv("PTCG_RELEASE_ID"),
                 "catalogVersion": CATALOG_VERSION,
                 "formatAsOf": AS_OF,
                 "revisionId": request["revisionId"],
                 "formatHash": content_hash(RULES),
-                "aiVersion": {"A1": agent.VERSION, "H2": h2.VERSION, "A2": A2_VERSION}[ai_level],
+                "aiVersion": versions[ai_level],
                 "effectReleaseVersion": RELEASE_VERSION,
                 "opponentRevisionId": opponent_id,
                 "opponentContentHash": content_hash(opponent),
             }
             if ai_level == "H2":
                 provenance["aiSourceHash"] = h2.fingerprint()
+            elif ai_level == "LLM":
+                config = llm.settings(self.path)
+                require(config is not None, "LLM_NOT_CONFIGURED",
+                        "请在本机配置 LLM 服务后开始对局", 409)
+                provenance.update(
+                    llmStrategy=config.public(),
+                    llmConfigHash=config.fingerprint(),
+                    llmConfig=config.model_dump(exclude={"apiKey", "baseUrl"}),
+                )
             game = rt.Adapter(
                 seed=secrets.randbits(63),
                 deck1=self._lines(revision["entries"]),
@@ -304,7 +331,7 @@ class MatchService:
         record = json.loads(row["body"])
         require(
             record["config"].get("provenance", {}).get("aiVersion")
-            in (agent.VERSION, h2.VERSION, A2_VERSION),
+            in (agent.VERSION, h2.VERSION, A2_VERSION, llm.VERSION),
             "AI_VERSION_MISMATCH",
             "AI 版本已变化，本局仅可查看已保存回放",
             409,
@@ -344,6 +371,8 @@ class MatchService:
         v = rt.view(game, rt.PlayerId.PLAYER1)
         ai_version = game.config.get("provenance", {}).get("aiVersion", agent.VERSION)
         v.update(matchId=id, status=status, aiVersion=ai_version)
+        if ai_version == llm.VERSION:
+            v["aiStrategy"] = game.config["provenance"]["llmStrategy"]
         if ai_version == A2_VERSION:
             from packages.simulation.information import observation
 
@@ -433,7 +462,7 @@ class MatchService:
             )
         ][::-1]
         if not self._current_rules(row):
-            view.update(readOnly=True, readOnlyReason='旧引擎版本已停用，此对局仅供回放。请重新保存卡组后开始新对局。', done=True, decision=None, status='archived')
+            view.update(readOnly=True, readOnlyReason='对战规则或 AI 版本已更新，此对局仅供回放。请开始新对局。', done=True, decision=None, status='archived')
         return decorate(view)
 
     def snapshot(self, owner, id):
@@ -604,6 +633,8 @@ class MatchService:
             return self._advance_a2(owner, id)
         if version == h2.VERSION:
             return self._advance_h2(owner, id)
+        if version == llm.VERSION:
+            return self._advance_llm(owner, id)
         # Bounded batches, each action independently durable. A lost response is
         # resumed from latest seq; parallel requests cannot apply a choice twice.
         began = time.monotonic()
@@ -671,6 +702,189 @@ class MatchService:
             except Exception:
                 self.cache.pop(id, None)
                 raise
+
+    @staticmethod
+    def _llm_history(db, id):
+        history = []
+        for row in db.execute(
+            "SELECT f.event,s.body FROM match_frames f LEFT JOIN match_llm_steps s "
+            "ON s.match_id=f.match_id AND s.seq=f.seq "
+            "WHERE f.match_id=? ORDER BY f.seq DESC LIMIT ?",
+            (id, llm.HISTORY_LIMIT),
+        ):
+            event = json.loads(row["event"])
+            entry = {k: event[k] for k in ("seq", "turn", "actor", "text", "changes") if k in event}
+            cards = [card["name"] for group in event.get("cardGroups", [])
+                     for card in group["cards"] if card.get("name")]
+            if cards:
+                entry["publicCards"] = list(dict.fromkeys(cards))
+            if row["body"]:
+                entry["ownAction"] = json.loads(row["body"])["action"]
+            history.append(entry)
+        return history[::-1]
+
+    def _save_llm_action(self, db, row, game, current, command, detail):
+        game.submit(game.actor, command)
+        event = self._event(current, command, True)
+        status = detail["status"]
+        event.update(
+            aiMilliseconds=detail["milliseconds"],
+            fallback=status == "fallback",
+            explanation={
+                "model": "LLM 根据可见局面和近期行动作出选择",
+                "planned": "引擎按 LLM 的整体计划处理本步",
+                "forced": "引擎直接处理唯一动作或固定数量的盲选",
+                "fallback": "LLM 未能提交合法选择，本步由引擎或 H2 执行",
+            }[status],
+        )
+        if detail.get("allocationPlan") and status == "model":
+            event["explanation"] = "LLM 为当前效果提交整体分配计划"
+        if detail.get("effectPlan") and status == "model":
+            event["explanation"] = "LLM 为当前效果提交整体计划"
+        if detail["requestCount"] > 1:
+            event["explanation"] += f"（重试 {detail['requestCount'] - 1} 次）"
+        if detail.get("allocationPlan") or detail.get("allocationFromSeq"):
+            choice = command["choice"]["selectedRefs"][0]
+            target = next(item["card"] for item in current["decision"]["candidates"]
+                          if item["ref"] == choice)
+            label = ("放置伤害指示物" if allocations.effect(current) == allocations.PHANTOM_DIVE
+                     else "附加基本恶能量")
+            event["text"] = f"{label} · {target['name']}"
+            event["cardGroups"] = [{"label": "分配目标", "cards": [
+                {k: target[k] for k in ("id", "name") if k in target},
+            ]}]
+        db.execute("INSERT INTO match_llm_steps VALUES(?,?,?)",
+                   (row["id"], game.version, json.dumps(detail, ensure_ascii=False)))
+        self._save(db, row, game, event)
+
+    def _advance_llm(self, owner, id):
+        from packages.simulation.a2 import legal
+
+        rt = runtime()
+        with self.lock, self.db() as db:
+            row = self._row(db, owner, id)
+            if row["status"] != "playing" or id in self.llm_in_flight:
+                return self._snapshot(db, row)
+            game = self._game(row)
+            if game.actor != rt.PlayerId.PLAYER2:
+                return self._snapshot(db, row)
+            config = llm.settings(self.path)
+            require(config is not None and config.fingerprint() == game.config["provenance"]["llmConfigHash"],
+                    "LLM_CONFIG_MISMATCH", "LLM 配置已变化，请恢复原配置或开始新对局", 409)
+            sequence = game.version
+            before = rt.view(game, rt.PlayerId.PLAYER2)
+            history = self._llm_history(db, id)
+            own_lines = tuple(game.config["deck2"])
+            offer = effect_plans.window(game, before, history)
+            if self.llm_client is None:
+                self.llm_client = llm.http_client()
+            client = self.llm_client
+            self.llm_in_flight.add(id)
+        try:
+            command, detail = llm.decide(before, history, config, own_lines, offer, client)
+            with self.lock, self.db(True) as db:
+                row = self._row(db, owner, id)
+                if row["status"] != "playing" or row["seq"] != sequence:
+                    return self._snapshot(db, row)
+                game = self._game(row)
+                current = rt.view(game, rt.PlayerId.PLAYER2)
+                try:
+                    effect_plan = detail.get("effectPlan")
+                    allocation = detail.get("allocationPlan")
+                    if effect_plan:
+                        # The cached game may have been evicted while the model ran.
+                        # Bind the answer to the current engine's physical objects.
+                        current_offer = effect_plans.window(game, current, history)
+                        effect_steps = (
+                            current_offer.steps(effect_plan["choices"])
+                            if current_offer and current_offer.effect == effect_plan["effect"]
+                            else None
+                        )
+                        steps = (
+                            effect_plans.follow(game, current, effect_steps, rt.view)
+                            if effect_steps else ()
+                        )
+                        link = "effectPlanFromSeq"
+                    elif allocation:
+                        steps = allocations.follow(game, current, allocation, rt.view)
+                        link = "allocationFromSeq"
+                    else:
+                        steps = ()
+                    for view, step in steps:
+                        if game.version == sequence:
+                            receipt = llm.decision_detail(
+                                view, step["choice"], detail, detail["milliseconds"]
+                            )
+                        else:
+                            receipt = llm.decision_detail(view, step["choice"], {
+                                "status": "planned" if detail["status"] == "model" else "forced",
+                                "requestCount": 0,
+                                link: sequence + 1,
+                            })
+                        self._save_llm_action(db, row, game, view, step, receipt)
+                        if game.version >= MAX_STEPS:
+                            break
+                    if game.version == sequence:
+                        if effect_plan:
+                            command, detail = llm.fallback(current, detail, "effect-plan-mismatch")
+                        require(legal(current, command), "INVALID_AI_PROPOSAL", "AI 提案已失效", 409)
+                        self._save_llm_action(db, row, game, current, command, detail)
+                    return self._snapshot(db, self._row(db, owner, id))
+                except Exception:
+                    self.cache.pop(id, None)
+                    raise
+        finally:
+            with self.lock:
+                self.llm_in_flight.discard(id)
+
+    def llm_review(self, owner, id):
+        """Export the saved AI inputs and public actions after play ends."""
+        with self.db() as db:
+            row = self._row(db, owner, id)
+            provenance = json.loads(row["body"])["config"].get("provenance", {})
+            require(provenance.get("llmStrategy") is not None,
+                    "LLM_REVIEW_NOT_FOUND", "这场对局没有 LLM 复盘", 404)
+            require(row["status"] != "playing" or not self._current_rules(row),
+                    "LLM_REVIEW_IN_PROGRESS", "对局结束后可导出 LLM 复盘", 409)
+            frames = db.execute(
+                "SELECT f.seq,f.event,s.body FROM match_frames f LEFT JOIN match_llm_steps s "
+                "ON s.match_id=f.match_id AND s.seq=f.seq WHERE f.match_id=? ORDER BY f.seq",
+                (id,),
+            ).fetchall()
+            view = self._snapshot(db, row)
+            decisions = [
+                {"seq": frame["seq"], **json.loads(frame["body"])}
+                for frame in frames if frame["body"] is not None
+            ]
+            return {
+                "schemaVersion": 1,
+                "matchId": id,
+                "engineVersion": row["engine_version"],
+                "strategy": provenance["llmStrategy"],
+                "configuration": provenance["llmConfig"],
+                "configurationHash": provenance["llmConfigHash"],
+                "opponent": row["opponent"],
+                "status": view["status"],
+                "winner": view["winner"],
+                "result": view["result"],
+                "events": [json.loads(frame["event"]) for frame in frames],
+                "summary": {
+                    "modelActions": sum(step["status"] == "model" for step in decisions),
+                    "plannedActions": sum(step["status"] == "planned" for step in decisions),
+                    "forcedActions": sum(step["status"] == "forced" for step in decisions),
+                    "fallbackActions": sum(step["status"] == "fallback" for step in decisions),
+                    "requestCount": sum(step["requestCount"] for step in decisions),
+                    "retryCount": sum(max(0, step["requestCount"] - 1) for step in decisions),
+                    "recoveredActions": sum(
+                        step["requestCount"] > 1 and step["status"] == "model"
+                        for step in decisions
+                    ),
+                    "requestsWithoutUsage": sum(
+                        step["requestCount"] - bool(step.get("usage")) for step in decisions
+                    ),
+                },
+                "decisions": decisions,
+            }
 
     def _advance_a2(self, owner, id):
         """Compute outside both the SQLite transaction and the authority lock.

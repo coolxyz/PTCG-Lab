@@ -1,6 +1,7 @@
 """Authenticated local practice endpoints. Never expose server replay or seed."""
 
-from fastapi import APIRouter, Request, Response, Query
+from fastapi import APIRouter, Body, Request, Response, Query
+from fastapi.responses import JSONResponse
 from pydantic import BaseModel, ConfigDict, Field, StrictInt, model_validator
 from typing import Literal
 from packages.battle.service import COOKIE, runtime
@@ -8,6 +9,7 @@ from apps.api.expert_service import MatchService
 from packages.collection.domain import RAW, catalog_view
 from packages.collection.domain import require, normalize
 from packages.battle.presets import PRESETS
+from packages.battle import llm_settings
 
 
 class Input(BaseModel):
@@ -19,7 +21,7 @@ class CreateMatch(Input):
     revisionId: str = Field(min_length=1, max_length=100)
     opponent: str | None = Field(default=None, min_length=1, max_length=100)
     opponentRevisionId: str | None = Field(default=None, min_length=1, max_length=100)
-    aiLevel: Literal["A1", "H2", "A2"] = "H2"
+    aiLevel: Literal["A1", "H2", "A2", "LLM"] = "H2"
 
     @model_validator(mode="after")
     def one_opponent(self):
@@ -59,6 +61,22 @@ def router(store):
     def owner(request):
         return service.owner(request.cookies.get(COOKIE))
 
+    @api.get("/llm/settings")
+    def llm_config(request: Request):
+        owner(request)
+        return llm_settings.describe(store.path)
+
+    @api.post("/llm/settings")
+    def save_llm_config(request: Request, body: dict = Body()):
+        owner(request)
+        with service.lock:
+            return llm_settings.save(store.path, body)
+
+    @api.post("/llm/test")
+    def test_llm_connection(request: Request, body: dict = Body()):
+        owner(request)
+        return llm_settings.test(llm_settings.resolve(store.path, body))
+
     @api.post("/session")
     def session(request: Request, response: Response):
         token, _ = service.session(request.cookies.get(COOKIE))
@@ -78,6 +96,7 @@ def router(store):
             "engineVersion": rt.ENGINE_VERSION,
             "opponents": [{"id": t["id"], "name": t["name"]} for t in PRESETS + RAW["templates"]],
             "presets": [{"id": t["id"], "name": t["name"]} for t in PRESETS],
+            "llmOpponent": service.llm_opponent(),
         }
 
     @api.post("/presets/{preset_id}/revision")
@@ -124,6 +143,14 @@ def router(store):
     @api.get("/matches/{id}/replay/timeline")
     def replay_timeline(request: Request, id: str):
         return service.replay_timeline(owner(request), id)
+
+    @api.get("/matches/{id}/llm-review")
+    def llm_review(request: Request, id: str):
+        review = service.llm_review(owner(request), id)
+        return JSONResponse(review, headers={
+            "Cache-Control": "no-store",
+            "Content-Disposition": f'attachment; filename="ptcg-llm-{review["matchId"]}.json"',
+        })
 
     @api.get("/matches/{id}/replay")
     def replay(

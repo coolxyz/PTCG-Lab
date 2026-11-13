@@ -4,6 +4,7 @@ import { PracticeController } from "./controller";
 import { practiceAPI } from "./transport";
 import { browserPracticeStorage } from "./storage";
 import "./practice.css";
+import { LLMSettings } from "./LLMSettings";
 import { PracticeHistory } from "./PracticeHistory";
 import { browserAppearanceStorage } from "../appearance-storage";
 import { indexCards } from "@ptcg/battle-ui/presentation";
@@ -18,6 +19,7 @@ export function PracticeApp({
   const [controller] = useState(
     () => new PracticeController(practiceAPI(), browserPracticeStorage()),
   );
+  const [showLLMSettings, setShowLLMSettings] = useState(false);
   const state = useSyncExternalStore(controller.subscribe, controller.snapshot);
   useEffect(() => {
     controller.setActive(active);
@@ -98,6 +100,15 @@ export function PracticeApp({
                 AI 下一步
               </button>
             )}
+            {state.view.done && state.view.aiStrategy?.id === "llm" && (
+              <a
+                className="workspace-button is-secondary"
+                href={`/api/battle/matches/${encodeURIComponent(state.view.matchId)}/llm-review`}
+                download
+              >
+                导出 LLM 复盘
+              </a>
+            )}
           </div>
         }
         replay={
@@ -127,7 +138,9 @@ export function PracticeApp({
       ? "进阶 AI"
       : state.aiLevel === "A1"
         ? "基础 AI"
-        : "实验搜索";
+        : state.aiLevel === "LLM"
+          ? (state.session?.llmOpponent?.name ?? "LLM")
+          : "实验搜索";
   return (
     <section className="workspace-page practice-lobby">
       <header className="page-heading">
@@ -144,6 +157,12 @@ export function PracticeApp({
           刷新大厅
         </button>
       </header>
+      {showLLMSettings && (
+        <LLMSettings
+          onClose={() => setShowLLMSettings(false)}
+          onSaved={controller.refresh}
+        />
+      )}
       {state.error && (
         <p className="practice-notice is-error" role="alert">
           {state.error}
@@ -308,8 +327,20 @@ export function PracticeApp({
                 <option value="A1">基础 AI（A1）</option>
                 <option value="H2">进阶 AI（H2 · 推荐）</option>
                 <option value="A2">A2 · 实验搜索（强度未评级）</option>
+                <option value="LLM" disabled={!state.session?.llmOpponent}>
+                  {state.session?.llmOpponent?.name ?? "LLM · 待配置模型"}
+                </option>
               </select>
             </label>
+            <button
+              className="workspace-button is-secondary"
+              type="button"
+              disabled={!state.initialized || locked}
+              onClick={() => setShowLLMSettings((open) => !open)}
+              aria-expanded={showLLMSettings}
+            >
+              LLM 对手设置
+            </button>
             <div className="practice-strategy">
               <span aria-hidden="true">◎</span>
               <div>
@@ -319,7 +350,9 @@ export function PracticeApp({
                     ? "适合熟悉卡组配合与练习对战决策。"
                     : state.aiLevel === "A1"
                       ? "适合熟悉基本规则与卡组操作。"
-                      : "尝试实验搜索策略，当前强度尚未评级。"}
+                      : state.aiLevel === "LLM"
+                        ? "模型根据可见局面与近期行动决策，结束后可导出复盘。"
+                        : "尝试实验搜索策略，当前强度尚未评级。"}
                 </p>
               </div>
             </div>
@@ -339,7 +372,10 @@ export function PracticeApp({
             disabled={
               state.busy ||
               !state.initialized ||
-              (!state.creation && (!state.revision || !state.opponent))
+              (!state.creation &&
+                (!state.revision ||
+                  !state.opponent ||
+                  (state.aiLevel === "LLM" && !state.session?.llmOpponent)))
             }
             onClick={controller.create}
           >

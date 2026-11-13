@@ -531,11 +531,17 @@ export function Battle({
                   <option value="A1">基础 AI（A1）</option>
                   <option value="H2">进阶 AI（H2 · 推荐）</option>
                   <option value="A2">A2 · 实验搜索（强度未评级）</option>
+                  <option value="LLM" disabled={!session?.llmOpponent}>
+                    {session?.llmOpponent?.name ?? "LLM · 待配置模型"}
+                  </option>
                 </select>
               </label>
               <button
                 className="primary"
-                disabled={busy || !revision || !session || !opponent}
+                disabled={
+                  busy || !revision || !session || !opponent ||
+                  (aiLevel === "LLM" && !session.llmOpponent)
+                }
                 onClick={() =>
                   run(async () => {
                     const v = await request("/matches", {
@@ -566,6 +572,9 @@ export function Battle({
                 每一步裁定均保存。刷新页面、重启服务后可继续；离开练习页时暂停
                 AI 推进。
               </p>
+              {aiLevel === "LLM" && (
+                <p>模型根据可见局面与近期行动决策，对局结束后可导出复盘。</p>
+              )}
               <p>
                 这是受控卡池的普通档练习，尚未进行竞技强度认证。数据及会话保存在本机浏览器；清除
                 Cookie 后无法通过新会话访问原对局。
@@ -639,6 +648,15 @@ export function Battle({
                 <History size={14} />
                 逐步回放
               </button>
+              {view?.done && view.aiStrategy?.id === "llm" && (
+                <a
+                  className="secondary"
+                  href={`/api/battle/matches/${encodeURIComponent(view.matchId)}/llm-review`}
+                  download
+                >
+                  导出 LLM 复盘
+                </a>
+              )}
               {!view?.done && !frame && (
                 <button
                   className="secondary"

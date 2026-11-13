@@ -1,5 +1,5 @@
 import type { Command } from "@ptcg/battle-ui";
-import type { Creation } from "./types";
+import { isAILevel, type Creation } from "./types";
 export interface PracticeStorage {
   match(): string | null;
   saveMatch(id: string): void;
@@ -58,7 +58,7 @@ export function practiceStorage(
       return p &&
         typeof p.requestId === "string" &&
         typeof p.revisionId === "string" &&
-        ["A1", "H2", "A2"].includes(p.aiLevel) &&
+        isAILevel(p.aiLevel) &&
         (typeof p.opponent === "string" ||
           typeof p.opponentRevisionId === "string")
         ? p

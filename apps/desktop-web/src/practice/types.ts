@@ -4,9 +4,17 @@ import type {
   Command,
   ReplayCheckpoint,
 } from "@ptcg/battle-ui";
+export type AIStrategy = { id: string; version: string; name: string };
+const AI_LEVELS = ["A1", "H2", "A2", "LLM"] as const;
+export type AILevel = (typeof AI_LEVELS)[number];
+
+export function isAILevel(value: unknown): value is AILevel {
+  return AI_LEVELS.some((level) => level === value);
+}
+
 export type PracticeView = BattleView & {
   aiVersion?: string;
-  aiStrategy?: { id: string; version: string; name: string };
+  aiStrategy?: AIStrategy;
 };
 export type Session = {
   mode: "local-practice";
@@ -14,6 +22,7 @@ export type Session = {
   engineVersion: string;
   opponents: { id: string; name: string }[];
   presets: { id: string; name: string }[];
+  llmOpponent?: AIStrategy | null;
 };
 export type Revision = {
   id: string;
@@ -31,7 +40,7 @@ export type Match = {
 export type Creation = {
   requestId: string;
   revisionId: string;
-  aiLevel: "A1" | "H2" | "A2";
+  aiLevel: AILevel;
   opponent?: string;
   opponentRevisionId?: string;
 };

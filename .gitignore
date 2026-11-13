@@ -4,6 +4,7 @@ __pycache__/
 .pytest_cache/
 *.pyc
 var/
+llm-opponent.json
 node_modules
 apps/web/dist/
 test-results/

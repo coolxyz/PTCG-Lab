@@ -82,6 +82,7 @@ def create_app(db_path=None):
     battle_router, battle_service = router(store)
     app.include_router(battle_router)
     app.state.battles = battle_service
+    app.add_event_handler("shutdown", battle_service.close)
 
     from apps.api.sync import attach as attach_sync
     attach_sync(app, store)

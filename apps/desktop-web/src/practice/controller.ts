@@ -9,6 +9,7 @@ import type {
 } from "./types";
 import type { PracticeStorage } from "./storage";
 import { PracticeAPIError } from "./transport";
+import { isAILevel } from "./types";
 export type PracticeState = {
   active: boolean;
   initialized: boolean;
@@ -205,7 +206,11 @@ export class PracticeController {
   };
   select = (field: "revision" | "opponent" | "aiLevel", value: string) => {
     if (this.state.busy || this.state.creation) return;
-    if (field === "aiLevel" && !["A1", "H2", "A2"].includes(value)) return;
+    if (
+      field === "aiLevel" &&
+      (!isAILevel(value) || (value === "LLM" && !this.state.session?.llmOpponent))
+    )
+      return;
     this.patch({ [field]: value });
   };
   preset = (id: string) =>
@@ -223,6 +228,8 @@ export class PracticeController {
         (!s.creation && (!s.revision || !s.opponent))
       )
         throw new Error("请选择可对战的卡组版本和 AI 卡组");
+      if (!s.creation && s.aiLevel === "LLM" && !s.session.llmOpponent)
+        throw new Error("请在本机配置 LLM 服务后开始对局");
       const creation = s.creation ?? {
         requestId: this.id(),
         revisionId: s.revision,

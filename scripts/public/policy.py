@@ -153,7 +153,7 @@ def private_name(name):
         in {".sqlite", ".db", ".pem", ".key", ".p12", ".pfx", ".pyc", ".log"}
         or p.name.endswith((".sqlite-wal", ".sqlite-shm", ".tsbuildinfo"))
         or p.name.lower()
-        in {"credentials.json", "secrets.json", "password.txt", "token.json"}
+        in {"credentials.json", "secrets.json", "password.txt", "token.json", "llm-opponent.json"}
         or p.name
         in {
             "MIGRATION.json",
