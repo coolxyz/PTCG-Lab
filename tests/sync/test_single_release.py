@@ -1,9 +1,29 @@
+import json
 from types import SimpleNamespace
 from unittest.mock import Mock
 
 import pytest
 from packages.sync.common import SyncError
-from packages.sync.runtime import RuntimePool, Worker
+from packages.sync.runtime import RuntimePool, Worker, request_timeout
+
+
+def test_release_worker_allows_the_model_retry_budget(tmp_path, monkeypatch):
+    from packages.battle.llm import SETTINGS_ENV
+
+    for name in SETTINGS_ENV.values():
+        monkeypatch.delenv(name, raising=False)
+    database = tmp_path / "app.sqlite"
+    path = "/api/battle/matches/llm-match/advance?steps=1"
+    assert request_timeout("POST", path, database) == 90
+    (tmp_path / "llm-opponent.json").write_text(json.dumps({
+        "baseUrl": "https://provider.example/v1",
+        "model": "test-model",
+        "timeoutSeconds": 30,
+        "maxRetries": 4,
+    }))
+    assert request_timeout("POST", path, database) == 200
+    assert request_timeout("GET", path, database) == 90
+    assert request_timeout("POST", "/api/battle/llm/test", database) == 90
 
 
 def test_only_active_release_can_start_a_worker(tmp_path, monkeypatch):

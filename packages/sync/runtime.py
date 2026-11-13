@@ -16,6 +16,25 @@ from .common import SyncError
 from .releases import RULE_POLICY
 
 
+def request_timeout(method, path, user_db):
+    parts = path.split("?", 1)[0].split("/")
+    if (
+        method == "POST"
+        and len(parts) == 6
+        and parts[1:4] == ["api", "battle", "matches"]
+        and parts[5] == "advance"
+    ):
+        from packages.battle.llm import MAX_RETRY_DELAY, settings
+
+        config = settings(user_db)
+        if config is not None:
+            # Let the battle policy finish its retries and commit the chosen move.
+            budget = config.timeoutSeconds * (1 + config.maxRetries)
+            budget += MAX_RETRY_DELAY * config.maxRetries
+            return max(90, budget + 10)
+    return 90
+
+
 def native_writer_options():
     """Keep the native owner's POSIX lock alive for profile-writing children."""
     if os.name == "posix" and (value := os.environ.get("PTCG_NATIVE_LOCK_FD")):
@@ -31,16 +50,19 @@ class Worker:
         if manifest.get("metadata", {}).get("rulePolicy") != RULE_POLICY:
             raise SyncError("RULE_RELEASE_UNAVAILABLE", "旧规则发布不再执行，请重新发布当前规则", 409)
         self.lock = threading.Lock()
+        self.user_db = user_db
         self.executor = ThreadPoolExecutor(max_workers=1)
         log = releases.home / "logs" / (release_id + ".log")
         log.parent.mkdir(parents=True, exist_ok=True)
         self.log = log.open("ab")
         self.process = subprocess.Popen([sys.executable, "-I", "-B", "-X", "utf8", str(Path(__file__).with_name("worker.py")), str(releases.path(release_id).resolve()), str(Path(user_db).resolve()), release_id, str((releases.home / "identity-archive.json").resolve())], stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=self.log, text=True, encoding="utf-8", creationflags=subprocess.CREATE_NO_WINDOW if os.name == "nt" else 0, **native_writer_options())
 
-    def request(self, method, path, headers=None, body=b"", timeout=90):
+    def request(self, method, path, headers=None, body=b"", timeout=None):
         with self.lock:
             if self.process.poll() is not None:
                 raise SyncError("WORKER_UNAVAILABLE", "版本工作进程已退出，可重试", 503)
+            if timeout is None:
+                timeout = request_timeout(method, path, self.user_db)
             self.process.stdin.write(json.dumps({"method": method, "path": path, "headers": headers or {}, "body": base64.b64encode(body).decode()}) + "\n")
             self.process.stdin.flush()
             try:
