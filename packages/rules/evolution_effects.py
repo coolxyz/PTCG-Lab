@@ -37,7 +37,6 @@ def devolve(card, owner, destination, state):
     attachments = card.attachment
     zone = owner.active if card in owner.active else owner.bench
     position, card_position, index = card.position, card.cardPosition, card.index
-    first_turn = card.firstTurnPlayed
     # Earlier evolution cards retain historical object fields while covered.
     # Reconstitute the revealed card so old statuses and attack effects cannot
     # reappear when it is uncovered.
@@ -46,7 +45,7 @@ def devolve(card, owner, destination, state):
     lower.evolved, lower.attachment = lower_stack, attachments
     lower.position, lower.cardPosition, lower.index = position, card_position, index
     lower.firstTurnPlayed = True
-    lower.evolved_turn = state.turn_number
+    lower.devolved_turn = state.turn_number
     lower.hp -= damage
     lower.rules_state = state
     restore_poison(lower, poison)

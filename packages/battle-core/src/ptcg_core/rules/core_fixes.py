@@ -105,6 +105,10 @@ def end_turn_tools(state):
         if getattr(owner, 'item_blocked_turn', None) == state.turn_number:
             del owner.item_blocked_turn
         for pokemon in owner.active + owner.bench:
+            # Devolution blocks evolution only during the turn it happens.
+            if getattr(pokemon, 'devolved_turn', None) == state.turn_number:
+                pokemon.firstTurnPlayed = False
+                del pokemon.devolved_turn
             if hasattr(pokemon,'attack_locks'):
                 pokemon.attack_locks={name:until for name,until in pokemon.attack_locks.items() if until=='active' or until>state.turn_number}
                 if not pokemon.attack_locks:del pokemon.attack_locks
