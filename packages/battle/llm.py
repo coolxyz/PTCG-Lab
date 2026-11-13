@@ -211,7 +211,7 @@ def payload(view, history, own_lines):
     for line in own_lines:
         count, card = line.split(maxsplit=1)
         deck[card] += int(count)
-    return compact_payload(
+    visible = compact_payload(
         {
             **_fields(view, ("stateVersion", "phase", "startingPlayer")),
             "observation": {
@@ -226,6 +226,13 @@ def payload(view, history, own_lines):
             "recentActions": history[-HISTORY_LIMIT:],
         }
     )
+    if view.get("phase") == "choose_order":
+        visible["turnOrder"] = {
+            "first": "你先行动，通常首回合不能攻击或使用支援者，但可先铺场、附能，并先进入自己的第二回合。",
+            "second": "对手先行动，你可在自己的首回合使用支援者，并在满足条件时攻击。",
+            "instruction": "现在还未抽取起手牌。根据 ownDeck 比较先攻的进化与铺场节奏、后攻的支援者与首回合攻击收益。选择最适合这副卡组的合法 optionId，并说明依据。",
+        }
+    return visible
 
 
 def _forced(decision):
@@ -252,6 +259,8 @@ def describe_choice(decision, choice):
             option,
             (
                 "actionType",
+                "kind",
+                "value",
                 "source",
                 "sourceId",
                 "target",

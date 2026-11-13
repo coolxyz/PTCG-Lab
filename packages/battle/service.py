@@ -496,6 +496,8 @@ class MatchService:
                 "SetupOption": "确认开局选择",
             }
             text = labels.get(o["actionType"], "执行动作")
+            if o["actionType"] == "SetupOption" and o.get("kind") == "choose_order":
+                text = "选择先攻" if o["value"] == "first" else "选择后攻"
             if view["phase"] == "playing" and o.get("source"):
                 card = next(
                     (

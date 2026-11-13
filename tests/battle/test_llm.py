@@ -240,6 +240,41 @@ def human_step(client, url, view):
     return response.json()["view"]
 
 
+@pytest.mark.parametrize(
+    ("order", "starter", "event"),
+    [("first", "PLAYER2", "选择先攻"), ("second", "PLAYER1", "选择后攻")],
+)
+def test_llm_chooses_turn_order(tmp_path, monkeypatch, order, starter, event):
+    app, client, opened, _ = setup(tmp_path, monkeypatch)
+    url = "/api/battle/matches/" + opened["matchId"]
+    assert opened["phase"] == "choose_order" and opened["decision"] is None
+    calls = []
+
+    def request(config, visible, session):
+        calls.append(visible)
+        assert visible["phase"] == "choose_order"
+        assert visible["startingPlayer"] is None
+        assert visible["observation"]["self"]["hand"] == []
+        assert "hand" not in visible["observation"]["opponent"]
+        assert sum(card["count"] for card in visible["ownDeck"]) == 60
+        assert set(visible["turnOrder"]) == {"first", "second", "instruction"}
+        options = {o["value"]: o["id"] for o in visible["decision"]["options"]}
+        assert set(options) == {"first", "second"}
+        content = json.dumps({"choice": {"optionId": options[order]}})
+        return {"choices": [{"finish_reason": "stop", "message": {"content": content}}]}
+
+    monkeypatch.setattr(llm, "_request", request)
+    response = client.post(url + "/advance")
+    assert response.status_code == 200
+    view = response.json()
+    assert view["stateVersion"] == 1 and view["startingPlayer"] == starter
+    assert view["events"][-1]["text"] == event
+    assert view["events"][-1]["fallback"] is False
+    assert len(calls) == 1
+    app.state.battles.cache.clear()
+    assert client.get(url).json()["startingPlayer"] == starter
+
+
 def test_llm_live_choices_resume_and_review(tmp_path, monkeypatch):
     app, client, view, config = setup(tmp_path, monkeypatch)
     url = "/api/battle/matches/" + view["matchId"]
